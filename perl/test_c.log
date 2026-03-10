@@ -1,0 +1,553 @@
+Running test: t/c/convert/sv_to_upb
+LD_LIBRARY_PATH="/usr/local/google/home/cjac/perl5/lib/5.40.1/x86_64-linux:" ASAN_OPTIONS=abort_on_error=1 t/c/convert/sv_to_upb
+# main: PERL_SYS_INIT done
+# main: perl_alloc done
+# main: perl_construct done
+# main: perl_parse done
+# main: upb_Arena_New done
+# main: Loading test descriptors...
+# test.TestMessage found: YES
+# test.NestedMessage found: YES
+# protobuf_test_messages.proto2.TestAllTypesProto2 found: YES
+# protobuf_test_messages.proto2.TestAllTypesProto2.Data found: YES
+# main: Test descriptors loaded successfully
+1..112
+ok 1 - Descriptors loaded
+# run_type_test_cases for int32
+#   Testing field: repeated_int32 (repeated int32)
+ok 2 - Get FieldDef for repeated_int32
+ok 3 - repeated int32: type check
+#     Calling PerlUpb_SvToUpb for repeated_int32
+ok 4 - repeated int32: PerlUpb_SvToUpb success
+#     Running check_func for repeated_int32
+ok 5 - repeated int32: array size
+ok 6 - repeated int32: element 0
+ok 7 - repeated int32: element 1
+#   Finished field: repeated_int32
+# Finished run_type_test_cases for int32
+# run_type_test_cases for string
+#   Testing field: repeated_string (repeated string)
+ok 8 - Get FieldDef for repeated_string
+ok 9 - repeated string: type check
+#     Calling PerlUpb_SvToUpb for repeated_string
+ok 10 - repeated string: PerlUpb_SvToUpb success
+#     Running check_func for repeated_string
+ok 11 - repeated string: array size
+ok 12 - repeated string: element 0
+ok 13 - repeated string: element 1
+#   Finished field: repeated_string
+# Finished run_type_test_cases for string
+# run_type_test_cases for bool
+#   Testing field: optional_bool (bool true)
+ok 14 - Get FieldDef for optional_bool
+ok 15 - bool true: type check
+#     Calling PerlUpb_SvToUpb for optional_bool
+ok 16 - bool true: PerlUpb_SvToUpb success
+#     Running check_func for optional_bool
+ok 17 - bool true: bool true value correct
+#   Finished field: optional_bool
+#   Testing field: optional_bool (bool false)
+ok 18 - Get FieldDef for optional_bool
+ok 19 - bool false: type check
+#     Calling PerlUpb_SvToUpb for optional_bool
+ok 20 - bool false: PerlUpb_SvToUpb success
+#     Running check_func for optional_bool
+ok 21 - bool false: bool false value correct
+#   Finished field: optional_bool
+#   Testing field: repeated_bool (repeated bool)
+ok 22 - Get FieldDef for repeated_bool
+ok 23 - repeated bool: type check
+#     Calling PerlUpb_SvToUpb for repeated_bool
+ok 24 - repeated bool: PerlUpb_SvToUpb success
+#     Running check_func for repeated_bool
+ok 25 - repeated bool: array size
+ok 26 - repeated bool: element 0
+ok 27 - repeated bool: element 1
+ok 28 - repeated bool: element 2
+#   Finished field: repeated_bool
+# Finished run_type_test_cases for bool
+# run_type_test_cases for float
+#   Testing field: optional_float (float)
+ok 29 - Get FieldDef for optional_float
+ok 30 - float: type check
+#     Calling PerlUpb_SvToUpb for optional_float
+ok 31 - float: PerlUpb_SvToUpb success
+#     Running check_func for optional_float
+ok 32 - float: float value correct
+#   Finished field: optional_float
+#   Testing field: repeated_float (repeated float)
+ok 33 - Get FieldDef for repeated_float
+ok 34 - repeated float: type check
+#     Calling PerlUpb_SvToUpb for repeated_float
+ok 35 - repeated float: PerlUpb_SvToUpb success
+#     Running check_func for repeated_float
+ok 36 - repeated float: array size
+ok 37 - repeated float: element 0
+ok 38 - repeated float: element 1
+#   Finished field: repeated_float
+# Finished run_type_test_cases for float
+# run_type_test_cases for double
+#   Testing field: optional_double (double)
+ok 39 - Get FieldDef for optional_double
+ok 40 - double: type check
+#     Calling PerlUpb_SvToUpb for optional_double
+ok 41 - double: PerlUpb_SvToUpb success
+#     Running check_func for optional_double
+ok 42 - double: double value correct
+#   Finished field: optional_double
+#   Testing field: repeated_double (repeated double)
+ok 43 - Get FieldDef for repeated_double
+ok 44 - repeated double: type check
+#     Calling PerlUpb_SvToUpb for repeated_double
+ok 45 - repeated double: PerlUpb_SvToUpb success
+#     Running check_func for repeated_double
+ok 46 - repeated double: array size
+ok 47 - repeated double: element 0
+ok 48 - repeated double: element 1
+#   Finished field: repeated_double
+# Finished run_type_test_cases for double
+# run_type_test_cases for uint32
+#   Testing field: optional_uint32 (uint32)
+ok 49 - Get FieldDef for optional_uint32
+ok 50 - uint32: type check
+#     Calling PerlUpb_SvToUpb for optional_uint32
+ok 51 - uint32: PerlUpb_SvToUpb success
+#     Running check_func for optional_uint32
+ok 52 - uint32: uint32 value correct
+#   Finished field: optional_uint32
+#   Testing field: repeated_uint32 (repeated uint32)
+ok 53 - Get FieldDef for repeated_uint32
+ok 54 - repeated uint32: type check
+#     Calling PerlUpb_SvToUpb for repeated_uint32
+ok 55 - repeated uint32: PerlUpb_SvToUpb success
+#     Running check_func for repeated_uint32
+ok 56 - repeated uint32: array size
+ok 57 - repeated uint32: element 0
+ok 58 - repeated uint32: element 1
+#   Finished field: repeated_uint32
+# Finished run_type_test_cases for uint32
+# run_type_test_cases for int64
+#   Testing field: optional_int64 (int64)
+ok 59 - Get FieldDef for optional_int64
+ok 60 - int64: type check
+#     Calling PerlUpb_SvToUpb for optional_int64
+ok 61 - int64: PerlUpb_SvToUpb success
+#     Running check_func for optional_int64
+ok 62 - int64: int64 value correct
+#   Finished field: optional_int64
+# Finished run_type_test_cases for int64
+# run_type_test_cases for uint64
+#   Testing field: optional_uint64 (uint64)
+ok 63 - Get FieldDef for optional_uint64
+ok 64 - uint64: type check
+#     Calling PerlUpb_SvToUpb for optional_uint64
+ok 65 - uint64: PerlUpb_SvToUpb success
+#     Running check_func for optional_uint64
+ok 66 - uint64: uint64 value correct
+#   Finished field: optional_uint64
+# Finished run_type_test_cases for uint64
+# run_type_test_cases for bytes
+#   Testing field: optional_bytes (bytes)
+ok 67 - Get FieldDef for optional_bytes
+ok 68 - bytes: type check
+#     Calling PerlUpb_SvToUpb for optional_bytes
+ok 69 - bytes: PerlUpb_SvToUpb success
+#     Running check_func for optional_bytes
+ok 70 - bytes: bytes value correct
+#   Finished field: optional_bytes
+# Finished run_type_test_cases for bytes
+# run_type_test_cases for enum
+#   Testing field: optional_enum (enum)
+# FieldDef optional_enum not found in protobuf_test_messages.proto2.TestAllTypesProto2
+#     Failed to get FieldDef for optional_enum
+not ok 71 - Get FieldDef for optional_enum
+# Finished run_type_test_cases for enum
+# run_type_test_cases for fixed32
+#   Testing field: optional_fixed32 (fixed32)
+ok 72 - Get FieldDef for optional_fixed32
+ok 73 - fixed32: type check
+#     Calling PerlUpb_SvToUpb for optional_fixed32
+ok 74 - fixed32: PerlUpb_SvToUpb success
+#     Running check_func for optional_fixed32
+ok 75 - fixed32: fixed32 value correct
+#   Finished field: optional_fixed32
+# Finished run_type_test_cases for fixed32
+# run_type_test_cases for fixed64
+#   Testing field: optional_fixed64 (fixed64)
+ok 76 - Get FieldDef for optional_fixed64
+ok 77 - fixed64: type check
+#     Calling PerlUpb_SvToUpb for optional_fixed64
+ok 78 - fixed64: PerlUpb_SvToUpb success
+#     Running check_func for optional_fixed64
+ok 79 - fixed64: fixed64 value correct
+#   Finished field: optional_fixed64
+# Finished run_type_test_cases for fixed64
+# run_type_test_cases for sfixed32
+#   Testing field: optional_sfixed32 (sfixed32)
+ok 80 - Get FieldDef for optional_sfixed32
+ok 81 - sfixed32: type check
+#     Calling PerlUpb_SvToUpb for optional_sfixed32
+ok 82 - sfixed32: PerlUpb_SvToUpb success
+#     Running check_func for optional_sfixed32
+ok 83 - sfixed32: sfixed32 value correct
+#   Finished field: optional_sfixed32
+# Finished run_type_test_cases for sfixed32
+# run_type_test_cases for sfixed64
+#   Testing field: optional_sfixed64 (sfixed64)
+ok 84 - Get FieldDef for optional_sfixed64
+ok 85 - sfixed64: type check
+#     Calling PerlUpb_SvToUpb for optional_sfixed64
+ok 86 - sfixed64: PerlUpb_SvToUpb success
+#     Running check_func for optional_sfixed64
+ok 87 - sfixed64: sfixed64 value correct
+#   Finished field: optional_sfixed64
+# Finished run_type_test_cases for sfixed64
+# run_type_test_cases for sint32
+#   Testing field: optional_sint32 (sint32)
+ok 88 - Get FieldDef for optional_sint32
+ok 89 - sint32: type check
+#     Calling PerlUpb_SvToUpb for optional_sint32
+ok 90 - sint32: PerlUpb_SvToUpb success
+#     Running check_func for optional_sint32
+ok 91 - sint32: sint32 value correct
+#   Finished field: optional_sint32
+# Finished run_type_test_cases for sint32
+# run_type_test_cases for sint64
+#   Testing field: optional_sint64 (sint64)
+ok 92 - Get FieldDef for optional_sint64
+ok 93 - sint64: type check
+#     Calling PerlUpb_SvToUpb for optional_sint64
+ok 94 - sint64: PerlUpb_SvToUpb success
+#     Running check_func for optional_sint64
+ok 95 - sint64: sint64 value correct
+#   Finished field: optional_sint64
+# Finished run_type_test_cases for sint64
+# run_type_test_cases for message
+# Finished run_type_test_cases for message
+# run_type_test_cases for group
+# Finished run_type_test_cases for group
+# test_sv_to_upb_edge_cases
+# FieldDef value not found in protobuf_test_messages.proto2.TestAllTypesProto2
+# FieldDef name not found in protobuf_test_messages.proto2.TestAllTypesProto2
+not ok 96 - Edge: Got FieldDefs
+#   Failed to get FieldDefs for edge cases
+# main: Cleaning up
+# main: Exiting
+Running test: t/c/convert/upb_to_sv
+LD_LIBRARY_PATH="/usr/local/google/home/cjac/perl5/lib/5.40.1/x86_64-linux:" ASAN_OPTIONS=abort_on_error=1 t/c/convert/upb_to_sv
+# test.TestMessage found: YES
+# test.NestedMessage found: YES
+# protobuf_test_messages.proto2.TestAllTypesProto2 found: YES
+# protobuf_test_messages.proto2.TestAllTypesProto2.Data found: YES
+1..232
+ok 1 - Descriptors loaded
+ok 2 - Get FieldDef for repeated_int32
+ok 3 - repeated int32: type check
+ok 4 - repeated int32: PerlUpb_UpbToSv returned non-NULL
+ok 5 - repeated int32: SV is a reference
+ok 6 - repeated int32: Dereferenced SV is an ARRAY
+ok 7 - repeated int32: Array has 2 elements
+ok 8 - repeated int32: Fetched element 0
+ok 9 - repeated int32: Element 0 is IOK
+ok 10 - repeated int32: Element 0 value correct
+ok 11 - repeated int32: Fetched element 1
+ok 12 - repeated int32: Element 1 is IOK
+ok 13 - repeated int32: Element 1 value correct
+ok 14 - Get FieldDef for repeated_string
+ok 15 - repeated string: type check
+ok 16 - repeated string: PerlUpb_UpbToSv returned non-NULL
+ok 17 - repeated string: SV is a reference
+ok 18 - repeated string: Dereferenced SV is an ARRAY
+ok 19 - repeated string: Array has 2 elements
+ok 20 - repeated string: Fetched element 0
+ok 21 - repeated string: Element 0 is POK
+ok 22 - repeated string: Element 0 value correct
+ok 23 - repeated string: Fetched element 1
+ok 24 - repeated string: Element 1 is POK
+ok 25 - repeated string: Element 1 value correct
+ok 26 - Get FieldDef for optional_bool
+ok 27 - bool true: type check
+ok 28 - bool true: PerlUpb_UpbToSv returned non-NULL
+ok 29 - bool true: SV is true
+ok 30 - Get FieldDef for optional_bool
+ok 31 - bool false: type check
+ok 32 - bool false: PerlUpb_UpbToSv returned non-NULL
+ok 33 - bool false: SV is false
+ok 34 - Get FieldDef for repeated_bool
+ok 35 - repeated bool: type check
+ok 36 - repeated bool: PerlUpb_UpbToSv returned non-NULL
+ok 37 - repeated bool: SV is a reference
+ok 38 - repeated bool: Dereferenced SV is an ARRAY
+ok 39 - repeated bool: Array has 3 elements
+ok 40 - repeated bool: Fetched element 0
+ok 41 - repeated bool: Element 0 is true
+ok 42 - repeated bool: Fetched element 1
+ok 43 - repeated bool: Element 1 is false
+ok 44 - repeated bool: Fetched element 2
+ok 45 - repeated bool: Element 2 is true
+ok 46 - Get FieldDef for optional_float
+ok 47 - float: type check
+ok 48 - float: PerlUpb_UpbToSv returned non-NULL
+ok 49 - float: SV is NOK
+ok 50 - float: SV value correct
+ok 51 - Get FieldDef for repeated_float
+ok 52 - repeated float: type check
+ok 53 - repeated float: PerlUpb_UpbToSv returned non-NULL
+ok 54 - repeated float: SV is a reference
+ok 55 - repeated float: Dereferenced SV is an ARRAY
+ok 56 - repeated float: Array has 2 elements
+ok 57 - repeated float: Fetched element 0
+ok 58 - repeated float: Element 0 is NOK
+ok 59 - repeated float: Element 0 value correct
+ok 60 - repeated float: Fetched element 1
+ok 61 - repeated float: Element 1 is NOK
+ok 62 - repeated float: Element 1 value correct
+ok 63 - Get FieldDef for optional_double
+ok 64 - double: type check
+ok 65 - double: PerlUpb_UpbToSv returned non-NULL
+ok 66 - double: SV is NOK
+ok 67 - double: SV value correct
+ok 68 - Get FieldDef for repeated_double
+ok 69 - repeated double: type check
+ok 70 - repeated double: PerlUpb_UpbToSv returned non-NULL
+ok 71 - repeated double: SV is a reference
+ok 72 - repeated double: Dereferenced SV is an ARRAY
+ok 73 - repeated double: Array has 2 elements
+ok 74 - repeated double: Fetched element 0
+ok 75 - repeated double: Element 0 is NOK
+ok 76 - repeated double: Element 0 value correct
+ok 77 - repeated double: Fetched element 1
+ok 78 - repeated double: Element 1 is NOK
+ok 79 - repeated double: Element 1 value correct
+ok 80 - Get FieldDef for optional_uint32
+ok 81 - uint32: type check
+ok 82 - uint32: PerlUpb_UpbToSv returned non-NULL
+ok 83 - uint32: SV value correct
+ok 84 - Get FieldDef for repeated_uint32
+ok 85 - repeated uint32: type check
+ok 86 - repeated uint32: PerlUpb_UpbToSv returned non-NULL
+ok 87 - repeated uint32: SV is a reference
+ok 88 - repeated uint32: Dereferenced SV is an ARRAY
+ok 89 - repeated uint32: Array has 2 elements
+ok 90 - repeated uint32: Fetched element 0
+ok 91 - : SV value correct
+ok 92 - repeated uint32: Fetched element 1
+ok 93 - : SV value correct
+ok 94 - Get FieldDef for optional_int64
+ok 95 - int64: type check
+ok 96 - int64: PerlUpb_UpbToSv returned non-NULL
+ok 97 - int64: SV is IOK
+ok 98 - int64: SV value correct
+ok 99 - Get FieldDef for repeated_int64
+ok 100 - repeated int64: type check
+ok 101 - repeated int64: PerlUpb_UpbToSv returned non-NULL
+ok 102 - repeated int64: SV is a reference
+ok 103 - repeated int64: Dereferenced SV is an ARRAY
+ok 104 - repeated int64: Array has 3 elements
+ok 105 - repeated int64: Fetched element 0
+ok 106 - repeated int64: Element 0 is IOK
+ok 107 - repeated int64: Element 0 value correct
+ok 108 - repeated int64: Fetched element 1
+ok 109 - repeated int64: Element 1 is IOK
+ok 110 - repeated int64: Element 1 value correct
+ok 111 - repeated int64: Fetched element 2
+ok 112 - repeated int64: Element 2 is IOK
+ok 113 - repeated int64: Element 2 value correct
+ok 114 - Get FieldDef for optional_uint64
+ok 115 - uint64: type check
+ok 116 - uint64: PerlUpb_UpbToSv returned non-NULL
+ok 117 - uint64: SV value correct
+ok 118 - Get FieldDef for repeated_uint64
+ok 119 - repeated uint64: type check
+ok 120 - repeated uint64: PerlUpb_UpbToSv returned non-NULL
+ok 121 - repeated uint64: SV is a reference
+ok 122 - repeated uint64: Dereferenced SV is an ARRAY
+ok 123 - repeated uint64: Array has 3 elements
+ok 124 - repeated uint64: Fetched element 0
+ok 125 - : SV value correct
+ok 126 - repeated uint64: Fetched element 1
+ok 127 - : SV value correct
+ok 128 - repeated uint64: Fetched element 2
+ok 129 - : SV value correct
+ok 130 - Get FieldDef for optional_bytes
+ok 131 - bytes: type check
+ok 132 - bytes: PerlUpb_UpbToSv returned non-NULL
+ok 133 - bytes: SV is POK
+ok 134 - bytes: SV length correct
+ok 135 - bytes: SV value correct
+ok 136 - Get FieldDef for repeated_bytes
+ok 137 - repeated bytes: type check
+ok 138 - repeated bytes: PerlUpb_UpbToSv returned non-NULL
+ok 139 - repeated bytes: SV is a reference
+ok 140 - repeated bytes: Dereferenced SV is an ARRAY
+ok 141 - repeated bytes: Array has 2 elements
+ok 142 - repeated bytes: Fetched element 0
+ok 143 - repeated bytes: Element 0 is POK
+ok 144 - repeated bytes: Element 0 length correct
+ok 145 - repeated bytes: Element 0 value correct
+ok 146 - repeated bytes: Fetched element 1
+ok 147 - repeated bytes: Element 1 is POK
+ok 148 - repeated bytes: Element 1 length correct
+ok 149 - repeated bytes: Element 1 value correct
+ok 150 - Get FieldDef for optional_nested_enum
+ok 151 - optional enum: type check
+ok 152 - optional enum: PerlUpb_UpbToSv returned non-NULL
+ok 153 - optional enum: SV is IOK
+ok 154 - optional enum: SV value correct
+ok 155 - Get FieldDef for repeated_nested_enum
+ok 156 - repeated enum: type check
+ok 157 - repeated enum: PerlUpb_UpbToSv returned non-NULL
+ok 158 - repeated enum: SV is a reference
+ok 159 - repeated enum: Dereferenced SV is an ARRAY
+ok 160 - repeated enum: Array has 2 elements
+ok 161 - repeated enum: Fetched element 0
+ok 162 - repeated enum: Element 0 is IOK
+ok 163 - repeated enum: Element 0 value correct
+ok 164 - repeated enum: Fetched element 1
+ok 165 - repeated enum: Element 1 is IOK
+ok 166 - repeated enum: Element 1 value correct
+ok 167 - Get FieldDef for optional_fixed32
+ok 168 - fixed32: type check
+ok 169 - fixed32: PerlUpb_UpbToSv returned non-NULL
+ok 170 - fixed32: SV value correct
+ok 171 - Get FieldDef for repeated_fixed32
+ok 172 - repeated fixed32: type check
+ok 173 - repeated fixed32: PerlUpb_UpbToSv returned non-NULL
+ok 174 - repeated fixed32: SV is a reference
+ok 175 - repeated fixed32: Dereferenced SV is an ARRAY
+ok 176 - repeated fixed32: Array has 2 elements
+ok 177 - repeated fixed32: Fetched element 0
+ok 178 - repeated fixed32: Element 0: SV value correct
+ok 179 - repeated fixed32: Fetched element 1
+ok 180 - repeated fixed32: Element 1: SV value correct
+ok 181 - Get FieldDef for optional_fixed64
+ok 182 - fixed64: type check
+ok 183 - fixed64: PerlUpb_UpbToSv returned non-NULL
+ok 184 - fixed64: SV value correct
+ok 185 - Get FieldDef for repeated_fixed64
+ok 186 - repeated fixed64: type check
+ok 187 - repeated fixed64: PerlUpb_UpbToSv returned non-NULL
+ok 188 - repeated fixed64: SV is a reference
+ok 189 - repeated fixed64: Dereferenced SV is an ARRAY
+ok 190 - repeated fixed64: Array has 2 elements
+ok 191 - repeated fixed64: Fetched element 0
+ok 192 - repeated fixed64: Element 0: SV value correct
+ok 193 - repeated fixed64: Fetched element 1
+ok 194 - repeated fixed64: Element 1: SV value correct
+ok 195 - Get FieldDef for optional_sfixed32
+ok 196 - sfixed32: type check
+ok 197 - sfixed32: PerlUpb_UpbToSv returned non-NULL
+ok 198 - sfixed32: SV is IOK
+ok 199 - sfixed32: SV value correct
+ok 200 - Get FieldDef for repeated_sfixed32
+ok 201 - repeated sfixed32: type check
+ok 202 - repeated sfixed32: PerlUpb_UpbToSv returned non-NULL
+ok 203 - repeated sfixed32: SV is a reference
+ok 204 - repeated sfixed32: Dereferenced SV is an ARRAY
+ok 205 - repeated sfixed32: Array has 2 elements
+ok 206 - repeated sfixed32: Fetched element 0
+ok 207 - repeated sfixed32: Element 0 is IOK
+ok 208 - repeated sfixed32: Element 0 value correct
+ok 209 - repeated sfixed32: Fetched element 1
+ok 210 - repeated sfixed32: Element 1 is IOK
+ok 211 - repeated sfixed32: Element 1 value correct
+ok 212 - Get FieldDef for optional_sfixed64
+ok 213 - sfixed64: type check
+ok 214 - sfixed64: PerlUpb_UpbToSv returned non-NULL
+ok 215 - sfixed64: SV is IOK
+ok 216 - sfixed64: SV value correct
+ok 217 - Get FieldDef for repeated_sfixed64
+ok 218 - repeated sfixed64: type check
+ok 219 - repeated sfixed64: PerlUpb_UpbToSv returned non-NULL
+ok 220 - repeated sfixed64: SV is a reference
+ok 221 - repeated sfixed64: Dereferenced SV is an ARRAY
+ok 222 - repeated sfixed64: Array has 2 elements
+ok 223 - repeated sfixed64: Fetched element 0
+ok 224 - repeated sfixed64: Element 0 is IOK
+ok 225 - repeated sfixed64: Element 0 value correct
+ok 226 - repeated sfixed64: Fetched element 1
+ok 227 - repeated sfixed64: Element 1 is IOK
+ok 228 - repeated sfixed64: Element 1 value correct
+ok 229 - Get FieldDef for optional_sint32
+ok 230 - sint32: type check
+ok 231 - sint32: PerlUpb_UpbToSv returned non-NULL
+ok 232 - sint32: SV is IOK
+ok 233 - sint32: SV value correct
+ok 234 - Get FieldDef for repeated_sint32
+ok 235 - repeated sint32: type check
+ok 236 - repeated sint32: PerlUpb_UpbToSv returned non-NULL
+ok 237 - repeated sint32: SV is a reference
+ok 238 - repeated sint32: Dereferenced SV is an ARRAY
+ok 239 - repeated sint32: Array has 2 elements
+ok 240 - repeated sint32: Fetched element 0
+ok 241 - repeated sint32: Element 0 is IOK
+ok 242 - repeated sint32: Element 0 value correct
+ok 243 - repeated sint32: Fetched element 1
+ok 244 - repeated sint32: Element 1 is IOK
+ok 245 - repeated sint32: Element 1 value correct
+ok 246 - Get FieldDef for optional_sint64
+ok 247 - sint64: type check
+ok 248 - sint64: PerlUpb_UpbToSv returned non-NULL
+ok 249 - sint64: SV is IOK
+ok 250 - sint64: SV value correct
+ok 251 - Get FieldDef for repeated_sint64
+ok 252 - repeated sint64: type check
+ok 253 - repeated sint64: PerlUpb_UpbToSv returned non-NULL
+ok 254 - repeated sint64: SV is a reference
+ok 255 - repeated sint64: Dereferenced SV is an ARRAY
+ok 256 - repeated sint64: Array has 3 elements
+ok 257 - repeated sint64: Fetched element 0
+ok 258 - repeated sint64: Element 0 is IOK
+ok 259 - repeated sint64: Element 0 value correct
+ok 260 - repeated sint64: Fetched element 1
+ok 261 - repeated sint64: Element 1 is IOK
+ok 262 - repeated sint64: Element 1 value correct
+ok 263 - repeated sint64: Fetched element 2
+ok 264 - repeated sint64: Element 2 is IOK
+ok 265 - repeated sint64: Element 2 value correct
+ok 266 - Get FieldDef for optional_nested_message
+ok 267 - message: type check
+ok 268 - message: PerlUpb_UpbToSv returned non-NULL
+ok 269 - message: SV is a reference
+ok 270 - message: Dereferenced SV is a HASH
+ok 271 - message: Hash has upb_msg key
+ok 272 - message: Hash has arena_sv key
+ok 273 - message: Hash has _descriptor key
+ok 274 - Get FieldDef for repeated_nested_message
+ok 275 - repeated message: type check
+ok 276 - repeated message: PerlUpb_UpbToSv returned non-NULL
+ok 277 - repeated message: SV is a reference
+ok 278 - repeated message: Dereferenced SV is an ARRAY
+ok 279 - repeated message: Array has 2 elements
+ok 280 - repeated message: Fetched element 0
+ok 281 - : SV is a reference
+ok 282 - : Dereferenced SV is a HASH
+ok 283 - : Hash has upb_msg key
+ok 284 - : Hash has arena_sv key
+ok 285 - : Hash has _descriptor key
+ok 286 - repeated message: Fetched element 1
+ok 287 - : SV is a reference
+ok 288 - : Dereferenced SV is a HASH
+ok 289 - : Hash has upb_msg key
+ok 290 - : Hash has arena_sv key
+ok 291 - : Hash has _descriptor key
+ok 292 - Get FieldDef for data
+ok 293 - group: type check
+ok 294 - group: PerlUpb_UpbToSv returned non-NULL
+ok 295 - group: SV is a reference
+ok 296 - group: Dereferenced SV is a HASH
+ok 297 - Edge/int32: Got FieldDef
+# Edge/int32: Null val sv addr: 0x7dc4ef9f4ec8
+ok 298 - Edge/int32: Null val returns undef SV
+PerlUpb_UpbToSv: upb_FieldDef was NULL.
+ok 299 - Edge/NULLEnv: NULL FieldDef croaked
+
+=================================================================
+==1230480==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 8 byte(s) in 1 object(s) allocated from:
+    #0 0x7fb4f111a0ab in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:67
+    #1 0x7fb4f0dea9b9 in Perl_safesysmalloc (/lib/x86_64-linux-gnu/libperl.so.5.40+0x1ea9b9) (BuildId: 4975641d9f819e9697592da56969d4ee88186c3b)
+
+SUMMARY: AddressSanitizer: 8 byte(s) leaked in 1 allocation(s).
+make: *** [Makefile:1422: test_c] Aborted

@@ -1,0 +1,158 @@
+sub MY::postamble {
+    my $self = shift;
+    use Config;
+    use File::Spec;
+    use JSON::MaybeXS;
+
+    # Common library build rules
+    my $common_o_string = $COMMON_O_STRING;
+    my $common_lib = $COMMON_LIB;
+    my $file_pairs = \@COMMON_FILES_PAIRS;
+
+    my $make_frag = '';
+
+    my @obj_rules;
+    # .... OBJECT FILE RULES for libprotobuf_common.a ....
+    foreach my $pair (@$file_pairs) {
+        my $c_file = $pair->{c};
+        my $o_file = $pair->{o};
+        my $compiler = '$(CC)';
+        my $bazel_gen_include = File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto");
+        my $base_flags = "-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I$bazel_gen_include";
+        my $cflags = "";
+        if ($c_file =~ /\.cc$/) {
+            $compiler = '$(CXX)';
+            $cflags = "-Wno-error=attributes -I../third_party/abseil-cpp";
+        } else {
+            $cflags = "-Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes -mssse3 -msse4.1";
+        }
+        push @obj_rules, "$o_file: $c_file\n" .
+                         "\t\@mkdir -p \$(\@D)\n" .
+                         "\t${compiler} \$(CCFLAGS) \$(INC) ${cflags} ${base_flags} -c $c_file -o $o_file\n";
+    }
+    $make_frag .= join("", @obj_rules) . "\n";
+
+    $make_frag .= <<"EOM";
+# Make sure the static lib is built before the default 'all' target
+all :: ${common_lib}
+
+# Rule to build the static library
+${common_lib}: ${common_o_string}
+    \$(RM_F) ${common_lib}
+    \$(AR) \$(AR_STATIC_ARGS) ${common_lib} ${common_o_string}
+    \$(RANLIB) ${common_lib}
+
+EOM
+
+    # Rule for upb-perl-test.o
+    $make_frag .= <<'EOM';
+t/c/upb-perl-test.o: t/c/upb-perl-test.c t/c/upb-perl-test.h
+    @mkdir -p t/c
+    $(CC) $(CCFLAGS) $(INC) -I. -c t/c/upb-perl-test.c -o t/c/upb-perl-test.o
+
+EOM
+
+    # Custom C test rules
+    use ExtUtils::Embed;
+    use File::Find;
+    my $archlibexp = $Config{archlibexp};
+    my $embed_cflags = ExtUtils::Embed::ccopts(); # CC flags for embedding
+    my $embed_ldflags = ExtUtils::Embed::ldopts(); # LD flags for embedding
+
+    # Remove potential newlines
+    chomp $embed_cflags;
+    chomp $embed_ldflags;
+
+    # Replace -lperl with the actual path to libperl
+    my $archlib = $Config{archlib};
+    my $libperl = $Config{libperl};
+    my ($lib_base) = $archlib =~ m{^(.+)/perl/};
+    my $perl_lib_path = File::Spec->catfile($lib_base, $libperl);
+    $embed_ldflags =~ s{-lperl}{$perl_lib_path}g;
+
+    my $config_file = File::Spec->catfile('t', 'c', 'c_test_config.json');
+    my $json_text = do { local $/; open my $fh, '<', $config_file or die "Can't open $config_file: $!"; <$fh> };
+    my $c_test_config = decode_json($json_text);
+
+    my @c_test_targets;
+    my $c_test_rules = "# c test rules\n";
+
+    foreach my $test_key ( sort keys %$c_test_config ){
+        next if $test_key =~ /eval_croak_test/;
+
+        # Extract number from test_key like integration/050_convert
+        if ($test_key =~ m{integration/(\d+)_}) {
+            my $num = $1;
+            next if $num >= 50;
+        }
+
+        my $target = "t/c/$test_key";
+        my $source = "$target.c";
+        push @c_test_targets, $target;
+
+        my $config = $c_test_config->{$test_key} || {};
+        my $extra_src_val = $config->{extra_src};
+        my $extra_src = '';
+        if (defined $extra_src_val) {
+            if (ref $extra_src_val eq 'ARRAY') {
+                $extra_src = join(' ', @{$extra_src_val});
+            } else {
+                $extra_src = $extra_src_val;
+            }
+        }
+        my $deps = join(' ', @{$config->{deps} || []});
+        my $ccflags = $config->{ccflags} || '';
+        my $ldflags = $config->{ldflags} || '';
+
+        my $test_deps = "$source $extra_src $deps $(COMMON_LIB) t/c/upb-perl-test.o";
+        if ($target eq 't/c/convert/sv_to_upb' || $target eq 't/c/convert/upb_to_sv' || $target eq 't/c/integration/050_convert') {
+            $test_deps .= " t/data/test_descriptor.bin";
+        }
+
+        my $compile_line = join " ", grep { length $_ > 0 } (
+            '$(CC)', '$(CCFLAGS)', '-I$(PERL_INC)', '$(INC)', $embed_cflags,
+            '-DPERL_EXTENSION', $ccflags, '-o', $target, $source,
+            't/c/upb-perl-test.o', $extra_src, '-L$(CURDIR)', '-lprotobuf_common',
+            $embed_ldflags, $ldflags, '-lpcre2-8'
+        );
+
+        $c_test_rules .= sprintf(
+            '%s: %s'."\n\t".'@mkdir -p $(@D)'."\n\t\%s\n\n",
+            $target, $test_deps,
+            $compile_line
+        );
+    }
+    $c_test_rules .= "# end c test rules\\n";
+    $make_frag .= $c_test_rules;
+
+    # Add all C test targets to .PHONY
+    $make_frag .= ".PHONY: " . join(" ", @c_test_targets) . " test_c build_c_tests\n";
+
+    # Rule to generate test_descriptor.bin
+    $make_frag .= <<'EOM';
+
+t/data/test_descriptor.bin: t/c/test.proto
+    @echo "Generating t/data/test_descriptor.bin from t/c/test.proto"
+    @mkdir -p t/data
+    protoc --descriptor_set_out=t/data/test_descriptor.bin --include_imports --proto_path=t/c t/c/test.proto
+
+EOM
+
+    # Target to build all C tests
+    if (@c_test_targets) {
+        $make_frag .= 'build_c_tests: ' . join(' ', @c_test_targets) . "\n";
+    }
+
+    # Rule to run all C tests
+    if (@c_test_targets) {
+        $make_frag .= "test_c: build_c_tests\n";
+        foreach my $target (sort @c_test_targets) {
+            $make_frag .= "\t" . '@echo "Running test: ' . $target . '"' . "\n";
+            $make_frag .= "\t" . $target . "\n";
+        }
+    }
+
+    return $make_frag;
+}
+
+ 
