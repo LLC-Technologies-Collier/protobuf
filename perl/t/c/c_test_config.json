@@ -1,0 +1,129 @@
+{
+  "protobuf/obj_cache": {
+    "deps": ["xs/protobuf.h", "t/c/upb-perl-test.h"]
+  },
+  "protobuf/arena": {
+    "deps": ["xs/protobuf.h", "t/c/upb-perl-test.h"]
+  },
+  "protobuf/utils": {
+    "deps": ["xs/protobuf.h", "t/c/upb-perl-test.h"]
+  },
+  "convert/sv_to_upb": {
+    "deps": [
+      "xs/protobuf.h", 
+      "t/c/upb-perl-test.h", 
+      "xs/convert.h", 
+      "t/c/convert/test_util.h", 
+      "t/c/convert/types/int32.h", 
+      "t/c/convert/types/string.h", 
+      "t/c/convert/types/bool.h", 
+      "t/c/convert/types/float.h",
+      "t/c/convert/types/double.h",
+      "t/c/convert/types/uint32.h",
+      "t/c/convert/types/int64.h",
+      "t/c/convert/types/uint64.h",
+      "t/c/convert/types/bytes.h",
+      "t/c/convert/types/enum.h",
+      "t/c/convert/types/fixed32.h",
+      "t/c/convert/types/fixed64.h",
+      "t/c/convert/types/sfixed32.h",
+      "t/c/convert/types/sfixed64.h",
+      "t/c/convert/types/sint32.h",
+      "t/c/convert/types/sint64.h",
+      "t/c/convert/types/message.h",
+      "t/c/convert/types/group.h"
+    ],
+    "extra_src": [
+      "t/c/convert/test_util.c", 
+      "t/c/convert/types/int32.c", 
+      "t/c/convert/types/string.c", 
+      "t/c/convert/types/bool.c", 
+      "t/c/convert/types/float.c",
+      "t/c/convert/types/double.c",
+      "t/c/convert/types/uint32.c",
+      "t/c/convert/types/int64.c",
+      "t/c/convert/types/uint64.c",
+      "t/c/convert/types/bytes.c",
+      "t/c/convert/types/enum.c",
+      "t/c/convert/types/fixed32.c",
+      "t/c/convert/types/fixed64.c",
+      "t/c/convert/types/sfixed32.c",
+      "t/c/convert/types/sfixed64.c",
+      "t/c/convert/types/sint32.c",
+      "t/c/convert/types/sint64.c",
+      "t/c/convert/types/message.c",
+      "t/c/convert/types/group.c"
+    ]
+  },
+  "convert/upb_to_sv": {
+    "deps": [
+      "xs/protobuf.h", 
+      "t/c/upb-perl-test.h", 
+      "xs/convert.h", 
+      "t/c/convert/test_util.h", 
+      "t/c/convert/types/int32.h", 
+      "t/c/convert/types/string.h", 
+      "t/c/convert/types/bool.h", 
+      "t/c/convert/types/float.h",
+      "t/c/convert/types/double.h",
+      "t/c/convert/types/uint32.h",
+      "t/c/convert/types/int64.h",
+      "t/c/convert/types/uint64.h",
+      "t/c/convert/types/bytes.h",
+      "t/c/convert/types/enum.h",
+      "t/c/convert/types/fixed32.h",
+      "t/c/convert/types/fixed64.h",
+      "t/c/convert/types/sfixed32.h",
+      "t/c/convert/types/sfixed64.h",
+      "t/c/convert/types/sint32.h",
+      "t/c/convert/types/sint64.h",
+      "t/c/convert/types/message.h",
+      "t/c/convert/types/group.h"
+    ],
+    "extra_src": [
+      "t/c/convert/test_util.c", 
+      "t/c/convert/types/int32.c", 
+      "t/c/convert/types/string.c", 
+      "t/c/convert/types/bool.c", 
+      "t/c/convert/types/float.c",
+      "t/c/convert/types/double.c",
+      "t/c/convert/types/uint32.c",
+      "t/c/convert/types/int64.c",
+      "t/c/convert/types/uint64.c",
+      "t/c/convert/types/bytes.c",
+      "t/c/convert/types/enum.c",
+      "t/c/convert/types/fixed32.c",
+      "t/c/convert/types/fixed64.c",
+      "t/c/convert/types/sfixed32.c",
+      "t/c/convert/types/sfixed64.c",
+      "t/c/convert/types/sint32.c",
+      "t/c/convert/types/sint64.c",
+      "t/c/convert/types/message.c",
+      "t/c/convert/types/group.c"
+    ]
+  },
+  "integration/030_asan_test": {
+    "deps": ["t/c/upb-perl-test.h"]
+  },
+  "integration/030_protobuf_coro": {
+    "deps": ["xs/protobuf.h", "t/c/upb-perl-test.h", "libcoro/coro.h"],
+    "extra_src": "libcoro/coro.c"
+  },
+  "integration/030_protobuf": {
+    "deps": ["xs/protobuf.h", "t/c/upb-perl-test.h", "xs/protobuf/obj_cache.h", "xs/protobuf/arena.h", "xs/protobuf/utils.h"]
+  },
+  "integration/035_croak_test": {
+    "deps": ["xs/protobuf.h", "t/c/upb-perl-test.h"]
+  },
+  "integration/050_convert": {
+    "deps": ["xs/protobuf.h", "t/c/upb-perl-test.h", "xs/convert.h", "t/c/convert/test_util.h"],
+    "extra_src": "t/c/convert/test_util.c"
+  },
+  "integration/050_convert_coro": {
+    "deps": ["xs/protobuf.h", "t/c/upb-perl-test.h", "xs/convert.h", "t/c/convert/test_util.h", "libcoro/coro.h"],
+    "extra_src": ["t/c/convert/test_util.c", "libcoro/coro.c"]
+  },
+  "integration/036_asan_leak_test": {
+    "deps": ["t/c/upb-perl-test.h"]
+  }
+}

@@ -34,6 +34,7 @@ t/c/**
 !t/c/**/*.h
 !t/c/**/*.c
 !t/c/**/*.proto
+!t/c/**/*.json
 
 # Ignore these test-related files
 *.gcov
