@@ -1,11 +1,16 @@
-#ifndef PERL_PROTOBUF_DESCRIPTOR_ENUM_VALUE_H_
-#define PERL_PROTOBUF_DESCRIPTOR_ENUM_VALUE_H_
+#include <sys/types.h>
+#include <setjmp.h>
+#include <stdlib.h>
 
+#ifndef PERLUPB_DESCRIPTOR_ENUM_VALUE_H
+#define PERLUPB_DESCRIPTOR_ENUM_VALUE_H
+
+#include "upb/reflection/def.h"
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/descriptor/base.h"
-#include "upb/reflection/def.h"
 
-// EnumValueDescriptor specific functions
+const char* PerlUpb_EnumValueDef_Name(pTHX_ const upb_EnumValueDef *ev);
+int32_t PerlUpb_EnumValueDef_Number(pTHX_ const upb_EnumValueDef *ev);
+int PerlUpb_EnumValueDef_Index(pTHX_ const upb_EnumValueDef *ev);
 
-#endif // PERL_PROTOBUF_DESCRIPTOR_ENUM_VALUE_H_
+#endif /* PERLUPB_DESCRIPTOR_ENUM_VALUE_H */

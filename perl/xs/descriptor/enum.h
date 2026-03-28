@@ -1,11 +1,14 @@
-#ifndef PERL_PROTOBUF_DESCRIPTOR_ENUM_H_
-#define PERL_PROTOBUF_DESCRIPTOR_ENUM_H_
 
+#ifndef PERLUPB_DESCRIPTOR_ENUM_H
+#define PERLUPB_DESCRIPTOR_ENUM_H
+
+#include "upb/reflection/def.h"
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/descriptor/base.h"
-#include "upb/reflection/def.h"
 
-// EnumDescriptor specific functions
+const char* PerlUpb_EnumDef_FullName(pTHX_ const upb_EnumDef *e);
+const char* PerlUpb_EnumDef_Name(pTHX_ const upb_EnumDef *e);
+int PerlUpb_EnumDef_ValueCount(pTHX_ const upb_EnumDef *e);
+const upb_EnumValueDef* PerlUpb_EnumDef_Value(pTHX_ const upb_EnumDef *e, int i);
 
-#endif // PERL_PROTOBUF_DESCRIPTOR_ENUM_H_
+#endif /* PERLUPB_DESCRIPTOR_ENUM_H */

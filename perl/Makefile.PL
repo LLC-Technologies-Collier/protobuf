@@ -87,7 +87,7 @@ sub MY::postamble {
             $compiler = '$(CXX)';
             $cflags = "-Wno-error=attributes -I../third_party/abseil-cpp";
         } else {
-            $cflags = "-Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes -mssse3 -msse4.1";
+            $cflags = "-D_GNU_SOURCE -Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes -mssse3 -msse4.1";
         }
         push @obj_rules, "$o_file: $c_file\n" . 
                          "\t\@mkdir -p \$(\@D)\n" . 

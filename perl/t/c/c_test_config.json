@@ -102,6 +102,10 @@
       "t/c/convert/types/group.c"
     ]
   },
+  "descriptor/enum": {
+    "deps": ["xs/descriptor/enum.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": "t/c/convert/test_util.c"
+  },
   "integration/030_asan_test": {
     "deps": ["t/c/upb-perl-test.h"]
   },
@@ -125,5 +129,9 @@
   },
   "integration/036_asan_leak_test": {
     "deps": ["t/c/upb-perl-test.h"]
+  },
+  "descriptor/enum_value": {
+    "deps": ["xs/descriptor/enum_value.h", "xs/descriptor/enum.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": "t/c/convert/test_util.c"
   }
 }
