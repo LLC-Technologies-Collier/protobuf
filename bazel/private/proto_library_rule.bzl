@@ -90,12 +90,12 @@ def _proto_library_impl(ctx):
         srcs = virtual_srcs,
         deps = deps,
         descriptor_set = descriptor_set,
-        option_deps = option_deps,
+        # option_deps = option_deps,
         proto_path = proto_path,
         workspace_root = ctx.label.workspace_root,
         bin_dir = ctx.bin_dir.path,
         allow_exports = ctx.attr.allow_exports,
-        extension_declarations = ctx.files.extension_declarations,
+        # extension_declarations = ctx.files.extension_declarations,
     )
 
     _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descriptor_set)
