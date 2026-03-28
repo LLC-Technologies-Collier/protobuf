@@ -10,3 +10,4 @@
 *   [ ] License, Contributors
 *   [ ] Documentation finalization.
 *   [ ] Review and update perl/doc/architecture/** documents.
+*   [ ] Consider future enhancements for optional integrations with common Perl event loops (e.g., AnyEvent, IO::Async).
