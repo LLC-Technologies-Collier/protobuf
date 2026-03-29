@@ -224,6 +224,60 @@
       "t/c/convert/test_util.c"
     ]
   },
+  "extension_dict/dict": {
+    "deps": [
+      "xs/extension_dict/dict.h",
+      "xs/extension_dict/iterator.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "xs/protobuf/arena.h",
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h"
+    ],
+    "extra_src": [
+      "xs/extension_dict/dict.c",
+      "xs/extension_dict/iterator.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/convert/sv_to_upb.c",
+      "xs/convert/upb_to_sv.c",
+      "t/c/convert/test_util.c"
+    ]
+  },
+  "map/map": {
+    "deps": [
+      "xs/map/map.h",
+      "xs/map/iterator.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "xs/protobuf/arena.h",
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "../upb/reflection/def.h",
+      "../upb/reflection/message.h"
+    ],
+    "extra_src": [
+      "xs/map/map.c",
+      "xs/map/iterator.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/convert/sv_to_upb.c",
+      "xs/convert/upb_to_sv.c",
+      "t/c/convert/test_util.c"
+    ]
+  },
   "integration/030_asan_test": {
     "deps": ["t/c/upb-perl-test.h"]
   },
@@ -355,6 +409,124 @@
       "xs/descriptor/file.c",
       "xs/descriptor/field.c",
       "xs/descriptor/enum.c",
+      "t/c/convert/test_util.c",
+      "libcoro/coro.c"
+    ]
+  },
+  "integration/130_extension_dict": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/extension_dict/dict.h",
+      "xs/extension_dict/iterator.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "xs/protobuf/arena.h",
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "../upb/reflection/def.h"
+    ],
+    "extra_src": [
+      "xs/extension_dict/dict.c",
+      "xs/extension_dict/iterator.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/convert/sv_to_upb.c",
+      "xs/convert/upb_to_sv.c",
+      "t/c/convert/test_util.c"
+    ]
+  },
+  "integration/130_extension_dict_coro": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/extension_dict/dict.h",
+      "xs/extension_dict/iterator.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "xs/protobuf/arena.h",
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "libcoro/coro.h",
+      "../upb/reflection/def.h"
+    ],
+    "extra_src": [
+      "xs/extension_dict/dict.c",
+      "xs/extension_dict/iterator.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/convert/sv_to_upb.c",
+      "xs/convert/upb_to_sv.c",
+      "t/c/convert/test_util.c",
+      "libcoro/coro.c"
+    ]
+  },
+  "integration/150_map": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/map/map.h",
+      "xs/map/iterator.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "xs/protobuf/arena.h",
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "../upb/reflection/def.h",
+      "../upb/reflection/message.h"
+    ],
+    "extra_src": [
+      "xs/map/map.c",
+      "xs/map/iterator.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/convert/sv_to_upb.c",
+      "xs/convert/upb_to_sv.c",
+      "t/c/convert/test_util.c"
+    ]
+  },
+  "integration/150_map_coro": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/map/map.h",
+      "xs/map/iterator.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "xs/protobuf/arena.h",
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "libcoro/coro.h",
+      "../upb/reflection/def.h",
+      "../upb/reflection/message.h"
+    ],
+    "extra_src": [
+      "xs/map/map.c",
+      "xs/map/iterator.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/convert/sv_to_upb.c",
+      "xs/convert/upb_to_sv.c",
       "t/c/convert/test_util.c",
       "libcoro/coro.c"
     ]

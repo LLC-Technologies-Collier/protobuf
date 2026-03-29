@@ -1,5 +1,4 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "perl/xs/map/scalar.h"
+#include "xs/map/map.h"
+
+// Scalar-specific map operations can be implemented here if needed.
+// For now, the generic implementation in map.c handles scalar values.

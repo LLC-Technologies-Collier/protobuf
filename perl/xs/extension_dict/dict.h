@@ -16,4 +16,7 @@ SV* PerlUpb_ExtensionDict_GetItem(pTHX_ SV* self, SV* field_sv);
 // Sets the value for an extension field.
 void PerlUpb_ExtensionDict_SetItem(pTHX_ SV* self, SV* field_sv, SV* value_sv);
 
+// Internal helper to get the parent message SV
+SV* PerlUpb_ExtensionDict_GetMessageSV(pTHX_ SV* self);
+
 #endif // PERL_PROTOBUF_EXTENSION_DICT_DICT_H_

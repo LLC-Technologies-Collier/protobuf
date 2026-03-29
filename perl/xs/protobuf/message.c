@@ -34,3 +34,24 @@ SV* PerlUpb_MaybeGetMessage(pTHX_ const upb_Message *msg) {
     return NULL; // Simulate cache miss
 }
 
+const upb_Message* PerlUpb_Message_GetMsg(pTHX_ SV* message_sv) {
+    if (!message_sv || !SvROK(message_sv) || SvTYPE(SvRV(message_sv)) != SVt_PVHV) return NULL;
+    HV* hv = (HV*)SvRV(message_sv);
+    SV** svp = hv_fetch(hv, "upb_msg", 7, 0);
+    return svp ? (const upb_Message*)SvIV(*svp) : NULL;
+}
+
+const upb_MessageDef* PerlUpb_Message_GetDef(pTHX_ SV* message_sv) {
+    if (!message_sv || !SvROK(message_sv) || SvTYPE(SvRV(message_sv)) != SVt_PVHV) return NULL;
+    HV* hv = (HV*)SvRV(message_sv);
+    SV** svp = hv_fetch(hv, "_descriptor", 11, 0);
+    return svp ? (const upb_MessageDef*)SvIV(*svp) : NULL;
+}
+
+SV* PerlUpb_Message_GetArena(pTHX_ SV* message_sv) {
+    if (!message_sv || !SvROK(message_sv) || SvTYPE(SvRV(message_sv)) != SVt_PVHV) return NULL;
+    HV* hv = (HV*)SvRV(message_sv);
+    SV** svp = hv_fetch(hv, "arena_sv", 8, 0);
+    return svp ? *svp : NULL;
+}
+
