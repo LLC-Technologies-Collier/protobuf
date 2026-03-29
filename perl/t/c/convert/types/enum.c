@@ -64,6 +64,6 @@ void check_upb_enum_bar(const upb_MessageValue *val, const char *prefix) {
 }
 
 const sv_to_upb_test_case enum_sv_to_upb_test_cases[] = {
-    {"optional_enum", "enum", kUpb_FieldType_Enum, create_sv_enum_bar, check_upb_enum_bar, 1},
+    {"optional_nested_enum", "enum", kUpb_FieldType_Enum, create_sv_enum_bar, check_upb_enum_bar, 1},
     {NULL} // Terminator
 };

@@ -31,12 +31,12 @@ int main(int argc, char** argv) {
     ok(msg_def, "Found test.TestMessage");
 
     if (msg_def) {
-        const upb_FieldDef* field = upb_MessageDef_FindFieldByName(msg_def, "optional_int32");
-        ok(field, "Found field optional_int32");
+        const upb_FieldDef* field = upb_MessageDef_FindFieldByName(msg_def, "value");
+        ok(field, "Found field value");
 
         if (field) {
-            is_string(PerlUpb_FieldDef_Name(aTHX_ field), "optional_int32", "PerlUpb_FieldDef_Name");
-            is_string(PerlUpb_FieldDef_FullName(aTHX_ field), "test.TestMessage.optional_int32", "PerlUpb_FieldDef_FullName");
+            is_string(PerlUpb_FieldDef_Name(aTHX_ field), "value", "PerlUpb_FieldDef_Name");
+            is_string(PerlUpb_FieldDef_FullName(aTHX_ field), "test.TestMessage.value", "PerlUpb_FieldDef_FullName");
             is(PerlUpb_FieldDef_Index(aTHX_ field), 0, "PerlUpb_FieldDef_Index");
             is(PerlUpb_FieldDef_Type(aTHX_ field), kUpb_FieldType_Int32, "PerlUpb_FieldDef_Type");
             is(PerlUpb_FieldDef_Label(aTHX_ field), kUpb_Label_Optional, "PerlUpb_FieldDef_Label");

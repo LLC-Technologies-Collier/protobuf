@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
         const upb_FileDef *file = PerlUpb_ServiceDef_File(aTHX_ service_def);
         ok(file != NULL, "PerlUpb_ServiceDef_File");
         
-        is_string(upb_FileDef_Name(file), "t/c/test.proto", "File name matches");
+        is_string(upb_FileDef_Name(file), "test.proto", "File name matches");
     } else {
         fprintf(stderr, "# Skipping ServiceDef tests as service_def is NULL\n");
     }
