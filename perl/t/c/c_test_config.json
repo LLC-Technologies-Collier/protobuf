@@ -112,6 +112,15 @@
     ],
     "extra_src": "t/c/convert/test_util.c"
   },
+  "descriptor/file": {
+    "deps": [
+      "xs/descriptor/file.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "../upb/reflection/def.h"
+    ],
+    "extra_src": "t/c/convert/test_util.c"
+  },
   "integration/030_asan_test": {
     "deps": ["t/c/upb-perl-test.h"]
   },
