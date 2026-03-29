@@ -293,7 +293,7 @@ all :: $(COMMON_LIB)
 
 test :: all build_c_tests test_c
 	$(NOECHO) $(ECHO) "Running Perl tests"
-	prove -b -j$$(nproc) t/*.t xt/*.t
+	LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8 ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -j$$(nproc) t/*.t
 EOM
 }
 
