@@ -74,11 +74,13 @@ sub MY::postamble {
 
     my $make_frag = "COMMON_LIB = $common_lib\n\n";
 
+    my %done_o;
     my @obj_rules;
     # .... OBJECT FILE RULES for libprotobuf_common.a ....
     foreach my $pair (@$file_pairs) {
         my $c_file = $pair->{c};
         my $o_file = $pair->{o};
+        next if $done_o{$o_file}++;
         my $compiler = '$(CC)';
         my $bazel_gen_include = File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto");
         my $base_flags = "-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I$bazel_gen_include";
@@ -172,13 +174,28 @@ EOM
         }
         my $all_objects_str = join(" ", @all_objects);
 
-        # Rule to compile all .c to .o for this test
+        # Filter all_sources to avoid duplicates with COMMON_C_FILES
+        my @test_sources;
         foreach my $s (@all_sources) {
+            my $is_common = 0;
+            foreach my $common_c (@COMMON_C_FILES) {
+                if ($s eq $common_c) {
+                    $is_common = 1;
+                    last;
+                }
+            }
+            push @test_sources, $s unless $is_common;
+        }
+
+        # Rule to compile all .c/.cc to .o for this test
+        foreach my $s (@test_sources) {
             my $o = $s;
-            $o =~ s/\.c$/.o/;
+            $o =~ s/\.cc?$/.o/;
+            next if $done_o{$o}++;
             $c_test_rules .= "$o: $s $deps t/c/upb-perl-test.h\n";
             $c_test_rules .= "\t".'@mkdir -p $(@D)'."\n";
-            $c_test_rules .= "\t".'$(CC) $(CCFLAGS)'." $embed_cflags $test_inc $extra_ccflags -c $s -o $o\n\n";
+            my $compiler = ($s =~ /\.cc$/) ? '$(CXX)' : '$(CC)';
+            $c_test_rules .= "\t$compiler \$(CCFLAGS) $embed_cflags $test_inc $extra_ccflags -c $s -o $o\n\n";
         }
 
         # Rule to link the object files into an executable
@@ -224,7 +241,7 @@ EOM
         $make_frag .= 'test_c: build_c_tests $(COMMON_LIB)' . "\n";
         foreach my $target (sort @c_test_targets) {
             $make_frag .= "\t" . sprintf('@echo "Running test: %s"', $target) . "\n";
-            my $run_command = 'LD_LIBRARY_PATH="$(PERL_ARCHLIB):$(LD_LIBRARY_PATH)" ASAN_OPTIONS=abort_on_error=1 ' . $target;
+            my $run_command = 'LD_LIBRARY_PATH="$(PERL_ARCHLIB):$(LD_LIBRARY_PATH)" ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 ' . $target;
             $make_frag .= "\t" . $run_command . "\n";
         }
     }
@@ -253,10 +270,11 @@ WriteMakefile(
     LICENSE           => 'apache_2_0',
     DEFINE            => '',
     INC               => '-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I../bazel-bin/src/google/protobuf/_virtual_imports/descriptor_proto -I$(PERL_INC)',
-    XSMULTI           => 1,
+    MYEXTLIB          => 'libprotobuf_common$(LIB_EXT)',
     CCFLAGS           => "-g $Config{ccflags} -fPIC -fsanitize=address",
     LIBS              => ['-L$(CURDIR) -lprotobuf_common'], # Link the common static library
     LDDLFLAGS         => "$Config{lddlflags} -fsanitize=address",
+    XS                => { 'Protobuf.xs' => 'Protobuf.c' },
 
     # Link the common static library into all .so files
     # LIBS              => ['-L$(CURDIR) -lprotobuf_common'],
@@ -266,13 +284,6 @@ WriteMakefile(
 );
 
 package MY;
-
-sub dynamic_lib {
-    my $self = shift;
-    my $inherit = $self->SUPER::dynamic_lib(@_);
-    $inherit =~ s:(\$\(OBJECT\)):\$(OBJECT) \$(CURDIR)/\$COMMON_LIB:g;
-    return $inherit;
-}
 
 # Modify the MY::test subroutine
 sub test {

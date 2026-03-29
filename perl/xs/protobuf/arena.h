@@ -15,4 +15,9 @@ upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv);
 void PerlUpb_Arena_Free(pTHX_ SV *sv);
 void PerlUpb_Arena_Destroy(pTHX_ SV *sv);
 
+// Low-level XS helpers
+void* PerlUpb_Arena_CreateRaw(pTHX);
+void  PerlUpb_Arena_DestroyRaw(pTHX_ void* ptr);
+upb_Arena* PerlUpb_Arena_GetRaw(pTHX_ void* ptr);
+
 #endif // PERL_PROTOBUF_ARENA_H_

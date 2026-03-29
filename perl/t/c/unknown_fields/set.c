@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     // 3. Verify data
     SV* data1 = PerlUpb_UnknownFieldSet_GetData(aTHX_ set_sv);
     is(SvCUR(data1), sizeof(raw_data), "Data length matches");
-    is_string(SvPV_nolen(data1), raw_data, "Data content matches");
+    is_blob(SvPV_nolen(data1), raw_data, sizeof(raw_data), "Data content matches");
     SvREFCNT_dec(data1);
 
     // 4. Clear

@@ -24,6 +24,20 @@ const upb_FieldDef* PerlUpb_MessageDef_FindFieldByName(pTHX_ const upb_MessageDe
     return upb_MessageDef_FindFieldByName(m, name);
 }
 
+const upb_FieldDef* PerlUpb_MessageDef_FindFieldByNameWithSize(pTHX_ const upb_MessageDef *m, const char *name, size_t len) {
+    // Manual iteration to debug UPB lookup
+    int count = upb_MessageDef_FieldCount(m);
+    for (int i = 0; i < count; i++) {
+        const upb_FieldDef* f = upb_MessageDef_Field(m, i);
+        const char* f_name = upb_FieldDef_Name(f);
+        if (strlen(f_name) == len && strncmp(f_name, name, len) == 0) {
+            return f;
+        }
+    }
+    return NULL;
+}
+
+
 int PerlUpb_MessageDef_OneofCount(pTHX_ const upb_MessageDef *m) {
     return upb_MessageDef_OneofCount(m);
 }
@@ -89,13 +103,13 @@ SV* PerlUpb_MessageDef_GetWrapper(pTHX_ const upb_MessageDef *m) {
 
     SV* sv = newSViv((IV)m);
     SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::MessageDescriptor", GV_ADD));
+    sv_bless(obj, gv_stashpv("Protobuf::Descriptor::MessageDef", GV_ADD));
     PerlUpb_ObjCache_Add(aTHX_ m, obj);
     return obj;
 }
 
 const upb_MessageDef* PerlUpb_MessageDef_GetMessage(pTHX_ SV *sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::MessageDescriptor")) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Descriptor::MessageDef")) {
         return NULL;
     }
     return (const upb_MessageDef*)SvIV(SvRV(sv));

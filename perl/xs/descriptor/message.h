@@ -11,6 +11,7 @@ const char* PerlUpb_MessageDef_Name(pTHX_ const upb_MessageDef *m);
 int PerlUpb_MessageDef_FieldCount(pTHX_ const upb_MessageDef *m);
 const upb_FieldDef* PerlUpb_MessageDef_FindFieldByNumber(pTHX_ const upb_MessageDef *m, uint32_t i);
 const upb_FieldDef* PerlUpb_MessageDef_FindFieldByName(pTHX_ const upb_MessageDef *m, const char *name);
+const upb_FieldDef* PerlUpb_MessageDef_FindFieldByNameWithSize(pTHX_ const upb_MessageDef *m, const char *name, size_t len);
 int PerlUpb_MessageDef_OneofCount(pTHX_ const upb_MessageDef *m);
 int PerlUpb_MessageDef_RealOneofCount(pTHX_ const upb_MessageDef *m);
 int PerlUpb_MessageDef_NestedMessageCount(pTHX_ const upb_MessageDef *m);

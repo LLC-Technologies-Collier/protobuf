@@ -31,13 +31,13 @@ SV* PerlUpb_FieldDef_GetWrapper(pTHX_ const upb_FieldDef *f) {
 
     SV* sv = newSViv((IV)f);
     SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::FieldDescriptor", GV_ADD));
+    sv_bless(obj, gv_stashpv("Protobuf::Descriptor::Field", GV_ADD));
     PerlUpb_ObjCache_Add(aTHX_ f, obj);
     return obj;
 }
 
 const upb_FieldDef* PerlUpb_FieldDef_GetField(pTHX_ SV *sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::FieldDescriptor")) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Descriptor::Field")) {
         return NULL;
     }
     return (const upb_FieldDef*)SvIV(SvRV(sv));

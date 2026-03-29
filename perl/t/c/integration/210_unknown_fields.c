@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     SV* set_sv = PerlUpb_UnknownFieldSet_New(aTHX_ msg_sv);
     SV* ret_data = PerlUpb_UnknownFieldSet_GetData(aTHX_ set_sv);
     is(SvCUR(ret_data), sizeof(wire_data), "Retrieved unknown data length matches");
-    is_string(SvPV_nolen(ret_data), wire_data, "Retrieved unknown data content matches");
+    is_blob(SvPV_nolen(ret_data), wire_data, sizeof(wire_data), "Retrieved unknown data content matches");
     SvREFCNT_dec(ret_data);
 
     // 3. Serialize and ensure unknown fields are preserved

@@ -34,12 +34,12 @@ int main(int argc, char** argv) {
 
     // Test FindFileByName
     SV* file_sv = PerlUpb_DescriptorPool_FindFileByName(aTHX_ pool_sv, "test.proto");
-    ok(sv_derived_from(file_sv, "Protobuf::FileDescriptor"), "Found file");
+    ok(sv_derived_from(file_sv, "Protobuf::Descriptor::File"), "Found file");
     SvREFCNT_dec(file_sv);
 
     // Test FindMessageByName
     SV* msg_sv = PerlUpb_DescriptorPool_FindMessageByName(aTHX_ pool_sv, "test.TestMessage");
-    ok(sv_derived_from(msg_sv, "Protobuf::MessageDescriptor"), "Found message");
+    ok(sv_derived_from(msg_sv, "Protobuf::Descriptor::MessageDef"), "Found message");
     SvREFCNT_dec(msg_sv);
 
     // Test Find non-existent

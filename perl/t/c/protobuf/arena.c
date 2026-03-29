@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     // Test PerlUpb_Arena_New
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
     ok(arena_sv != NULL, "PerlUpb_Arena_New returns non-NULL");
-    ok(SvROK(arena_sv) && SvIOK(SvRV(arena_sv)), "Arena SV is an IV ref");
+    ok(SvROK(arena_sv) && SvTYPE(SvRV(arena_sv)) == SVt_PVHV, "Arena SV is a HASH ref");
     SvREFCNT_inc(arena_sv); // Keep it alive for the whole test
 
     // Test PerlUpb_Arena_Get
@@ -41,8 +41,9 @@ int main(int argc, char** argv) {
 
     // Test Free and Destroy
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
-    // Check that the wrapper pointer is cleared
-    ok(SvIV(SvRV(arena_sv)) == 0, "Wrapper pointer cleared after Destroy");
+    // Check that the wrapper pointer is cleared in the hash
+    SV** svp = hv_fetch((HV*)SvRV(arena_sv), "_arena_ptr", 10, 0);
+    ok(svp && SvIOK(*svp) && SvIV(*svp) == 0, "Wrapper pointer cleared after Destroy");
 
     SvREFCNT_dec(arena_sv);
 

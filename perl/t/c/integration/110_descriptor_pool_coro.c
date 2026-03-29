@@ -34,7 +34,7 @@ void test_pool_access(pTHX_ coro_arg_t *carg) {
         return;
     }
     
-    if (!sv_derived_from(msg_sv, "Protobuf::MessageDescriptor")) {
+    if (!sv_derived_from(msg_sv, "Protobuf::Descriptor::MessageDef")) {
         carg->errors++;
     }
     

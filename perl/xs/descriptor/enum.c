@@ -18,13 +18,13 @@ SV* PerlUpb_EnumDef_GetWrapper(pTHX_ const upb_EnumDef *e) {
 
     SV* sv = newSViv((IV)e);
     SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::EnumDescriptor", GV_ADD));
+    sv_bless(obj, gv_stashpv("Protobuf::Descriptor::Enum", GV_ADD));
     PerlUpb_ObjCache_Add(aTHX_ e, obj);
     return obj;
 }
 
 const upb_EnumDef* PerlUpb_EnumDef_GetEnum(pTHX_ SV *sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::EnumDescriptor")) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Descriptor::Enum")) {
         return NULL;
     }
     return (const upb_EnumDef*)SvIV(SvRV(sv));

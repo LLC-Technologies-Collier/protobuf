@@ -25,11 +25,30 @@ SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef
     hv_store(hv, "_descriptor", 11, desc_sv, 0);
 
     SV *self = newRV_noinc((SV*)hv);
-    const char *class_name = upb_MessageDef_FullName(mdef);
-    if (!class_name) {
-        class_name = "Protobuf::Message"; // Fallback
+    const char *full_name = upb_MessageDef_FullName(mdef);
+    char *class_name = NULL;
+    
+    // Convert dot to ::
+    if (full_name) {
+        size_t dot_count = 0;
+        for (const char *p = full_name; *p; p++) if (*p == '.') dot_count++;
+        class_name = (char*)safemalloc(strlen(full_name) + dot_count + 1);
+        char *dst = class_name;
+        for (const char *src = full_name; *src; src++) {
+            if (*src == '.') {
+                *dst++ = ':';
+                *dst++ = ':';
+            } else {
+                *dst++ = *src;
+            }
+        }
+        *dst = '\0';
+    } else {
+        class_name = savepv("Protobuf::Message");
     }
+
     sv_bless(self, gv_stashpv(class_name, GV_ADD));
+    safefree(class_name);
 
     PerlUpb_ObjCache_Add(aTHX_ msg, self);
 

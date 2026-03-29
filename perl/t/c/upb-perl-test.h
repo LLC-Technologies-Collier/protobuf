@@ -20,6 +20,7 @@
 #define is(got, expected, name) fprintf(stderr, "%s %d - %s\n", ((got) == (expected)) ? "ok" : "not ok", ++test_num, (name)); if ((got) != (expected)) { fprintf(stderr, "  # Got: %ld\n  # Expected: %ld\n", (long)(got), (long)(expected)); }
 #define is_u(got, expected, name) fprintf(stderr, "%s %d - %s\n", ((got) == (expected)) ? "ok" : "not ok", ++test_num, (name)); if ((got) != (expected)) { fprintf(stderr, "  # Got: %" PRIu64 "\n  # Expected: %" PRIu64 "\n", (uint64_t)(got), (uint64_t)(expected)); }
 #define is_string(got, expected, name) fprintf(stderr, "%s %d - %s\n", (strcmp((got), (expected)) == 0) ? "ok" : "not ok", ++test_num, (name)); if (strcmp((got), (expected)) != 0) { fprintf(stderr, "  # Got: %s\n  # Expected: %s\n", (got), (expected)); }
+#define is_blob(got, expected, len, name) fprintf(stderr, "%s %d - %s\n", (memcmp((got), (expected), (len)) == 0) ? "ok" : "not ok", ++test_num, (name)); if (memcmp((got), (expected), (len)) != 0) { fprintf(stderr, "  # Blobs differ\n"); }
 #define is_string_view(got, expected, len, name) fprintf(stderr, "%s %d - %s\n", (strncmp((got).data, (expected), (len)) == 0 && (got).size == (len)) ? "ok" : "not ok", ++test_num, (name)); if (strncmp((got).data, (expected), (len)) != 0 || (got).size != (len)) { fprintf(stderr, "  # Got: %.*s (len %zu)\n  # Expected: %s (len %zu)\n", (int)(got).size, (got).data, (got).size, (expected), (len)); }
 
 #define like(str, pattern, name) \

@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     SV* serialized = newSVpvn((const char*)test_proto_data, sizeof(test_proto_data));
     
     SV* file_sv = PerlUpb_DescriptorPool_AddSerializedFile(aTHX_ pool_sv, serialized);
-    ok(sv_derived_from(file_sv, "Protobuf::FileDescriptor"), "Added serialized file");
+    ok(sv_derived_from(file_sv, "Protobuf::Descriptor::File"), "Added serialized file");
     
     const upb_FileDef* file_raw = PerlUpb_FileDef_GetFile(aTHX_ file_sv);
     is_string(upb_FileDef_Name(file_raw), "test.proto", "File name is correct");

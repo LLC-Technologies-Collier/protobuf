@@ -5,13 +5,20 @@
 
 #include "xs/protobuf/obj_cache.h"
 
-// The cache is a global hash (HV*) per interpreter
-static HV* g_obj_cache = NULL;
+// The cache is a global hash (HV*) per interpreter, stored in a Perl global
+// to be shared across multiple shared libraries.
+static HV* get_cache_hv(pTHX) {
+    SV* cache_sv = get_sv("Protobuf::_obj_cache", GV_ADD);
+    if (!SvROK(cache_sv)) {
+        HV* hv = newHV();
+        sv_setsv(cache_sv, newRV_noinc((SV*)hv));
+        return hv;
+    }
+    return (HV*)SvRV(cache_sv);
+}
 
 void PerlUpb_ObjCache_Init(pTHX) {
-    if (!g_obj_cache) {
-        g_obj_cache = newHV();
-    }
+    get_cache_hv(aTHX);
 }
 
 static void get_cache_key(const void* ptr, char* buf) {
@@ -20,60 +27,55 @@ static void get_cache_key(const void* ptr, char* buf) {
 
 void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
     if (!ptr || !obj) return;
-    PerlUpb_ObjCache_Init(aTHX);
+    HV* cache = get_cache_hv(aTHX);
 
     char key[64];
     get_cache_key(ptr, key);
 
     // We store a weak reference to the object in the cache.
-    // The 'obj' passed in is expected to be a reference (RV) to the blessed SV.
     SV* rv = newSVsv(obj);
     sv_rvweaken(rv);
 
-    if (!hv_store(g_obj_cache, key, strlen(key), rv, 0)) {
+    if (!hv_store(cache, key, strlen(key), rv, 0)) {
         SvREFCNT_dec(rv);
     }
 }
 
 SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
-    if (!ptr || !g_obj_cache) return NULL;
+    if (!ptr) return NULL;
+    HV* cache = get_cache_hv(aTHX);
 
     char key[64];
     get_cache_key(ptr, key);
 
-    SV** svp = hv_fetch(g_obj_cache, key, strlen(key), 0);
+    SV** svp = hv_fetch(cache, key, strlen(key), 0);
     if (!svp) return NULL;
 
     SV* rv = *svp;
     if (rv && SvROK(rv)) {
         SV* obj = SvRV(rv);
-        // When a weak reference's target is destroyed, SvRV(rv) will return &PL_sv_undef
-        // or the RV itself will be modified.
-        // The most reliable check for a weakened RV is that SvRV(rv) is not &PL_sv_undef.
         if (obj && obj != &PL_sv_undef) {
-            // Found a valid cached object. Return a NEW reference to it.
             return newRV_inc(obj);
         }
     }
     
-    // If we reach here, the weak ref was collected or the SV is invalid.
-    // We should clean up the entry to avoid repeated misses.
-    hv_delete(g_obj_cache, key, strlen(key), G_DISCARD);
+    hv_delete(cache, key, strlen(key), G_DISCARD);
     return NULL;
 }
 
 void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr) {
-    if (!ptr || !g_obj_cache) return;
+    if (!ptr) return;
+    HV* cache = get_cache_hv(aTHX);
 
     char key[64];
     get_cache_key(ptr, key);
-    hv_delete(g_obj_cache, key, strlen(key), G_DISCARD);
+    hv_delete(cache, key, strlen(key), G_DISCARD);
 }
 
 void PerlUpb_ObjCache_Clear(pTHX) {
-    if (g_obj_cache) {
-        hv_clear(g_obj_cache);
-        SvREFCNT_dec(g_obj_cache);
-        g_obj_cache = NULL;
+    SV* cache_sv = get_sv("Protobuf::_obj_cache", 0);
+    if (cache_sv && SvROK(cache_sv)) {
+        HV* cache = (HV*)SvRV(cache_sv);
+        hv_clear(cache);
     }
 }

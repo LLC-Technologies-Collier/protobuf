@@ -16,11 +16,11 @@
 int msg_field_count(const void* p) { return upb_MessageDef_FieldCount((const upb_MessageDef*)p); }
 const void* msg_field_get(const void* p, int i) { return upb_MessageDef_Field((const upb_MessageDef*)p, i); }
 SV* msg_field_wrap(pTHX_ const void* p) {
-    // In the real implementation, this would use the object cache and return a Protobuf::FieldDescriptor.
+    // In the real implementation, this would use the object cache and return a Protobuf::Descriptor::Field.
     // For this test, we just return a simple blessed wrapper or even just an IV.
     SV* sv = newSViv((IV)p);
     SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::FieldDescriptor", GV_ADD));
+    sv_bless(obj, gv_stashpv("Protobuf::Descriptor::Field", GV_ADD));
     return obj;
 }
 
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
         ok(count > 0, "Field count > 0");
         
         SV* f0 = PerlUpb_GenericSequence_GetItem(aTHX_ seq_sv, 0);
-        ok(sv_derived_from(f0, "Protobuf::FieldDescriptor"), "Item 0 is a FieldDescriptor");
+        ok(sv_derived_from(f0, "Protobuf::Descriptor::Field"), "Item 0 is a FieldDescriptor");
         SvREFCNT_dec(f0);
 
         // 2. Test ByNameMap (fields_by_name)
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
         is(PerlUpb_ByNameMap_Count(aTHX_ map_sv), count, "Map count matches sequence count");
         
         SV* val_sv = PerlUpb_ByNameMap_Lookup(aTHX_ map_sv, "value");
-        ok(sv_derived_from(val_sv, "Protobuf::FieldDescriptor"), "Lookup 'value' returned a FieldDescriptor");
+        ok(sv_derived_from(val_sv, "Protobuf::Descriptor::Field"), "Lookup 'value' returned a FieldDescriptor");
         
         const upb_FieldDef* f_raw = (const upb_FieldDef*)SvIV(SvRV(val_sv));
         is_string(upb_FieldDef_Name(f_raw), "value", "Raw field name is 'value'");
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
         SvREFCNT_dec(key0);
 
         SV* val0 = PerlUpb_ByNameMap_Value(aTHX_ map_sv, 0);
-        ok(sv_derived_from(val0, "Protobuf::FieldDescriptor"), "Value 0 is a FieldDescriptor");
+        ok(sv_derived_from(val0, "Protobuf::Descriptor::Field"), "Value 0 is a FieldDescriptor");
         SvREFCNT_dec(val0);
 
         extern void PerlUpb_ByNameMap_Free(pTHX_ SV* sv);

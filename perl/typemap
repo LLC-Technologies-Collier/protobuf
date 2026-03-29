@@ -1,4 +1,5 @@
 # C types to Perl types
+uint32_t                  T_UV
 upb_DefPool *             T_PTR
 const void *              T_PTR
 const upb_MessageDef *    T_PTR
@@ -11,7 +12,7 @@ const upb_ServiceDef *    T_PTR
 const upb_MethodDef *     T_PTR
 upb_MessageDef *          T_PTROBJ
 
-TYPEMAPS
+TYPEMAP
 const upb_MessageDef *  T_UPB_MSGDEF
 upb_MessageDef *        T_UPB_MSGDEF
 const upb_FileDef *       T_UPB_FILEDEF
@@ -45,8 +46,8 @@ T_PTROBJ_UPB_ARENA
 
 
 T_UPB_MSGDEF
-  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::Message")) {
-    croak("Argument '%s' is not a Protobuf::Descriptor::Message", "$var");
+  if (!sv_isobject($arg) || !sv_derived_from($arg, "Protobuf::Descriptor::MessageDef")) {
+    croak("Argument '%s' is not a Protobuf::Descriptor::MessageDef", "$var");
   }
   SV *obj = SvRV($arg);
   SV **svp = hv_fetchs((HV*)obj, "_upb_def", HEf_SVKEY);

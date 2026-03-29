@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
     SV* mdef_sv = PerlUpb_MessageDef_GetWrapper(aTHX_ mdef);
     
     SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ mdef_sv);
-    ok(msg_sv != NULL && sv_isobject(msg_sv) && sv_derived_from(msg_sv, "protobuf_test_messages.proto2.TestAllTypesProto2"), "Created Protobuf::Message wrapper");
+    ok(msg_sv != NULL && sv_isobject(msg_sv) && sv_derived_from(msg_sv, "protobuf_test_messages::proto2::TestAllTypesProto2"), "Created Protobuf::Message wrapper");
 
     const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ msg_sv);
     ok(msg != NULL, "Internal upb_Message is valid");

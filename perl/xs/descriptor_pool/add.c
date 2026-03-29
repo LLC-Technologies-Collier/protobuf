@@ -38,3 +38,38 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
     
     return PerlUpb_FileDef_GetWrapper(aTHX_ file);
 }
+
+SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* serialized) {
+    const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ self);
+    if (!pool) return &PL_sv_undef;
+
+    STRLEN len;
+    const char* data = SvPV(serialized, len);
+
+    upb_Arena* arena = upb_Arena_New();
+    google_protobuf_FileDescriptorSet* set = google_protobuf_FileDescriptorSet_parse(data, len, arena);
+    if (!set) {
+        upb_Arena_Free(arena);
+        croak("Failed to parse FileDescriptorSet");
+    }
+
+    size_t n;
+    const google_protobuf_FileDescriptorProto* const* files = google_protobuf_FileDescriptorSet_file(set, &n);
+    
+    upb_Status status;
+    const upb_FileDef* last_file = NULL;
+
+    for (size_t i = 0; i < n; i++) {
+        upb_Status_Clear(&status);
+        last_file = upb_DefPool_AddFile((upb_DefPool*)pool, files[i], &status);
+        if (!last_file) {
+            upb_Arena_Free(arena);
+            croak("Failed to add file %zu to pool: %s", i, upb_Status_ErrorMessage(&status));
+        }
+    }
+
+    upb_Arena_Free(arena);
+    
+    // Return wrapper for the last file added, or undef if none.
+    return last_file ? PerlUpb_FileDef_GetWrapper(aTHX_ last_file) : &PL_sv_undef;
+}

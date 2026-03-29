@@ -7,8 +7,7 @@
 
 // -- Arena Wrapper Functions --
 
-// Create a new PerlUpb_Arena wrapper
-SV *PerlUpb_Arena_New(pTHX) {
+void* PerlUpb_Arena_CreateRaw(pTHX) {
     PerlUpb_Arena *arena_wrapper = (PerlUpb_Arena *)safemalloc(sizeof(PerlUpb_Arena));
     if (!arena_wrapper) {
         croak("Failed to allocate PerlUpb_Arena");
@@ -18,9 +17,33 @@ SV *PerlUpb_Arena_New(pTHX) {
         safefree(arena_wrapper);
         croak("Failed to create upb_Arena");
     }
-    SV *self = newSV(0);
-    sv_setiv(self, PTR2IV(arena_wrapper)); // Store pointer as IV
-    SV *rv = newRV_noinc(self);
+    return (void*)arena_wrapper;
+}
+
+void PerlUpb_Arena_DestroyRaw(pTHX_ void* ptr) {
+    PerlUpb_Arena *arena_wrapper = (PerlUpb_Arena *)ptr;
+    if (arena_wrapper) {
+        if (arena_wrapper->arena) {
+            upb_Arena_Free(arena_wrapper->arena);
+        }
+        safefree(arena_wrapper);
+    }
+}
+
+upb_Arena* PerlUpb_Arena_GetRaw(pTHX_ void* ptr) {
+    PerlUpb_Arena *arena_wrapper = (PerlUpb_Arena *)ptr;
+    return arena_wrapper ? arena_wrapper->arena : NULL;
+}
+
+// Create a new PerlUpb_Arena wrapper (Hash-based)
+SV *PerlUpb_Arena_New(pTHX) {
+    void* raw = PerlUpb_Arena_CreateRaw(aTHX);
+    HV* hv = newHV();
+    
+    SV* ptr_sv = newSViv(PTR2IV(raw));
+    hv_store(hv, "_arena_ptr", 10, ptr_sv, 0);
+
+    SV *rv = newRV_noinc((SV*)hv);
     sv_bless(rv, gv_stashpv("Protobuf::Arena", GV_ADD));
     return rv;
 }
@@ -30,48 +53,52 @@ upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv) {
     if (!sv || !SvROK(sv) || !sv_isa(sv, "Protobuf::Arena")) {
         croak("Argument is not a blessed Protobuf::Arena object");
     }
-    SV *self = SvRV(sv);
-    if (!SvIOK(self)) {
-        croak("Protobuf::Arena object internal is not an IV");
+    
+    SV* rv = SvRV(sv);
+    PerlUpb_Arena *arena_wrapper = NULL;
+
+    if (SvTYPE(rv) == SVt_PVHV) {
+        // Hash-based object
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (svp && SvIOK(*svp)) {
+            arena_wrapper = INT2PTR(PerlUpb_Arena *, SvIV(*svp));
+        }
+    } else if (SvIOK(rv)) {
+        // IV-based object (Legacy/Low-level)
+        arena_wrapper = INT2PTR(PerlUpb_Arena *, SvIV(rv));
     }
-    IV tmp = SvIV(self);
-    PerlUpb_Arena *arena_wrapper = INT2PTR(PerlUpb_Arena *, tmp);
+
     if (!arena_wrapper) {
-        croak("Invalid Protobuf::Arena object: wrapper is NULL");
+        croak("Invalid Protobuf::Arena object: pointer is NULL");
     }
     return arena_wrapper->arena;
 }
 
 // Free the arena
 void PerlUpb_Arena_Free(pTHX_ SV *sv) {
-    if (!sv || !SvROK(sv) || !sv_isa(sv, "Protobuf::Arena")) {
-        return;
-    }
-    SV *self = SvRV(sv);
-    if (!SvIOK(self)) return;
-    IV tmp = SvIV(self);
-    PerlUpb_Arena *arena_wrapper = INT2PTR(PerlUpb_Arena *, tmp);
-    if (arena_wrapper && arena_wrapper->arena) {
-        upb_Arena_Free(arena_wrapper->arena);
-        arena_wrapper->arena = NULL;
-    }
-    // The arena_wrapper itself will be freed when the SV is destroyed
+    PerlUpb_Arena_Destroy(aTHX_ sv);
 }
 
-// Called from Protobuf::Arena::DEMOLISH
+// Called from Protobuf::Arena::DEMOLISH or DESTROY
 void PerlUpb_Arena_Destroy(pTHX_ SV *sv) {
     if (!sv || !SvROK(sv) || !sv_isa(sv, "Protobuf::Arena")) {
         return;
     }
-    SV *self = SvRV(sv);
-    if (!SvIOK(self)) return; // Should not happen
-    IV tmp = SvIV(self);
-    PerlUpb_Arena *arena_wrapper = INT2PTR(PerlUpb_Arena *, tmp);
-    if (arena_wrapper) {
-        if (arena_wrapper->arena) {
-            upb_Arena_Free(arena_wrapper->arena);
+    SV *rv = SvRV(sv);
+    void* raw_ptr = NULL;
+
+    if (SvTYPE(rv) == SVt_PVHV) {
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (svp && SvIOK(*svp)) {
+            raw_ptr = INT2PTR(void*, SvIV(*svp));
+            sv_setiv(*svp, 0); // Clear key in hash
         }
-        safefree(arena_wrapper);
-        sv_setiv(self, 0); // Clear pointer
+    } else if (SvIOK(rv)) {
+        raw_ptr = INT2PTR(void*, SvIV(rv));
+        sv_setiv(rv, 0); // Clear IV
+    }
+
+    if (raw_ptr) {
+        PerlUpb_Arena_DestroyRaw(aTHX_ raw_ptr);
     }
 }

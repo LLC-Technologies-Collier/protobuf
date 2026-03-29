@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     // Test Iterator
     SV* iter_sv = PerlUpb_ExtensionDict_GetIterator(aTHX_ dict_sv);
     SV* next_f = PerlUpb_ExtensionDict_Iterator_Next(aTHX_ iter_sv);
-    ok(next_f != NULL && sv_derived_from(next_f, "Protobuf::FieldDescriptor"), "Iterator returns field");
+    ok(next_f != NULL && sv_derived_from(next_f, "Protobuf::Descriptor::Field"), "Iterator returns field");
     
     const upb_FieldDef* next_f_raw = PerlUpb_FieldDef_GetField(aTHX_ next_f);
     is(next_f_raw, ext_field, "Iterator returned correct field");
