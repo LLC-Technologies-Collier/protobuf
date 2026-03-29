@@ -7,6 +7,7 @@
 // TODO: Implement these functions
 SV* PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv);
 SV* PerlUpb_MaybeGetMessage(pTHX_ const upb_Message *msg);
+void PerlUpb_Message_Free(pTHX_ SV *message_sv);
 
 // Helper functions to extract components from a blessed message object
 const upb_Message* PerlUpb_Message_GetMsg(pTHX_ SV* message_sv);

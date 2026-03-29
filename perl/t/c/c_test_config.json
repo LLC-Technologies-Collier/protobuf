@@ -537,5 +537,85 @@
   "descriptor/enum_value": {
     "deps": ["xs/descriptor/enum_value.h", "xs/descriptor/enum.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
     "extra_src": "t/c/convert/test_util.c"
+  },
+  "message/message": {
+    "deps": [
+      "xs/message/message.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "xs/protobuf/arena.h",
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h"
+    ],
+    "extra_src": [
+      "xs/message/message.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "t/c/convert/test_util.c"
+    ]
+  },
+  "message/access": {
+    "deps": [
+      "xs/message/message.h",
+      "xs/message/access.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "xs/protobuf/arena.h",
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "xs/convert.h"
+    ],
+    "extra_src": [
+      "xs/message/message.c",
+      "xs/message/access.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/convert/sv_to_upb.c",
+      "xs/convert/upb_to_sv.c",
+      "t/c/convert/test_util.c"
+    ]
+  },
+  "message/serialize": {
+    "deps": [
+      "xs/message/message.h",
+      "xs/message/access.h",
+      "xs/message/serialize.h",
+      "xs/message/compare.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "xs/protobuf/arena.h",
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "xs/convert.h"
+    ],
+    "extra_src": [
+      "xs/message/message.c",
+      "xs/message/access.c",
+      "xs/message/serialize.c",
+      "xs/message/compare.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/convert/sv_to_upb.c",
+      "xs/convert/upb_to_sv.c",
+      "t/c/convert/test_util.c"
+    ]
   }
 }

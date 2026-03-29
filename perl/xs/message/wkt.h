@@ -5,4 +5,6 @@
 #include "perl.h"
 #include "perl/xs/protobuf.h"
 
+// Placeholder for Well-Known Types message support
+
 #endif // PERL_PROTOBUF_MESSAGE_WKT_H_

@@ -5,4 +5,6 @@
 #include "perl.h"
 #include "perl/xs/protobuf.h"
 
+// Placeholder for future message initialization logic
+
 #endif // PERL_PROTOBUF_MESSAGE_INIT_H_

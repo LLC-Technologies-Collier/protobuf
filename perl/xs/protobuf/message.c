@@ -2,12 +2,16 @@
 #include "xs/protobuf/message.h"
 #include "xs/protobuf.h"
 #include "upb/reflection/def.h"
+#include "xs/protobuf/obj_cache.h"
+#include "xs/protobuf/arena.h"
 
 SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv) {
-    // TODO: Full implementation in Milestone 16
     if (!msg) {
         return newSV(0); // Undef
     }
+
+    SV* cached = PerlUpb_ObjCache_Get(aTHX_ msg);
+    if (cached) return cached;
 
     HV *hv = newHV();
     SV *msg_sv = newSViv(PTR2IV(msg));
@@ -26,13 +30,28 @@ SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef
         class_name = "Protobuf::Message"; // Fallback
     }
     sv_bless(self, gv_stashpv(class_name, GV_ADD));
+
+    PerlUpb_ObjCache_Add(aTHX_ msg, self);
+
     return self;
 }
 
 SV* PerlUpb_MaybeGetMessage(pTHX_ const upb_Message *msg) {
-    (void)msg;
-    return NULL; // Simulate cache miss
+    if (!msg) return NULL;
+    return PerlUpb_ObjCache_Get(aTHX_ msg);
 }
+
+void PerlUpb_Message_Free(pTHX_ SV *message_sv) {
+    const upb_Message *msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    if (msg) {
+        PerlUpb_ObjCache_Delete(aTHX_ msg);
+        // The upb_Message is freed when the arena is freed.
+        // We just clear the internal pointers.
+        HV* hv = (HV*)SvRV(message_sv);
+        hv_delete(hv, "upb_msg", 7, G_DISCARD);
+    }
+}
+
 
 const upb_Message* PerlUpb_Message_GetMsg(pTHX_ SV* message_sv) {
     if (!message_sv || !SvROK(message_sv) || SvTYPE(SvRV(message_sv)) != SVt_PVHV) return NULL;
