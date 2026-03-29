@@ -12,7 +12,7 @@
 static void test_arena_cache_interaction(pTHX) {
     plan(6);
 
-    protobuf_init_obj_cache(aTHX);
+    PerlUpb_ObjCache_Init(aTHX);
     ok(1, "Cache initialized");
 
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
@@ -20,23 +20,21 @@ static void test_arena_cache_interaction(pTHX) {
     upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
     ok(arena != NULL, "upb_Arena obtained");
 
-    const char* key = "test_key";
-    char* arena_str = (char*)upb_Arena_Malloc(arena, 12);
-    strcpy(arena_str, "arena value");
-    SV* val_sv = newSVpvn(arena_str, 11);
+    // Use the arena pointer itself as a key for testing cache
+    char* dummy = (char*)upb_Arena_Malloc(arena, 1);
+    SV* val_sv = newSVpv("arena value", 0);
+    SV* rv = newRV_noinc(val_sv);
 
-    protobuf_register_object(aTHX_ key, val_sv);
+    PerlUpb_ObjCache_Add(aTHX_ dummy, rv);
 
-    SV* retrieved_sv = protobuf_get_object(aTHX_ key);
-    ok(retrieved_sv != NULL, "Retrieved from cache");
-    is_string(SvPV_nolen(retrieved_sv), "arena value", "Value from arena correct");
-    SvREFCNT_dec(retrieved_sv);
-    SvREFCNT_dec(val_sv);
+    SV* retrieved_rv = PerlUpb_ObjCache_Get(aTHX_ dummy);
+    ok(retrieved_rv != NULL, "Retrieved from cache");
+    is_string(SvPV_nolen(SvRV(retrieved_rv)), "arena value", "Value from arena correct");
+    SvREFCNT_dec(retrieved_rv);
+    SvREFCNT_dec(rv);
 
     PerlUpb_Arena_Destroy(aTHX_ arena_sv); // This frees the arena and the wrapper
     ok(1, "Arena freed");
-    // The cache entry should now be stale, but the key pointer is invalid.
-    // Re-initializing the cache for safety in tests.
 }
 
 int main(int argc, char** argv, char** env) {
@@ -59,7 +57,7 @@ int main(int argc, char** argv, char** env) {
         LEAVE;
     } // End scope
 
-    protobuf_clear_obj_cache(my_perl); // Clear after scope
+    PerlUpb_ObjCache_Clear(aTHX);
 
     perl_destruct(my_perl);
     perl_free(my_perl);

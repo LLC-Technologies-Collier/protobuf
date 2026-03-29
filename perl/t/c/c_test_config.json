@@ -169,6 +169,61 @@
       "t/c/upb-perl-test.h"
     ]
   },
+  "descriptor_containers/generic_sequence": {
+    "deps": [
+      "xs/descriptor_containers/generic_sequence.h",
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "descriptor_containers/iterators": {
+    "deps": [
+      "xs/descriptor_containers/iterators.h",
+      "xs/descriptor_containers/by_name_map.h",
+      "xs/descriptor_containers/by_number_map.h",
+      "t/c/upb-perl-test.h"
+    ],
+    "extra_src": [
+      "xs/descriptor_containers/by_name_map.c",
+      "xs/descriptor_containers/by_number_map.c"
+    ]
+  },
+  "descriptor_pool/pool": {
+    "deps": [
+      "xs/descriptor_pool/pool.h",
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "descriptor_pool/add": {
+    "deps": [
+      "xs/descriptor_pool/pool.h",
+      "xs/descriptor_pool/add.h",
+      "xs/descriptor/file.h",
+      "t/c/upb-perl-test.h"
+    ],
+    "extra_src": [
+      "xs/descriptor_pool/pool.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/base.c"
+    ]
+  },
+  "descriptor_pool/find": {
+    "deps": [
+      "xs/descriptor_pool/pool.h",
+      "xs/descriptor_pool/find.h",
+      "xs/descriptor/file.h",
+      "xs/descriptor/message.h",
+      "t/c/upb-perl-test.h"
+    ],
+    "extra_src": [
+      "xs/descriptor_pool/pool.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/base.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/enum.c",
+      "t/c/convert/test_util.c"
+    ]
+  },
   "integration/030_asan_test": {
     "deps": ["t/c/upb-perl-test.h"]
   },
@@ -215,6 +270,91 @@
       "../upb/reflection/def.h"
     ],
     "extra_src": [
+      "t/c/convert/test_util.c",
+      "libcoro/coro.c"
+    ]
+  },
+  "integration/090_descriptor_containers": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/descriptor_containers/by_name_map.h",
+      "xs/descriptor_containers/generic_sequence.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "../upb/reflection/def.h"
+    ],
+    "extra_src": [
+      "xs/descriptor_containers/by_name_map.c",
+      "xs/descriptor_containers/generic_sequence.c",
+      "t/c/convert/test_util.c"
+    ]
+  },
+  "integration/090_descriptor_containers_coro": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/descriptor_containers/by_name_map.h",
+      "xs/descriptor_containers/generic_sequence.h",
+      "xs/protobuf/arena.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "libcoro/coro.h",
+      "../upb/reflection/def.h"
+    ],
+    "extra_src": [
+      "xs/descriptor_containers/by_name_map.c",
+      "xs/descriptor_containers/generic_sequence.c",
+      "t/c/convert/test_util.c",
+      "libcoro/coro.c"
+    ]
+  },
+  "integration/110_descriptor_pool": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/descriptor_pool/pool.h",
+      "xs/descriptor_pool/add.h",
+      "xs/descriptor_pool/find.h",
+      "xs/descriptor/file.h",
+      "xs/descriptor/message.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor_containers/by_name_map.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "../upb/reflection/def.h"
+    ],
+    "extra_src": [
+      "xs/descriptor_pool/pool.c",
+      "xs/descriptor_pool/add.c",
+      "xs/descriptor_pool/find.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/base.c",
+      "xs/descriptor/enum.c",
+      "xs/descriptor_containers/by_name_map.c",
+      "t/c/convert/test_util.c"
+    ]
+  },
+  "integration/110_descriptor_pool_coro": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/descriptor_pool/pool.h",
+      "xs/descriptor_pool/find.h",
+      "xs/descriptor/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "libcoro/coro.h",
+      "../upb/reflection/def.h"
+    ],
+    "extra_src": [
+      "xs/descriptor_pool/pool.c",
+      "xs/descriptor_pool/find.c",
+      "xs/descriptor/message.c",
+      "xs/descriptor/base.c",
+      "xs/descriptor/file.c",
+      "xs/descriptor/field.c",
+      "xs/descriptor/enum.c",
       "t/c/convert/test_util.c",
       "libcoro/coro.c"
     ]

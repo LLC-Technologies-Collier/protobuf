@@ -4,9 +4,18 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "perl/xs/protobuf.h"
-// #include "perl/xs/descriptor_containers/by_name_map.h" // Avoid circular, fwd declare if needed
-// #include "perl/xs/descriptor_containers/by_number_map.h"
 
-// ByNameIterator and ByNumberIterator structures and functions
+typedef struct {
+  SV* container_sv;
+  int index;
+} PerlUpb_MapIterator;
+
+SV* PerlUpb_MapIterator_New(pTHX_ SV* container_sv);
+PerlUpb_MapIterator* PerlUpb_MapIterator_Get(pTHX_ SV* sv);
+
+// Returns next key/value pair as a list (or undef if done)
+// These will be used by the Perl-level iterator methods
+SV* PerlUpb_MapIterator_NextKey(pTHX_ SV* self);
+SV* PerlUpb_MapIterator_NextValue(pTHX_ SV* self);
 
 #endif // PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_ITERATORS_H_

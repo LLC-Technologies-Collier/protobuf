@@ -26,4 +26,7 @@ const upb_FieldDef* PerlUpb_MessageDef_NestedExtension(pTHX_ const upb_MessageDe
 bool PerlUpb_MessageDef_IsMapEntry(pTHX_ const upb_MessageDef *m);
 bool PerlUpb_MessageDef_IsMessageSet(pTHX_ const upb_MessageDef *m);
 
+SV* PerlUpb_MessageDef_GetWrapper(pTHX_ const upb_MessageDef *m);
+const upb_MessageDef* PerlUpb_MessageDef_GetMessage(pTHX_ SV *sv);
+
 #endif // PERL_PROTOBUF_DESCRIPTOR_MESSAGE_H_

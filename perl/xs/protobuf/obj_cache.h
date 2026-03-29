@@ -4,12 +4,21 @@
 #include "EXTERN.h"
 #include "perl.h"
 
-// Object Cache
-void protobuf_init_obj_cache(pTHX);
-void protobuf_register_object(pTHX_ const char *key, SV *value);
-SV *protobuf_get_object(pTHX_ const char *key);
-void protobuf_unregister_object(pTHX_ const char *key);
+// Initialize the global object cache
+void PerlUpb_ObjCache_Init(pTHX);
+
+// Adds a Perl object to the cache for the given C pointer.
+// The reference in the cache is weakened.
+void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj);
+
+// Retrieves the Perl object associated with the C pointer.
+// Returns NULL if not found or if the weak reference has been collected.
+SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr);
+
+// Removes the entry for the given C pointer from the cache.
+void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr);
+
+// Clears the entire cache (during interpreter shutdown)
+void PerlUpb_ObjCache_Clear(pTHX);
 
 #endif // PERL_PROTOBUF_OBJ_CACHE_H_
-
-void protobuf_clear_obj_cache(PerlInterpreter *my_perl);

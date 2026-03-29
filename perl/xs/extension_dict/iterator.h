@@ -5,6 +5,7 @@
 #include "perl.h"
 #include "perl/xs/protobuf.h"
 
-// ExtensionIterator object functions
+// Iterator for ExtensionDict
+SV* PerlUpb_ExtensionDict_GetIterator(pTHX_ SV* dict_sv);
 
 #endif // PERL_PROTOBUF_EXTENSION_DICT_ITERATOR_H_

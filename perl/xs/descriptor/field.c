@@ -21,3 +21,24 @@ const upb_OneofDef* PerlUpb_FieldDef_ContainingOneof(pTHX_ const upb_FieldDef* f
 const upb_MessageDef* PerlUpb_FieldDef_MessageSubDef(pTHX_ const upb_FieldDef* f) { return upb_FieldDef_MessageSubDef(f); }
 const upb_EnumDef* PerlUpb_FieldDef_EnumSubDef(pTHX_ const upb_FieldDef* f) { return upb_FieldDef_EnumSubDef(f); }
 bool PerlUpb_FieldDef_HasPresence(pTHX_ const upb_FieldDef* f) { return upb_FieldDef_HasPresence(f); }
+
+#include "xs/protobuf/obj_cache.h"
+
+SV* PerlUpb_FieldDef_GetWrapper(pTHX_ const upb_FieldDef *f) {
+    if (!f) return &PL_sv_undef;
+    SV* cached = PerlUpb_ObjCache_Get(aTHX_ f);
+    if (cached) return cached;
+
+    SV* sv = newSViv((IV)f);
+    SV* obj = newRV_noinc(sv);
+    sv_bless(obj, gv_stashpv("Protobuf::FieldDescriptor", GV_ADD));
+    PerlUpb_ObjCache_Add(aTHX_ f, obj);
+    return obj;
+}
+
+const upb_FieldDef* PerlUpb_FieldDef_GetField(pTHX_ SV *sv) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::FieldDescriptor")) {
+        return NULL;
+    }
+    return (const upb_FieldDef*)SvIV(SvRV(sv));
+}

@@ -1,66 +1,79 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "perl/xs/protobuf/obj_cache.h"
-#include <string.h>
+#include <sys/types.h>
+#include <setjmp.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-// Global hash for object cache
-static HV *obj_cache = NULL;
+#include "xs/protobuf/obj_cache.h"
 
-// Initialize the cache
-void protobuf_init_obj_cache(pTHX) {
-    if (!obj_cache) {
-        obj_cache = newHV();
+// The cache is a global hash (HV*) per interpreter
+static HV* g_obj_cache = NULL;
+
+void PerlUpb_ObjCache_Init(pTHX) {
+    if (!g_obj_cache) {
+        g_obj_cache = newHV();
     }
 }
 
-// Add an object to the cache
-void protobuf_register_object(pTHX_ const char *key, SV *value) {
-    if (!obj_cache) protobuf_init_obj_cache(aTHX);
+static void get_cache_key(const void* ptr, char* buf) {
+    sprintf(buf, "%p", ptr);
+}
 
-    SV *key_sv = newSVpvn(key, strlen(key));
-    SV *val_ref = newRV_inc(value);
+void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
+    if (!ptr || !obj) return;
+    PerlUpb_ObjCache_Init(aTHX);
+
+    char key[64];
+    get_cache_key(ptr, key);
+
+    SV* key_sv = newSVpv(key, 0);
     
-    // Weaken the reference so the cache doesn't prevent garbage collection
-    sv_rvweaken(val_ref);
+    // We store a weak reference to the object in the cache.
+    // The 'obj' passed in is expected to be a reference (RV) to the blessed SV.
+    SV* rv = newSVsv(obj);
+    sv_rvweaken(rv);
 
-    if (!hv_store_ent(obj_cache, key_sv, val_ref, 0)) {
-      SvREFCNT_dec(val_ref);
-      SvREFCNT_dec(key_sv);
+    if (!hv_store_ent(g_obj_cache, key_sv, rv, 0)) {
+        SvREFCNT_dec(rv);
     }
+    SvREFCNT_dec(key_sv);
 }
 
-// Get an object from the cache
-SV *protobuf_get_object(pTHX_ const char *key) {
-    if (!obj_cache) return NULL;
+SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
+    if (!ptr || !g_obj_cache) return NULL;
 
-    SV *key_sv = newSVpvn(key, strlen(key));
-    HE *he = hv_fetch_ent(obj_cache, key_sv, 0, 0);
-    SvREFCNT_dec(key_sv);
+    char key[64];
+    get_cache_key(ptr, key);
 
-    if (he) {
-        SV *val_ref = HeVAL(he);
-        if (val_ref && SvROK(val_ref)) {
-            SV *cached_sv = SvRV(val_ref);
-            if (cached_sv && SvOK(cached_sv)) { // Ensure it wasn't destroyed
-                return newSVsv(cached_sv);
-            }
+    SV** svp = hv_fetch(g_obj_cache, key, strlen(key), 0);
+    if (!svp) return NULL;
+
+    SV* rv = *svp;
+    if (rv && SvROK(rv)) {
+        SV* obj = SvRV(rv);
+        if (obj && SvOK(obj)) {
+            // Found a valid cached object. Return a NEW reference to it.
+            return newRV_inc(obj);
         }
     }
+    
+    // If we reach here, the weak ref was collected or the SV is invalid.
+    // We should probably clean up the entry.
+    hv_delete(g_obj_cache, key, strlen(key), G_DISCARD);
     return NULL;
 }
 
-// Remove an object from the cache
-void protobuf_unregister_object(pTHX_ const char *key) {
-    if (!obj_cache) return;
-    hv_delete(obj_cache, key, strlen(key), G_DISCARD);
+void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr) {
+    if (!ptr || !g_obj_cache) return;
+
+    char key[64];
+    get_cache_key(ptr, key);
+    hv_delete(g_obj_cache, key, strlen(key), G_DISCARD);
 }
 
-void protobuf_clear_obj_cache(PerlInterpreter *my_perl) {
-    if (obj_cache) {
-        hv_clear(obj_cache);
-        SvREFCNT_dec(obj_cache);
-        obj_cache = NULL;
+void PerlUpb_ObjCache_Clear(pTHX) {
+    if (g_obj_cache) {
+        hv_clear(g_obj_cache);
+        SvREFCNT_dec(g_obj_cache);
+        g_obj_cache = NULL;
     }
 }

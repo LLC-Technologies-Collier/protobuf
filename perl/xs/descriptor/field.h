@@ -26,6 +26,9 @@ const upb_MessageDef* PerlUpb_FieldDef_ContainingType(pTHX_ const upb_FieldDef* 
 const upb_OneofDef* PerlUpb_FieldDef_ContainingOneof(pTHX_ const upb_FieldDef* f);
 const upb_MessageDef* PerlUpb_FieldDef_MessageSubDef(pTHX_ const upb_FieldDef* f);
 const upb_EnumDef* PerlUpb_FieldDef_EnumSubDef(pTHX_ const upb_FieldDef* f);
-bool PerlUpb_FieldDef_HasPresence(pTHX_ const upb_FieldDef* f);
+bool PerlUpb_FieldDef_HasPresence(pTHX_ const upb_FieldDef *f);
 
-#endif /* PERLUPB_DESCRIPTOR_FIELD_H */
+SV* PerlUpb_FieldDef_GetWrapper(pTHX_ const upb_FieldDef *f);
+const upb_FieldDef* PerlUpb_FieldDef_GetField(pTHX_ SV *sv);
+
+#endif // PERL_PROTOBUF_DESCRIPTOR_FIELD_H_

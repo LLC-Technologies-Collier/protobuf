@@ -71,3 +71,24 @@ const upb_ServiceDef* PerlUpb_FileDef_Service(pTHX_ const upb_FileDef *f, int i)
 const upb_DefPool* PerlUpb_FileDef_Pool(pTHX_ const upb_FileDef *f) {
     return upb_FileDef_Pool(f);
 }
+
+#include "xs/protobuf/obj_cache.h"
+
+SV* PerlUpb_FileDef_GetWrapper(pTHX_ const upb_FileDef *f) {
+    if (!f) return &PL_sv_undef;
+    SV* cached = PerlUpb_ObjCache_Get(aTHX_ f);
+    if (cached) return cached;
+
+    SV* sv = newSViv((IV)f);
+    SV* obj = newRV_noinc(sv);
+    sv_bless(obj, gv_stashpv("Protobuf::FileDescriptor", GV_ADD));
+    PerlUpb_ObjCache_Add(aTHX_ f, obj);
+    return obj;
+}
+
+const upb_FileDef* PerlUpb_FileDef_GetFile(pTHX_ SV *sv) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::FileDescriptor")) {
+        return NULL;
+    }
+    return (const upb_FileDef*)SvIV(SvRV(sv));
+}

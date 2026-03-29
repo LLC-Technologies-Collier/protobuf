@@ -6,7 +6,7 @@
 
 // Initialize all sub-components
 void protobuf_init_module(pTHX) {
-    protobuf_init_obj_cache(aTHX);
+    PerlUpb_ObjCache_Init(aTHX);
     // Other initializations if needed
 }
 

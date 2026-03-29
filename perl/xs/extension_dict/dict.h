@@ -5,6 +5,15 @@
 #include "perl.h"
 #include "perl/xs/protobuf.h"
 
-// ExtensionDict object functions
+// ExtensionDict wraps the extension fields of a message.
+// It acts as a lazy map from FieldDescriptor (extensions) to their values.
+
+SV* PerlUpb_ExtensionDict_New(pTHX_ SV* message_sv);
+
+// Returns the value for an extension field.
+SV* PerlUpb_ExtensionDict_GetItem(pTHX_ SV* self, SV* field_sv);
+
+// Sets the value for an extension field.
+void PerlUpb_ExtensionDict_SetItem(pTHX_ SV* self, SV* field_sv, SV* value_sv);
 
 #endif // PERL_PROTOBUF_EXTENSION_DICT_DICT_H_

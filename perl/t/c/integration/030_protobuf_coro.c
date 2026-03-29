@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> // For usleep
+#include <unistd.h>
 
 #include "EXTERN.h"
 #include "perl.h"
@@ -24,29 +24,32 @@ typedef struct {
     int errors;
 } coro_arg_t;
 
+// Some dummy objects to use as pointers
+int dummy_objects[NUM_COROS][10];
+
 void coro_test_func(void *arg) {
     coro_arg_t *carg = (coro_arg_t *)arg;
-    dTHX; // Declare my_perl
-    char key[64];
+    dTHX;
     SV *val;
 
     for (int i = 0; i < NUM_OPS; i++) {
-        sprintf(key, "coro%d_key%d", carg->id, i % 10);
+        const void* ptr = &dummy_objects[carg->id - 1][i % 10];
         val = newSViv(carg->id * 10000 + i);
+        SV* rv = newRV_noinc(val);
 
-        protobuf_register_object(aTHX_ key, val);
+        PerlUpb_ObjCache_Add(aTHX_ ptr, rv);
         coro_transfer(coro_ctxs[carg->id - 1], &main_ctx); // Yield
 
-        SV *retrieved = protobuf_get_object(aTHX_ key);
-        if (!retrieved || SvIV(retrieved) != SvIV(val)) {
-            fprintf(stderr, "Coro %d: Error, key %s mismatch\n", carg->id, key);
+        SV *retrieved_rv = PerlUpb_ObjCache_Get(aTHX_ ptr);
+        if (!retrieved_rv || SvIV(SvRV(retrieved_rv)) != (carg->id * 10000 + i)) {
+            fprintf(stderr, "Coro %d: Error, pointer %p mismatch\n", carg->id, ptr);
             carg->errors++;
         }
-        if (retrieved) SvREFCNT_dec(retrieved);
+        if (retrieved_rv) SvREFCNT_dec(retrieved_rv);
         coro_transfer(coro_ctxs[carg->id - 1], &main_ctx); // Yield
 
-        protobuf_unregister_object(aTHX_ key);
-        SvREFCNT_dec(val);
+        PerlUpb_ObjCache_Delete(aTHX_ ptr);
+        SvREFCNT_dec(rv);
         if (i % 50 == 0) {
             coro_transfer(coro_ctxs[carg->id - 1], &main_ctx); // Yield more often
         }
@@ -66,8 +69,8 @@ int main(int argc, char** argv) {
 
     coro_create(&main_ctx, NULL, NULL, NULL, 0);
 
-    protobuf_init_obj_cache(aTHX);
-    ok(1, "protobuf_init_obj_cache called");
+    PerlUpb_ObjCache_Init(aTHX);
+    ok(1, "PerlUpb_ObjCache_Init called");
 
     coro_arg_t args[NUM_COROS];
     for (int i = 0; i < NUM_COROS; i++) {
@@ -81,12 +84,10 @@ int main(int argc, char** argv) {
         coro_create(coro_ctxs[i], coro_test_func, &args[i], coro_stacks[i].sptr, coro_stacks[i].ssze);
     }
 
-    // log something here? ("Running C-level coro stress test for obj_cache...");
     for (int j = 0; j < NUM_OPS * 2 * NUM_COROS; j++) {
         int coro_idx = j % NUM_COROS;
         coro_transfer(&main_ctx, coro_ctxs[coro_idx]);
     }
-    // log something here? ("Finished C-level coro stress test.");
 
     int total_errors = 0;
     for (int i = 0; i < NUM_COROS; i++) {

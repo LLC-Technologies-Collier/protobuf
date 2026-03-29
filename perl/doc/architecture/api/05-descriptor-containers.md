@@ -1,49 +1,40 @@
 # Descriptor Containers
 
-_Status: Not Started_
+_Status: C Layer Implemented_
 
-To efficiently expose collections of descriptors (like fields, nested messages, enum values) from a parent descriptor, we will implement generic container types in XS, similar to Python's `descriptor_containers.c`. This avoids creating many unique Perl classes for each type of collection.
+To efficiently expose collections of descriptors (like fields, nested messages, enum values) from a parent descriptor, we use generic container types in XS. This avoids creating many unique Perl classes for each type of collection.
 
-## Design
+## Implementation
 
-Instead of returning Perl arrays or hashes directly from methods like `$descriptor->fields`, we will return blessed objects representing these collections. These objects will be lightweight and fetch information on demand from the underlying `upb` definitions.
+The C implementation of the descriptor containers is located in `perl/xs/descriptor_containers/`.
 
-*   **Generic XS Containers:** Create a few generic XS container types, for example:
-    *   `Protobuf::Internals::DescriptorSequence`: For ordered lists like `fields`, `enum_types`.
-    *   `Protobuf::Internals::DescriptorByNameMap`: For string-keyed mappings like `fields_by_name`.
-    *   `Protobuf::Internals::DescriptorByNumberMap`: For integer-keyed mappings like `fields_by_number`.
+*   **`PerlUpb_ByNameMap` (`by_name_map.[ch]`):** A lazy Perl map wrapper for string-keyed upb collections. It uses a vtable to delegate operations to the underlying upb object.
+*   **`PerlUpb_ByNumberMap` (`by_number_map.[ch]`):** A lazy Perl map wrapper for integer-keyed upb collections.
+*   **`PerlUpb_GenericSequence` (`generic_sequence.[ch]`):** A lazy Perl array-like wrapper for upb collections.
+*   **`PerlUpb_MapIterator` (`iterators.[ch]`):** Provides iteration support for the map containers.
 
-*   **VTable/Funcs Struct:** Each instance of these generic containers will hold:
-    *   A pointer to the parent `upb` definition (e.g., `const upb_MessageDef*`).
-    *   A reference to the parent Perl object to ensure it stays alive.
-    *   A struct of function pointers (a "vtable") that knows how to:
-        *   Get the count of elements.
-        *   Get an element by index.
-        *   Get an element by name (for maps).
-        *   Get an element by number (for maps).
-        *   Get the name/number for an element (for map keys).
-        *   Wrap the raw `upb` pointer in the appropriate Perl object (using the object cache).
+### VTable Pattern
 
-*   **Perl Interface:** These XS objects will be blessed into Perl classes that overload array/hash operations to provide an idiomatic Perl interface, but the actual data access will be delegated to the C functions in the vtable.
+Each container type uses a vtable (a struct of function pointers) to interact with the parent upb object. This allows the same container logic to be reused for different types of descriptors (e.g., fields of a message, values of an enum).
 
-## Example (Conceptual XS)
+Example `PerlUpb_ByNameMap_VTable`:
+- `count`: Returns the number of items.
+- `lookup`: Looks up an item by name.
+- `key`: Returns the string name for an item at a given index.
+- `value`: Returns the upb item at a given index.
+- `wrap`: An implementation-specific function that takes the raw `upb_Def*` and returns the appropriate blessed Perl object (using the global object cache).
 
-```c
-// In a Descriptor.xs file
-SV* fields(Protobuf__Descriptor self) {
-    const upb_MessageDef* mdef = (const upb_MessageDef*)self->_upb_def;
-    // vtable for fields
-    static const Protobuf__Internals__DescriptorSequence_Funcs field_funcs = {
-        upb_MessageDef_FieldCount,
-        upb_MessageDef_Field,
-        wrap_field_descriptor, // XS function to get/create Protobuf::FieldDescriptor wrapper
-    };
-    return create_descriptor_sequence(aTHX_ self, mdef, &field_funcs);
-}
-```
+## Perl Interface
+
+These XS objects are blessed into internal Perl classes:
+- `Protobuf::Internals::DescriptorByNameMap`
+- `Protobuf::Internals::DescriptorByNumberMap`
+- `Protobuf::Internals::DescriptorSequence`
+
+The Perl layer (to be implemented in Moo classes) will wrap these internal objects and use operator overloading (e.g., `Tie::Hash`, `Tie::Array`, or `overload`) to provide an idiomatic Perl experience.
 
 ## Benefits
 
-*   **Efficiency:** Avoids creating large Perl arrays/hashes upfront. Objects are wrapped only when accessed.
+*   **Efficiency:** Avoids creating large Perl arrays/hashes upfront. C objects are wrapped in Perl only when they are actually accessed.
 *   **Reduced Code:** Reuses the same generic container logic for many different descriptor collections.
-*   **Consistency:** Aligns with the approach taken by the Python UPB extension.
+*   **Memory Management:** The container objects hold a strong reference to the parent Perl object (e.g., the `MessageDescriptor`), ensuring the underlying upb definitions stay alive as long as the container is in use.

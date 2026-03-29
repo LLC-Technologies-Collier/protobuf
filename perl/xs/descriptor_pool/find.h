@@ -6,6 +6,9 @@
 #include "perl/xs/protobuf.h"
 #include "upb/reflection/def.h"
 
-// Functions for finding descriptors within the pool
+SV* PerlUpb_DescriptorPool_FindFileByName(pTHX_ SV* self, const char* name);
+SV* PerlUpb_DescriptorPool_FindMessageByName(pTHX_ SV* self, const char* name);
+SV* PerlUpb_DescriptorPool_FindEnumByName(pTHX_ SV* self, const char* name);
+SV* PerlUpb_DescriptorPool_FindExtensionByName(pTHX_ SV* self, const char* name);
 
 #endif // PERL_PROTOBUF_DESCRIPTOR_POOL_FIND_H_

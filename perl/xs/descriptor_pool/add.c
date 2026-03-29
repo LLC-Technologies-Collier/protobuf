@@ -1,5 +1,40 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "perl/xs/descriptor_pool/add.h"
+#include <sys/types.h>
+#include <setjmp.h>
+#include <stdlib.h>
+
+#include "xs/descriptor_pool/add.h"
+#include "xs/descriptor_pool/pool.h"
+#include "xs/descriptor/file.h"
+#include "upb/reflection/def.h"
+
+// Note: Using the cmake-generated header as it's the most likely one to be consistent 
+// with the objects we've already compiled.
+#include "upb/reflection/cmake/google/protobuf/descriptor.upb.h"
+
+SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
+    const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ self);
+    if (!pool) return &PL_sv_undef;
+
+    STRLEN len;
+    const char* data = SvPV(serialized, len);
+
+    upb_Arena* arena = upb_Arena_New();
+    google_protobuf_FileDescriptorProto* proto = google_protobuf_FileDescriptorProto_parse(data, len, arena);
+    if (!proto) {
+        upb_Arena_Free(arena);
+        croak("Failed to parse FileDescriptorProto");
+    }
+
+    upb_Status status;
+    upb_Status_Clear(&status);
+    const upb_FileDef* file = upb_DefPool_AddFile((upb_DefPool*)pool, proto, &status);
+    
+    // The pool keeps its own internal state, so the proto is no longer needed.
+    upb_Arena_Free(arena);
+
+    if (!file) {
+        croak("Failed to add file to pool: %s", upb_Status_ErrorMessage(&status));
+    }
+    
+    return PerlUpb_FileDef_GetWrapper(aTHX_ file);
+}

@@ -79,3 +79,24 @@ bool PerlUpb_MessageDef_IsMapEntry(pTHX_ const upb_MessageDef *m) {
 bool PerlUpb_MessageDef_IsMessageSet(pTHX_ const upb_MessageDef *m) {
     return upb_MessageDef_IsMessageSet(m);
 }
+
+#include "xs/protobuf/obj_cache.h"
+
+SV* PerlUpb_MessageDef_GetWrapper(pTHX_ const upb_MessageDef *m) {
+    if (!m) return &PL_sv_undef;
+    SV* cached = PerlUpb_ObjCache_Get(aTHX_ m);
+    if (cached) return cached;
+
+    SV* sv = newSViv((IV)m);
+    SV* obj = newRV_noinc(sv);
+    sv_bless(obj, gv_stashpv("Protobuf::MessageDescriptor", GV_ADD));
+    PerlUpb_ObjCache_Add(aTHX_ m, obj);
+    return obj;
+}
+
+const upb_MessageDef* PerlUpb_MessageDef_GetMessage(pTHX_ SV *sv) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::MessageDescriptor")) {
+        return NULL;
+    }
+    return (const upb_MessageDef*)SvIV(SvRV(sv));
+}
