@@ -90,8 +90,8 @@ sub MY::postamble {
             $cflags = "-D_GNU_SOURCE -Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes -mssse3 -msse4.1";
         }
         push @obj_rules, "$o_file: $c_file\n" . 
-                         "\t\@mkdir -p \$(\@D)\n" . 
-                         "\t${compiler} \$(CCFLAGS) \$(INC) ${cflags} ${base_flags} -c $c_file -o $o_file\n";
+                         "\t".'@mkdir -p $(@D)'."\n" .
+                         "\t${compiler} ".'$(CCFLAGS) $(INC)'." ${cflags} ${base_flags} -c $c_file -o $o_file\n";
     }
     $make_frag .= join("", @obj_rules) . "\n";
 
@@ -118,6 +118,7 @@ EOM
     # Custom C test rules
     use ExtUtils::Embed;
     use File::Find;
+    use Path::Tiny;
     my $archlibexp = $Config{archlibexp};
     my $embed_cflags = ExtUtils::Embed::ccopts(); # CC flags for embedding
     my $embed_ldflags = ExtUtils::Embed::ldopts(); # LD flags for embedding
@@ -134,62 +135,75 @@ EOM
     $embed_ldflags =~ s{-lperl}{$perl_lib_path}g;
 
     my $config_file = File::Spec->catfile('t', 'c', 'c_test_config.json');
-    my $json_text = do { local $/; open my $fh, '<', $config_file or die "Can't open $config_file: $!"; <$fh> };
+    my $json_text = path($config_file)->slurp_utf8;
     my $c_test_config = decode_json($json_text);
 
     my @c_test_targets;
     my $c_test_rules = "# c test rules\n";
+    my $test_inc = '$(INC)'; # Inherit INC from WriteMakefile
 
     foreach my $test_key ( sort keys %$c_test_config ){
         next if $test_key =~ /eval_croak_test/;
 
-        # Extract number from test_key like integration/050_convert
-        if ($test_key =~ m{integration/(\d+)_}) {
-            my $num = $1;
-            next if $num >= 50;
-        }
-
         my $target = "t/c/$test_key";
         my $source = "$target.c";
+        my $object = "$target.o";
         push @c_test_targets, $target;
 
         my $config = $c_test_config->{$test_key} || {};
+        my @extra_src_list;
         my $extra_src_val = $config->{extra_src};
-        my $extra_src = '';
         if (defined $extra_src_val) {
-            if (ref $extra_src_val eq 'ARRAY') {
-                $extra_src = join(' ', @{$extra_src_val});
-            } else {
-                $extra_src = $extra_src_val;
-            }
+            push @extra_src_list, ref $extra_src_val eq 'ARRAY' ? @{$extra_src_val} : $extra_src_val;
         }
         my $deps = join(' ', @{$config->{deps} || []});
         my $ccflags = $config->{ccflags} || '';
         my $ldflags = $config->{ldflags} || '';
+        my $extra_ccflags = $config->{extra_ccflags} || '';
 
-        my $test_deps = "$source $extra_src $deps \$(COMMON_LIB) t/c/upb-perl-test.o";
+        my @all_objects = ($object);
+        my @all_sources = ($source);
+        push @all_sources, @extra_src_list;
+
+        foreach my $src_file (@extra_src_list) {
+            my $obj_file = $src_file;
+            $obj_file =~ s/\.c$/.o/;
+            push @all_objects, $obj_file;
+        }
+        my $all_objects_str = join(" ", @all_objects);
+
+        # Rule to compile all .c to .o for this test
+        foreach my $s (@all_sources) {
+            my $o = $s;
+            $o =~ s/\.c$/.o/;
+            $c_test_rules .= "$o: $s $deps t/c/upb-perl-test.h\n";
+            $c_test_rules .= "\t".'@mkdir -p $(@D)'."\n";
+            $c_test_rules .= "\t".'$(CC) $(CCFLAGS)'." $embed_cflags $test_inc $extra_ccflags -c $s -o $o\n\n";
+        }
+
+        # Rule to link the object files into an executable
+        my $test_deps = "$all_objects_str \$(COMMON_LIB) t/c/upb-perl-test.o";
         if ($target eq 't/c/convert/sv_to_upb' || $target eq 't/c/convert/upb_to_sv' || $target eq 't/c/integration/050_convert') {
             $test_deps .= " t/data/test_descriptor.bin";
         }
 
-        my $compile_line = join " ", grep { length $_ > 0 } (
-            '$(CC)', '$(CCFLAGS)', '-I$(PERL_INC)', '$(INC)', $embed_cflags,
-            '-DPERL_EXTENSION', $ccflags, '-o', $target, $source,
-            't/c/upb-perl-test.o', $extra_src, '-L$(CURDIR)', '-lprotobuf_common',
-            $embed_ldflags, $ldflags, '-lpcre2-8 -fsanitize=address'
+        my $link_line = join " ", grep { length $_ > 0 } (
+            '$(CC)', '$(CCFLAGS)', $extra_ccflags, '-o', $target, $all_objects_str,
+            't/c/upb-perl-test.o', '-L$(CURDIR)', '-lprotobuf_common',
+            $embed_cflags, $embed_ldflags, $ldflags, '-lpcre2-8 -fsanitize=address'
         );
 
         $c_test_rules .= sprintf(
-            '%s: %s'."\n\t".'@mkdir -p $(@D)'."\n\t\%s\n\n",
+            '%s: %s'. "\n\t" . '%s' . "\n\n",
             $target, $test_deps,
-            $compile_line
+            $link_line
         );
     }
-    $c_test_rules .= "# end c test rules\\n";
+    $c_test_rules .= "# end c test rules\n";
     $make_frag .= $c_test_rules;
 
     # Add all C test targets to .PHONY
-    $make_frag .= ".PHONY: " . join(" ", @c_test_targets) . " test_c build_c_tests\\n";
+    $make_frag .= ".PHONY: " . join(" ", @c_test_targets) . " test_c build_c_tests\n";
 
     # Rule to generate test_descriptor.bin
     $make_frag .= <<'EOM';

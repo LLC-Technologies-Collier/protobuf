@@ -1,6 +1,7 @@
 #include "t/c/upb-perl-test.h"
 #include "xs/protobuf.h"
 #include "xs/convert.h"
+#include "xs/protobuf/arena.h" // For PerlUpb_Arena_New
 #include "t/c/convert/test_util.h"
 #include "libcoro/coro.h"
 #include <stdio.h>
@@ -24,6 +25,7 @@ typedef struct {
     int id;
     int errors;
     upb_Arena *arena;
+    SV *arena_sv;
     const upb_MessageDef *malli;
 } coro_arg_t;
 
@@ -31,8 +33,7 @@ typedef struct {
 void test_string_conversion(pTHX_ coro_arg_t *carg) {
     const upb_FieldDef *field = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_string");
     if (!field) {
-        fprintf(stderr, "Coro %d: Failed to get FieldDef for optional_string
-", carg->id);
+        fprintf(stderr, "Coro %d: Failed to get FieldDef for optional_string\n", carg->id);
         carg->errors++;
         return;
     }
@@ -40,15 +41,13 @@ void test_string_conversion(pTHX_ coro_arg_t *carg) {
     // SV to UPB
     SV *sv = newSVpvn("hello coro", 10);
     upb_MessageValue val;
-    bool result = PerlUpb_SvToUpb(aTHX_ sv, field, carg->arena, &val);
+    bool result = PerlUpb_SvToUpb(aTHX_ sv, field, &val, carg->arena);
     if (!result) {
-        fprintf(stderr, "Coro %d: PerlUpb_SvToUpb failed for string
-", carg->id);
+        fprintf(stderr, "Coro %d: PerlUpb_SvToUpb failed for string\n", carg->id);
         carg->errors++;
     } else {
         if (memcmp(val.str_val.data, "hello coro", 10) != 0 || val.str_val.size != 10) {
-            fprintf(stderr, "Coro %d: SV to UPB string conversion mismatch
-", carg->id);
+            fprintf(stderr, "Coro %d: SV to UPB string conversion mismatch\n", carg->id);
             carg->errors++;
         }
     }
@@ -58,15 +57,13 @@ void test_string_conversion(pTHX_ coro_arg_t *carg) {
 
     // UPB to SV
     val.str_val = upb_StringView_FromString("upb to sv");
-    SV *ret_sv = PerlUpb_UpbToSv(aTHX_ &val, field, sv_2mortal(newRV_inc((SV*)carg->arena)));
+    SV *ret_sv = PerlUpb_UpbToSv(aTHX_ &val, field, carg->arena_sv);
     if (!ret_sv) {
-        fprintf(stderr, "Coro %d: PerlUpb_UpbToSv failed for string
-", carg->id);
+        fprintf(stderr, "Coro %d: PerlUpb_UpbToSv failed for string\n", carg->id);
         carg->errors++;
     } else {
         if (!SvPOK(ret_sv) || strcmp(SvPV_nolen(ret_sv), "upb to sv") != 0) {
-            fprintf(stderr, "Coro %d: UPB to SV string conversion mismatch
-", carg->id);
+            fprintf(stderr, "Coro %d: UPB to SV string conversion mismatch\n", carg->id);
             carg->errors++;
         }
         SvREFCNT_dec(ret_sv);
@@ -94,18 +91,18 @@ int main(int argc, char** argv) {
 
     plan(3 + NUM_COROS);
 
-    upb_Arena *arena = upb_Arena_New();
+    SV *arena_sv = PerlUpb_Arena_New(aTHX);
+    upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+
     if (!load_test_descriptors(aTHX_ arena)) {
-         fprintf(stderr, "Failed to load test descriptors
-");
+         fprintf(stderr, "Failed to load test descriptors\n");
          return 1;
     }
      ok(1, "Descriptors loaded");
 
     const upb_MessageDef *malli = upb_DefPool_FindMessageByName(test_pool, "protobuf_test_messages.proto2.TestAllTypesProto2");
     if (!malli) {
-        fprintf(stderr, "Failed to find TestAllTypesProto2 message
-");
+        fprintf(stderr, "Failed to find TestAllTypesProto2 message\n");
         return 1;
     }
 
@@ -120,17 +117,18 @@ int main(int argc, char** argv) {
         args[i].id = i + 1;
         args[i].errors = 0;
         args[i].arena = arena;
+        args[i].arena_sv = arena_sv;
         args[i].malli = malli;
         coro_ctxs[i] = (coro_context *)malloc(sizeof(coro_context));
         coro_create(coro_ctxs[i], coro_test_func, &args[i], coro_stacks[i].sptr, coro_stacks[i].ssze);
     }
 
-    diag("Running C-level coro stress test for convert functions...");
+    cdiag("Running C-level coro stress test for convert functions...");
     for (int j = 0; j < NUM_OPS * 2 * NUM_COROS; j++) {
         int coro_idx = j % NUM_COROS;
         coro_transfer(&main_ctx, coro_ctxs[coro_idx]);
     }
-    diag("Finished C-level coro stress test.");
+    cdiag("Finished C-level coro stress test.");
 
     int total_errors = 0;
     for (int i = 0; i < NUM_COROS; i++) {
@@ -144,7 +142,7 @@ int main(int argc, char** argv) {
 
     is(total_errors, 0, "Total errors from all coroutines");
 
-    upb_Arena_Free(arena);
+    PerlUpb_Arena_Destroy(aTHX_ arena_sv);
     perl_destruct(my_perl);
     perl_free(my_perl);
     PERL_SYS_TERM();

@@ -31,10 +31,21 @@ int main(int argc, char** argv) {
     ok(enum_def, "Found test.TestEnum");
 
     if (enum_def) {
-        const upb_EnumValueDef* val1 = upb_EnumDef_FindValueByName(enum_def, "TEST_ENUM_VAL1");
-        ok(val1, "Found TEST_ENUM_VAL1");
+        int count = PerlUpb_EnumDef_ValueCount(aTHX_ enum_def);
+        fprintf(stderr, "# Enum test.TestEnum has %d values:\n", count);
+        for (int i = 0; i < count; ++i) {
+            const upb_EnumValueDef* ev = PerlUpb_EnumDef_Value(aTHX_ enum_def, i);
+            if (ev) {
+                fprintf(stderr, "#   Index %d: Name=%s, Number=%d\n", i, PerlUpb_EnumValueDef_Name(aTHX_ ev), PerlUpb_EnumValueDef_Number(aTHX_ ev));
+            } else {
+                fprintf(stderr, "#   Index %d: NULL\n", i);
+            }
+        }
+
+        const upb_EnumValueDef* val1 = upb_EnumDef_FindValueByName(enum_def, "TEST_ENUM_FIRST");
+        ok(val1, "Found TEST_ENUM_FIRST");
         if (val1) {
-            is_string(PerlUpb_EnumValueDef_Name(aTHX_ val1), "TEST_ENUM_VAL1", "PerlUpb_EnumValueDef_Name");
+            is_string(PerlUpb_EnumValueDef_Name(aTHX_ val1), "TEST_ENUM_FIRST", "PerlUpb_EnumValueDef_Name");
             is(PerlUpb_EnumValueDef_Number(aTHX_ val1), 1, "PerlUpb_EnumValueDef_Number");
             is(PerlUpb_EnumValueDef_Index(aTHX_ val1), 1, "PerlUpb_EnumValueDef_Index"); // Index should be 1 as UNKNOWN is 0
         } else {

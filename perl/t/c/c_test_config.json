@@ -102,8 +102,14 @@
       "t/c/convert/types/group.c"
     ]
   },
-  "descriptor/enum": {
-    "deps": ["xs/descriptor/enum.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+  "descriptor/field": {
+    "deps": [
+      "xs/descriptor/field.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "../upb/reflection/def.h",
+      "../upb/base/descriptor_constants.h"
+    ],
     "extra_src": "t/c/convert/test_util.c"
   },
   "integration/030_asan_test": {
