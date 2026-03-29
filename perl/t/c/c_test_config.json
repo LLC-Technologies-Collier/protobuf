@@ -178,6 +178,19 @@
     "deps": ["xs/protobuf.h", "t/c/upb-perl-test.h", "xs/convert.h", "t/c/convert/test_util.h", "libcoro/coro.h"],
     "extra_src": ["t/c/convert/test_util.c", "libcoro/coro.c"]
   },
+  "integration/070_descriptor": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/convert.h",
+      "xs/descriptor/message.h",
+      "xs/descriptor/field.h",
+      "xs/descriptor/enum.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h",
+      "../upb/reflection/def.h"
+    ],
+    "extra_src": "t/c/convert/test_util.c"
+  },
   "integration/036_asan_leak_test": {
     "deps": ["t/c/upb-perl-test.h"]
   },

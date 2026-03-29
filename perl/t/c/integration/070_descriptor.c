@@ -1,0 +1,92 @@
+#include <sys/types.h>
+#include <setjmp.h>
+#include <stdlib.h>
+
+#include "t/c/upb-perl-test.h"
+#include "xs/protobuf.h"
+#include "xs/convert.h"
+#include "xs/descriptor/message.h"
+#include "xs/descriptor/field.h"
+#include "xs/descriptor/enum.h"
+#include "t/c/convert/test_util.h"
+#include <stdio.h>
+
+int main(int argc, char** argv) {
+    PERL_SYS_INIT3(&argc, &argv, &environ);
+    PerlInterpreter *my_perl = perl_alloc();
+    perl_construct(my_perl);
+    PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
+    char *embedding[] = { (char*)"", (char*)"-e", "0", NULL };
+    perl_parse(my_perl, NULL, 3, embedding, NULL);
+    perl_run(my_perl);
+
+    plan(12);
+
+    upb_Arena *arena = upb_Arena_New();
+    if (!load_test_descriptors(aTHX_ arena)) {
+         fail("Failed to load test descriptors");
+         return 1;
+    }
+    ok(1, "Descriptors loaded");
+
+    // 1. Get MessageDef
+    const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
+    ok(msg_def != NULL, "Found test.TestMessage");
+
+    if (msg_def) {
+        // 2. Get FieldDef via wrapper
+        const upb_FieldDef *field = PerlUpb_MessageDef_FindFieldByName(aTHX_ msg_def, "enum_field");
+        ok(field != NULL, "Found enum_field via PerlUpb_MessageDef_FindFieldByName");
+
+        if (field) {
+            // 3. Use FieldDef in SvToUpb
+            SV *sv = newSViv(1); // TEST_ENUM_FIRST
+            upb_MessageValue val;
+            bool success = PerlUpb_SvToUpb(aTHX_ sv, field, &val, arena);
+            ok(success, "PerlUpb_SvToUpb success with enum field");
+            is(val.int32_val, 1, "Enum value correct in UPB");
+            SvREFCNT_dec(sv);
+
+            // 4. Get EnumDef from FieldDef via wrapper
+            const upb_EnumDef *enum_def = PerlUpb_FieldDef_EnumSubDef(aTHX_ field);
+            ok(enum_def != NULL, "PerlUpb_FieldDef_EnumSubDef returns non-NULL");
+            if (enum_def) {
+                is_string(PerlUpb_EnumDef_FullName(aTHX_ enum_def), "test.TestEnum", "Enum full name matches");
+            } else {
+                fprintf(stderr, "# EnumDef is NULL\n");
+            }
+        } else {
+            fprintf(stderr, "# Field is NULL\n");
+        }
+
+        const upb_FieldDef *msg_field = PerlUpb_MessageDef_FindFieldByName(aTHX_ msg_def, "nested_message");
+        ok(msg_field != NULL, "Found nested_message");
+        if (msg_field) {
+            // 5. Get MessageDef from FieldDef via wrapper
+            const upb_MessageDef *sub_msg_def = PerlUpb_FieldDef_MessageSubDef(aTHX_ msg_field);
+            ok(sub_msg_def != NULL, "PerlUpb_FieldDef_MessageSubDef returns non-NULL");
+            if (sub_msg_def) {
+                is_string(PerlUpb_MessageDef_FullName(aTHX_ sub_msg_def), "test.NestedMessage", "Sub-message full name matches");
+            } else {
+                fprintf(stderr, "# Sub-message MessageDef is NULL\n");
+            }
+        } else {
+            fprintf(stderr, "# Nested message field is NULL\n");
+        }
+        
+        // 6. Test list-based field access
+        int field_count = PerlUpb_MessageDef_FieldCount(aTHX_ msg_def);
+        ok(field_count > 0, "Field count > 0");
+        const upb_FieldDef *first_field = PerlUpb_MessageDef_Field(aTHX_ msg_def, 0);
+        ok(first_field != NULL, "First field retrieved via PerlUpb_MessageDef_Field");
+
+    } else {
+        fprintf(stderr, "# Skipping integration tests as msg_def is NULL\n");
+    }
+
+    upb_Arena_Free(arena);
+    perl_destruct(my_perl);
+    perl_free(my_perl);
+    PERL_SYS_TERM();
+    return 0;
+}
