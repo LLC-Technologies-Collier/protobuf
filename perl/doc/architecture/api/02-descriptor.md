@@ -1,27 +1,40 @@
 # Descriptor API
 
-_Status: Not Started_
+_Status: C Wrappers Implemented_
 
-The `Protobuf::Descriptor` class is a Perl wrapper around various `upb_Def*` types, such as `upb_MessageDef`, `upb_EnumDef`, `upb_FieldDef`, etc.
+The `Protobuf::Descriptor` class hierarchy in Perl (e.g., `Protobuf::MessageDescriptor`, `Protobuf::EnumDescriptor`) provides access to the underlying Protocol Buffer definitions using the `upb` library.
 
-## Attributes
+The C layer implementation (Milestone 6 & 7) provides a consistent set of wrapper functions for all `upb_Def*` types.
 
--   **`_upb_def`**: Opaque pointer to the C definition.
--   **`_type`**: String indicating the definition type (e.g., 'message', 'enum', 'field').
--   **`_pool`**: A strong Perl reference to the creating `Protobuf::DescriptorPool`.
+## C Wrapper Layer
 
-## Methods
+All descriptor wrappers are located in `perl/xs/descriptor/` and follow a consistent naming convention: `PerlUpb_<Type>Def_<Method>`.
 
-Methods will expose attributes of the underlying `upb` definition. Examples for a Message Descriptor:
+Example: `PerlUpb_MessageDef_FullName(pTHX_ const upb_MessageDef *m)`
 
--   `name()`: Returns `upb_MessageDef_Name()`.
--   `full_name()`: Returns `upb_MessageDef_FullName()`.
--   `syntax()`: Returns string form of `upb_MessageDef_Syntax()`.
--   `file()`: Returns a `Protobuf::FileDescriptor` (requiring cache lookup).
--   `fields()`: Returns a list of `Protobuf::FieldDescriptor`s.
--   `oneofs()`: Returns a list of `Protobuf::OneofDescriptor`s.
--   `containing_type()`: Returns a `Protobuf::Descriptor` or undef.
--   `nested_types()`: List of `Protobuf::Descriptor`s.
--   `enum_types()`: List of `Protobuf::EnumDescriptor`s.
+### Implemented Wrappers
 
-All methods returning Descriptor objects must use the pool's object cache.
+-   **FileDef (`file.c`):** Accessors for name, package, dependencies, and top-level definitions (messages, enums, extensions, services).
+-   **MessageDef (`message.c`):** Accessors for name, fields (by name, number, or index), oneofs, nested types, and containing type.
+-   **FieldDef (`field.c`):** Accessors for type, label, number, presence, and sub-types (message or enum).
+-   **EnumDef (`enum.c`):** Accessors for name and enum values.
+-   **EnumValueDef (`enum_value.c`):** Accessors for name, number, and index.
+-   **OneofDef (`oneof.c`):** Accessors for name, fields, and containing type.
+-   **ServiceDef (`service.c`):** Accessors for name and methods.
+-   **MethodDef (`method.c`):** Accessors for name, input/output types, and streaming flags.
+
+## Perl Attributes (Proposed)
+
+-   **`_upb_def`**: Opaque pointer (stored as IV) to the C `upb` definition.
+-   **`_pool`**: A strong Perl reference to the creating `Protobuf::DescriptorPool` to ensure its lifetime.
+
+## Perl Methods (Proposed)
+
+Perl methods will call the corresponding C wrappers. Methods that return other descriptors (e.g., `field->message_type()`) MUST use the `Protobuf::DescriptorPool` object cache to ensure Perl object identity and efficient memory management.
+
+### Cache Strategy
+
+When a wrapper returns a `upb_Def*` pointer, the Perl layer should:
+1. Check the `DescriptorPool` object cache for an existing Perl wrapper for that pointer.
+2. If found, return the existing Perl object.
+3. If not found, create a new Perl object, register it in the cache (using a weak reference in the cache), and return it.

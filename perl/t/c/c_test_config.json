@@ -157,6 +157,18 @@
     ],
     "extra_src": "t/c/convert/test_util.c"
   },
+  "descriptor_containers/by_name_map": {
+    "deps": [
+      "xs/descriptor_containers/by_name_map.h",
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "descriptor_containers/by_number_map": {
+    "deps": [
+      "xs/descriptor_containers/by_number_map.h",
+      "t/c/upb-perl-test.h"
+    ]
+  },
   "integration/030_asan_test": {
     "deps": ["t/c/upb-perl-test.h"]
   },

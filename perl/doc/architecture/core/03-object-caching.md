@@ -1,36 +1,33 @@
 # Object Caching
 
-_Status: Not Started_
+_Status: C Layer Implemented_
 
-To ensure object identity and improve performance, the XS layer must cache the Perl wrappers (SVs) created for underlying UPB C objects. This will closely follow the model used in the Python UPB extension.
+To ensure object identity and improve performance, the implementation uses a global (per-interpreter) cache to map underlying UPB C objects (pointers) to their corresponding Perl wrapper SVs. This mechanism is critical for maintaining consistent Perl object identity and efficient memory management.
 
 ## Cache Mechanism
 
-*   **Global Cache:** A single, global (per-interpreter) hash table will be used to cache all UPB-derived objects. This cache will map C pointers (e.g., `const upb_Def*`, `const upb_Message*`, `upb_Arena*`) to their corresponding Perl wrapper SVs.
-*   **Keys:** String representations of the C pointer address (e.g., generated via `sprintf "%p", ptr`). Using raw integer pointer values is not reliable as hash keys.
-*   **Values:** Weak references to the blessed Perl objects (e.g., `Protobuf::Descriptor`, `Protobuf::Message`).
-*   **Weak References:** Using `Scalar::Util::weaken` is crucial. This prevents the cache from keeping the Perl wrapper objects alive if all other references are gone. When the Perl object is destroyed, the weak reference in the cache becomes undefined, allowing the cache entry to be eventually cleaned up.
+The C implementation of the object cache is located in `perl/xs/protobuf/obj_cache.c` and `perl/xs/protobuf/obj_cache.h`.
 
-## Cache Lookup/Insert
+*   **Global Cache:** A single `HV*` (Perl Hash) is initialized during module load.
+*   **Keys:** Hexadecimal string representations of C pointer addresses (e.g., `0x7fd1a2b3c4d5`).
+*   **Values:** Weak references (using `sv_rvweaken`) to the blessed Perl objects. This ensures that the cache itself does not extend the lifetime of the Perl wrappers.
 
-*   All XS functions or typemap code that convert a `upb_Def*`, `upb_Message*`, or other UPB pointer to a Perl object MUST first check the global cache.
-*   If a wrapper exists for the C pointer, return the existing SV (after strengthening the reference if necessary).
-*   If not found, create a new Perl wrapper object, store it in the cache with the C pointer as the key, and then return the new object.
+## API Functions
 
-## Important Notes on Hash Operations
+-   `void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj)`: Adds a Perl object to the cache for the given C pointer. The reference in the cache is weakened.
+-   `SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr)`: Retrieves the Perl object associated with the C pointer. Returns `NULL` if not found or if the weak reference has been collected.
+-   `void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr)`: Removes the entry for the given C pointer from the cache.
 
-*   When using string keys derived from pointers, ensure the same stringification method is used in `Add`, `Get`, and `Delete` operations.
-*   `hv_delete_ent(hash, key_sv, flags, hash)` decrements the reference count of the `key_sv` provided for the lookup. Do not manually decref the `key_sv` after calling `hv_delete_ent`.
-*   `hv_fetch_ent(hash, key_sv, lval, hash)` does *not* decref the `key_sv`, so it must be decreffed after the call.
+## Usage in XS
 
+Any function that needs to return a Perl wrapper for a `upb` object MUST:
 
+1.  Call `PerlUpb_ObjCache_Get(aTHX_ ptr)`.
+2.  If it returns a valid SV, increment its reference count and return it.
+3.  If it returns `NULL`, create the new Perl wrapper SV, call `PerlUpb_ObjCache_Add(aTHX_ ptr, new_sv)`, and then return the new SV.
 
 ## Benefits
 
-*   **Object Identity:** `$msg->field == $msg->field` will be true, as the same underlying C object will always return the same Perl object.
-*   **Performance:** Avoids repeatedly creating new Perl wrappers for the same C object.
-*   **Memory:** Reduces the number of Perl objects.
-*   **Simplified Management:** A single cache is easier to manage than per-object or per-arena caches.
-
-This approach mirrors the `PyUpb_ObjCache` mechanism in the Python extension, which has proven effective.
-
+-   **Object Identity:** Ensures that multiple calls for the same underlying C descriptor or message return the same Perl object instance.
+-   **Memory Efficiency:** Prevents redundant Perl wrapper objects from being created for long-lived C objects (like descriptors in the `DescriptorPool`).
+-   **Automatic Cleanup:** Using weak references allows Perl's garbage collector to reclaim the wrapper objects when they are no longer in use by the Perl application, at which point the cache entry effectively becomes empty.
