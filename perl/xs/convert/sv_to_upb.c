@@ -1,9 +1,11 @@
 #include "xs/convert/sv_to_upb.h"
 #include "xs/protobuf.h"
+#include "xs/protobuf/message.h"
 #include "t/c/upb-perl-test.h" // Added for cdiag
 #include "upb/base/descriptor_constants.h"
 #include "upb/reflection/def.h"
 #include "upb/message/array.h"
+#include "upb/message/copy.h"
 #include <stdint.h>
 #include <errno.h>
 #include <ctype.h>
@@ -85,9 +87,26 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
             val->int32_val = SvIV(sv);
             return true;
         case kUpb_FieldType_Message:
-        case kUpb_FieldType_Group:
-             croak("Message type conversion not yet implemented in sv_to_upb");
-             return false;
+        case kUpb_FieldType_Group: {
+             const upb_Message* src_msg = PerlUpb_Message_GetMsg(aTHX_ sv);
+             if (!src_msg) CROAK_WRONG_TYPE(sv, "a Message object", f);
+             
+             const upb_MessageDef* target_mdef = upb_FieldDef_MessageSubDef(f);
+             const upb_MessageDef* src_mdef = PerlUpb_Message_GetDef(aTHX_ sv);
+             if (src_mdef != target_mdef) {
+                 croak("Message type mismatch for field '%s': expected %s, got %s",
+                       upb_FieldDef_Name(f), upb_MessageDef_FullName(target_mdef),
+                       upb_MessageDef_FullName(src_mdef));
+             }
+
+             const upb_MiniTable* mt = upb_MessageDef_MiniTable(target_mdef);
+             upb_Message* dst_msg = upb_Message_New(mt, arena);
+             if (!upb_Message_DeepCopy(dst_msg, src_msg, mt, arena)) {
+                 croak("Deep copy of message failed");
+             }
+             val->msg_val = dst_msg;
+             return true;
+        }
         default:
             croak("Unknown upb field type: %d", type);
             return false;
@@ -95,20 +114,14 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
     return false; // Should not reach here
 }
 
+
+bool PerlUpb_SvToUpb_Element(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val, upb_Arena *arena) {
+    if (!f || !val || !arena) return false;
+    return convert_singular_sv_to_upb(aTHX_ sv, f, val, arena);
+}
+
 bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val, upb_Arena *arena) {
-    // log something here? ("PerlUpb_SvToUpb ENTERED for field %s", f ? upb_FieldDef_Name(f) : "NULL_FIELD");
-    if (!f) {
-        croak("PerlUpb_SvToUpb: upb_FieldDef was NULL");
-        return false;
-    }
-    if (!val) {
-        croak("PerlUpb_SvToUpb: val was NULL");
-        return false;
-    }
-    if (!arena) {
-        croak("PerlUpb_SvToUpb: arena was NULL");
-        return false;
-    }
+    if (!f || !val || !arena) return false;
 
     if (!SvOK(sv)) {
         croak("Cannot convert undef to non-message type for field '%s'", upb_FieldDef_Name(f));
@@ -116,8 +129,6 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
     }
 
     if (upb_FieldDef_IsRepeated(f)) {
-        if (SvROK(sv)) {
-        }
         if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVAV) {
             CROAK_WRONG_TYPE(sv, "an Array Reference", f);
             return false;
@@ -133,8 +144,7 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
             return false;
         }
 
-        for (I32 i = 0; i < num_elements; ++i) {
-            if (i >= num_elements) croak("Loop invariant failed: i >= num_elements");
+        for (I32 i = 0; i < (I32)num_elements; ++i) {
             SV **elem_sv = av_fetch(av, i, 0);
             if (!elem_sv || !*elem_sv) {
                 croak("Error fetching element %d from array for field '%s'", (int)i, upb_FieldDef_Name(f));

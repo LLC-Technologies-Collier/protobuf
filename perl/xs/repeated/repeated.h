@@ -5,7 +5,30 @@
 #include "perl.h"
 #include "perl/xs/protobuf.h"
 #include "upb/message/array.h"
+#include "upb/reflection/def.h"
 
-// Core RepeatedContainer object functions
+// PerlUpb_Repeated wraps a upb_Array.
+SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_sv);
+
+// Returns the value at a given index.
+SV* PerlUpb_Repeated_GetItem(pTHX_ SV* self, int index);
+
+// Sets the value at a given index.
+void PerlUpb_Repeated_SetItem(pTHX_ SV* self, int index, SV* val_sv);
+
+// Appends a value to the end of the array.
+void PerlUpb_Repeated_Append(pTHX_ SV* self, SV* val_sv);
+
+// Deletes items from the array (splice-like).
+void PerlUpb_Repeated_Delete(pTHX_ SV* self, int index, int count);
+
+// Returns the number of items in the array.
+int PerlUpb_Repeated_Size(pTHX_ SV* self);
+
+// Clears the array.
+void PerlUpb_Repeated_Clear(pTHX_ SV* self);
+
+// Frees the wrapper.
+void PerlUpb_Repeated_Free(pTHX_ SV* sv);
 
 #endif // PERL_PROTOBUF_REPEATED_REPEATED_H_

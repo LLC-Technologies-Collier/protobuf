@@ -5,6 +5,7 @@
 #include "perl.h"
 #include "perl/xs/repeated/repeated.h"
 
-// RepeatedCompositeContainer specific functions
+// Adds a new message to a repeated field of message types and returns it.
+SV* PerlUpb_Repeated_Add(pTHX_ SV* self);
 
 #endif // PERL_PROTOBUF_REPEATED_COMPOSITE_H_

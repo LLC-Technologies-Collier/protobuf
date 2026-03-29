@@ -1,25 +1,39 @@
 # Message Field Accessors
 
-_Status: Not Started_
+_Status: C Layer Implemented_
 
 Field access in `Protobuf::Message` objects is designed to be idiomatic Perl.
 
-## `AUTOLOAD` Mechanism
+## C Implementation
 
--   Getters (`$message->field_name()`), setters (`$message->set_field_name($value)`), presence checkers (`$message->has_field_name()`), and clearers (`$message->clear_field_name()`) are handled by `AUTOLOAD` in `Protobuf::Message`.
--   `AUTOLOAD` parses the method name to determine the field name and operation type.
--   It looks up the `upb_FieldDef` from the message's `_descriptor`.
--   It calls a generic XS dispatcher function, passing the operation type, `upb_Message*`, and `upb_FieldDef*`.
+The XS-layer C functions are located in `perl/xs/message/access.c`.
 
-## XS Dispatch Functions
+*   **`PerlUpb_Message_GetField`**: Retrieves a field value.
+    *   Uses `upb_Message_GetFieldByDef` to get a `upb_MessageValue`.
+    *   Converts it to a Perl SV via `PerlUpb_UpbToSv`.
+    *   For message types, it returns a Perl wrapper blessed into the appropriate class.
+*   **`PerlUpb_Message_SetField`**: Sets a field value.
+    *   Converts the Perl SV to a `upb_MessageValue` via `PerlUpb_SvToUpb`.
+    *   If the field is a message, it performs a `upb_Message_DeepCopy` into the destination message's arena.
+    *   Uses `upb_Message_SetFieldByDef` to store the value.
+*   **`PerlUpb_Message_HasField`**: Checks if a field with presence is set.
+*   **`PerlUpb_Message_ClearField`**: Clears a specific field.
+*   **`PerlUpb_Message_Clear`**: Clears all fields in the message.
 
--   A central XS function (e.g., `perl_upb_msg_field_access`) takes the Perl `self` object, field name, operation type, and optional values.
--   It retrieves the `upb_Message*` and `upb_MiniTable*`.
--   Handles stub reification if necessary (for message fields).
--   Uses the `upb/message/accessors.h` functions (`upb_Message_Get...`, `upb_Message_Set...`, etc.) to perform the operation.
--   Converts results back to Perl SVs using functions from `xs/types.c`, utilizing the object cache for message types.
+## Perl Layer Integration (Future)
+
+-   Getters (`$message->field_name()`), setters (`$message->set_field_name($value)`), presence checkers (`$message->has_field_name()`), and clearers (`$message->clear_field_name()`) will be handled by `AUTOLOAD` in `Protobuf::Message`.
+-   `AUTOLOAD` will look up the `upb_FieldDef` and call the corresponding C function.
+
+## Serialization and Comparison
+
+Implemented in `perl/xs/message/serialize.c` and `perl/xs/message/compare.c`.
+
+*   **`PerlUpb_Message_Serialize`**: Serializes message to wire format using `upb_Encode`.
+*   **`PerlUpb_Message_Parse`**: Creates a new message and arena, and parses data into it via `upb_Decode`.
+*   **`PerlUpb_Message_IsEqual`**: Compares two messages for value equality using `upb_Message_IsEqual`.
 
 ## Type Handling
 
--   The XS layer uses the `upb_FieldDef` to determine the field's C type and uses the appropriate type conversion functions.
+-   The C layer uses `upb_FieldDef` to determine the field's type and uses `PerlUpb_SvToUpb` / `PerlUpb_UpbToSv` for conversion.
 -   See [Type Conversion](core/05-type-conversion.md).

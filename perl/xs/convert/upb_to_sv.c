@@ -1,7 +1,8 @@
 
 #include "xs/convert/upb_to_sv.h"
 #include "xs/protobuf.h"
-#include "xs/protobuf/message.h" // Include the new header
+#include "xs/protobuf/message.h"
+#include "xs/map/map.h"
 #include "upb/reflection/def.h"
 #include "upb/wire/types.h"
 #include "upb/message/array.h"
@@ -51,6 +52,11 @@ static SV* convert_singular_upb_to_sv(pTHX_ const upb_MessageValue *val, const u
     }
 }
 
+SV* PerlUpb_UpbToSv_Element(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV *parent_arena_sv) {
+    if (!f || !val) return newSV(0);
+    return convert_singular_upb_to_sv(aTHX_ val, f, parent_arena_sv);
+}
+
 SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV *parent_arena_sv) {
     if (!f) {
         croak("PerlUpb_UpbToSv: upb_FieldDef was NULL");
@@ -58,6 +64,12 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
     }
     if (!val) {
         return newSV(0); // Return undef
+    }
+
+    if (upb_FieldDef_IsMap(f)) {
+        upb_Map *map = (upb_Map*)val->map_val;
+        if (!map) return newRV_noinc((SV*)newHV()); // Empty map
+        return PerlUpb_Map_New(aTHX_ map, f, parent_arena_sv);
     }
 
     if (upb_FieldDef_IsRepeated(f)) {

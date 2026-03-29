@@ -1,42 +1,30 @@
 # Message Creation
 
-_Status: Not Started_
+_Status: C Layer Implemented_
 
 New Protocol Buffer message instances in Perl are created either directly or as submessages of existing messages.
 
-## Methods
+## Implementation
 
-1.  **`Protobuf::Message->new(_descriptor => $descriptor, ...)`:**
-    -   Creates a *top-level* message.
-    -   Requires a `Protobuf::Descriptor` object.
-    -   A new `upb_Arena` is created and owned by this `Protobuf::Message` instance (via lazy builder `_build_upb_arena`).
-    -   The `upb_MessageDef*` is retrieved from the `_descriptor` object.
-    -   The `upb_MiniTable*` is retrieved from the `upb_MessageDef` using `upb_MessageDef_MiniTable()`.
-    -   A new `upb_Message` is created on the message's own arena using `upb_Message_New()`.
-    -   The Perl `Protobuf::Message` object stores pointers to the `upb_Message`, the `upb_Arena`, and the `Protobuf::Descriptor`.
+The C implementation is located in `perl/xs/message/message.c`.
 
-2.  **Accessing a singular message field (e.g., `$parent->submessage`):**
-    -   If the field is not set, this returns a "stub" `Protobuf::Message` object. This stub does not yet have its own `upb_Message` or `upb_Arena`. It contains:
-        *   A reference to the parent `Protobuf::Message` SV.
-        *   The `upb_FieldDef*` for the submessage field.
-    -   When a field on the stub is *mutated*, the stub is "reified":
-        *   The parent's arena is used.
-        *   `upb_Message_Mutable()` is called on the parent to create the sub-`upb_Message` instance.
-        *   The stub Perl object is updated to point to this new `upb_Message` and the parent's arena.
+*   **`PerlUpb_Message_NewMessage`**: Creates a new message instance.
+    *   Allocates a new `upb_Arena` via `PerlUpb_Arena_New`.
+    *   Creates a new `upb_Message` using `upb_Message_New` and the message's `upb_MiniTable`.
+    *   Wraps them in a Perl hash SV (blessed into the message's full name).
+    *   Registers the message in the `PerlUpb_ObjCache` to ensure object identity and proper reference counting.
 
-3.  **`$pool->new_message('My.Message.Name', ?%attrs)`:** (Planned) This factory method on the pool is a more user-friendly way to create top-level messages.
+## Methods (Perl Perspective)
 
-## XS Layer Responsibilities (`Message.xs`)
-
--   `pb_msg_create_arena()`: Creates a new `upb_Arena` for a top-level message instance.
--   `pb_msg_free_arena()`: Frees the message's arena in `DEMOLISH`.
--   XSUBs for field access (called by `AUTOLOAD`):
-    -   Detect if the target object is a stub.
-    -   If writing to a stub, reify it using the parent's arena and `upb_Message_Mutable()`.
-    -   Perform the get/set/has/clear operation using the appropriate `upb/message/accessors.h` function.
+1.  **`Protobuf::Message->new()`**: (Future Perl layer) will call `PerlUpb_Message_NewMessage`.
+2.  **Accessing a singular message field**: 
+    -   Handled by `PerlUpb_Message_GetField`.
+    -   If the field is a message type, it returns a Perl wrapper around the existing `upb_Message` pointer.
+    -   Uses `PerlUpb_ObjCache` to ensure that multiple accesses to the same submessage return the same Perl SV.
 
 ## Arena Ownership & Lifecycle
 
--   Top-level messages own their arena.
--   Submessages (once reified) live on their parent's arena.
--   Stubs do not own an arena.
+-   Top-level messages own their `upb_Arena`.
+-   The Perl wrapper holds a strong reference to the `arena_sv`.
+-   When the Perl message object is destroyed, its `DESTROY` method (calling `PerlUpb_Message_Free`) removes it from the cache. 
+-   The `arena_sv` reference count decreases. When it reaches zero, the `upb_Arena` is freed, reclaiming all memory for the message and all its submessages.

@@ -1,5 +1,7 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "perl/xs/repeated/scalar.h"
+#include <sys/types.h>
+#include <setjmp.h>
+#include <stdlib.h>
+
+#include "xs/repeated/scalar.h"
+
+// Scalar specific repeated field operations can be implemented here.

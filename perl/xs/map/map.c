@@ -49,13 +49,13 @@ SV* PerlUpb_Map_GetItem(pTHX_ SV* self, SV* key_sv) {
 
     upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ m->arena_sv);
     upb_MessageValue key_val;
-    if (!PerlUpb_SvToUpb(aTHX_ key_sv, key_f, &key_val, arena)) {
+    if (!PerlUpb_SvToUpb_Element(aTHX_ key_sv, key_f, &key_val, arena)) {
         croak("Invalid map key type");
     }
 
     upb_MessageValue val;
     if (upb_Map_Get(m->map, key_val, &val)) {
-        return PerlUpb_UpbToSv(aTHX_ &val, val_f, m->arena_sv);
+        return PerlUpb_UpbToSv_Element(aTHX_ &val, val_f, m->arena_sv);
     }
 
     return &PL_sv_undef;
@@ -71,10 +71,10 @@ void PerlUpb_Map_SetItem(pTHX_ SV* self, SV* key_sv, SV* value_sv) {
     upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ m->arena_sv);
     upb_MessageValue key_val, val;
 
-    if (!PerlUpb_SvToUpb(aTHX_ key_sv, key_f, &key_val, arena)) {
+    if (!PerlUpb_SvToUpb_Element(aTHX_ key_sv, key_f, &key_val, arena)) {
         croak("Invalid map key type");
     }
-    if (!PerlUpb_SvToUpb(aTHX_ value_sv, val_f, &val, arena)) {
+    if (!PerlUpb_SvToUpb_Element(aTHX_ value_sv, val_f, &val, arena)) {
         croak("Invalid map value type");
     }
 
@@ -90,7 +90,7 @@ void PerlUpb_Map_DeleteItem(pTHX_ SV* self, SV* key_sv) {
 
     upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ m->arena_sv);
     upb_MessageValue key_val;
-    if (!PerlUpb_SvToUpb(aTHX_ key_sv, key_f, &key_val, arena)) {
+    if (!PerlUpb_SvToUpb_Element(aTHX_ key_sv, key_f, &key_val, arena)) {
         croak("Invalid map key type");
     }
 

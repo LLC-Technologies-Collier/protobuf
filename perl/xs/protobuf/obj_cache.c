@@ -25,17 +25,14 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
     char key[64];
     get_cache_key(ptr, key);
 
-    SV* key_sv = newSVpv(key, 0);
-    
     // We store a weak reference to the object in the cache.
     // The 'obj' passed in is expected to be a reference (RV) to the blessed SV.
     SV* rv = newSVsv(obj);
     sv_rvweaken(rv);
 
-    if (!hv_store_ent(g_obj_cache, key_sv, rv, 0)) {
+    if (!hv_store(g_obj_cache, key, strlen(key), rv, 0)) {
         SvREFCNT_dec(rv);
     }
-    SvREFCNT_dec(key_sv);
 }
 
 SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
@@ -50,14 +47,17 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
     SV* rv = *svp;
     if (rv && SvROK(rv)) {
         SV* obj = SvRV(rv);
-        if (obj && SvOK(obj)) {
+        // When a weak reference's target is destroyed, SvRV(rv) will return &PL_sv_undef
+        // or the RV itself will be modified.
+        // The most reliable check for a weakened RV is that SvRV(rv) is not &PL_sv_undef.
+        if (obj && obj != &PL_sv_undef) {
             // Found a valid cached object. Return a NEW reference to it.
             return newRV_inc(obj);
         }
     }
     
     // If we reach here, the weak ref was collected or the SV is invalid.
-    // We should probably clean up the entry.
+    // We should clean up the entry to avoid repeated misses.
     hv_delete(g_obj_cache, key, strlen(key), G_DISCARD);
     return NULL;
 }

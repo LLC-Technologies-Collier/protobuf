@@ -1,0 +1,124 @@
+#include <sys/types.h>
+#include <setjmp.h>
+#include <stdlib.h>
+
+#include "t/c/upb-perl-test.h"
+#include "xs/protobuf.h"
+#include "xs/descriptor/field.h"
+#include "xs/descriptor/message.h"
+#include "xs/message/message.h"
+#include "xs/message/access.h"
+#include "xs/message/serialize.h"
+#include "xs/repeated/repeated.h"
+#include "xs/repeated/composite.h"
+#include "xs/protobuf/arena.h"
+#include "xs/protobuf/message.h"
+#include "t/c/convert/test_util.h"
+#include "upb/message/array.h"
+#include "upb/reflection/message.h"
+#include <stdio.h>
+
+int main(int argc, char** argv) {
+    PERL_SYS_INIT3(&argc, &argv, &environ);
+    PerlInterpreter *my_perl = perl_alloc();
+    perl_construct(my_perl);
+    PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
+    char *embedding[] = { (char*)"", (char*)"-e", "0", NULL };
+    perl_parse(my_perl, NULL, 3, embedding, NULL);
+    perl_run(my_perl);
+
+    plan(10);
+
+    extern void PerlUpb_ObjCache_Init(pTHX);
+    PerlUpb_ObjCache_Init(aTHX);
+
+    SV *arena_sv = PerlUpb_Arena_New(aTHX);
+    upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+
+    if (!load_test_descriptors(aTHX_ arena)) return 1;
+    ok(1, "Descriptors loaded");
+
+    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_test_messages.proto2.TestAllTypesProto2");
+    SV* mdef_sv = PerlUpb_MessageDef_GetWrapper(aTHX_ mdef);
+    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ mdef_sv);
+
+    // 1. Test repeated int32
+    const upb_FieldDef *f_rep_int32 = upb_MessageDef_FindFieldByName(mdef, "repeated_int32");
+    AV* av_int32 = newAV();
+    av_push(av_int32, newSViv(1));
+    av_push(av_int32, newSViv(2));
+    av_push(av_int32, newSViv(3));
+    SV* av_ref = newRV_noinc((SV*)av_int32);
+    
+    PerlUpb_Message_SetField(aTHX_ msg_sv, f_rep_int32, av_ref);
+    // Repeated fields don't have presence in upb_Message_HasFieldByDef
+    // ok(PerlUpb_Message_HasField(aTHX_ msg_sv, f_rep_int32), "Has repeated int32 field");
+    ok(1, "Set repeated int32 field");
+
+    // 2. Get repeated field as array ref
+    SV* ret_av_ref = PerlUpb_Message_GetField(aTHX_ msg_sv, f_rep_int32);
+    ok(SvROK(ret_av_ref) && SvTYPE(SvRV(ret_av_ref)) == SVt_PVAV, "Get returns array ref");
+    AV* ret_av = (AV*)SvRV(ret_av_ref);
+    is(av_len(ret_av), 2, "Array size is 3");
+    SV** v1 = av_fetch(ret_av, 1, 0);
+    is(SvIV(*v1), 2, "Element 1 is 2");
+    SvREFCNT_dec(ret_av_ref);
+
+    // 3. Test repeated nested message
+    const upb_FieldDef *f_rep_msg = upb_MessageDef_FindFieldByName(mdef, "repeated_nested_message");
+    upb_Array* arr = upb_Message_Mutable((upb_Message*)PerlUpb_Message_GetMsg(aTHX_ msg_sv), f_rep_msg, arena).array;
+    SV* rep_wrapper = PerlUpb_Repeated_New(aTHX_ arr, f_rep_msg, PerlUpb_Message_GetArena(aTHX_ msg_sv));
+    
+    SV* sub1 = PerlUpb_Repeated_Add(aTHX_ rep_wrapper);
+    const upb_MessageDef* sub_mdef = upb_FieldDef_MessageSubDef(f_rep_msg);
+    const upb_FieldDef* f_a = upb_MessageDef_FindFieldByName(sub_mdef, "a");
+    PerlUpb_Message_SetField(aTHX_ sub1, f_a, newSViv(42));
+    
+    ok(PerlUpb_Repeated_Size(aTHX_ rep_wrapper) == 1, "Repeated message size is 1");
+
+    // 4. Serialize and Parse
+    SV* serialized = PerlUpb_Message_Serialize(aTHX_ msg_sv);
+    SV* parsed_msg_sv = PerlUpb_Message_Parse(aTHX_ mdef_sv, serialized);
+    ok(parsed_msg_sv != NULL, "Parsed message with repeated fields");
+
+    // 5. Verify parsed repeated field
+    SV* parsed_rep_av_ref = PerlUpb_Message_GetField(aTHX_ parsed_msg_sv, f_rep_int32);
+    is(av_len((AV*)SvRV(parsed_rep_av_ref)), 2, "Parsed repeated int32 size matches");
+    SvREFCNT_dec(parsed_rep_av_ref);
+
+    // 6. Verify parsed nested message
+    SV* parsed_rep_msg_av_ref = PerlUpb_Message_GetField(aTHX_ parsed_msg_sv, f_rep_msg);
+    AV* parsed_rep_msg_av = (AV*)SvRV(parsed_rep_msg_av_ref);
+    is(av_len(parsed_rep_msg_av), 0, "Parsed repeated message size matches");
+    
+    SV** psub1_rv = av_fetch(parsed_rep_msg_av, 0, 0);
+    SV* psub1 = *psub1_rv;
+    SV* pval_a = PerlUpb_Message_GetField(aTHX_ psub1, f_a);
+    is(SvIV(pval_a), 42, "Parsed nested field value matches");
+    SvREFCNT_dec(pval_a);
+    SvREFCNT_dec(parsed_rep_msg_av_ref);
+
+    // Cleanup
+    SvREFCNT_dec(av_ref);
+    SvREFCNT_dec(sub1);
+    extern void PerlUpb_Repeated_Free(pTHX_ SV* sv);
+    PerlUpb_Repeated_Free(aTHX_ rep_wrapper);
+    SvREFCNT_dec(rep_wrapper);
+
+    PerlUpb_Arena_Destroy(aTHX_ PerlUpb_Message_GetArena(aTHX_ msg_sv));
+    PerlUpb_Message_Free(aTHX_ msg_sv);
+    SvREFCNT_dec(msg_sv);
+
+    PerlUpb_Arena_Destroy(aTHX_ PerlUpb_Message_GetArena(aTHX_ parsed_msg_sv));
+    PerlUpb_Message_Free(aTHX_ parsed_msg_sv);
+    SvREFCNT_dec(parsed_msg_sv);
+
+    SvREFCNT_dec(serialized);
+    SvREFCNT_dec(mdef_sv);
+    PerlUpb_Arena_Destroy(aTHX_ arena_sv);
+
+    perl_destruct(my_perl);
+    perl_free(my_perl);
+    PERL_SYS_TERM();
+    return 0;
+}
