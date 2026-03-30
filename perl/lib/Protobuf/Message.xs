@@ -1,0 +1,136 @@
+#define PERL_NO_GET_CONTEXT
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include "ppport.h"
+
+#include "xs/protobuf/arena.h"
+#include "xs/protobuf/message.h"
+#include "xs/message/message.h"
+#include "xs/message/access.h"
+#include "xs/message/serialize.h"
+#include "xs/descriptor_pool/pool.h"
+#include "xs/descriptor_pool/add.h"
+#include "xs/descriptor_pool/find.h"
+#include "xs/descriptor/file.h"
+#include "xs/descriptor/message.h"
+#include "xs/descriptor/enum.h"
+#include "xs/descriptor/field.h"
+#include "xs/descriptor/enum_value.h"
+#include "xs/descriptor/oneof.h"
+#include "xs/descriptor/service.h"
+#include "xs/descriptor/method.h"
+
+// -- Message --
+MODULE = Protobuf  PACKAGE = Protobuf::Message
+PROTOTYPES: ENABLE
+
+
+SV*
+_xs_new_from_class(class_name)
+    const char* class_name
+    CODE:
+        char* full_name = savepv(class_name);
+        for (char* p = full_name; *p; p++) {
+            if (*p == ':' && *(p+1) == ':') {
+                *p = '.';
+                memmove(p+1, p+2, strlen(p+2) + 1);
+            }
+        }
+        
+        SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
+        const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ pool_sv);
+        const upb_MessageDef* mdef = upb_DefPool_FindMessageByName(pool, full_name);
+        
+        if (!mdef) {
+            Safefree(full_name);
+            croak("Could not find descriptor for message class %s", class_name);
+        }
+        
+        RETVAL = PerlUpb_Message_NewMessage(aTHX_ PerlUpb_MessageDef_GetWrapper(aTHX_ mdef));
+        Safefree(full_name);
+    OUTPUT:
+        RETVAL
+
+void
+_xs_free(self)
+    SV* self
+    CODE:
+        PerlUpb_Message_Free(aTHX_ self);
+
+SV*
+_xs_get(self, field_name)
+    SV* self
+    const char* field_name
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        const upb_FieldDef* fdef = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name);
+        if (!fdef) {
+            croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef));
+        }
+        RETVAL = PerlUpb_Message_GetField(aTHX_ self, fdef);
+    OUTPUT:
+        RETVAL
+
+void
+_xs_set(self, field_name, value)
+    SV* self
+    const char* field_name
+    SV* value
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        const upb_FieldDef* fdef = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name);
+        if (!fdef) {
+            croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef));
+        }
+        PerlUpb_Message_SetField(aTHX_ self, fdef, value);
+
+SV*
+_xs_serialize(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_Serialize(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_parse(class_name, data)
+    const char* class_name
+    SV* data
+    CODE:
+        char* full_name = savepv(class_name);
+        for (char* p = full_name; *p; p++) {
+            if (*p == ':' && *(p+1) == ':') {
+                *p = '.';
+                memmove(p+1, p+2, strlen(p+2) + 1);
+            }
+        }
+        
+        SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
+        const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ pool_sv);
+        const upb_MessageDef* mdef = upb_DefPool_FindMessageByName(pool, full_name);
+        Safefree(full_name);
+
+        if (!mdef) {
+            croak("Could not find descriptor for message class %s", class_name);
+        }
+
+        STRLEN len;
+        const char* buf = SvPV(data, len);
+        
+        SV* arena_sv = PerlUpb_Arena_New(aTHX);
+        upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+        
+        const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+        upb_Message* msg = upb_Message_New(mt, arena);
+        
+        upb_DecodeStatus status = upb_Decode(buf, len, msg, mt, NULL, 0, arena);
+        if (status != kUpb_DecodeStatus_Ok) {
+            SvREFCNT_dec(arena_sv);
+            croak("Failed to parse message: %d", status);
+        }
+        
+        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+        SvREFCNT_dec(arena_sv);
+    OUTPUT:
+        RETVAL

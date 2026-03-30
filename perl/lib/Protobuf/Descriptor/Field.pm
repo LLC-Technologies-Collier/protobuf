@@ -6,8 +6,8 @@ use warnings;
 
 our $VERSION = '0.01';
 
-# Load the XS code
-use Protobuf;
+require XSLoader;
+XSLoader::load(__PACKAGE__, $VERSION);
 
 sub name {
     my ($self) = @_;

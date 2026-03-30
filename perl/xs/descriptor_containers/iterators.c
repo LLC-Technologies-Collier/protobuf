@@ -6,8 +6,8 @@
 #include "xs/descriptor_containers/by_name_map.h"
 #include "xs/descriptor_containers/by_number_map.h"
 
-SV* PerlUpb_MapIterator_New(pTHX_ SV* container_sv) {
-    PerlUpb_MapIterator* iter = (PerlUpb_MapIterator*)malloc(sizeof(PerlUpb_MapIterator));
+SV* PerlUpb_DescriptorMapIterator_New(pTHX_ SV* container_sv) {
+    PerlUpb_DescriptorMapIterator* iter = (PerlUpb_DescriptorMapIterator*)malloc(sizeof(PerlUpb_DescriptorMapIterator));
     iter->container_sv = newSVsv(container_sv);
     iter->index = 0;
 
@@ -17,15 +17,15 @@ SV* PerlUpb_MapIterator_New(pTHX_ SV* container_sv) {
     return obj;
 }
 
-PerlUpb_MapIterator* PerlUpb_MapIterator_Get(pTHX_ SV* sv) {
+PerlUpb_DescriptorMapIterator* PerlUpb_DescriptorMapIterator_Get(pTHX_ SV* sv) {
     if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Internals::DescriptorMapIterator")) {
         return NULL;
     }
-    return (PerlUpb_MapIterator*)SvIV(SvRV(sv));
+    return (PerlUpb_DescriptorMapIterator*)SvIV(SvRV(sv));
 }
 
-SV* PerlUpb_MapIterator_NextKey(pTHX_ SV* self) {
-    PerlUpb_MapIterator* iter = PerlUpb_MapIterator_Get(aTHX_ self);
+SV* PerlUpb_DescriptorMapIterator_NextKey(pTHX_ SV* self) {
+    PerlUpb_DescriptorMapIterator* iter = PerlUpb_DescriptorMapIterator_Get(aTHX_ self);
     if (!iter) return &PL_sv_undef;
 
     // Try ByNameMap first
@@ -54,8 +54,8 @@ SV* PerlUpb_MapIterator_NextKey(pTHX_ SV* self) {
 // Or we could have a 'Next' that returns both.
 // For now, let's just make NextKey increment and have a separate GetValue for the CURRENT index.
 
-SV* PerlUpb_MapIterator_NextValue(pTHX_ SV* self) {
-    PerlUpb_MapIterator* iter = PerlUpb_MapIterator_Get(aTHX_ self);
+SV* PerlUpb_DescriptorMapIterator_NextValue(pTHX_ SV* self) {
+    PerlUpb_DescriptorMapIterator* iter = PerlUpb_DescriptorMapIterator_Get(aTHX_ self);
     if (!iter || iter->index == 0) return &PL_sv_undef;
     
     int current_index = iter->index - 1;
@@ -73,8 +73,8 @@ SV* PerlUpb_MapIterator_NextValue(pTHX_ SV* self) {
     return &PL_sv_undef;
 }
 
-void PerlUpb_MapIterator_Free(pTHX_ SV* sv) {
-    PerlUpb_MapIterator* iter = PerlUpb_MapIterator_Get(aTHX_ sv);
+void PerlUpb_DescriptorMapIterator_Free(pTHX_ SV* sv) {
+    PerlUpb_DescriptorMapIterator* iter = PerlUpb_DescriptorMapIterator_Get(aTHX_ sv);
     if (iter) {
         SvREFCNT_dec(iter->container_sv);
         free(iter);

@@ -7,8 +7,8 @@ use Carp qw(croak);
 
 our $VERSION = '0.01';
 
-# Load the XS code
-use Protobuf;
+require XSLoader;
+XSLoader::load(__PACKAGE__, $VERSION);
 
 use Protobuf::Descriptor::File;
 use Protobuf::Descriptor::MessageDef;

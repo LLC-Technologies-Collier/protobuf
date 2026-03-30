@@ -25,8 +25,8 @@ if (!$@) {
 # Define your common C source files relative to perl/
 my @UPB_C_FILES;
 find(sub {
-    #push @UPB_C_FILES, $File::Find::name if $File::Find::name =~ /\.c$/ || ( $File::Find::name !~ m{/conformance/} && $File::Find::name !~ m{/reflection/stage0/} );
-    push @UPB_C_FILES, $File::Find::name if /\.c$/ && $File::Find::name !~ m{/conformance/} && $File::Find::name !~ m{/reflection/stage0/};
+    #push @UPB_C_FILES, $File::Find::name if $File::Find::name =~ /\.c$/ || ( $File::Find::name !~ m{/conformance/} && $File::Find::name !~ m{/reflection/stage0/} && $File::Find::name !~ m{/cmake/} );
+    push @UPB_C_FILES, $File::Find::name if /\.c$/ && $File::Find::name !~ m{/conformance/} && $File::Find::name !~ m{/reflection/stage0/} && $File::Find::name !~ m{/cmake/};
 
 }, File::Spec->catfile("..", "upb"));
 
@@ -50,7 +50,7 @@ my @COMMON_O_FILES = map {
     $o;
 } @COMMON_C_FILES;
 
-my $COMMON_LIB = 'libprotobuf_common' . $Config{lib_ext};
+my $COMMON_LIB = 'libprotobuf_common.$(DLEXT)';
 my $COMMON_O_STRING = join(' ', @COMMON_O_FILES);
 
 my @COMMON_FILES_PAIRS;
@@ -104,8 +104,7 @@ all :: ${common_lib}
 # Rule to build the static library
 ${common_lib}: ${common_o_string}
 	\$(RM_F) ${common_lib}
-	\$(AR) \$(AR_STATIC_ARGS) ${common_lib} ${common_o_string}
-	\$(RANLIB) ${common_lib}
+	\$(CC) -shared -o ${common_lib} ${common_o_string} \$(LDFLAGS)
 
 EOM
 
@@ -270,12 +269,12 @@ WriteMakefile(
     LICENSE           => 'apache_2_0',
     DEFINE            => '',
     INC               => '-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I../bazel-bin/src/google/protobuf/_virtual_imports/descriptor_proto -I$(PERL_INC)',
-    MYEXTLIB          => 'libprotobuf_common$(LIB_EXT)',
+    MYEXTLIB          => 'libprotobuf_common.$(DLEXT)',
     CCFLAGS           => "-g $Config{ccflags} -fPIC -fsanitize=address",
+    XSMULTI           => 1,
     LIBS              => ['-L$(CURDIR) -lprotobuf_common'], # Link the common static library
     LDDLFLAGS         => "$Config{lddlflags} -fsanitize=address",
-    XS                => { 'Protobuf.xs' => 'Protobuf.c' },
-
+    
     # Link the common static library into all .so files
     # LIBS              => ['-L$(CURDIR) -lprotobuf_common'],
 
