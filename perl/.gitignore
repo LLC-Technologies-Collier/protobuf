@@ -16,8 +16,7 @@
 *.x
 *.xsc
 *.bin
-lib/*.c
-lib/Protobuf/*.c
+lib/**/*.c
 *.BUILD
 BUILD.bazel
 src_google_protobuf_descriptor.pb.cc
