@@ -29,6 +29,10 @@ sub DEMOLISH {
     }
 }
 
+sub CLONE {
+    croak("Protobuf objects cannot be safely cloned across ithreads. Use pre-forking or an event loop (e.g. Coro, AnyEvent, Mojo) instead.");
+}
+
 sub generated_pool {
     return _xs_generated_pool();
 }

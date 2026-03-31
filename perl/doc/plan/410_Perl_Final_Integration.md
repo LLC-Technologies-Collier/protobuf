@@ -2,5 +2,5 @@
 
 [TOC]
 
-*   [ ] Comprehensive integration tests using multiple components together `t/90-integration.t`.
-*   [ ] Review and update perl/doc/architecture/** documents.
+*   [x] Comprehensive integration tests using multiple components together `t/90-integration.t`.
+*   [x] Review and update perl/doc/architecture/** documents.

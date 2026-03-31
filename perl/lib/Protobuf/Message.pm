@@ -30,6 +30,10 @@ sub DESTROY {
     _xs_free($self);
 }
 
+sub CLONE {
+    croak("Protobuf objects cannot be safely cloned across ithreads. Use pre-forking or an event loop (e.g. Coro, AnyEvent, Mojo) instead.");
+}
+
 sub get {
     my ($self, $field_name) = @_;
     my $val = _xs_get($self, $field_name);
