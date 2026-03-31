@@ -22,7 +22,7 @@
 #include "xs/descriptor/method.h"
 
 // -- Arena --
-MODULE = Protobuf  PACKAGE = Protobuf::Arena
+MODULE = Protobuf::Arena  PACKAGE = Protobuf::Arena
 PROTOTYPES: ENABLE
 
 

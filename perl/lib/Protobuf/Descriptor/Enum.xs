@@ -22,7 +22,7 @@
 #include "xs/descriptor/method.h"
 
 // -- Descriptor::Enum --
-MODULE = Protobuf  PACKAGE = Protobuf::Descriptor::Enum
+MODULE = Protobuf::Descriptor::Enum  PACKAGE = Protobuf::Descriptor::Enum
 PROTOTYPES: ENABLE
 
 

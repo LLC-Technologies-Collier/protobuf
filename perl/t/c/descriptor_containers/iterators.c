@@ -51,34 +51,34 @@ int main(int argc, char** argv) {
     SV* parent_sv = newSViv(1);
     SV* map_sv = PerlUpb_ByNameMap_New(aTHX_ parent_sv, NULL, &mock_vtable);
     
-    SV* iter_sv = PerlUpb_MapIterator_New(aTHX_ map_sv);
+    SV* iter_sv = PerlUpb_DescriptorMapIterator_New(aTHX_ map_sv);
     ok(iter_sv != NULL, "Created MapIterator");
     ok(sv_derived_from(iter_sv, "Protobuf::Internals::DescriptorMapIterator"), "Blessed correctly");
 
     // Iteration 1
-    SV* key1 = PerlUpb_MapIterator_NextKey(aTHX_ iter_sv);
+    SV* key1 = PerlUpb_DescriptorMapIterator_NextKey(aTHX_ iter_sv);
     is_string(SvPV_nolen(key1), "foo", "NextKey 1 is 'foo'");
-    SV* val1 = PerlUpb_MapIterator_NextValue(aTHX_ iter_sv);
+    SV* val1 = PerlUpb_DescriptorMapIterator_NextValue(aTHX_ iter_sv);
     is(SvIV(val1), 10, "NextValue 1 is 10");
     SvREFCNT_dec(key1);
     SvREFCNT_dec(val1);
 
     // Iteration 2
-    SV* key2 = PerlUpb_MapIterator_NextKey(aTHX_ iter_sv);
+    SV* key2 = PerlUpb_DescriptorMapIterator_NextKey(aTHX_ iter_sv);
     is_string(SvPV_nolen(key2), "bar", "NextKey 2 is 'bar'");
-    SV* val2 = PerlUpb_MapIterator_NextValue(aTHX_ iter_sv);
+    SV* val2 = PerlUpb_DescriptorMapIterator_NextValue(aTHX_ iter_sv);
     is(SvIV(val2), 20, "NextValue 2 is 20");
     SvREFCNT_dec(key2);
     SvREFCNT_dec(val2);
 
     // End
-    SV* key3 = PerlUpb_MapIterator_NextKey(aTHX_ iter_sv);
+    SV* key3 = PerlUpb_DescriptorMapIterator_NextKey(aTHX_ iter_sv);
     ok(!SvOK(key3), "NextKey 3 is undef");
     SvREFCNT_dec(key3);
 
     // Cleanup
-    extern void PerlUpb_MapIterator_Free(pTHX_ SV* sv);
-    PerlUpb_MapIterator_Free(aTHX_ iter_sv);
+    extern void PerlUpb_DescriptorMapIterator_Free(pTHX_ SV* sv);
+    PerlUpb_DescriptorMapIterator_Free(aTHX_ iter_sv);
     SvREFCNT_dec(iter_sv);
 
     extern void PerlUpb_ByNameMap_Free(pTHX_ SV* sv);

@@ -22,7 +22,7 @@
 #include "xs/descriptor/method.h"
 
 // -- Message --
-MODULE = Protobuf  PACKAGE = Protobuf::Message
+MODULE = Protobuf::Message  PACKAGE = Protobuf::Message
 PROTOTYPES: ENABLE
 
 

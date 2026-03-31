@@ -22,7 +22,7 @@
 #include "xs/descriptor/method.h"
 
 // -- DescriptorPool --
-MODULE = Protobuf  PACKAGE = Protobuf::DescriptorPool
+MODULE = Protobuf::DescriptorPool  PACKAGE = Protobuf::DescriptorPool
 PROTOTYPES: ENABLE
 
 

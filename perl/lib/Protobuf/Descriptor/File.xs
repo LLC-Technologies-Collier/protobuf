@@ -22,7 +22,7 @@
 #include "xs/descriptor/method.h"
 
 // -- Descriptor::File --
-MODULE = Protobuf  PACKAGE = Protobuf::Descriptor::File
+MODULE = Protobuf::Descriptor::File  PACKAGE = Protobuf::Descriptor::File
 PROTOTYPES: ENABLE
 
 

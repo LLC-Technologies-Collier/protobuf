@@ -32,7 +32,6 @@ find(sub {
 
 my @UTF8_C_FILES = grep { !m{/(lemire|range)-/} } glob(File::Spec->catfile("..", "third_party", "utf8_range", "*.c"));
 my @GENERATED_C_FILES = (
-    File::Spec->catfile("..", "src", "google", "protobuf", "descriptor.pb.cc"),
     File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto", "google", "protobuf", "descriptor.upb.c"),
     File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto", "google", "protobuf", "descriptor.upb_minitable.c"),
 );
@@ -292,7 +291,7 @@ all :: $(COMMON_LIB)
 
 test :: all build_c_tests test_c
 	$(NOECHO) $(ECHO) "Running Perl tests"
-	LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8 ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -j$$(nproc) t/*.t
+	LD_LIBRARY_PATH="$(CURDIR):$$(LD_LIBRARY_PATH)" LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8 ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -j$$(nproc) t/*.t
 EOM
 }
 
