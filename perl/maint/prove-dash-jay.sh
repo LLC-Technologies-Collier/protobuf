@@ -14,5 +14,5 @@ export ASAN_OPTIONS="detect_leaks=0:abort_on_error=1"
 # -Mblib ensures we use the compiled XS in blib/
 # -It/lib for test helper modules
 # -bv for bitwise and verbose output
-#prove -Mblib -It/lib -j$(nproc) -b "$@"
-prove -Mblib -It/lib -bv "$@"
+prove -Mblib -It/lib -j$(nproc) -b "$@"
+#prove -Mblib -It/lib -bv "$@"
