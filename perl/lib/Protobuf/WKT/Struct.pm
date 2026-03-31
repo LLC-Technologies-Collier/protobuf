@@ -34,6 +34,7 @@ use warnings;
 sub to_perl {
     my ($self) = @_;
     my $kind = $self->kind;
+    return undef unless defined $kind;
     if ($kind eq 'null_value') { return undef; }
     if ($kind eq 'number_value') { return $self->number_value; }
     if ($kind eq 'string_value') { return $self->string_value; }

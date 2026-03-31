@@ -123,6 +123,31 @@ _xs_serialize(self)
         RETVAL
 
 SV*
+_xs_to_text(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_ToText(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_to_json(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_ToJson(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_from_json(class_name, json_data)
+    SV* class_name
+    SV* json_data
+    CODE:
+        RETVAL = PerlUpb_Message_FromJson(aTHX_ class_name, json_data);
+    OUTPUT:
+        RETVAL
+
+SV*
 _xs_unknown_fields(self)
     SV* self
     CODE:

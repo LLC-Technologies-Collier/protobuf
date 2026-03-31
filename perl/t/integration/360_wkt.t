@@ -1,0 +1,44 @@
+use strict;
+use warnings;
+use Test::More;
+use Protobuf::DescriptorPool;
+
+my $pool = Protobuf::DescriptorPool->generated_pool();
+# Load both test and WKT descriptors
+foreach my $file ('t/data/test_descriptor.bin', 't/data/wkt_descriptor.bin') {
+    open my $fh, '<:raw', $file or die "Could not open $file: $!";
+    my $data = do { local $/; <$fh> };
+    $pool->add_serialized_file_descriptor_set($data);
+}
+
+subtest 'any packed with other message' => sub {
+    my $msg = test::TestMessage->new();
+    $msg->set_value(999);
+    
+    my $any = google::protobuf::Any->new();
+    $any->pack($msg);
+    
+    my $unpacked = $any->unpack();
+    is($unpacked->value, 999, 'Any packs/unpacks TestMessage correctly');
+};
+
+subtest 'struct inside listvalue inside struct' => sub {
+    my $data = {
+        key => [
+            { a => 1 },
+            { b => "two" }
+        ]
+    };
+    
+    my $struct = google::protobuf::Struct->new();
+    $struct->from_perl($data);
+    
+    my $out = $struct->to_perl();
+    is_deeply($out, $data, 'Complex nested struct roundtrip works');
+    
+    my $serialized = $struct->serialize();
+    my $parsed = google::protobuf::Struct->parse($serialized);
+    is_deeply($parsed->to_perl(), $data, 'Struct serialization roundtrip works');
+};
+
+done_testing();

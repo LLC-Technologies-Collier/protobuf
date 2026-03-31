@@ -73,6 +73,21 @@ sub serialize {
     return _xs_serialize($self);
 }
 
+sub to_text {
+    my ($self) = @_;
+    return _xs_to_text($self);
+}
+
+sub to_json {
+    my ($self) = @_;
+    return _xs_to_json($self);
+}
+
+sub from_json {
+    my ($class, $json_data) = @_;
+    return _xs_from_json($class, $json_data);
+}
+
 sub unknown_fields {
     my ($self) = @_;
     return _xs_unknown_fields($self);
