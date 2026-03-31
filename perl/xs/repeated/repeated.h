@@ -28,6 +28,12 @@ int PerlUpb_Repeated_Size(pTHX_ SV* self);
 // Clears the array.
 void PerlUpb_Repeated_Clear(pTHX_ SV* self);
 
+// Returns the internal upb_Array.
+upb_Array* PerlUpb_Repeated_GetArray(pTHX_ SV* self);
+
+// Returns the field definition.
+const upb_FieldDef* PerlUpb_Repeated_GetFieldDef(pTHX_ SV* self);
+
 // Frees the wrapper.
 void PerlUpb_Repeated_Free(pTHX_ SV* sv);
 

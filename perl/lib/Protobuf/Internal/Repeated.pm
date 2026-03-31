@@ -32,9 +32,7 @@ sub FETCHSIZE {
 
 sub STORESIZE {
     my ($self, $count) = @_;
-    # upb_Array doesn't have a simple way to set size without filling with defaults?
-    # Actually we have upb_Array_Resize.
-    # For now, let's just support it if possible.
+    $self->_xs_resize($count);
 }
 
 sub PUSH {
@@ -69,10 +67,10 @@ sub SHIFT {
 
 sub UNSHIFT {
     my $self = shift;
-    # upb_Array doesn't have prepend, would need to move elements.
-    # We'll skip complex ones for now or implement them via delete/append if needed.
-    # Actually, upb_Array_Insert exists? No.
-    # For simplicity, let's just support basic operations needed by tests.
+    # Add elements in reverse order at index 0 to preserve ordering
+    foreach my $val (reverse @_) {
+        $self->_xs_insert(0, $val);
+    }
 }
 
 1;

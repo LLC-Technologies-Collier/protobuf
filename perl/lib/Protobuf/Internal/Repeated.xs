@@ -50,6 +50,23 @@ _xs_size(self)
         RETVAL
 
 void
+_xs_insert(self, index, value)
+    SV* self
+    int index
+    SV* value
+    CODE:
+        extern void PerlUpb_Repeated_Insert(pTHX_ SV* self, int index, SV* val_sv);
+        PerlUpb_Repeated_Insert(aTHX_ self, index, value);
+
+void
+_xs_resize(self, size)
+    SV* self
+    int size
+    CODE:
+        extern void PerlUpb_Repeated_Resize(pTHX_ SV* self, int size);
+        PerlUpb_Repeated_Resize(aTHX_ self, size);
+
+void
 _xs_clear(self)
     SV* self
     CODE:

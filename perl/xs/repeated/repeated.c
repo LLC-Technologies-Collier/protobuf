@@ -96,11 +96,58 @@ int PerlUpb_Repeated_Size(pTHX_ SV* self) {
     return (r && r->arr) ? upb_Array_Size(r->arr) : 0;
 }
 
+void PerlUpb_Repeated_Insert(pTHX_ SV* self, int index, SV* val_sv) {
+    PerlUpb_Repeated* r = GetRepeated(aTHX_ self);
+    if (!r || !r->arr) return;
+
+    size_t size = upb_Array_Size(r->arr);
+    if (index < 0 || (size_t)index > size) {
+        croak("Index out of bounds for repeated field insert");
+    }
+
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ r->arena_sv);
+    if (!upb_Array_Insert(r->arr, index, 1, arena)) {
+        croak("Failed to insert into repeated field");
+    }
+
+    upb_MessageValue val;
+    if (!PerlUpb_SvToUpb_Element(aTHX_ val_sv, r->f, &val, arena)) {
+        // Need to delete the inserted element if conversion fails?
+        // Actually upb_Array_Delete will work.
+        upb_Array_Delete(r->arr, index, 1);
+        croak("Failed to convert value for repeated field insert");
+    }
+
+    upb_Array_Set(r->arr, index, val);
+}
+
+void PerlUpb_Repeated_Resize(pTHX_ SV* self, int size) {
+    PerlUpb_Repeated* r = GetRepeated(aTHX_ self);
+    if (!r || !r->arr) return;
+
+    if (size < 0) croak("Negative size for repeated field resize");
+
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ r->arena_sv);
+    if (!upb_Array_Resize(r->arr, size, arena)) {
+        croak("Failed to resize repeated field");
+    }
+}
+
 void PerlUpb_Repeated_Clear(pTHX_ SV* self) {
     PerlUpb_Repeated* r = GetRepeated(aTHX_ self);
     if (r && r->arr) {
         upb_Array_Resize(r->arr, 0, NULL);
     }
+}
+
+upb_Array* PerlUpb_Repeated_GetArray(pTHX_ SV* self) {
+    PerlUpb_Repeated* r = GetRepeated(aTHX_ self);
+    return r ? r->arr : NULL;
+}
+
+const upb_FieldDef* PerlUpb_Repeated_GetFieldDef(pTHX_ SV* self) {
+    PerlUpb_Repeated* r = GetRepeated(aTHX_ self);
+    return r ? r->f : NULL;
 }
 
 void PerlUpb_Repeated_Free(pTHX_ SV* sv) {

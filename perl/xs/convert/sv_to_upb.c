@@ -1,11 +1,14 @@
 #include "xs/convert/sv_to_upb.h"
 #include "xs/protobuf.h"
 #include "xs/protobuf/message.h"
+#include "xs/repeated/repeated.h"
+#include "xs/map/map.h"
 #include "t/c/upb-perl-test.h" // Added for cdiag
 #include "upb/base/descriptor_constants.h"
 #include "upb/reflection/def.h"
 #include "upb/message/array.h"
 #include "upb/message/copy.h"
+#include "upb/message/map.h"
 #include <stdint.h>
 #include <errno.h>
 #include <ctype.h>
@@ -144,11 +147,128 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
     }
 
     if (upb_FieldDef_IsRepeated(f)) {
-        if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVAV) {
+        if (!SvROK(sv)) {
+            CROAK_WRONG_TYPE(sv, "a Reference", f);
+            return false;
+        }
+
+        if (upb_FieldDef_IsMap(f)) {
+            if (SvTYPE(SvRV(sv)) != SVt_PVHV) {
+                CROAK_WRONG_TYPE(sv, "a Hash Reference", f);
+                return false;
+            }
+            HV* hv = (HV*)SvRV(sv);
+            SV* tied_obj = NULL;
+            MAGIC* mg = mg_find((SV*)hv, PERL_MAGIC_tied);
+            if (mg) {
+                tied_obj = SvTIED_obj((SV*)hv, mg);
+                if (tied_obj && sv_derived_from(tied_obj, "Protobuf::Internal::Map")) {
+                    upb_Map* src_map = PerlUpb_Map_GetMapPtr(aTHX_ tied_obj);
+                    const upb_FieldDef* src_f = PerlUpb_Map_GetFieldDef(aTHX_ tied_obj);
+                    if (src_map) {
+                        if (upb_FieldDef_Type(src_f) != upb_FieldDef_Type(f)) {
+                            croak("Type mismatch when copying map field");
+                        }
+
+                        const upb_MessageDef* entry_def = upb_FieldDef_MessageSubDef(f);
+                        const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_def, 1);
+                        const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_def, 2);
+
+                        // Perform deep copy
+                        upb_Map* dst_map = upb_Map_New(arena, upb_FieldDef_CType(key_f), upb_FieldDef_CType(val_f));
+                        size_t iter = kUpb_Map_Begin;
+                        upb_MessageValue k, v;
+                        const upb_MiniTable* val_mt = upb_FieldDef_IsSubMessage(val_f) ? upb_MessageDef_MiniTable(upb_FieldDef_MessageSubDef(val_f)) : NULL;
+
+                        while (upb_Map_Next(src_map, &k, &v, &iter)) {
+                            if (val_mt) {
+                                upb_Message* dst_v = upb_Message_New(val_mt, arena);
+                                upb_Message_DeepCopy(dst_v, v.msg_val, val_mt, arena);
+                                v.msg_val = dst_v;
+                            }
+                            upb_Map_Set(dst_map, k, v, arena);
+                        }
+                        val->map_val = dst_map;
+                        return true;
+                    }
+                }
+            }
+
+            // Fallback: iterate over Perl hash
+            const upb_MessageDef* entry_def = upb_FieldDef_MessageSubDef(f);
+            const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_def, 1);
+            const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_def, 2);
+            upb_Map* dst_map = upb_Map_New(arena, upb_FieldDef_CType(key_f), upb_FieldDef_CType(val_f));
+
+            hv_iterinit(hv);
+            HE* he;
+            while ((he = hv_iternext(hv))) {
+                SV* key_sv = hv_iterkeysv(he);
+                SV* val_sv = hv_iterval(hv, he);
+
+                if (mg && (!val_sv || !SvOK(val_sv))) {
+                    dSP; ENTER; SAVETMPS; PUSHMARK(SP);
+                    XPUSHs(tied_obj); XPUSHs(sv_2mortal(newSVsv(key_sv))); PUTBACK;
+                    call_method("FETCH", G_SCALAR);
+                    SPAGAIN; val_sv = POPs; PUTBACK;
+                }
+
+                upb_MessageValue k, v;
+                if (!convert_singular_sv_to_upb(aTHX_ key_sv, key_f, &k, arena)) return false;
+                if (!convert_singular_sv_to_upb(aTHX_ val_sv, val_f, &v, arena)) return false;
+                upb_Map_Set(dst_map, k, v, arena);
+
+                if (mg) { FREETMPS; LEAVE; }
+            }
+            val->map_val = dst_map;
+            return true;
+        }
+
+        if (SvTYPE(SvRV(sv)) != SVt_PVAV) {
             CROAK_WRONG_TYPE(sv, "an Array Reference", f);
             return false;
         }
         AV *av = (AV*)SvRV(sv);
+        SV* tied_obj = NULL;
+
+        // Check for our tied proxy object
+        MAGIC* mg = mg_find((SV*)av, PERL_MAGIC_tied);
+        if (mg) {
+            tied_obj = SvTIED_obj((SV*)av, mg);
+            if (tied_obj && sv_derived_from(tied_obj, "Protobuf::Internal::Repeated")) {
+                upb_Array* src_arr = PerlUpb_Repeated_GetArray(aTHX_ tied_obj);
+                const upb_FieldDef* src_f = PerlUpb_Repeated_GetFieldDef(aTHX_ tied_obj);
+                
+                if (src_arr) {
+                    if (upb_FieldDef_Type(src_f) != upb_FieldDef_Type(f)) {
+                        croak("Type mismatch when copying repeated field '%s': expected %d, got %d",
+                              upb_FieldDef_Name(f), upb_FieldDef_Type(f), upb_FieldDef_Type(src_f));
+                    }
+
+                    size_t n = upb_Array_Size(src_arr);
+                    upb_Array* dst_arr = upb_Array_New(arena, upb_FieldDef_CType(f));
+                    if (!upb_Array_Resize(dst_arr, n, arena)) croak("Failed to resize destination array");
+
+                    for (size_t i = 0; i < n; i++) {
+                        upb_MessageValue item = upb_Array_Get(src_arr, i);
+                        if (upb_FieldDef_IsSubMessage(f)) {
+                            const upb_MessageDef* mdef = upb_FieldDef_MessageSubDef(f);
+                            const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+                            upb_Message* dst_msg = upb_Message_New(mt, arena);
+                            if (!upb_Message_DeepCopy(dst_msg, item.msg_val, mt, arena)) {
+                                croak("Failed to deep copy message element %zu", i);
+                            }
+                            item.msg_val = dst_msg;
+                        }
+                        upb_Array_Set(dst_arr, i, item);
+                    }
+                    val->array_val = dst_arr;
+                    return true;
+                }
+            }
+        }
+
+        // Fallback: iterate over the array elements
         I32 max_idx = av_len(av);
         size_t num_elements = max_idx + 1;
 
@@ -160,18 +280,41 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
         }
 
         for (I32 i = 0; i < (I32)num_elements; ++i) {
-            SV **elem_sv = av_fetch(av, i, 0);
-            if (!elem_sv || !*elem_sv) {
+            SV **elem_sv_ptr = av_fetch(av, i, 0);
+            SV *elem_sv = (elem_sv_ptr) ? *elem_sv_ptr : NULL;
+            
+            // If it's a tied array and av_fetch returned NULL or it's empty, we must use the tied interface
+            if (mg && (!elem_sv || !SvOK(elem_sv))) {
+                dSP;
+                ENTER;
+                SAVETMPS;
+                PUSHMARK(SP);
+                XPUSHs(tied_obj);
+                XPUSHs(sv_2mortal(newSViv(i)));
+                PUTBACK;
+                call_method("FETCH", G_SCALAR);
+                SPAGAIN;
+                elem_sv = POPs;
+                PUTBACK;
+            }
+
+            if (!elem_sv) {
                 croak("Error fetching element %d from array for field '%s'", (int)i, upb_FieldDef_Name(f));
                 return false;
             }
+
             upb_MessageValue item_val;
-            if (!convert_singular_sv_to_upb(aTHX_ *elem_sv, f, &item_val, arena)) {
+            if (!convert_singular_sv_to_upb(aTHX_ elem_sv, f, &item_val, arena)) {
                 return false; // Error already croaked
             }
             if (!upb_Array_Append(arr, item_val, arena)) {
                 croak("Failed to append to upb_Array for field '%s'", upb_FieldDef_Name(f));
                 return false;
+            }
+            
+            if (mg) {
+                FREETMPS;
+                LEAVE;
             }
         }
         val->array_val = arr;

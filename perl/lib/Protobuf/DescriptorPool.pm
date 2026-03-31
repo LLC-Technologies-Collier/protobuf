@@ -14,6 +14,7 @@ use Protobuf::Descriptor::File;
 use Protobuf::Descriptor::MessageDef;
 use Protobuf::Descriptor::Enum;
 use Protobuf::Descriptor::Field;
+use Protobuf::Descriptor::OneofDef;
 use Protobuf::ClassGenerator;
 
 has '_pool_ptr' => (
@@ -47,6 +48,7 @@ sub add_serialized_file_descriptor_set {
     croak("Serialized descriptor set data is required") unless defined $serialized;
     my $files = _xs_add_serialized_file_descriptor_set($self, $serialized);
     if ($files && ref($files) eq 'ARRAY') {
+        warn "Added " . scalar(@$files) . " files from descriptor set";
         foreach my $file (@$files) {
             Protobuf::ClassGenerator->generate_for_file($file);
         }

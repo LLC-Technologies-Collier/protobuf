@@ -63,6 +63,11 @@ sub clear_field {
     return _xs_clear($self, $field_name);
 }
 
+sub which_oneof {
+    my ($self, $oneof_name) = @_;
+    return _xs_which_oneof($self, $oneof_name);
+}
+
 sub serialize {
     my ($self) = @_;
     return _xs_serialize($self);

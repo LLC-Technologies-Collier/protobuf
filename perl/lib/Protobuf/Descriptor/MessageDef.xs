@@ -91,6 +91,29 @@ _xs_find_field_by_number(self, number)
     OUTPUT:
         RETVAL
 
+int
+_xs_oneof_count(self)
+    SV* self
+    CODE:
+        const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
+        RETVAL = m ? PerlUpb_MessageDef_OneofCount(aTHX_ m) : 0;
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_oneof(self, index)
+    SV* self
+    int index
+    CODE:
+        const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
+        if (m && index >= 0 && index < PerlUpb_MessageDef_OneofCount(aTHX_ m)) {
+            RETVAL = PerlUpb_OneofDef_GetWrapper(aTHX_ PerlUpb_MessageDef_Oneof(aTHX_ m, index));
+        } else {
+            RETVAL = &PL_sv_undef;
+        }
+    OUTPUT:
+        RETVAL
+
 
 int
 _xs_nested_message_count(self)

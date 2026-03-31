@@ -63,6 +63,14 @@ void PerlUpb_Message_ClearField(pTHX_ SV* message_sv, const upb_FieldDef* f) {
     upb_Message_ClearFieldByDef(msg, f);
 }
 
+const char* PerlUpb_Message_WhichOneof(pTHX_ SV* message_sv, const upb_OneofDef* o) {
+    upb_Message* msg = (upb_Message*)PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    if (!msg) return NULL;
+
+    const upb_FieldDef* f = upb_Message_WhichOneofByDef(msg, o);
+    return f ? upb_FieldDef_Name(f) : "";
+}
+
 void PerlUpb_Message_Clear(pTHX_ SV* message_sv) {
     upb_Message* msg = (upb_Message*)PerlUpb_Message_GetMsg(aTHX_ message_sv);
     const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);

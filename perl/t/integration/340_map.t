@@ -1,0 +1,45 @@
+use strict;
+use warnings;
+use Test::More;
+use Protobuf::DescriptorPool;
+
+my $pool = Protobuf::DescriptorPool->generated_pool();
+my $file_path = 't/data/test_descriptor.bin';
+open my $fh, '<:raw', $file_path or die "Could not open $file_path: $!";
+my $data = do { local $/; <$fh> };
+close $fh;
+$pool->add_serialized_file_descriptor_set($data);
+
+subtest 'map cross-message copy' => sub {
+    my $msg1 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    $msg1->map_string_string->{a} = "A";
+    $msg1->map_string_string->{b} = "B";
+    
+    my $msg2 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    $msg2->set('map_string_string', $msg1->map_string_string);
+    
+    is(scalar(keys %{$msg2->map_string_string}), 2, 'Map copied to another message');
+    is($msg2->map_string_string->{a}, "A", 'Value A preserved');
+    
+    # Verify independence
+    $msg1->map_string_string->{a} = "CHANGED";
+    is($msg2->map_string_string->{a}, "A", 'Target map independent of source after copy');
+};
+
+subtest 'message map cross-message copy' => sub {
+    my $msg1 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $sub = protobuf_test_messages::proto2::TestAllTypesProto2::NestedMessage->new();
+    $sub->set_a(100);
+    $msg1->map_string_nested_message->{key} = $sub;
+    
+    my $msg2 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    $msg2->set('map_string_nested_message', $msg1->map_string_nested_message);
+    
+    is($msg2->map_string_nested_message->{key}->a, 100, 'Message map copied');
+    
+    # Verify independence
+    $msg1->map_string_nested_message->{key}->set_a(200);
+    is($msg2->map_string_nested_message->{key}->a, 100, 'Messages in target map are independent (deep copied)');
+};
+
+done_testing();

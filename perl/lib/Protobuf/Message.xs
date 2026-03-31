@@ -100,6 +100,20 @@ _xs_clear(self, field_name)
         }
         PerlUpb_Message_ClearField(aTHX_ self, fdef);
 
+const char*
+_xs_which_oneof(self, oneof_name)
+    SV* self
+    const char* oneof_name
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        const upb_OneofDef* odef = upb_MessageDef_FindOneofByName(mdef, oneof_name);
+        if (!odef) {
+            croak("Oneof '%s' not found in message '%s'", oneof_name, upb_MessageDef_FullName(mdef));
+        }
+        RETVAL = PerlUpb_Message_WhichOneof(aTHX_ self, odef);
+    OUTPUT:
+        RETVAL
+
 SV*
 _xs_serialize(self)
     SV* self

@@ -17,19 +17,74 @@ sub _generate_for_message {
     my ($mdef) = @_;
     
     my $full_name = $mdef->full_name;
-    my $perl_class = $full_name;
+    my $normalized = $full_name;
+    $normalized =~ s/^\.//;
+    
+    my $hex_norm = unpack("H*", $normalized);
+    my $hex_target = unpack("H*", "google.protobuf.Struct");
+    warn "DEBUG: normalized=[$normalized] hex=$hex_norm target_hex=$hex_target";
+
+    my $perl_class = $normalized;
     $perl_class =~ s/\./::/g;
     
-    # Check if already generated
-    return if $perl_class->can('new');
+    # Special handling for Well-Known Types
+    my %wkt_map = (
+        'google.protobuf.Any' => 'Any',
+        'google.protobuf.Timestamp' => 'Timestamp',
+        'google.protobuf.Duration' => 'Duration',
+        'google.protobuf.Struct' => 'Struct',
+        'google.protobuf.Value' => 'Value',
+        'google.protobuf.ListValue' => 'ListValue',
+    );
+
+    my $wkt_logic = "";
+    if (my $type = $wkt_map{$normalized} || ($normalized =~ /Struct$/ ? 'Struct' : undef)) {
+        warn "DEBUG: MATCHED WKT $type for $normalized";
+        if ($type eq 'Any' && !$perl_class->can('pack')) {
+            require Protobuf::WKT::Any;
+            $wkt_logic = "sub pack { shift->Protobuf::WKT::Any::pack(\@_) } sub unpack { shift->Protobuf::WKT::Any::unpack(\@_) }\n";
+        }
+        elsif ($type eq 'Timestamp' && !$perl_class->can('to_time_piece')) {
+            require Protobuf::WKT::Timestamp;
+            $wkt_logic = "sub to_time_piece { shift->Protobuf::WKT::Timestamp::to_time_piece(\@_) } sub from_time_piece { shift->Protobuf::WKT::Timestamp::from_time_piece(\@_) } sub to_iso8601 { shift->Protobuf::WKT::Timestamp::to_iso8601(\@_) }\n";
+        }
+        elsif ($type eq 'Duration' && !$perl_class->can('to_seconds')) {
+            require Protobuf::WKT::Duration;
+            $wkt_logic = "sub to_seconds { shift->Protobuf::WKT::Duration::to_seconds(\@_) } sub from_seconds { shift->Protobuf::WKT::Duration::from_seconds(\@_) }\n";
+        }
+        elsif ($type eq 'Struct' && !$perl_class->can('to_perl')) {
+            require Protobuf::WKT::Struct;
+            $wkt_logic = "sub to_perl { shift->Protobuf::WKT::Struct::to_perl(\@_) } sub from_perl { shift->Protobuf::WKT::Struct::from_perl(\@_) }\n";
+        }
+        elsif ($type eq 'Value' && !$perl_class->can('to_perl')) {
+            require Protobuf::WKT::Struct;
+            $wkt_logic = "sub to_perl { shift->Protobuf::WKT::Value::to_perl(\@_) } sub from_perl { shift->Protobuf::WKT::Value::from_perl(\@_) }\n";
+        }
+        elsif ($type eq 'ListValue' && !$perl_class->can('to_perl')) {
+            require Protobuf::WKT::Struct;
+            $wkt_logic = "sub to_perl { shift->Protobuf::WKT::ListValue::to_perl(\@_) } sub from_perl { shift->Protobuf::WKT::ListValue::from_perl(\@_) }\n";
+        }
+    }
+
+    # Check if already generated (non-WKT or fully-initialized WKT)
+    if ($perl_class->can('new')) {
+        return unless $wkt_logic;
+    }
     
     # Generate the class using string eval
-    my $code = <<"EOC";
+    my $code = "";
+    if (!$perl_class->can('new')) {
+        $code .= <<"EOC";
 package $perl_class;
 use Moo;
 extends 'Protobuf::Message';
 sub descriptor { return \$mdef; }
 EOC
+    } else {
+        $code .= "package $perl_class;\n";
+    }
+    
+    $code .= $wkt_logic;
 
     my $field_count = $mdef->field_count;
     for my $i (0 .. $field_count - 1) {
@@ -51,6 +106,18 @@ sub has_$name {
 sub clear_$name {
     my \$self = shift;
     return \$self->clear_field('$name');
+}
+EOC
+    }
+
+    my $oneof_count = $mdef->oneof_count;
+    for my $i (0 .. $oneof_count - 1) {
+        my $odef = $mdef->oneof($i);
+        my $name = $odef->name;
+        $code .= <<"EOC";
+sub $name {
+    my \$self = shift;
+    return \$self->which_oneof('$name');
 }
 EOC
     }

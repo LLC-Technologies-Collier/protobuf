@@ -2,17 +2,17 @@
 
 [TOC]
 
-*   [ ] REFRESH: Review all documents in @perl/doc/guidelines/**
+*   [x] REFRESH: Review all documents in @perl/doc/guidelines/**
 
-*   [ ] Create test file `t/05-repeated.t`.
-*   [ ] Tests in `t/05-repeated.t` cover all methods of `Protobuf::RepeatedField` for various scalar and message types.
+*   [x] Create test file `t/05-repeated.t`.
+*   [x] Tests in `t/05-repeated.t` cover all methods of `Protobuf::RepeatedField` for various scalar and message types.
 *   [ ] Add leak tests using Test::LeakTrace to `t/05-repeated.t`.
 *   [ ] Add `ok_test_coverage('Protobuf::RepeatedField')` to `t/05-repeated.t`.
-*   [ ] Implement `Protobuf::RepeatedField` module (`lib/Protobuf/RepeatedField.pm`).
-*   [ ] Implement XS Bindings (`lib/Protobuf/RepeatedField.xs`).
+*   [x] Implement `Protobuf::RepeatedField` module (`lib/Protobuf/RepeatedField.pm`). (Implemented as Protobuf::Internal::Repeated)
+*   [x] Implement XS Bindings (`lib/Protobuf/RepeatedField.xs`).
 *   [ ] Implement typemap for `upb_Array *` in `perl/typemap`.
-*   [ ] Perl tests pass for Protobuf::RepeatedField.
-*   [ ] Refine C API for RepeatedField (if any).
-*   [ ] C layer tests for RepeatedField still pass.
-*   [ ] All prior Perl tests pass.
-*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [x] Perl tests pass for Protobuf::RepeatedField.
+*   [x] Refine C API for RepeatedField (if any).
+*   [x] C layer tests for RepeatedField still pass.
+*   [x] All prior Perl tests pass.
+*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
