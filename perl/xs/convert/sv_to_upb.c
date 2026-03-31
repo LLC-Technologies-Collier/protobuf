@@ -19,9 +19,12 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
         case kUpb_FieldType_Int32:
         case kUpb_FieldType_SInt32:
         case kUpb_FieldType_SFixed32:
-            if (!SvIOK(sv)) CROAK_WRONG_TYPE(sv, "an Integer", f);
-            val->int32_val = SvIV(sv);
-            return true;
+            if (SvIOK(sv) || SvNOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                val->int32_val = (int32_t)SvIV(sv);
+                return true;
+            }
+            CROAK_WRONG_TYPE(sv, "an Integer", f);
+            return false;
         case kUpb_FieldType_String:
         case kUpb_FieldType_Bytes: {
             if (!SvPOK(sv)) CROAK_WRONG_TYPE(sv, "a String or Bytes", f);
@@ -37,49 +40,46 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
             val->bool_val = SvTRUE(sv);
             return true;
         case kUpb_FieldType_Float:
-            if (!SvNOK(sv) && !SvIOK(sv)) CROAK_WRONG_TYPE(sv, "a Number", f);
-            val->float_val = (float)SvNV(sv);
-            return true;
+            if (SvNOK(sv) || SvIOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                val->float_val = (float)SvNV(sv);
+                return true;
+            }
+            CROAK_WRONG_TYPE(sv, "a Number", f);
+            return false;
         case kUpb_FieldType_Double:
-            if (!SvNOK(sv) && !SvIOK(sv)) CROAK_WRONG_TYPE(sv, "a Number", f);
-            val->double_val = SvNV(sv);
-            return true;
+            if (SvNOK(sv) || SvIOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                val->double_val = SvNV(sv);
+                return true;
+            }
+            CROAK_WRONG_TYPE(sv, "a Number", f);
+            return false;
         case kUpb_FieldType_UInt32:
         case kUpb_FieldType_Fixed32: {
-            if (SvUOK(sv)) {
-                val->uint32_val = SvUVX(sv);
-            } else if (SvIOK(sv)) {
-                IV iv = SvIVX(sv);
-                if (iv < 0) {
-                    croak("Integer %" IVdf " out of range for uint32 field '%s'", iv, upb_FieldDef_Name(f));
-                }
-                val->uint32_val = (uint32_t)iv;
-            } else {
-                 CROAK_WRONG_TYPE(sv, "an Unsigned Integer", f);
+            if (SvUOK(sv) || SvIOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                UV uv = SvUV(sv);
+                val->uint32_val = (uint32_t)uv;
+                return true;
             }
-            return true;
+            CROAK_WRONG_TYPE(sv, "an Unsigned Integer", f);
+            return false;
         }
         case kUpb_FieldType_Int64:
         case kUpb_FieldType_SInt64:
         case kUpb_FieldType_SFixed64:
-            if (!SvIOK(sv)) CROAK_WRONG_TYPE(sv, "an Integer", f); // TODO: Handle BigInt
-            val->int64_val = SvIVX(sv);
-            return true;
+            if (SvIOK(sv) || SvNOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                val->int64_val = (int64_t)SvIV(sv);
+                return true;
+            }
+            CROAK_WRONG_TYPE(sv, "an Integer", f);
+            return false;
         case kUpb_FieldType_UInt64:
         case kUpb_FieldType_Fixed64: {
-             if (SvUOK(sv)) {
-                val->uint64_val = SvUVX(sv);
-            } else if (SvIOK(sv)) {
-                IV iv = SvIVX(sv);
-                if (iv < 0) {
-                    croak("Cannot convert negative integer to uint64 for field '%s'", upb_FieldDef_Name(f));
-                    return false;
-                }
-                val->uint64_val = (uint64_t)iv;
-            } else {
-                CROAK_WRONG_TYPE(sv, "an Unsigned Integer", f);
+            if (SvUOK(sv) || SvIOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                val->uint64_val = (uint64_t)SvUV(sv);
+                return true;
             }
-            return true;
+            CROAK_WRONG_TYPE(sv, "an Unsigned Integer", f);
+            return false;
         }
         case kUpb_FieldType_Enum:
             if (SvIOK(sv)) {

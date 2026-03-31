@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     ok(arr != NULL, "Created upb_Array");
 
     SV* rep_sv = PerlUpb_Repeated_New(aTHX_ arr, rep_int32_field, arena_sv);
-    ok(rep_sv != NULL && sv_derived_from(rep_sv, "Protobuf::Repeated"), "Created Protobuf::Repeated wrapper");
+    ok(rep_sv != NULL && sv_derived_from(rep_sv, "Protobuf::Internal::Repeated"), "Created Protobuf::Repeated wrapper");
 
     // 1. Append
     PerlUpb_Repeated_Append(aTHX_ rep_sv, newSViv(10));

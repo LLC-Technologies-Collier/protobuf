@@ -45,17 +45,13 @@ sub add_serialized_file {
 sub add_serialized_file_descriptor_set {
     my ($self, $serialized) = @_;
     croak("Serialized descriptor set data is required") unless defined $serialized;
-    # A FileDescriptorSet can contain multiple files, but our current XS wrapper 
-    # only returns the last one parsed. Wait, the UPB API for this adds all files to the pool
-    # and returns the last one. We might need a way to get all newly added files.
-    # For now, generate classes for the last file. If there are dependencies, they should
-    # be generated when their respective files were added during the iteration in XS.
-    # Actually, upb_DefPool_AddFileSet returns the last file added.
-    my $file = _xs_add_serialized_file_descriptor_set($self, $serialized);
-    if ($file) {
-        Protobuf::ClassGenerator->generate_for_file($file);
+    my $files = _xs_add_serialized_file_descriptor_set($self, $serialized);
+    if ($files && ref($files) eq 'ARRAY') {
+        foreach my $file (@$files) {
+            Protobuf::ClassGenerator->generate_for_file($file);
+        }
     }
-    return $file;
+    return $files;
 }
 
 sub find_file_by_name {

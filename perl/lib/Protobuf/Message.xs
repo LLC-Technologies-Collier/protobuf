@@ -9,6 +9,7 @@
 #include "xs/message/message.h"
 #include "xs/message/access.h"
 #include "xs/message/serialize.h"
+#include "xs/unknown_fields/set.h"
 #include "xs/descriptor_pool/pool.h"
 #include "xs/descriptor_pool/add.h"
 #include "xs/descriptor_pool/find.h"
@@ -104,6 +105,14 @@ _xs_serialize(self)
     SV* self
     CODE:
         RETVAL = PerlUpb_Message_Serialize(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_unknown_fields(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_UnknownFieldSet_New(aTHX_ self);
     OUTPUT:
         RETVAL
 

@@ -21,12 +21,12 @@ SV* PerlUpb_Map_GetIterator(pTHX_ SV* map_sv) {
 
     SV* sv = newSViv((IV)iter);
     SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::MapIterator", GV_ADD));
+    sv_bless(obj, gv_stashpv("Protobuf::Internal::MapIterator", GV_ADD));
     return obj;
 }
 
 static PerlUpb_MapIterator* GetIter(pTHX_ SV* sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::MapIterator")) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Internal::MapIterator")) {
         return NULL;
     }
     return (PerlUpb_MapIterator*)SvIV(SvRV(sv));

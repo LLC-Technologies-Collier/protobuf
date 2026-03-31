@@ -68,6 +68,11 @@ sub serialize {
     return _xs_serialize($self);
 }
 
+sub unknown_fields {
+    my ($self) = @_;
+    return _xs_unknown_fields($self);
+}
+
 sub parse {
     my ($class, $data) = @_;
     return _xs_parse($class, $data);

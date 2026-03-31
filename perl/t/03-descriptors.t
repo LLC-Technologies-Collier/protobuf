@@ -11,8 +11,9 @@ subtest 'load and explore descriptors' => sub {
     my $data = do { local $/; <$fh> };
     close $fh;
     
-    my $last_file = $pool->add_serialized_file_descriptor_set($data);
-    ok($last_file, 'Added descriptor set');
+    my $files = $pool->add_serialized_file_descriptor_set($data);
+    ok($files, 'Added descriptor set');
+    my $last_file = $files->[-1];
     isa_ok($last_file, 'Protobuf::Descriptor::File');
     is($last_file->package, 'test', 'Correct package');
     
