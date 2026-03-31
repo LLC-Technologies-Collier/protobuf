@@ -29,8 +29,21 @@ package $perl_class;
 use Moo;
 extends 'Protobuf::Message';
 sub descriptor { return \$mdef; }
-1;
 EOC
+
+    my $field_count = $mdef->field_count;
+    for my $i (0 .. $field_count - 1) {
+        my $fdef = $mdef->field($i);
+        my $name = $fdef->name;
+        $code .= <<"EOC";
+sub $name {
+    my \$self = shift;
+    return \$self->get('$name');
+}
+EOC
+    }
+
+    $code .= "1;\n";
 
     eval $code;
     die "Failed to generate class $perl_class: $@" if $@;
