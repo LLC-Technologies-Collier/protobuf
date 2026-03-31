@@ -35,6 +35,7 @@ sub _generate_for_message {
         'google.protobuf.Struct' => 'Struct',
         'google.protobuf.Value' => 'Value',
         'google.protobuf.ListValue' => 'ListValue',
+        'google.protobuf.FieldMask' => 'FieldMask',
     );
 
     my $wkt_logic = "";
@@ -63,6 +64,10 @@ sub _generate_for_message {
         elsif ($type eq 'ListValue' && !$perl_class->can('to_perl')) {
             require Protobuf::WKT::Struct;
             $wkt_logic = "sub to_perl { shift->Protobuf::WKT::ListValue::to_perl(\@_) } sub from_perl { shift->Protobuf::WKT::ListValue::from_perl(\@_) }\n";
+        }
+        elsif ($type eq 'FieldMask' && !$perl_class->can('to_string')) {
+            require Protobuf::WKT::FieldMask;
+            $wkt_logic = "sub to_string { shift->Protobuf::WKT::FieldMask::to_string(\@_) } sub from_string { shift->Protobuf::WKT::FieldMask::from_string(\@_) }\n";
         }
     }
 
