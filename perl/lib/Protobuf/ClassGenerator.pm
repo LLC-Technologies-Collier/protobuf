@@ -40,6 +40,18 @@ sub $name {
     my \$self = shift;
     return \$self->get('$name');
 }
+sub set_$name {
+    my (\$self, \$value) = \@_;
+    return \$self->set('$name', \$value);
+}
+sub has_$name {
+    my \$self = shift;
+    return \$self->has_field('$name');
+}
+sub clear_$name {
+    my \$self = shift;
+    return \$self->clear_field('$name');
+}
 EOC
     }
 

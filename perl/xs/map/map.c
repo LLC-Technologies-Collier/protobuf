@@ -23,12 +23,12 @@ SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv) {
 
     SV* sv = newSViv((IV)m);
     SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::Map", GV_ADD));
+    sv_bless(obj, gv_stashpv("Protobuf::Internal::Map", GV_ADD));
     return obj;
 }
 
 static PerlUpb_Map* GetMap(pTHX_ SV* sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Map")) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Internal::Map")) {
         return NULL;
     }
     return (PerlUpb_Map*)SvIV(SvRV(sv));

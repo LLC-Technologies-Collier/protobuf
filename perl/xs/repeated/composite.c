@@ -18,7 +18,7 @@ typedef struct {
 } PerlUpb_Repeated;
 
 static PerlUpb_Repeated* GetRepeated(pTHX_ SV* sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Repeated")) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Internal::Repeated")) {
         return NULL;
     }
     return (PerlUpb_Repeated*)SvIV(SvRV(sv));

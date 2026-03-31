@@ -3,6 +3,7 @@
 #include "xs/protobuf.h"
 #include "xs/protobuf/message.h"
 #include "xs/map/map.h"
+#include "xs/repeated/repeated.h"
 #include "upb/reflection/def.h"
 #include "upb/wire/types.h"
 #include "upb/message/array.h"
@@ -68,22 +69,14 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
 
     if (upb_FieldDef_IsMap(f)) {
         upb_Map *map = (upb_Map*)val->map_val;
-        if (!map) return newRV_noinc((SV*)newHV()); // Empty map
+        if (!map) return newSV(0); 
         return PerlUpb_Map_New(aTHX_ map, f, parent_arena_sv);
     }
 
     if (upb_FieldDef_IsRepeated(f)) {
-        const upb_Array *arr = val->array_val;
-        if (!arr) return newRV_noinc((SV*)newAV()); // Empty array
-
-        size_t size = upb_Array_Size(arr);
-        AV *av = newAV();
-        for (size_t i = 0; i < size; ++i) {
-            upb_MessageValue item_val = upb_Array_Get(arr, i);
-            SV *item_sv = convert_singular_upb_to_sv(aTHX_ &item_val, f, parent_arena_sv);
-            av_push(av, item_sv);
-        }
-        return newRV_noinc((SV*)av);
+        upb_Array *arr = (upb_Array*)val->array_val;
+        if (!arr) return newSV(0); 
+        return PerlUpb_Repeated_New(aTHX_ arr, f, parent_arena_sv);
     } else {
         return convert_singular_upb_to_sv(aTHX_ val, f, parent_arena_sv);
     }

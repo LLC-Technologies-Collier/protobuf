@@ -82,9 +82,24 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
             return true;
         }
         case kUpb_FieldType_Enum:
-            if (!SvIOK(sv)) CROAK_WRONG_TYPE(sv, "an Integer", f);
-            // TODO: Add enum range validation?
-            val->int32_val = SvIV(sv);
+            if (SvIOK(sv)) {
+                val->int32_val = SvIV(sv);
+                return true;
+            } else if (SvPOK(sv)) {
+                STRLEN len;
+                const char *name = SvPV(sv, len);
+                const upb_EnumDef *edef = upb_FieldDef_EnumSubDef(f);
+                if (!edef) croak("Missing EnumDef for field '%s'", upb_FieldDef_Name(f));
+                
+                const upb_EnumValueDef *ev = upb_EnumDef_FindValueByNameWithSize(edef, name, len);
+                if (!ev) {
+                    croak("Invalid enum name '%s' for field '%s'", name, upb_FieldDef_Name(f));
+                }
+                val->int32_val = upb_EnumValueDef_Number(ev);
+                return true;
+            } else {
+                CROAK_WRONG_TYPE(sv, "an Integer or Enum Name", f);
+            }
             return true;
         case kUpb_FieldType_Message:
         case kUpb_FieldType_Group: {

@@ -73,6 +73,32 @@ _xs_set(self, field_name, value)
         }
         PerlUpb_Message_SetField(aTHX_ self, fdef, value);
 
+bool
+_xs_has(self, field_name)
+    SV* self
+    const char* field_name
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        const upb_FieldDef* fdef = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name);
+        if (!fdef) {
+            croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef));
+        }
+        RETVAL = PerlUpb_Message_HasField(aTHX_ self, fdef);
+    OUTPUT:
+        RETVAL
+
+void
+_xs_clear(self, field_name)
+    SV* self
+    const char* field_name
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        const upb_FieldDef* fdef = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name);
+        if (!fdef) {
+            croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef));
+        }
+        PerlUpb_Message_ClearField(aTHX_ self, fdef);
+
 SV*
 _xs_serialize(self)
     SV* self

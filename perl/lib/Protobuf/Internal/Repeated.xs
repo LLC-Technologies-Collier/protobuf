@@ -1,0 +1,62 @@
+#define PERL_NO_GET_CONTEXT
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include "ppport.h"
+
+#include "xs/repeated/repeated.h"
+
+MODULE = Protobuf::Internal::Repeated  PACKAGE = Protobuf::Internal::Repeated
+PROTOTYPES: ENABLE
+
+SV*
+_xs_get_item(self, index)
+    SV* self
+    int index
+    CODE:
+        RETVAL = PerlUpb_Repeated_GetItem(aTHX_ self, index);
+    OUTPUT:
+        RETVAL
+
+void
+_xs_set_item(self, index, value)
+    SV* self
+    int index
+    SV* value
+    CODE:
+        PerlUpb_Repeated_SetItem(aTHX_ self, index, value);
+
+void
+_xs_append(self, value)
+    SV* self
+    SV* value
+    CODE:
+        PerlUpb_Repeated_Append(aTHX_ self, value);
+
+void
+_xs_delete(self, index, count)
+    SV* self
+    int index
+    int count
+    CODE:
+        PerlUpb_Repeated_Delete(aTHX_ self, index, count);
+
+int
+_xs_size(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Repeated_Size(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+void
+_xs_clear(self)
+    SV* self
+    CODE:
+        PerlUpb_Repeated_Clear(aTHX_ self);
+
+void
+DESTROY(self)
+    SV* self
+    CODE:
+        PerlUpb_Repeated_Free(aTHX_ self);

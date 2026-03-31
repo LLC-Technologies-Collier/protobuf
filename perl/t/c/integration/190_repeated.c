@@ -55,13 +55,14 @@ int main(int argc, char** argv) {
     // ok(PerlUpb_Message_HasField(aTHX_ msg_sv, f_rep_int32), "Has repeated int32 field");
     ok(1, "Set repeated int32 field");
 
-    // 2. Get repeated field as array ref
+    // 2. Get repeated field as array wrapper
     SV* ret_av_ref = PerlUpb_Message_GetField(aTHX_ msg_sv, f_rep_int32);
-    ok(SvROK(ret_av_ref) && SvTYPE(SvRV(ret_av_ref)) == SVt_PVAV, "Get returns array ref");
-    AV* ret_av = (AV*)SvRV(ret_av_ref);
-    is(av_len(ret_av), 2, "Array size is 3");
-    SV** v1 = av_fetch(ret_av, 1, 0);
-    is(SvIV(*v1), 2, "Element 1 is 2");
+    ok(SvROK(ret_av_ref) && sv_derived_from(ret_av_ref, "Protobuf::Internal::Repeated"), "Get returns repeated wrapper");
+    
+    is(PerlUpb_Repeated_Size(aTHX_ ret_av_ref), 3, "Array size is 3");
+    SV* v1 = PerlUpb_Repeated_GetItem(aTHX_ ret_av_ref, 1);
+    is(SvIV(v1), 2, "Element 1 is 2");
+    SvREFCNT_dec(v1);
     SvREFCNT_dec(ret_av_ref);
 
     // 3. Test repeated nested message
@@ -83,19 +84,18 @@ int main(int argc, char** argv) {
 
     // 5. Verify parsed repeated field
     SV* parsed_rep_av_ref = PerlUpb_Message_GetField(aTHX_ parsed_msg_sv, f_rep_int32);
-    is(av_len((AV*)SvRV(parsed_rep_av_ref)), 2, "Parsed repeated int32 size matches");
+    is(PerlUpb_Repeated_Size(aTHX_ parsed_rep_av_ref), 3, "Parsed repeated int32 size matches");
     SvREFCNT_dec(parsed_rep_av_ref);
 
     // 6. Verify parsed nested message
     SV* parsed_rep_msg_av_ref = PerlUpb_Message_GetField(aTHX_ parsed_msg_sv, f_rep_msg);
-    AV* parsed_rep_msg_av = (AV*)SvRV(parsed_rep_msg_av_ref);
-    is(av_len(parsed_rep_msg_av), 0, "Parsed repeated message size matches");
+    is(PerlUpb_Repeated_Size(aTHX_ parsed_rep_msg_av_ref), 1, "Parsed repeated message size matches");
     
-    SV** psub1_rv = av_fetch(parsed_rep_msg_av, 0, 0);
-    SV* psub1 = *psub1_rv;
+    SV* psub1 = PerlUpb_Repeated_GetItem(aTHX_ parsed_rep_msg_av_ref, 0);
     SV* pval_a = PerlUpb_Message_GetField(aTHX_ psub1, f_a);
     is(SvIV(pval_a), 42, "Parsed nested field value matches");
     SvREFCNT_dec(pval_a);
+    SvREFCNT_dec(psub1);
     SvREFCNT_dec(parsed_rep_msg_av_ref);
 
     // Cleanup

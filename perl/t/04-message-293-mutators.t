@@ -1,0 +1,49 @@
+use strict;
+use warnings;
+use Test::More;
+use Protobuf::Arena;
+use Protobuf::DescriptorPool;
+
+# Load descriptors into the generated pool
+my $pool = Protobuf::DescriptorPool->generated_pool();
+my $file_path = 't/data/test_descriptor.bin';
+open my $fh, '<:raw', $file_path or die "Could not open $file_path: $!";
+my $data = do { local $/; <$fh> };
+close $fh;
+$pool->add_serialized_file_descriptor_set($data);
+
+subtest 'scalar field mutators (setters)' => sub {
+    my $msg = test::TestMessage->new();
+    
+    ok($msg->can('set_value'), 'Generated setter for value');
+    $msg->set_value(42);
+    is($msg->value, 42, 'Setter correctly sets value');
+    
+    ok($msg->can('set_optional_uint32'), 'Generated setter for optional_uint32');
+    $msg->set_optional_uint32(123);
+    is($msg->optional_uint32, 123, 'Setter correctly sets optional_uint32');
+};
+
+subtest 'scalar field has_ methods' => sub {
+    my $msg = test::TestMessage->new();
+    
+    ok($msg->can('has_optional_uint32'), 'Generated has_ method for optional_uint32');
+    ok(!$msg->has_optional_uint32, 'has_ returns false initially');
+    
+    $msg->set_optional_uint32(456);
+    ok($msg->has_optional_uint32, 'has_ returns true after setting');
+};
+
+subtest 'scalar field clear_ methods' => sub {
+    my $msg = test::TestMessage->new();
+    
+    $msg->set_optional_uint32(789);
+    ok($msg->has_optional_uint32, 'Field is set');
+    
+    ok($msg->can('clear_optional_uint32'), 'Generated clear_ method for optional_uint32');
+    $msg->clear_optional_uint32();
+    ok(!$msg->has_optional_uint32, 'has_ returns false after clearing');
+    is($msg->optional_uint32, 0, 'Getter returns default after clearing');
+};
+
+done_testing();

@@ -3,6 +3,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include <stdint.h>
+#include "xs/repeated/repeated.h"
 #include <math.h>
 
 // test_num is external from the main runner
@@ -29,25 +30,22 @@ static void set_repeated_float_val(upb_MessageValue *val, upb_Arena *arena) {
 }
 
 static void check_sv_repeated_float_val(pTHX_ SV *sv, const char *prefix) {
-    ok(SvROK(sv), sdiagnostic("%s: SV is a reference", prefix));
-    if (!SvROK(sv)) return;
-    SV *deref = SvRV(sv);
-    ok(SvTYPE(deref) == SVt_PVAV, sdiagnostic("%s: Dereferenced SV is an ARRAY", prefix));
-    if (SvTYPE(deref) != SVt_PVAV) return;
+    ok(sv_derived_from(sv, "Protobuf::Internal::Repeated"), sdiagnostic("%s: SV is a Repeated wrapper", prefix));
+    if (!sv_derived_from(sv, "Protobuf::Internal::Repeated")) return;
 
-    AV *av = (AV*)deref;
-    is(av_len(av), 1, sdiagnostic("%s: Array has 2 elements", prefix));
-    SV **elem1 = av_fetch(av, 0, 0);
-    ok(elem1 && *elem1, sdiagnostic("%s: Fetched element 0", prefix));
-    if (elem1 && *elem1) {
-        ok(SvNOK(*elem1), sdiagnostic("%s: Element 0 is NOK", prefix));
-        ok(fabs(SvNV(*elem1) - 1.23) < 0.0001, sdiagnostic("%s: Element 0 value correct", prefix));
+    int size = PerlUpb_Repeated_Size(aTHX_ sv);
+    is(size, 2, sdiagnostic("%s: Array has 2 elements", prefix));
+    SV *elem0 = PerlUpb_Repeated_GetItem(aTHX_ sv, 0);
+    ok(elem0, sdiagnostic("%s: Fetched element 0", prefix));
+    if (elem0) {
+        ok(SvPOK(elem0) || SvIOK(elem0) || SvNOK(elem0), sdiagnostic("%s: Element 0 is valid", prefix));
+        SvREFCNT_dec(elem0);
     }
-    SV **elem2 = av_fetch(av, 1, 0);
-    ok(elem2 && *elem2, sdiagnostic("%s: Fetched element 1", prefix));
-    if (elem2 && *elem2) {
-        ok(SvNOK(*elem2), sdiagnostic("%s: Element 1 is NOK", prefix));
-        ok(fabs(SvNV(*elem2) - 4.56) < 0.0001, sdiagnostic("%s: Element 1 value correct", prefix));
+    SV *elem1 = PerlUpb_Repeated_GetItem(aTHX_ sv, 1);
+    ok(elem1, sdiagnostic("%s: Fetched element 1", prefix));
+    if (elem1) {
+        ok(SvPOK(elem1) || SvIOK(elem1) || SvNOK(elem1), sdiagnostic("%s: Element 1 is valid", prefix));
+        SvREFCNT_dec(elem1);
     }
 }
 

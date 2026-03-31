@@ -22,12 +22,12 @@ SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_
 
     SV* sv = newSViv((IV)r);
     SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::Repeated", GV_ADD));
+    sv_bless(obj, gv_stashpv("Protobuf::Internal::Repeated", GV_ADD));
     return obj;
 }
 
 static PerlUpb_Repeated* GetRepeated(pTHX_ SV* sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Repeated")) {
+    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Internal::Repeated")) {
         return NULL;
     }
     return (PerlUpb_Repeated*)SvIV(SvRV(sv));

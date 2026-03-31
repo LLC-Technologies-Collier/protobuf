@@ -88,10 +88,10 @@ int main(int argc, char** argv) {
     is(SvIV(PerlUpb_Message_GetField(aTHX_ parsed_sv, f_enum)), 1, "Parsed enum matches");
 
     SV* p_rep_ref = PerlUpb_Message_GetField(aTHX_ parsed_sv, f_rep_msg);
-    AV* p_rep_av = (AV*)SvRV(p_rep_ref);
-    is(av_len(p_rep_av), 0, "Parsed repeated message size matches");
-    SV** p_sub1_rv = av_fetch(p_rep_av, 0, 0);
-    is(SvIV(PerlUpb_Message_GetField(aTHX_ *p_sub1_rv, f_a)), 10, "Parsed nested field matches");
+    is(PerlUpb_Repeated_Size(aTHX_ p_rep_ref), 1, "Parsed repeated message size matches");
+    SV* p_sub1 = PerlUpb_Repeated_GetItem(aTHX_ p_rep_ref, 0);
+    is(SvIV(PerlUpb_Message_GetField(aTHX_ p_sub1, f_a)), 10, "Parsed nested field matches");
+    SvREFCNT_dec(p_sub1);
     SvREFCNT_dec(p_rep_ref);
 
     SV* p_map_ref = PerlUpb_Message_GetField(aTHX_ parsed_sv, f_map);

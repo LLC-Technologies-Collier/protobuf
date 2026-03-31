@@ -24,4 +24,9 @@ sub value_count {
     return _xs_value_count($self);
 }
 
+sub value_name {
+    my ($self, $index) = @_;
+    return _xs_value_name($self, $index);
+}
+
 1;

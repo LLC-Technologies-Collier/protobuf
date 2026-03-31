@@ -9,11 +9,25 @@
 #include "upb/reflection/message.h"
 
 SV* PerlUpb_Message_GetField(pTHX_ SV* message_sv, const upb_FieldDef* f) {
-    const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    upb_Message* msg = (upb_Message*)PerlUpb_Message_GetMsg(aTHX_ message_sv);
     if (!msg) croak("Invalid message object");
 
-    upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
-    return PerlUpb_UpbToSv(aTHX_ &val, f, PerlUpb_Message_GetArena(aTHX_ message_sv));
+    SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ message_sv);
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+
+    upb_MessageValue val;
+    if (upb_FieldDef_IsRepeated(f) || upb_FieldDef_IsMap(f)) {
+        upb_MutableMessageValue mutable_val = upb_Message_Mutable(msg, f, arena);
+        if (upb_FieldDef_IsMap(f)) {
+            val.map_val = mutable_val.map;
+        } else {
+            val.array_val = mutable_val.array;
+        }
+    } else {
+        val = upb_Message_GetFieldByDef(msg, f);
+    }
+    
+    return PerlUpb_UpbToSv(aTHX_ &val, f, arena_sv);
 }
 
 void PerlUpb_Message_SetField(pTHX_ SV* message_sv, const upb_FieldDef* f, SV* val_sv) {

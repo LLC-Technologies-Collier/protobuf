@@ -27,6 +27,9 @@ void PerlUpb_Map_Clear(pTHX_ SV* self);
 // Returns the number of items in the map.
 int PerlUpb_Map_Size(pTHX_ SV* self);
 
+// Frees the map wrapper.
+void PerlUpb_Map_Free(pTHX_ SV* self);
+
 // Internal helpers for iterator
 const upb_FieldDef* PerlUpb_Map_GetFieldDef(pTHX_ SV* self);
 upb_Map* PerlUpb_Map_GetMapPtr(pTHX_ SV* self);

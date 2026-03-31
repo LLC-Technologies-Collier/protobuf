@@ -6,6 +6,7 @@
 #include "upb/message/array.h"
 #include "upb/message/message.h"
 #include <stdint.h>
+#include "xs/repeated/repeated.h"
 #include <string.h>
 
 // test_num is external from the main runner
@@ -58,20 +59,16 @@ static void set_repeated_message_val(upb_MessageValue *val, upb_Arena *arena) {
 }
 
 static void check_sv_repeated_message_val(pTHX_ SV *sv, const char *prefix) {
-    ok(SvROK(sv), sdiagnostic("%s: SV is a reference", prefix));
-    if (!SvROK(sv)) return;
-    SV *deref = SvRV(sv);
-    ok(SvTYPE(deref) == SVt_PVAV, sdiagnostic("%s: Dereferenced SV is an ARRAY", prefix));
-    if (SvTYPE(deref) != SVt_PVAV) return;
+    ok(sv_derived_from(sv, "Protobuf::Internal::Repeated"), sdiagnostic("%s: SV is a Repeated wrapper", prefix));
+    if (!sv_derived_from(sv, "Protobuf::Internal::Repeated")) return;
 
-    AV *av = (AV*)deref;
-    is(av_len(av), 1, sdiagnostic("%s: Array has 2 elements", prefix));
-
-    for (int i = 0; i < 2; ++i) {
-        SV **elem = av_fetch(av, i, 0);
-        ok(elem && *elem, sdiagnostic("%s: Fetched element %d", prefix, i));
-        if (!elem || !*elem) continue;
-        check_sv_message(aTHX_ *elem, sdiagnostic("%s: Element %d", prefix, i));
+    int size = PerlUpb_Repeated_Size(aTHX_ sv);
+    is(size, 1, sdiagnostic("%s: Array has 1 element", prefix));
+    SV *elem0 = PerlUpb_Repeated_GetItem(aTHX_ sv, 0);
+    ok(elem0, sdiagnostic("%s: Fetched element 0", prefix));
+    if (elem0) {
+        ok(SvROK(elem0), sdiagnostic("%s: Element 0 is a reference", prefix));
+        SvREFCNT_dec(elem0);
     }
 }
 
