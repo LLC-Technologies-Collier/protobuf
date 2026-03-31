@@ -39,4 +39,14 @@ sub find_field_by_number {
     return _xs_find_field_by_number($self, $number);
 }
 
+sub nested_message_count {
+    my ($self) = @_;
+    return _xs_nested_message_count($self);
+}
+
+sub nested_message {
+    my ($self, $index) = @_;
+    return _xs_nested_message($self, $index);
+}
+
 1;

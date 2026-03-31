@@ -27,28 +27,16 @@ PROTOTYPES: ENABLE
 
 
 SV*
-_xs_new_from_class(class_name)
-    const char* class_name
+_xs_new_from_def(mdef_sv)
+    SV* mdef_sv
     CODE:
-        char* full_name = savepv(class_name);
-        for (char* p = full_name; *p; p++) {
-            if (*p == ':' && *(p+1) == ':') {
-                *p = '.';
-                memmove(p+1, p+2, strlen(p+2) + 1);
-            }
-        }
-        
-        SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
-        const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ pool_sv);
-        const upb_MessageDef* mdef = upb_DefPool_FindMessageByName(pool, full_name);
+        const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
         
         if (!mdef) {
-            Safefree(full_name);
-            croak("Could not find descriptor for message class %s", class_name);
+            croak("Invalid MessageDef provided to new()");
         }
         
-        RETVAL = PerlUpb_Message_NewMessage(aTHX_ PerlUpb_MessageDef_GetWrapper(aTHX_ mdef));
-        Safefree(full_name);
+        RETVAL = PerlUpb_Message_NewMessage(aTHX_ mdef_sv);
     OUTPUT:
         RETVAL
 

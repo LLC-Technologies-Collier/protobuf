@@ -13,17 +13,13 @@ XSLoader::load(__PACKAGE__, $VERSION);
 sub new {
     my ($class) = @_;
     
-    # This is slightly tricky. For generated messages, we want them to 
-    # call XS to create the underlying upb_Message.
-    # But Protobuf::Message is just a base class.
-    
-    # If this is called on a generated class, we should have a way 
-    # to get its descriptor.
-    
     croak("Protobuf::Message->new cannot be called directly. Use a generated subclass.")
         if $class eq 'Protobuf::Message';
 
-    return _xs_new_from_class($class);
+    my $mdef = $class->descriptor;
+    croak("Class $class does not have a descriptor") unless $mdef;
+
+    return _xs_new_from_def($mdef);
 }
 
 sub DESTROY {

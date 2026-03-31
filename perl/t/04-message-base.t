@@ -13,13 +13,6 @@ subtest 'base message functionality' => sub {
     close $fh;
     $pool->add_serialized_file_descriptor_set($data);
     
-    # Mock a generated class
-    {
-        package test::TestMessage;
-        use Moo;
-        extends 'Protobuf::Message';
-    }
-    
     subtest 'creation' => sub {
         my $msg = test::TestMessage->new();
         ok($msg, 'Created test::TestMessage');
