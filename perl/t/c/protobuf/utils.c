@@ -37,18 +37,13 @@ static void test_verify_str_data(pTHX) {
 }
 
 int main(int argc, char** argv) {
-    PERL_SYS_INIT(&argc, &argv);
-    PerlInterpreter *my_perl = perl_alloc();
-    perl_construct(my_perl);
-    perl_parse(my_perl, NULL, 3, (char*[]){"", "-e", "0", NULL}, NULL);
-    perl_run(my_perl);
+    PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
     plan(6);
 
     test_get_str_data(aTHX);
     test_verify_str_data(aTHX);
 
-    perl_destruct(my_perl);
-    perl_free(my_perl);
+    test_perl_destroy(my_perl);
     return 0;
 }

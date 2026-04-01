@@ -149,21 +149,7 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
 
 
 
-    PERL_SYS_INIT(&argc, &argv);
-
-    PerlInterpreter *my_perl = perl_alloc();
-
-    perl_construct(my_perl);
-
-    PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
-
-
-
-    char *embedding[] = { (char*)"", (char*)"-e", (char*)"0", NULL };
-
-    perl_parse(my_perl, NULL, 3, embedding, NULL);
-
-    perl_run(my_perl);
+    PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
 
 
@@ -299,11 +285,7 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
 
 
 
-    perl_destruct(my_perl);
-
-    perl_free(my_perl);
-
-    PERL_SYS_TERM();
+    test_perl_destroy(my_perl);
 
     return exit_status;
 

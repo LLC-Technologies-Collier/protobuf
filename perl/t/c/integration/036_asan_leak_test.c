@@ -128,21 +128,13 @@ static void test_hv_key_leak(pTHX) {
     }
 }
 
-int main(int argc, char** argv, char** env) {
-    PERL_SYS_INIT3(&argc, &argv, &env);
-    PerlInterpreter *my_perl = perl_alloc();
-    perl_construct(my_perl);
-    PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
-    char *embedding[] = { (char*)"", (char*)"-e", "0", NULL };
-    perl_parse(my_perl, NULL, 3, embedding, NULL);
-    perl_run(my_perl);
+int main(int argc, char** argv) {
+    PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
     plan(3); // Adjusted plan for the forking test
 
     test_hv_key_leak(aTHX);
 
-    perl_destruct(my_perl);
-    perl_free(my_perl);
-    PERL_SYS_TERM();
+    test_perl_destroy(my_perl);
     return 0;
 }

@@ -104,4 +104,8 @@ extern int test_num;
 // Helper to get a new arena for testing
 upb_Arena* test_arena_new(void);
 
+// Helper to initialize and destroy a Perl interpreter for testing
+PerlInterpreter* test_perl_init(int argc, char** argv);
+void test_perl_destroy(PerlInterpreter *my_perl);
+
 #endif // PERLUPB_TEST_H

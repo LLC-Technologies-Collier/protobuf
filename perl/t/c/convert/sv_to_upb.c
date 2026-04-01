@@ -181,17 +181,7 @@ static void test_sv_to_upb_edge_cases(pTHX_ upb_Arena *arena) {
 }
 
 int main(int argc, char** argv) {
-    PERL_SYS_INIT(&argc, &argv);
-    cdiag("main: PERL_SYS_INIT done");
-    PerlInterpreter *my_perl = perl_alloc();
-    cdiag("main: perl_alloc done");
-    perl_construct(my_perl);
-    cdiag("main: perl_construct done");
-    PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
-    char *embedding[] = { (char*)"", (char*)"-e", "0", NULL };
-    perl_parse(my_perl, NULL, 3, embedding, NULL);
-    perl_run(my_perl);
-    cdiag("main: perl_parse done");
+    PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
     upb_Arena *arena = upb_Arena_New();
     cdiag("main: upb_Arena_New done");
@@ -229,9 +219,7 @@ int main(int argc, char** argv) {
     cdiag("main: Cleaning up");
     upb_DefPool_Free(test_pool);
     upb_Arena_Free(arena);
-    perl_destruct(my_perl);
-    perl_free(my_perl);
-    PERL_SYS_TERM();
+    test_perl_destroy(my_perl);
     cdiag("main: Exiting");
     return 0;
 }
