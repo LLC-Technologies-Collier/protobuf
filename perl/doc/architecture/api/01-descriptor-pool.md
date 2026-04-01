@@ -23,9 +23,15 @@ The `Protobuf::DescriptorPool` class manages a collection of descriptors. It is 
 -   The `upb_DefPool` owns its own memory for descriptors.
 -   The object cache ensures that multiple accesses to the same descriptor return the same Perl wrapper.
 
+## Performance and Robustness
+
+-   **Lazy Loading**: (Planned) To optimize memory usage for large schema registries, the `DescriptorPool` will support lazy parsing of `FileDescriptorSet` data. Individual files within the set are only fully parsed into `upb_FileDef` structures when a definition within them is first accessed.
+-   **Conflict Resolution**: (Planned) The pool implementation provides detailed error reporting during `add_serialized_file` operations. In the event of a naming conflict, the error message will include precise information about the conflicting files and line numbers (if available) to facilitate debugging in complex multi-source environments.
+
 ## Concurrency and Isolation
 
--   **Interpreter Isolation**: Each `PerlInterpreter` (e.g. in ithreads or different worker processes) MUST maintain its own distinct `upb_DefPool` and object cache state to avoid race conditions.
+-   **Interpreter Isolation**: Each `PerlInterpreter` (e.g. in ithreads or different worker processes) normally maintains its own distinct `upb_DefPool` and object cache state to avoid race conditions.
+-   **Global Pool Sharing**: (Planned) To optimize memory usage in large-scale deployments (e.g. dozens of worker processes), the architecture includes support for a **shared, read-only global pool**. Once a pool is "frozen" (no more additions allowed), it can be safely mapped into multiple interpreters, sharing the underlying C definitions while maintaining per-interpreter Perl wrappers in the object cache.
 -   **Lock-Free Retrieval**: High-performance implementations should aim for lock-free or highly-concurrent descriptor retrieval to avoid bottlenecking concurrent message parsing (e.g. in Mojo or Coro).
 
 ## Lifecycle

@@ -11,8 +11,8 @@ This document details how the Perl XS layer should interact with the `upb` C lib
 *   **Lifecycle Management:** References between Perl objects are crucial. `Protobuf::Descriptor` MUST hold a reference to its `Protobuf::DescriptorPool`. Stub messages MUST hold a reference to their parent message.
 *   **MiniTables:** `upb` operations on messages heavily rely on `upb_MiniTable` structures.
 *   **Error Handling:** Check return values and `upb_Status` from `upb` functions and propagate errors to Perl using `croak`.
-*   **Object Caching:** To ensure that the same C pointer (e.g., `upb_MessageDef*`, `upb_Message*`) always yields the same Perl object (SV), a cache (hash table) should be used. This is essential for object identity and performance.
-*   **Message Stubs:** Singular message fields that are not set should not cause a `upb_Message` allocation. Instead, a lightweight "stub" Perl object should be returned, delaying allocation until the field is modified.
+*   **Object Caching:** To ensure that the same C pointer (e.g., `upb_MessageDef*`, `upb_Message*`) always yields the same Perl object (SV), a global per-interpreter cache is used. This is essential for object identity and performance.
+*   **Undef Behavior:** Unlike some implementations that use "Stub" objects, this implementation returns **`undef`** for unset singular message fields. Accessing a sub-message getter does not automatically instantiate it unless it already exists on the wire or has been explicitly set.
 
 ## 2. Mirroring the Python Protocol Buffers Implementation
 
@@ -76,7 +76,13 @@ When writing XS code that interacts with the Perl interpreter, special care must
 
 ### 2.5. Type Conversion (`xs/types.c`)
 
-*   **SV to UPB:** Ensure strings/bytes are copied onto the *destination message's arena*.
-*   **UPB to SV:** For message types, use the object cache to get/create the wrapper SV.
+*   **SV to UPB:** Ensure strings/bytes are copied onto the *destination message's arena*. (Planned) Implement range-validated strict type checking for narrowing conversions.
+*   **UPB to SV:** For message types, use the global object cache to get/create the wrapper SV. Ensure sub-messages share their parent's arena by passing the parent's `arena_sv` to `PerlUpb_WrapMessage`. (Planned) Support transparent Math::BigInt promotion for 64-bit integer overflows.
 
-By adopting object caching and the stub pattern, the Perl implementation can achieve similar efficiency and memory benefits as the Python UPB extension.
+## 3. Advanced Integration and Conversion
+
+To achieve world-class reliability, the integration of conversion and core utilities follows these principles:
+
+-   **Exhaustive Roundtripping**: Every primitive type, repeated field, and map is verified for bit-exact roundtripping through integrated C-level tests.
+-   **Integrated Cache Identity**: The conversion layer (`UpbToSv`) is strictly integrated with the `ObjCache`. Converting the same sub-message pointer multiple times (e.g., via different parent paths) MUST return the same Perl SV.
+-   **Lock-Free Multi-Access**: Read-only operations are architected to be lock-free, enabling high-performance concurrent access from multiple Perl coroutines (e.g. in Mojo or Coro).

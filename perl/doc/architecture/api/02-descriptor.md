@@ -40,9 +40,8 @@ Example: `PerlUpb_MessageDef_FullName(pTHX_ const upb_MessageDef *m)`
 
 Perl methods will call the corresponding C wrappers. Methods that return other descriptors (e.g., `field->message_type()`) MUST use the `Protobuf::DescriptorPool` object cache to ensure Perl object identity and efficient memory management.
 
-### Cache Strategy
+## Advanced Optimization and Comparison
 
-When a wrapper returns a `upb_Def*` pointer, the Perl layer should:
-1. Check the `DescriptorPool` object cache for an existing Perl wrapper for that pointer.
-2. If found, return the existing Perl object.
-3. If not found, create a new Perl object, register it in the cache (using a weak reference in the cache), and return it.
+1.  **Lazy Descriptor Blessing**: (Planned) To optimize high-frequency descriptor access, the implementation will support a thread-local "fast-path" single-item cache. This avoids the overhead of hash lookup in the `ObjCache` when the same descriptor is accessed repeatedly in a tight loop.
+2.  **Schema Fingerprinting**: (Planned) Message definitions will support stable hash fingerprinting. This allows for fast O(1) comparison of descriptors across different `DescriptorPool` instances or process boundaries, enabling efficient schema-registry integrations.
+3.  **Thread-Safe Retrieval**: Descriptor retrieval logic is architected to be lock-free, ensuring that concurrent lookups in Mojo or Coro do not contention on global state.

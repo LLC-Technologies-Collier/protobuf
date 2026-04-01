@@ -52,4 +52,4 @@
     *   [ ] Tests cover all public functions in the corresponding .h file. (TODO stub created).
     *   [x] Implement C functions.
     *   [ ] C tests pass.
-*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

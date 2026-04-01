@@ -34,4 +34,11 @@ XS functions will be needed to handle conversions for each Protocol Buffer type:
 -   Perl strings used for Protobuf `string` fields MUST be valid UTF-8. XS code should validate this, potentially using `sv_utf8_check()` and `SvUTF8()`.
 -   Data for `bytes` fields will be treated as raw octets.
 
-This approach is similar to the `convert.c` files found in the Ruby and PHP extensions, which contain a suite of functions for bidirectional type marshalling.
+## Advanced Conversion Goals
+
+To achieve world-class performance and robustness, the conversion layer includes (or is planned to include) the following:
+
+-   **Math::BigInt Support**: (Planned) 64-bit integers (`int64`, `uint64`, `fixed64`, `sfixed64`, `sint64`) that exceed the native Perl IV/UV range (typically 53 bits of precision in doubles, or 64 bits on 64-bit builds) will be transparently promoted to `Math::BigInt` objects.
+-   **Zero-Copy ByteBuffers**: (Planned) Large `string` and `bytes` fields will utilize zero-copy mechanisms (e.g., `SvPV_set` with arena-owned buffers if safe, or `mmap`-backed segments) to avoid redundant memory allocations and provide maximum throughput.
+-   **Strict Range Validation**: (Planned) Optional "strict mode" for `sv_to_upb` that performs explicit range checking for narrowing conversions (e.g., ensuring a Perl number fits within `int32` before assignment), throwing clear exceptions on overflow.
+-   **SIMD Acceleration**: (Planned) Leverage hardware acceleration (SSE4.2/AVX2) for fast UTF-8 validation of incoming Perl strings.

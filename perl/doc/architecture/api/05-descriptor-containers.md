@@ -46,6 +46,11 @@ To ensure idiomatic Perl behavior, descriptor containers follow these rules:
 -   **Iterator Stability**: Iterators (`PerlUpb_MapIterator`) hold a strong reference to their source container. This ensures that the container remains valid throughout the entire iteration cycle, even if the user's reference to the container goes out of scope.
 -   **Lock-Free Progress**: The XS implementation avoids global locks for container operations, relying on the read-only nature of `upb_Def` structures to provide high-performance concurrent access.
 
+## High-Performance Operations
+
+1.  **Direct-to-Hash Projection**: (Planned) To support high-frequency bulk access patterns, the architecture includes C-level projection of `ByNameMap` containers directly into standard Perl `HV` structures. This bypasses the overhead of individual lazy wrapper inflation.
+2.  **Reverse Lookup Optimization**: (Planned) `ByNumberMap` containers support O(1) reverse lookup (Value to Key) through internal indexing, ensuring that identifying fields or enum values by their numeric tags remains efficient in large definitions.
+
 ## Benefits
 
 *   **Efficiency:** Avoids creating large Perl arrays/hashes upfront. C objects are wrapped in Perl only when they are actually accessed.

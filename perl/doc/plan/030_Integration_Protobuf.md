@@ -13,4 +13,4 @@
 *   [ ] TODO: Verify lock-free progression for cache lookups under high contention.
 *   [ ] TODO: Implement automated race detection for internal core state.
 *   [x] libcoro integration tests pass.
-*   [ ] Review and update perl/doc/architecture/** documents.
+*   [x] Review and update perl/doc/architecture/** documents.

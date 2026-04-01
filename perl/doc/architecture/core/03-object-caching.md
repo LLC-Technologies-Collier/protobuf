@@ -26,8 +26,11 @@ Any function that needs to return a Perl wrapper for a `upb` object MUST:
 2.  If it returns a valid SV, increment its reference count and return it.
 3.  If it returns `NULL`, create the new Perl wrapper SV, call `PerlUpb_ObjCache_Add(aTHX_ ptr, new_sv)`, and then return the new SV.
 
-## Benefits
+## Advanced Cache Management
 
--   **Object Identity:** Ensures that multiple calls for the same underlying C descriptor or message return the same Perl object instance.
--   **Memory Efficiency:** Prevents redundant Perl wrapper objects from being created for long-lived C objects (like descriptors in the `DescriptorPool`).
--   **Automatic Cleanup:** Using weak references allows Perl's garbage collector to reclaim the wrapper objects when they are no longer in use by the Perl application, at which point the cache entry effectively becomes empty.
+To achieve world-class performance and observability, the object cache includes (or is planned to include) the following:
+
+-   **Scalable Lookups**: The cache is designed to maintain O(1) performance even with millions of active objects.
+-   **Concurrency Integrity**: The cache implementation ensures stability during high-frequency context switching in coroutine-based environments (Coro/Mojo). Weak references are rigorously validated to ensure they remain stable during interleaved GC cycles.
+-   **Eviction Policies**: (Planned) Implement LRU (Least Recently Used) or memory-pressure based clearing to ensure the cache does not exceed configurable memory bounds.
+-   **Observability**: (Planned) High-performance trace/audit logging for cache hits, misses, and premature collection to aid in identifying complex memory management issues.

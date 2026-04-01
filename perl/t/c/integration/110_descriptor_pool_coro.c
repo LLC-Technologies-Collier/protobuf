@@ -58,7 +58,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(3 + NUM_COROS + 2);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -82,6 +82,14 @@ int main(int argc, char** argv) {
         args[i].pool_sv = pool_sv;
     }
     RUN_CORO_TEST(coro_test_func, args);
+
+    TODO("Stress concurrent descriptor set addition with conflicting names") {
+        ok(0, "System handles race conditions during duplicate definition addition safely");
+    }
+
+    TODO("Verify pool stability during high-frequency concurrent lookup of non-existent types") {
+        ok(0, "Cache and pool internal state remain consistent during failed lookups");
+    }
 
     SvREFCNT_dec(pool_sv);
     test_perl_destroy(my_perl);

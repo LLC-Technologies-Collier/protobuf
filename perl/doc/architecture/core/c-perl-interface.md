@@ -31,4 +31,11 @@ SV* get_descriptor(pTHX_ Protobuf__Message self) {
 }
 ```
 
-The `protobuf_c_to_perl_obj` function would encapsulate the logic for checking the object cache and creating a new Perl object if necessary.
+## Integration and Stability
+
+To ensure world-class performance and stability in integrated environments (e.g., Mojo, Coro), the interface follows these advanced principles:
+
+1.  **Arena Sharing and Pinning**: When returning a sub-message or descriptor, the XS layer MUST ensure the child object pins the parent's memory by holding a strong reference to the parent's `arena_sv` or `pool_sv`. This ensures that the underlying `upb_Arena` remains valid even if the parent Perl object goes out of scope.
+2.  **Cross-Interpreter Isolation**: Every `PerlInterpreter` instance (ithreads or workers) MUST have its own independent XS state. The object cache and any internal C-level registries are stored as member variables of the interpreter context (or via `PL_modglobal`) to prevent data corruption between threads.
+3.  **Interrupt Resilience (Croak Safety)**: The interface is designed to maintain state integrity if a Perl `croak` or `die` (which uses `longjmp`) occurs during an operation. Resource management in C follows the "Allocate-Then-Register" pattern to ensure that any partially created objects are either properly tracked or safely leaked only until the arena is destroyed.
+4.  **Lock-Free Multi-Access**: Read-only operations (like descriptor lookups) are architected to be lock-free, enabling high-performance concurrent access from multiple Perl coroutines.

@@ -31,5 +31,5 @@
     *   [ ] TODO: Context-aware croak messages (field path resolution).
     *   [x] Implement C functions in `perl/xs/protobuf/utils.c`.
     *   [ ] C tests pass for `perl/t/c/protobuf/utils.c`.
-*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
 

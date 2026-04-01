@@ -38,4 +38,6 @@ const upb_to_sv_test_case int32_test_cases[] = {
 
 ## Integration
 
-The main test files (`t/c/convert/upb_to_sv.c` and `t/c/convert/sv_to_upb.c`) will include the necessary headers or declarations from these type files and incorporate the `*_test_cases` arrays into their main test loop. The `c_test_config.json` in `t/c/` ensures all these `.c` files are compiled and linked together.
+The main test files (`t/c/convert/upb_to_sv.c` and `t/c/convert/sv_to_upb.c`) include the declarations from these type files and calculate the `total_tests` dynamically by iterating through the `*_test_cases` arrays using `count_test_cases()`.
+
+Edge cases, such as handling `NULL` values or `undef` SVs, are tested as independent blocks within the main runners to ensure exhaustive coverage of the conversion API's boundary conditions.

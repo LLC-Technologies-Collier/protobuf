@@ -7,7 +7,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(3);
+    plan(6);
 
     // Mock MessageDef and FieldDef (Extension)
     // In a real test, we'd load these from a pool.
@@ -26,6 +26,18 @@ int main(int argc, char** argv) {
     // Cleanup
     SvREFCNT_dec(dict_sv);
     SvREFCNT_dec(msg_sv);
+
+    TODO("Implement Lazy Extension Resolution") {
+        ok(0, "Descriptors for extension fields are only inflated on access");
+    }
+
+    TODO("Verify stable identity for extension objects across iterations") {
+        ok(0, "Retrieving the same extension multiple times returns the same Perl SV");
+    }
+
+    TODO("Implement safe cross-message extension migration semantics") {
+        ok(0, "Extension data can be safely moved between messages sharing an arena");
+    }
 
     test_perl_destroy(my_perl);
     return 0;
