@@ -33,7 +33,7 @@ static void check_sv_repeated_sint64_val(pTHX_ SV *sv, const char *prefix) {
     if (!sv_derived_from(sv, "Protobuf::Internal::Repeated")) return;
 
     int size = PerlUpb_Repeated_Size(aTHX_ sv);
-    is(size, 2, sdiagnostic("%s: Array has 2 elements", prefix));
+    is(size, 3, sdiagnostic("%s: Array has 3 elements", prefix));
     SV *elem0 = PerlUpb_Repeated_GetItem(aTHX_ sv, 0);
     ok(elem0, sdiagnostic("%s: Fetched element 0", prefix));
     if (elem0) {

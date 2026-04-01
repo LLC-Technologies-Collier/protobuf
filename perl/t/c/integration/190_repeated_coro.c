@@ -49,8 +49,7 @@ void test_repeated_ops(pTHX_ coro_arg_t *carg) {
         coro_transfer(coro_ctxs[carg->id - 1], &main_ctx); // Yield
 
         SV* ret_av_ref = PerlUpb_Message_GetField(aTHX_ msg_sv, f_rep_int32);
-        AV* ret_av = (AV*)SvRV(ret_av_ref);
-        if (av_len(ret_av) != 4) {
+        if (PerlUpb_Repeated_Size(aTHX_ ret_av_ref) != 5) {
             carg->errors++;
         }
         SvREFCNT_dec(ret_av_ref);

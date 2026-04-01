@@ -33,6 +33,7 @@ You are an AI assistant tasked with implementing a Perl Protocol Buffers module 
     *   **Step 6: Leak Tests (Perl Layer):** For Perl modules, add leak tests using `Test::LeakTrace` as indicated in the plan. Ensure these pass.
     *   **Step 7: Refactor:** Optional: Refactor for clarity, efficiency, or to better adhere to conventions, ensuring tests still pass.
     *   **Step 8: Report Task Complete:** Once all tests for the specific checklist item pass, report the checklist item as complete.
+    *   **Step 9: Integration Reviews:** At the integration step of each milestone (or when completing milestones specifically labeled 'Integration'), perform a comprehensive review of the code developed during that milestone for duplication, technical debt, and refactor opportunities. Resolve these before moving to the next milestone.
 3.  **Strict Conventions:** All code MUST adhere to `@perl/doc/guidelines/**`.
 4.  **C-Layer Commands:**
     *   Change directory: `cd perl`
