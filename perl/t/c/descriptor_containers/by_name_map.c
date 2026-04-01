@@ -45,7 +45,7 @@ static const PerlUpb_ByNameMap_VTable mock_vtable = {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(7);
+    plan(9);
 
     SV* parent_sv = newSViv(1); // Fake parent
     SV* map_sv = PerlUpb_ByNameMap_New(aTHX_ parent_sv, NULL, &mock_vtable);
@@ -66,6 +66,14 @@ int main(int argc, char** argv) {
     SV* val1 = PerlUpb_ByNameMap_Value(aTHX_ map_sv, 1);
     is(SvIV(val1), 20, "Value at index 1 is 20");
     SvREFCNT_dec(val1);
+
+    TODO("Implement Direct-to-Hash Projection for high-frequency bulk access") {
+        ok(0, "C-level projection of ByNameMap to standard Perl HV");
+    }
+
+    TODO("Verify concurrent iterator stability for ByNameMap") {
+        ok(0, "Iterators remain valid during interleaved read-only access in coroutines");
+    }
 
     // Cleanup
     extern void PerlUpb_ByNameMap_Free(pTHX_ SV* sv);

@@ -26,7 +26,7 @@ unsigned char test_proto_with_msg[] = {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(9);
+    plan(12);
 
     // 1. Create Pool
     SV* pool_sv = PerlUpb_DescriptorPool_New(aTHX);
@@ -71,6 +71,18 @@ int main(int argc, char** argv) {
 
         // 9. Check Full Name
         is_string(upb_MessageDef_FullName(msg_raw), "Test", "Message full name correct");
+
+        TODO("Implement Thread-Safe Global Pool sharing across interpreters") {
+            ok(0, "Read-only global pool accessible from multiple PerlInterpreter instances");
+        }
+
+        TODO("Implement Descriptor Set Lazy Loading for memory efficiency") {
+            ok(0, "Large descriptor sets are only partially parsed on addition");
+        }
+
+        TODO("Implement detailed Cross-Pool Conflict Resolution reporting") {
+            ok(0, "Conflict errors provide precise file/line/type information for resolution");
+        }
 
         SvREFCNT_dec(msg_sv);
     } else {

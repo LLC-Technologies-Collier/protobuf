@@ -7,6 +7,9 @@
 *   **perl/xs/descriptor/base.h:**
     *   [x] Create test file `perl/t/c/descriptor/base.c`.
     *   [ ] Tests cover all public functions in the corresponding .h file. (TODO stub created).
+    *   [ ] TODO: Implement lazy descriptor blessing with thread-local fast-path.
+    *   [ ] TODO: Implement schema fingerprinting for MessageDef comparison.
+    *   [ ] TODO: Verify cross-pool definition resolution safety.
     *   [x] Implement C logic (Header-only macros for caching/blessing).
     *   [ ] C tests pass.
 *   **perl/xs/descriptor/message.c:**

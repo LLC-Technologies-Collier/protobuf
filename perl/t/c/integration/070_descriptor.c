@@ -14,7 +14,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(12);
+    plan(12 + 3);
 
     upb_Arena *arena = upb_Arena_New();
     if (!load_test_descriptors(aTHX_ arena)) {
@@ -76,6 +76,18 @@ int main(int argc, char** argv) {
 
     } else {
         fprintf(stderr, "# Skipping integration tests as msg_def is NULL\n");
+    }
+
+    TODO("Verify integrated Object Cache identity for all descriptor types") {
+        ok(0, "Retrieving the same FieldDef/EnumDef twice returns the same Perl SV");
+    }
+
+    TODO("Implement integrated EnumValueDef and OneofDef resolution tests") {
+        ok(0, "Complex descriptor types are correctly resolved and integrated with convert logic");
+    }
+
+    TODO("Verify DescriptorPool lifetime safety during active descriptor usage") {
+        ok(0, "System prevents DescriptorPool disposal while child definitions are pinned in Perl");
     }
 
     upb_Arena_Free(arena);

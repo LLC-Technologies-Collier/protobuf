@@ -68,7 +68,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(2 + NUM_COROS + 3);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
@@ -81,6 +81,18 @@ int main(int argc, char** argv) {
 
     coro_arg_t args[NUM_COROS];
     RUN_CORO_TEST(coro_test_func, args);
+
+    TODO("Stress concurrent cross-reference resolution between interdependent descriptors") {
+        ok(0, "System remains stable when multiple coroutines resolve MessageSubDef concurrently");
+    }
+
+    TODO("Verify descriptor cache stability under high concurrent load") {
+        ok(0, "Descriptor wrapping and cache lookup are safe across interleaved coroutines");
+    }
+
+    TODO("Implement concurrent DescriptorPool disposal safety verification") {
+        ok(0, "Pool reference counting remains robust under high concurrency");
+    }
 
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
     test_perl_destroy(my_perl);

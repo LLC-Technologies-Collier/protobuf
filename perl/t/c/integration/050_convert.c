@@ -65,12 +65,24 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    plan(1 + 4 + 5);
+    plan(1 + 4 + 5 + 3);
     test_num = 0;
     ok(1, "Descriptors loaded");
 
     test_int32_roundtrip(aTHX_ arena, arena_sv);
     test_string_roundtrip(aTHX_ arena, arena_sv);
+
+    TODO("Implement exhaustive primitive roundtrip tests for all UPB types") {
+        ok(0, "All 18 protobuf types verified for conversion accuracy in roundtrip");
+    }
+
+    TODO("Verify integrated Object Cache identity for message conversions") {
+        ok(0, "Converting the same message pointer twice returns the same Perl SV");
+    }
+
+    TODO("Verify SvToUpb handles large Math::BigInt inputs in integrated context") {
+        ok(0, "Large integers correctly roundtrip via BigInt support (requires BigInt implementation)");
+    }
 
     upb_DefPool_Free(test_pool);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);

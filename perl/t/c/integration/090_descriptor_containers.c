@@ -43,7 +43,7 @@ static const PerlUpb_ByNameMap_VTable msg_fields_map_vtable = {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(11);
+    plan(11 + 2);
 
     upb_Arena *arena = upb_Arena_New();
     if (!load_test_descriptors(aTHX_ arena)) {
@@ -89,6 +89,14 @@ int main(int argc, char** argv) {
         SV* val0 = PerlUpb_ByNameMap_Value(aTHX_ map_sv, 0);
         ok(sv_derived_from(val0, "Protobuf::Descriptor::Field"), "Value 0 is a FieldDescriptor");
         SvREFCNT_dec(val0);
+
+        TODO("Implement integrated ByNumberMap tests for EnumValue definitions") {
+            ok(0, "Enum values correctly integrated with ByNumberMap container logic");
+        }
+
+        TODO("Verify integrated Iterator performance and stability for real definitions") {
+            ok(0, "Iterating over message fields using MapIterator is stable and efficient");
+        }
 
         extern void PerlUpb_ByNameMap_Free(pTHX_ SV* sv);
         PerlUpb_ByNameMap_Free(aTHX_ map_sv);

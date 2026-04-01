@@ -83,7 +83,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(2 + NUM_COROS + 3);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
@@ -107,6 +107,18 @@ int main(int argc, char** argv) {
         args[i].malli = malli;
     }
     RUN_CORO_TEST(coro_test_func, args);
+
+    TODO("Stress concurrent type-mismatch failures in SvToUpb") {
+        ok(0, "System remains stable when multiple coroutines trigger conversion errors");
+    }
+
+    TODO("Verify integrated cache stability under high concurrent load") {
+        ok(0, "Message wrapping and cache lookup are safe across interleaved coroutines");
+    }
+
+    TODO("Implement concurrent memory pressure stress during string conversion") {
+        ok(0, "Arena growth and SV allocation remain robust under concurrency");
+    }
 
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
     test_perl_destroy(my_perl);

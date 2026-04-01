@@ -45,7 +45,7 @@ static const PerlUpb_ByNumberMap_VTable mock_vtable = {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(7);
+    plan(8);
 
     SV* parent_sv = newSViv(1);
     SV* map_sv = PerlUpb_ByNumberMap_New(aTHX_ parent_sv, NULL, &mock_vtable);
@@ -66,6 +66,10 @@ int main(int argc, char** argv) {
     SV* val2 = PerlUpb_ByNumberMap_Value(aTHX_ map_sv, 2);
     is(SvIV(val2), 300, "Value at index 2 is 300");
     SvREFCNT_dec(val2);
+
+    TODO("Implement O(1) reverse lookup for ByNumberMap") {
+        ok(0, "Value-to-Key lookups optimized via internal reverse-index");
+    }
 
     // Cleanup
     extern void PerlUpb_ByNumberMap_Free(pTHX_ SV* sv);

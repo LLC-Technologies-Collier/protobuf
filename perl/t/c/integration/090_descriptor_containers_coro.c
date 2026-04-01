@@ -87,7 +87,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(2 + NUM_COROS + 2);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
@@ -104,6 +104,14 @@ int main(int argc, char** argv) {
         args[i].parent_sv = parent_sv;
     }
     RUN_CORO_TEST(coro_test_func, args);
+
+    TODO("Implement concurrent large-scale temporary container creation stress") {
+        ok(0, "System remains stable under massive creation/destruction of short-lived container wrappers");
+    }
+
+    TODO("Verify integrated cache integrity during concurrent descriptor container access") {
+        ok(0, "Container lookups consistently return cached descriptor instances across coroutines");
+    }
 
     SvREFCNT_dec(parent_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);

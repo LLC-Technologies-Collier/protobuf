@@ -6,6 +6,14 @@ The `Protobuf::Descriptor` class hierarchy in Perl (e.g., `Protobuf::MessageDesc
 
 The C layer implementation (Milestone 6 & 7) provides a consistent set of wrapper functions for all `upb_Def*` types.
 
+## Object Identity and Lifetime
+
+To ensure memory safety and idiomatic Perl behavior, descriptors follow these rules:
+
+1.  **Strict Identity**: Multiple retrievals of the same underlying `upb_Def` (e.g. `upb_MessageDef`) MUST return the same Perl SV. This is implemented via the `PerlUpb_ObjCache`.
+2.  **DescriptorPool Pinning**: Every descriptor object MUST hold a **strong reference** to its parent `Protobuf::DescriptorPool` SV. Since `upb` descriptors are owned by the `upb_DefPool`, destroying the pool while a descriptor is still in use in Perl would lead to a use-after-free. Pinning ensures the C memory remains valid.
+3.  **Cross-Pool Resolution**: Descriptors originating from different `DescriptorPool` instances are considered distinct, even if they represent the same proto message. Comparison logic should account for pool identity.
+
 ## C Wrapper Layer
 
 All descriptor wrappers are located in `perl/xs/descriptor/` and follow a consistent naming convention: `PerlUpb_<Type>Def_<Method>`.

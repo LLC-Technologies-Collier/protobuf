@@ -23,6 +23,11 @@ The `Protobuf::DescriptorPool` class manages a collection of descriptors. It is 
 -   The `upb_DefPool` owns its own memory for descriptors.
 -   The object cache ensures that multiple accesses to the same descriptor return the same Perl wrapper.
 
+## Concurrency and Isolation
+
+-   **Interpreter Isolation**: Each `PerlInterpreter` (e.g. in ithreads or different worker processes) MUST maintain its own distinct `upb_DefPool` and object cache state to avoid race conditions.
+-   **Lock-Free Retrieval**: High-performance implementations should aim for lock-free or highly-concurrent descriptor retrieval to avoid bottlenecking concurrent message parsing (e.g. in Mojo or Coro).
+
 ## Lifecycle
 
 -   The `upb_DefPool` is owned by the `Protobuf::DescriptorPool` Perl object and freed in `DEMOLISH`.
