@@ -4,6 +4,7 @@ use Moo;
 use strict;
 use warnings;
 use Carp qw(croak);
+use Log::Any qw($log);
 
 our $VERSION = '0.01';
 
@@ -52,7 +53,7 @@ sub add_serialized_file_descriptor_set {
     croak("Serialized descriptor set data is required") unless defined $serialized;
     my $files = _xs_add_serialized_file_descriptor_set($self, $serialized);
     if ($files && ref($files) eq 'ARRAY') {
-        warn "Added " . scalar(@$files) . " files from descriptor set";
+        $log->debug("Added " . scalar(@$files) . " files from descriptor set");
         foreach my $file (@$files) {
             Protobuf::ClassGenerator->generate_for_file($file);
         }
@@ -97,5 +98,8 @@ Protobuf::DescriptorPool - Pool of Protocol Buffer descriptors
 =head1 DESCRIPTION
 
 This module manages a collection of Protocol Buffer descriptors.
+
+=cut
+scriptors.
 
 =cut

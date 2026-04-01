@@ -291,7 +291,7 @@ all :: $(COMMON_LIB)
 
 test :: all build_c_tests test_c
 	$(NOECHO) $(ECHO) "Running Perl tests"
-	LD_LIBRARY_PATH="$(CURDIR):$$(LD_LIBRARY_PATH)" LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8 ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -j$$(nproc) t/*.t
+	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8 ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -j$$(nproc) t/*.t t/integration/*.t
 EOM
 }
 

@@ -2,8 +2,6 @@ package Protobuf::Internal::Map;
 
 use strict;
 use warnings;
-use Tie::Hash;
-our @ISA = qw(Tie::Hash);
 
 our $VERSION = '0.01';
 
@@ -14,8 +12,12 @@ use Protobuf::Internal::MapIterator;
 
 sub TIEHASH {
     my ($class, $xs_obj) = @_;
-    return bless { _xs => $xs_obj }, $class;
+    return bless { _xs => $xs_obj }, 'Protobuf::Internal::Map::Tied';
 }
+
+package Protobuf::Internal::Map::Tied;
+use Tie::Hash;
+our @ISA = qw(Tie::Hash);
 
 sub FETCH {
     my ($self, $key) = @_;

@@ -2,6 +2,7 @@ package Protobuf::ClassGenerator;
 
 use strict;
 use warnings;
+use Log::Any qw($log);
 
 sub generate_for_file {
     my ($class, $file) = @_;
@@ -22,7 +23,7 @@ sub _generate_for_message {
     
     my $hex_norm = unpack("H*", $normalized);
     my $hex_target = unpack("H*", "google.protobuf.Struct");
-    warn "DEBUG: normalized=[$normalized] hex=$hex_norm target_hex=$hex_target";
+    $log->debug("normalized=[$normalized] hex=$hex_norm target_hex=$hex_target");
 
     my $perl_class = $normalized;
     $perl_class =~ s/\./::/g;
@@ -40,7 +41,7 @@ sub _generate_for_message {
 
     my $wkt_logic = "";
     if (my $type = $wkt_map{$normalized} || ($normalized =~ /Struct$/ ? 'Struct' : undef)) {
-        warn "DEBUG: MATCHED WKT $type for $normalized";
+        $log->debug("MATCHED WKT $type for $normalized");
         if ($type eq 'Any' && !$perl_class->can('pack')) {
             require Protobuf::WKT::Any;
             $wkt_logic = "sub pack { shift->Protobuf::WKT::Any::pack(\@_) } sub unpack { shift->Protobuf::WKT::Any::unpack(\@_) }\n";
