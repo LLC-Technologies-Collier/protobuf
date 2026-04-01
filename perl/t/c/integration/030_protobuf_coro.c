@@ -59,7 +59,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(4 + NUM_COROS);
 
     PerlUpb_ObjCache_Init(aTHX);
     ok(1, "PerlUpb_ObjCache_Init called");
@@ -69,6 +69,14 @@ int main(int argc, char** argv) {
 
     TODO("Implement more aggressive concurrent stress tests for core utilities") {
         ok(0, "obj_cache, arena, and utils stressed under high concurrency");
+    }
+
+    TODO("Verify lock-free progression for cache lookups under high contention") {
+        ok(0, "Performance does not degrade during concurrent cache access");
+    }
+
+    TODO("Implement automated race detection for internal core state") {
+        ok(0, "ThreadSanitizer-equivalent checks for concurrent core utility usage");
     }
 
     test_perl_destroy(my_perl);

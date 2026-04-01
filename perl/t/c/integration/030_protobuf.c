@@ -10,7 +10,7 @@
 #include "XSUB.h"
 
 static void test_arena_cache_interaction(pTHX) {
-    plan(7);
+    plan(9);
 
     PerlUpb_ObjCache_Init(aTHX);
     ok(1, "Cache initialized");
@@ -36,8 +36,16 @@ static void test_arena_cache_interaction(pTHX) {
     PerlUpb_Arena_Destroy(aTHX_ arena_sv); // This frees the arena and the wrapper
     ok(1, "Arena freed");
 
-    TODO("Implement more comprehensive interaction tests") {
-        ok(0, "Interactions between obj_cache, arena, and utils covered");
+    TODO("Verify arena-sharing integrity across multiple messages") {
+        ok(0, "ObjCache correctly tracks message-to-arena lifetime relationships");
+    }
+
+    TODO("Implement cross-interpreter isolation verification") {
+        ok(0, "Core utility state is strictly private to the specific PerlInterpreter");
+    }
+
+    TODO("Verify interrupt resilience during upb operations (longjmp/croak safety)") {
+        ok(0, "ObjCache and Arena maintain consistent state after non-local exits");
     }
 }
 
