@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
     if (msg_def) {
         // 2. Get FieldDef via wrapper
-        const upb_FieldDef *field = PerlUpb_MessageDef_FindFieldByName(aTHX_ msg_def, "enum_field");
+        const upb_FieldDef *field = upb_MessageDef_FindFieldByName(msg_def, "enum_field");
         ok(field != NULL, "Found enum_field via PerlUpb_MessageDef_FindFieldByName");
 
         if (field) {
@@ -42,10 +42,10 @@ int main(int argc, char** argv) {
             SvREFCNT_dec(sv);
 
             // 4. Get EnumDef from FieldDef via wrapper
-            const upb_EnumDef *enum_def = PerlUpb_FieldDef_EnumSubDef(aTHX_ field);
+            const upb_EnumDef *enum_def = upb_FieldDef_EnumSubDef(field);
             ok(enum_def != NULL, "PerlUpb_FieldDef_EnumSubDef returns non-NULL");
             if (enum_def) {
-                is_string(PerlUpb_EnumDef_FullName(aTHX_ enum_def), "test.TestEnum", "Enum full name matches");
+                is_string(upb_EnumDef_FullName(enum_def), "test.TestEnum", "Enum full name matches");
             } else {
                 fprintf(stderr, "# EnumDef is NULL\n");
             }
@@ -53,14 +53,14 @@ int main(int argc, char** argv) {
             fprintf(stderr, "# Field is NULL\n");
         }
 
-        const upb_FieldDef *msg_field = PerlUpb_MessageDef_FindFieldByName(aTHX_ msg_def, "nested_message");
+        const upb_FieldDef *msg_field = upb_MessageDef_FindFieldByName(msg_def, "nested_message");
         ok(msg_field != NULL, "Found nested_message");
         if (msg_field) {
             // 5. Get MessageDef from FieldDef via wrapper
-            const upb_MessageDef *sub_msg_def = PerlUpb_FieldDef_MessageSubDef(aTHX_ msg_field);
+            const upb_MessageDef *sub_msg_def = upb_FieldDef_MessageSubDef(msg_field);
             ok(sub_msg_def != NULL, "PerlUpb_FieldDef_MessageSubDef returns non-NULL");
             if (sub_msg_def) {
-                is_string(PerlUpb_MessageDef_FullName(aTHX_ sub_msg_def), "test.NestedMessage", "Sub-message full name matches");
+                is_string(upb_MessageDef_FullName(sub_msg_def), "test.NestedMessage", "Sub-message full name matches");
             } else {
                 fprintf(stderr, "# Sub-message MessageDef is NULL\n");
             }
@@ -69,9 +69,9 @@ int main(int argc, char** argv) {
         }
         
         // 6. Test list-based field access
-        int field_count = PerlUpb_MessageDef_FieldCount(aTHX_ msg_def);
+        int field_count = upb_MessageDef_FieldCount(msg_def);
         ok(field_count > 0, "Field count > 0");
-        const upb_FieldDef *first_field = PerlUpb_MessageDef_Field(aTHX_ msg_def, 0);
+        const upb_FieldDef *first_field = upb_MessageDef_Field(msg_def, 0);
         ok(first_field != NULL, "First field retrieved via PerlUpb_MessageDef_Field");
 
     } else {

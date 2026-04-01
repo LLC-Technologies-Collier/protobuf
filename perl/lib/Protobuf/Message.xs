@@ -10,7 +10,7 @@
 
 // -- Message --
 #define GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef_var) \
-    const upb_FieldDef* fdef_var = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name); \
+    const upb_FieldDef* fdef_var = upb_MessageDef_FindFieldByName(mdef, field_name); \
     if (!fdef_var) { \
         croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef)); \
     }

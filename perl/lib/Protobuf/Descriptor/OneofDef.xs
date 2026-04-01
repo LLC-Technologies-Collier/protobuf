@@ -14,7 +14,7 @@ _xs_full_name(self)
     SV* self
     CODE:
         const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
-        RETVAL = o ? PerlUpb_OneofDef_FullName(aTHX_ o) : NULL;
+        RETVAL = o ? upb_OneofDef_FullName(o) : NULL;
     OUTPUT:
         RETVAL
 
@@ -23,7 +23,7 @@ _xs_name(self)
     SV* self
     CODE:
         const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
-        RETVAL = o ? PerlUpb_OneofDef_Name(aTHX_ o) : NULL;
+        RETVAL = o ? upb_OneofDef_Name(o) : NULL;
     OUTPUT:
         RETVAL
 
@@ -32,7 +32,7 @@ _xs_field_count(self)
     SV* self
     CODE:
         const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
-        RETVAL = o ? PerlUpb_OneofDef_FieldCount(aTHX_ o) : 0;
+        RETVAL = o ? upb_OneofDef_FieldCount(o) : 0;
     OUTPUT:
         RETVAL
 
@@ -42,8 +42,8 @@ _xs_field(self, index)
     int index
     CODE:
         const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
-        if (o && index >= 0 && index < PerlUpb_OneofDef_FieldCount(aTHX_ o)) {
-            RETVAL = PerlUpb_FieldDef_GetWrapper(aTHX_ PerlUpb_OneofDef_Field(aTHX_ o, index));
+        if (o && index >= 0 && index < upb_OneofDef_FieldCount(o)) {
+            RETVAL = PerlUpb_FieldDef_GetWrapper(aTHX_ upb_OneofDef_Field(o, index));
         } else {
             RETVAL = &PL_sv_undef;
         }
@@ -55,6 +55,6 @@ _xs_is_synthetic(self)
     SV* self
     CODE:
         const upb_OneofDef* o = PerlUpb_OneofDef_GetOneof(aTHX_ self);
-        RETVAL = o ? PerlUpb_OneofDef_IsSynthetic(aTHX_ o) : false;
+        RETVAL = o ? upb_OneofDef_IsSynthetic(o) : false;
     OUTPUT:
         RETVAL

@@ -71,7 +71,7 @@ _xs_find_field_by_number(self, number)
     int number
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
-        const upb_FieldDef* f = m ? PerlUpb_MessageDef_FindFieldByNumber(aTHX_ m, number) : NULL;
+        const upb_FieldDef* f = m ? upb_MessageDef_FindFieldByNumber(m, number) : NULL;
         RETVAL = f ? PerlUpb_FieldDef_GetWrapper(aTHX_ f) : &PL_sv_undef;
     OUTPUT:
         RETVAL
@@ -81,7 +81,7 @@ _xs_oneof_count(self)
     SV* self
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
-        RETVAL = m ? PerlUpb_MessageDef_OneofCount(aTHX_ m) : 0;
+        RETVAL = m ? upb_MessageDef_OneofCount(m) : 0;
     OUTPUT:
         RETVAL
 
@@ -91,8 +91,8 @@ _xs_oneof(self, index)
     int index
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
-        if (m && index >= 0 && index < PerlUpb_MessageDef_OneofCount(aTHX_ m)) {
-            RETVAL = PerlUpb_OneofDef_GetWrapper(aTHX_ PerlUpb_MessageDef_Oneof(aTHX_ m, index));
+        if (m && index >= 0 && index < upb_MessageDef_OneofCount(m)) {
+            RETVAL = PerlUpb_OneofDef_GetWrapper(aTHX_ upb_MessageDef_Oneof(m, index));
         } else {
             RETVAL = &PL_sv_undef;
         }
@@ -105,7 +105,7 @@ _xs_nested_message_count(self)
     SV* self
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
-        RETVAL = m ? PerlUpb_MessageDef_NestedMessageCount(aTHX_ m) : 0;
+        RETVAL = m ? upb_MessageDef_NestedMessageCount(m) : 0;
     OUTPUT:
         RETVAL
 
@@ -115,8 +115,8 @@ _xs_nested_message(self, index)
     int index
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
-        if (m && index >= 0 && index < PerlUpb_MessageDef_NestedMessageCount(aTHX_ m)) {
-            RETVAL = PerlUpb_MessageDef_GetWrapper(aTHX_ PerlUpb_MessageDef_NestedMessage(aTHX_ m, index));
+        if (m && index >= 0 && index < upb_MessageDef_NestedMessageCount(m)) {
+            RETVAL = PerlUpb_MessageDef_GetWrapper(aTHX_ upb_MessageDef_NestedMessage(m, index));
         } else {
             RETVAL = &PL_sv_undef;
         }

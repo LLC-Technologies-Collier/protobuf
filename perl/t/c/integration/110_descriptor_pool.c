@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
         SvREFCNT_dec(null_sv);
 
         // 9. Check Full Name
-        is_string(PerlUpb_MessageDef_FullName(aTHX_ msg_raw), "Test", "Message full name correct");
+        is_string(upb_MessageDef_FullName(msg_raw), "Test", "Message full name correct");
 
         SvREFCNT_dec(msg_sv);
     } else {
