@@ -6,9 +6,7 @@ use TestHelpers;
 use Time::Piece;
 
 my $pool = TestHelpers->get_generated_pool();
-open my $fh, '<:raw', 't/data/wkt_descriptor.bin' or die $!;
-my $data = do { local $/; <$fh> };
-$pool->add_serialized_file_descriptor_set($data);
+TestHelpers->load_test_protos($pool, 't/data/wkt_descriptor.bin');
 
 subtest 'timestamp operations' => sub {
     my $ts = google::protobuf::Timestamp->new();

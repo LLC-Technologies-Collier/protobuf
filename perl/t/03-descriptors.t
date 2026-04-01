@@ -7,12 +7,7 @@ use TestHelpers;
 subtest 'load and explore descriptors' => sub {
     my $pool = TestHelpers->get_empty_pool();
     
-    my $file_path = 't/data/test_descriptor.bin';
-    open my $fh, '<:raw', $file_path or die "Could not open $file_path: $!";
-    my $data = do { local $/; <$fh> };
-    close $fh;
-    
-    my $files = $pool->add_serialized_file_descriptor_set($data);
+    my $files = TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
     ok($files, 'Added descriptor set');
     my $last_file = $files->[-1];
     isa_ok($last_file, 'Protobuf::Descriptor::File');

@@ -20,9 +20,7 @@ use lib "t/lib";
 use TestHelpers;
 
 my $pool = TestHelpers->get_generated_pool();
-open my $fh, '<:raw', 't/data/test_descriptor.bin' or die $!;
-my $data = do { local $/; <$fh> };
-$pool->add_serialized_file_descriptor_set($data);
+TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 my $msg = test::TestMessage->new();
 $msg->set_value(123);

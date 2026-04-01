@@ -5,11 +5,7 @@ use lib "t/lib";
 use TestHelpers;
 
 my $pool = TestHelpers->get_generated_pool();
-my $file_path = 't/data/test_descriptor.bin';
-open my $fh, '<:raw', $file_path or die "Could not open $file_path: $!";
-my $data = do { local $/; <$fh> };
-close $fh;
-$pool->add_serialized_file_descriptor_set($data);
+TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'repeated field cross-message interaction' => sub {
     my $msg1 = test::TestMessage->new();

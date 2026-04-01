@@ -6,11 +6,7 @@ use TestHelpers;
 
 my $pool = TestHelpers->get_generated_pool();
 # Load descriptors
-foreach my $file ('t/data/test_descriptor.bin', 't/data/wkt_descriptor.bin') {
-    open my $fh, '<:raw', $file or die "Could not open $file: $!";
-    my $data = do { local $/; <$fh> };
-    $pool->add_serialized_file_descriptor_set($data);
-}
+TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin', 't/data/wkt_descriptor.bin');
 
 subtest 'Final Integration: Everything together' => sub {
     # 1. Create a complex message

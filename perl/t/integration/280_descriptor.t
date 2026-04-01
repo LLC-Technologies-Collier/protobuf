@@ -12,12 +12,7 @@ subtest 'descriptor pool and arena interaction' => sub {
     my $pool = TestHelpers->get_empty_pool();
     ok($pool, 'Created descriptor pool');
 
-    my $file_path = 't/data/test_descriptor.bin';
-    open my $fh, '<:raw', $file_path or die "Could not open $file_path: $!";
-    my $data = do { local $/; <$fh> };
-    close $fh;
-
-    my $last_file = $pool->add_serialized_file_descriptor_set($data);
+    my $last_file = TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
     ok($last_file, 'Added serialized file descriptor set');
 
     my $message_def = $pool->find_message_by_name('test.TestMessage');

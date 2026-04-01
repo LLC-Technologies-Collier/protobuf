@@ -7,11 +7,7 @@ use POSIX qw( mkfifo );
 use File::Temp qw( tempdir );
 
 my $pool = TestHelpers->get_generated_pool();
-foreach my $file ('t/data/test_descriptor.bin') {
-    open my $fh, '<:raw', $file or die $!;
-    my $data = do { local $/; <$fh> };
-    $pool->add_serialized_file_descriptor_set($data);
-}
+TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 my $tmpdir = tempdir( CLEANUP => 1 );
 my $shm_file = "$tmpdir/proto_shm";
