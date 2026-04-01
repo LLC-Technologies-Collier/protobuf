@@ -215,7 +215,7 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
 
             total_tests += count_test_cases(group_upb_to_sv_test_cases);
 
-            total_tests += 3; // For edge cases
+            total_tests += 6; // For edge cases and high-reaching TODOs
 
 
 
@@ -284,6 +284,18 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
     }
 
 
+
+    TODO("Implement transparent Math::BigInt support for 64-bit integer overflows") {
+        ok(0, "Values > 2^53 are correctly promoted to BigInt objects");
+    }
+
+    TODO("Implement zero-copy ByteBuffer conversions for large String/Bytes fields") {
+        ok(0, "Large strings use zero-copy mechanisms to avoid redundant allocation");
+    }
+
+    TODO("Implement range-validated strict type checking for narrowing conversions") {
+        ok(0, "narrowing conversions throw clear errors on overflow");
+    }
 
     test_perl_destroy(my_perl);
 

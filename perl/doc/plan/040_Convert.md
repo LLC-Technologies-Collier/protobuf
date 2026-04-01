@@ -69,18 +69,24 @@
     *   [x] **SInt32**
         *   [x] Implement & Test UPB -> SV
         *   [x] Implement & Test SV -> UPB
-    *   [x] **SInt64**
-        *   [x] Implement & Test UPB -> SV
+    *   [x] **Int64**
+        *   [ ] Implement & Test UPB -> SV (TODO: Handle BigInt).
         *   [x] Implement & Test SV -> UPB
-    *   [x] **Message**
-        *   [x] Implement & Test UPB -> SV
+    *   [x] **UInt64**
+        *   [ ] Implement & Test UPB -> SV (TODO: Handle BigInt).
         *   [x] Implement & Test SV -> UPB
+    ...
     *   [x] **Group**
         *   [x] Implement & Test UPB -> SV
         *   [x] Implement & Test SV -> UPB
 
-4.  **Final Review:**
-    *   [x] Ensure all C tests in `t/c/convert/` pass.
+    4.  **Reach for More (World-Class Goals):**
+    *   [ ] TODO: Implement transparent Math::BigInt support for 64-bit integer overflows.
+    *   [ ] TODO: Implement zero-copy ByteBuffer conversions for large String/Bytes fields.
+    *   [ ] TODO: Implement range-validated strict type checking for narrowing conversions (e.g. SV to int32).
+
+    5.  **Final Review:**
+    *   [ ] Ensure all C tests in `perl/t/c/convert/` pass. (Current: failing due to array size mismatches and leaks).
 
 5.  **Documentation:**
     *   [x] Review and update perl/doc/architecture/** documents based on this milestone's implementation.
