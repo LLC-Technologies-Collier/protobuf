@@ -117,3 +117,8 @@ PerlInterpreter* test_perl_init(int argc, char** argv);
 void test_perl_destroy(PerlInterpreter *my_perl);
 
 #endif // PERLUPB_TEST_H
+
+// TODO: Implement SKIP functionality for C tests
+#define SKIP(reason, count) \
+    for(int _skip_i = 0; _skip_i < (count); _skip_i++) \
+        fprintf(stderr, "ok %d - # skip %s\n", ++test_num, (reason))

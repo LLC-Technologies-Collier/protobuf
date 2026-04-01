@@ -4,22 +4,28 @@
 
 *   [x] REFRESH: Review all documents in @perl/doc/guidelines/**
 
-*   **xs/protobuf/obj_cache.c:**
-    *   [x] Create test file `t/c/protobuf/obj_cache.c`.
-    *   [ ] Tests in `t/c/protobuf/obj_cache.c` test all public functions in `xs/protobuf/obj_cache.h` (creation, insertion, lookup, deletion, clearing), including checks for re-entrancy and safe state management. (Partially implemented, TODOs added).
-    *   [x] Implement C functions in `xs/protobuf/obj_cache.c`.
-    *   [ ] C tests pass for `t/c/protobuf/obj_cache.c`.
+*   **perl/xs/protobuf/obj_cache.c:**
+    *   [x] Create test file `perl/t/c/protobuf/obj_cache.c`.
+    *   [ ] Tests in `perl/t/c/protobuf/obj_cache.c` test all public functions in `perl/xs/protobuf/obj_cache.h`. (Partially implemented).
+    *   [ ] TODO: Performance benchmarking for large caches (O(1) lookups).
+    *   [ ] TODO: Concurrency integrity during interleaved GC (Coro/Mojo).
+    *   [x] Implement C functions in `perl/xs/protobuf/obj_cache.c`.
+    *   [ ] C tests pass for `perl/t/c/protobuf/obj_cache.c`.
 
-*   **xs/protobuf/arena.c:**
-    *   [x] Create test file `t/c/protobuf/arena.c`.
-    *   [ ] Tests in `t/c/protobuf/arena.c` test all public functions in `xs/protobuf/arena.h` (creation, free, etc.), including checks for re-entrancy and safe state management. (Partially implemented, TODOs added).
-    *   [x] Implement C functions in `xs/protobuf/arena.c`.
-    *   [ ] C tests pass for `t/c/protobuf/arena.c`.
+*   **perl/xs/protobuf/arena.c:**
+    *   [x] Create test file `perl/t/c/protobuf/arena.c`.
+    *   [ ] Tests in `perl/t/c/protobuf/arena.c` test all public functions in `perl/xs/protobuf/arena.h`. (Partially implemented).
+    *   [ ] TODO: Memory usage statistics (Allocated vs. Reserved).
+    *   [ ] TODO: tmpfs-backed custom allocators for zero-copy IPC.
+    *   [x] Implement C functions in `perl/xs/protobuf/arena.c`.
+    *   [ ] C tests pass for `perl/t/c/protobuf/arena.c`.
 
-*   **xs/protobuf/utils.c:**
-    *   [x] Create test file `t/c/protobuf/utils.c`.
-    *   [ ] Tests in `t/c/protobuf/utils.c` test all public functions in `xs/protobuf/utils.h`, including checks for re-entrancy and safe state management. (Partially implemented, TODOs added).
-    *   [x] Implement C functions in `xs/protobuf/utils.c`.
-    *   [ ] C tests pass for `t/c/protobuf/utils.c`.
+*   **perl/xs/protobuf/utils.c:**
+    *   [x] Create test file `perl/t/c/protobuf/utils.c`.
+    *   [ ] Tests in `perl/t/c/protobuf/utils.c` test all public functions in `perl/xs/protobuf/utils.h`. (Partially implemented).
+    *   [ ] TODO: SIMD acceleration for name conversion/string validation.
+    *   [ ] TODO: Context-aware croak messages (field path resolution).
+    *   [x] Implement C functions in `perl/xs/protobuf/utils.c`.
+    *   [ ] C tests pass for `perl/t/c/protobuf/utils.c`.
 *   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
 

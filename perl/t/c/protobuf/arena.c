@@ -10,7 +10,7 @@ void xs_init(pTHX);
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(11);
+    plan(13);
 
     // Test PerlUpb_Arena_New
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
@@ -48,6 +48,14 @@ int main(int argc, char** argv) {
 
     TODO("Implement re-entrancy tests for arena") {
         ok(0, "arena operations are safe under re-entrancy");
+    }
+
+    TODO("Implement arena memory usage statistics (Allocated vs. Reserved)") {
+        ok(0, "Observation API for arena size and overhead");
+    }
+
+    TODO("Implement tmpfs-backed custom allocators for zero-copy high-performance IPC") {
+        ok(0, "Arena can be backed by shared memory segments");
     }
 
     SvREFCNT_dec(arena_sv);

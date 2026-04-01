@@ -67,6 +67,10 @@ int main(int argc, char** argv) {
     coro_arg_t args[NUM_COROS];
     RUN_CORO_TEST(coro_test_func, args);
 
+    TODO("Implement more aggressive concurrent stress tests for core utilities") {
+        ok(0, "obj_cache, arena, and utils stressed under high concurrency");
+    }
+
     test_perl_destroy(my_perl);
     return 0;
 }

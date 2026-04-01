@@ -48,12 +48,20 @@ static void test_utils_reentrancy(pTHX) {
     TODO("Implement re-entrancy tests for utils") {
         ok(0, "utils operations are safe under re-entrancy");
     }
+
+    TODO("Research and implement SIMD (SSE4.1/AVX2) optimized name conversion and string validation") {
+        ok(0, "Utilities leverage hardware acceleration for path resolution");
+    }
+
+    TODO("Enhance croak verification with field-path context for better debugging") {
+        ok(0, "Error messages provide exact location of validation failures");
+    }
 }
 
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(8);
+    plan(10);
 
     test_get_str_data(aTHX);
     test_verify_str_data(aTHX);

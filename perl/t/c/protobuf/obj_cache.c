@@ -4,7 +4,7 @@
 #include <string.h>
 
 static void test_cache(pTHX) {
-    plan(15);
+    plan(17);
 
     // Initialize cache
     PerlUpb_ObjCache_Init(aTHX);
@@ -79,6 +79,14 @@ static void test_cache(pTHX) {
 
     TODO("Implement re-entrancy tests for obj_cache") {
         ok(0, "obj_cache operations are safe under re-entrancy");
+    }
+
+    TODO("Implement performance benchmarking for millions of objects to verify hash scaling") {
+        ok(0, "Cache maintains O(1) lookups under extreme load");
+    }
+
+    TODO("Verify cache integrity during high-frequency context switching in Coro/Mojo") {
+        ok(0, "Weak references remain stable during interleaved GC cycles");
     }
 
     return;

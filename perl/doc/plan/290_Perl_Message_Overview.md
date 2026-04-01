@@ -2,7 +2,7 @@
 
 [TOC]
 
-*   [ ] REFRESH: Review all documents in @perl/doc/guidelines/**
+*   [x] REFRESH: Review and update all documents as appropriate in @perl/doc/guidelines/**
 
 ## Goal
 Implement the core `Protobuf::Message` interface, which dynamically creates accessors and mutators for all fields based on their UPB definitions. Because of the complexity of this task, it has been broken down into several sub-milestones (291-299) to ensure methodical progress and comprehensive testing.

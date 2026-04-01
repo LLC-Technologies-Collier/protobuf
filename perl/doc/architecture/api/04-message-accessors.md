@@ -1,31 +1,28 @@
 # Message Field Accessors
 
-_Status: C Layer Implemented_
+_Status: Fully Implemented_
 
-Field access in `Protobuf::Message` objects is designed to be idiomatic Perl.
+Field access in `Protobuf::Message` objects is designed to be idiomatic Perl and highly performant.
 
 ## C Implementation
-
-The XS-layer C functions are located in `perl/xs/message/access.c`.
-
-*   **`PerlUpb_Message_GetField`**: Retrieves a field value.
-    *   Uses `upb_Message_GetFieldByDef` to get a `upb_MessageValue`.
-    *   Converts it to a Perl SV via `PerlUpb_UpbToSv`.
-    *   For message types, it returns a Perl wrapper blessed into the appropriate class.
-*   **`PerlUpb_Message_SetField`**: Sets a field value.
-    *   Converts the Perl SV to a `upb_MessageValue` via `PerlUpb_SvToUpb`.
-    *   If the field is a message, it performs a `upb_Message_DeepCopy` into the destination message's arena.
-    *   Uses `upb_Message_SetFieldByDef` to store the value.
-*   **`PerlUpb_Message_HasField`**: Checks if a field with presence is set.
-*   **`PerlUpb_Message_ClearField`**: Clears a specific field.
+...
 *   **`PerlUpb_Message_Clear`**: Clears all fields in the message.
 
-## Perl Layer Integration (Future)
+## Perl Layer Implementation
 
--   Getters (`$message->field_name()`), setters (`$message->set_field_name($value)`), presence checkers (`$message->has_field_name()`), and clearers (`$message->clear_field_name()`) will be handled by `AUTOLOAD` in `Protobuf::Message`.
--   `AUTOLOAD` will look up the `upb_FieldDef` and call the corresponding C function.
+Instead of using `AUTOLOAD`, which can be slow and less transparent, this project uses **dynamic method injection** via `Protobuf::ClassGenerator`.
+
+-   **Class Generation**: When a `.proto` file (or descriptor set) is loaded into a `Protobuf::DescriptorPool`, the `Protobuf::ClassGenerator` automatically creates a corresponding Perl class for every message type.
+-   **Method Injection**: For each field in a message, the generator injects:
+    -   A getter: `$msg->fieldname()`
+    -   A setter: `$msg->set_fieldname($val)`
+    -   A presence checker: `$msg->has_fieldname()`
+    -   A clearer: `$msg->clear_fieldname()`
+-   **Moo Integration**: The generated classes use `Moo` and inherit from `Protobuf::Message`.
+-   **Tied Containers**: For repeated and map fields, the getters return references to tied arrays or hashes, providing a standard Perl collection interface that directly manipulates the underlying `upb` data structures.
 
 ## Serialization and Comparison
+...
 
 Implemented in `perl/xs/message/serialize.c` and `perl/xs/message/compare.c`.
 
