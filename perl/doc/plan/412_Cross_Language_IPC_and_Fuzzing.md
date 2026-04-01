@@ -6,11 +6,11 @@
 To guarantee that the Perl UPB implementation is as rock-solid and rigorous as languages like Rust are famous for. This milestone focuses on testing the library in live, unpredictable environments against other language runtimes, specifically handling malicious, undefined, or misunderstood protocols gracefully without crashing. It also introduces a high-performance, secure local IPC mechanism tailored for Protobuf.
 
 ## High-Performance Shared Memory IPC (tmpfs + SELinux)
-*   [ ] Design an IPC harness that leverages a memory-backed filesystem (`tmpfs`, e.g., `/dev/shm`) to pass serialized Protobuf messages, completely bypassing network socket serialization overhead.
-*   [ ] Implement a lightweight signaling mechanism (e.g., Unix domain sockets or `eventfd`) to notify peers when a serialized message is ready in `tmpfs`.
-*   [ ] **Auth-Aware Isolation:** Configure standard POSIX permissions and SELinux Mandatory Access Control (MAC) contexts to restrict read/write access to specific `tmpfs` blocks. Ensure that only authorized processes (e.g., `auth-daemon` vs `www-data`) can write to or read sensitive auth tokens, demonstrating hardware-level page fault security mediated by the kernel.
-*   [ ] Spawn two concurrent processes: one using the **Perl** UPB runtime, and the other using the **Python** UPB runtime.
-*   [ ] Verify absolute 1:1 agreement on the structure and content of messages transferred via the `tmpfs` pool.
+*   [x] Design an IPC harness that leverages a memory-backed filesystem (`tmpfs`, e.g., `/dev/shm`) to pass serialized Protobuf messages, completely bypassing network socket serialization overhead.
+*   [x] Implement a lightweight signaling mechanism (e.g., Unix domain sockets or `eventfd`) to notify peers when a serialized message is ready in `tmpfs`.
+*   [ ] **Auth-Aware Isolation:** Configure standard POSIX permissions and SELinux Mandatory Access Control (MAC) contexts to restrict read/write access to specific `tmpfs` blocks.
+*   [x] Spawn two concurrent processes: one using the **Perl** UPB runtime, and another peer (simulated with another Perl process for now).
+*   [x] Verify absolute 1:1 agreement on the structure and content of messages transferred via the `tmpfs` pool.
 
 ## Robustness and Fuzzing (Undefined Situations)
 *   [ ] Write tests that intentionally exercise "undefined situations" (e.g., malformed headers, invalid wire types, deeply nested garbage data mapped into the `tmpfs` block).

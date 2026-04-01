@@ -77,6 +77,20 @@ sub serialize {
     return _xs_serialize($self);
 }
 
+sub to_perl {
+    my ($self) = @_;
+    return _xs_to_perl($self);
+}
+
+sub from_perl {
+    my ($self, $data) = @_;
+    croak("from_perl expects a HASH ref") unless ref($data) eq 'HASH';
+    foreach my $key (keys %$data) {
+        $self->set($key, $data->{$key});
+    }
+    return $self;
+}
+
 sub to_text {
     my ($self) = @_;
     return _xs_to_text($self);

@@ -6,6 +6,7 @@
 #include "t/c/upb-perl-test.h" // Added for cdiag
 #include "upb/base/descriptor_constants.h"
 #include "upb/reflection/def.h"
+#include "upb/reflection/message.h"
 #include "upb/message/array.h"
 #include "upb/message/copy.h"
 #include "upb/message/map.h"
@@ -106,10 +107,42 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
             return true;
         case kUpb_FieldType_Message:
         case kUpb_FieldType_Group: {
-             const upb_Message* src_msg = PerlUpb_Message_GetMsg(aTHX_ sv);
-             if (!src_msg) CROAK_WRONG_TYPE(sv, "a Message object", f);
-             
              const upb_MessageDef* target_mdef = upb_FieldDef_MessageSubDef(f);
+             const upb_MiniTable* mt = upb_MessageDef_MiniTable(target_mdef);
+
+             if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVHV && !sv_isobject(sv)) {
+                 // It's a plain HashRef, recursively create and populate message
+                 upb_Message* dst_msg = upb_Message_New(mt, arena);
+                 
+                 // We need to call back into Perl or use C logic to populate
+                 // For now, let's use C logic:
+                 HV* hv = (HV*)SvRV(sv);
+                 HE* he;
+                 hv_iterinit(hv);
+                 while ((he = hv_iternext(hv))) {
+                     I32 klen;
+                     const char *key = hv_iterkey(he, &klen);
+                     SV *val_sv = hv_iterval(hv, he);
+                     
+                     const upb_FieldDef *sub_f = upb_MessageDef_FindFieldByName(target_mdef, key);
+                     if (!sub_f) {
+                         // Check for JSON-style camelCase if not found? 
+                         // For now, just skip or croak? Protos usually use snake_case.
+                         croak("Field '%s' not found in message '%s'", key, upb_MessageDef_FullName(target_mdef));
+                     }
+                     
+                     upb_MessageValue sub_val;
+                     if (PerlUpb_SvToUpb(aTHX_ val_sv, sub_f, &sub_val, arena)) {
+                         upb_Message_SetFieldByDef(dst_msg, sub_f, sub_val, arena);
+                     }
+                 }
+                 val->msg_val = dst_msg;
+                 return true;
+             }
+
+             const upb_Message* src_msg = PerlUpb_Message_GetMsg(aTHX_ sv);
+             if (!src_msg) CROAK_WRONG_TYPE(sv, "a Message object or HashRef", f);
+             
              const upb_MessageDef* src_mdef = PerlUpb_Message_GetDef(aTHX_ sv);
              if (src_mdef != target_mdef) {
                  croak("Message type mismatch for field '%s': expected %s, got %s",
@@ -117,7 +150,6 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
                        upb_MessageDef_FullName(src_mdef));
              }
 
-             const upb_MiniTable* mt = upb_MessageDef_MiniTable(target_mdef);
              upb_Message* dst_msg = upb_Message_New(mt, arena);
              if (!upb_Message_DeepCopy(dst_msg, src_msg, mt, arena)) {
                  croak("Deep copy of message failed");

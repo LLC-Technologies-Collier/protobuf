@@ -123,6 +123,14 @@ _xs_serialize(self)
         RETVAL
 
 SV*
+_xs_to_perl(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_ToPerl(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+SV*
 _xs_to_text(self)
     SV* self
     CODE:

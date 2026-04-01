@@ -5,6 +5,7 @@
 #include "xs/map/map.h"
 #include "xs/repeated/repeated.h"
 #include "upb/reflection/def.h"
+#include "upb/reflection/message.h"
 #include "upb/wire/types.h"
 #include "upb/message/array.h"
 #include <stdint.h>
@@ -80,4 +81,82 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
     } else {
         return convert_singular_upb_to_sv(aTHX_ val, f, parent_arena_sv);
     }
+}
+
+SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *parent_arena_sv) {
+    if (!msg || !mdef) return newSV(0);
+
+    HV *hv = newHV();
+    int n = upb_MessageDef_FieldCount(mdef);
+    for (int i = 0; i < n; i++) {
+        const upb_FieldDef *f = upb_MessageDef_Field(mdef, i);
+        const char *name = upb_FieldDef_Name(f);
+        
+        bool has = false;
+        if (upb_FieldDef_IsRepeated(f)) {
+            upb_MessageValue v = upb_Message_GetFieldByDef(msg, f);
+            has = (v.array_val != NULL && upb_Array_Size(v.array_val) > 0);
+        } else if (upb_FieldDef_IsMap(f)) {
+            upb_MessageValue v = upb_Message_GetFieldByDef(msg, f);
+            has = (v.map_val != NULL && upb_Map_Size(v.map_val) > 0);
+        } else {
+            has = upb_Message_HasFieldByDef(msg, f);
+        }
+
+        if (has) {
+            upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
+            SV *val_sv;
+            
+            if (upb_FieldDef_IsMap(f)) {
+                // For maps, we want a real HashRef, not a tied one.
+                const upb_MessageDef *entry_mdef = upb_FieldDef_MessageSubDef(f);
+                const upb_FieldDef *key_f = upb_MessageDef_FindFieldByNumber(entry_mdef, 1);
+                const upb_FieldDef *val_f = upb_MessageDef_FindFieldByNumber(entry_mdef, 2);
+                
+                HV *map_hv = newHV();
+                upb_Map *map = (upb_Map*)val.map_val;
+                size_t iter = kUpb_Map_Begin;
+                upb_MessageValue k, v;
+                while (upb_Map_Next(map, &k, &v, &iter)) {
+                    SV *k_sv = PerlUpb_UpbToSv_Element(aTHX_ &k, key_f, parent_arena_sv);
+                    SV *v_sv;
+                    if (upb_FieldDef_IsSubMessage(val_f)) {
+                        v_sv = PerlUpb_Message_ToSv(aTHX_ v.msg_val, upb_FieldDef_MessageSubDef(val_f), parent_arena_sv);
+                    } else {
+                        v_sv = PerlUpb_UpbToSv_Element(aTHX_ &v, val_f, parent_arena_sv);
+                    }
+                    hv_store_ent(map_hv, k_sv, v_sv, 0);
+                    SvREFCNT_dec(k_sv);
+                }
+                val_sv = newRV_noinc((SV*)map_hv);
+            }
+            else if (upb_FieldDef_IsRepeated(f)) {
+                // For repeated, we want a real ArrayRef.
+                AV *av = newAV();
+                upb_Array *arr = (upb_Array*)val.array_val;
+                size_t size = upb_Array_Size(arr);
+                for (size_t j = 0; j < size; j++) {
+                    upb_MessageValue item = upb_Array_Get(arr, j);
+                    SV *item_sv;
+                    if (upb_FieldDef_IsSubMessage(f)) {
+                        item_sv = PerlUpb_Message_ToSv(aTHX_ item.msg_val, upb_FieldDef_MessageSubDef(f), parent_arena_sv);
+                    } else {
+                        item_sv = PerlUpb_UpbToSv_Element(aTHX_ &item, f, parent_arena_sv);
+                    }
+                    av_push(av, item_sv);
+                }
+                val_sv = newRV_noinc((SV*)av);
+            }
+            else if (upb_FieldDef_IsSubMessage(f)) {
+                val_sv = PerlUpb_Message_ToSv(aTHX_ val.msg_val, upb_FieldDef_MessageSubDef(f), parent_arena_sv);
+            }
+            else {
+                val_sv = convert_singular_upb_to_sv(aTHX_ &val, f, parent_arena_sv);
+            }
+            
+            hv_store(hv, name, strlen(name), val_sv, 0);
+        }
+    }
+    
+    return newRV_noinc((SV*)hv);
 }

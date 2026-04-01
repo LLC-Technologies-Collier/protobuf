@@ -12,5 +12,7 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
 // Used for elements of repeated fields or maps.
 SV *PerlUpb_UpbToSv_Element(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV *parent_arena_sv);
 
+// Converts a whole upb_Message to a deep Perl HashRef.
+SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *parent_arena_sv);
 
 #endif // PERL_PROTOBUF_UPB_TO_SV_H_
