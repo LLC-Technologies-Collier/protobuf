@@ -10,7 +10,7 @@ void xs_init(pTHX);
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(7);
+    plan(11);
 
     // Test PerlUpb_Arena_New
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
@@ -37,6 +37,18 @@ int main(int argc, char** argv) {
     // Check that the wrapper pointer is cleared in the hash
     SV** svp = hv_fetch((HV*)SvRV(arena_sv), "_arena_ptr", 10, 0);
     ok(svp && SvIOK(*svp) && SvIV(*svp) == 0, "Wrapper pointer cleared after Destroy");
+
+    TODO("Implement PerlUpb_Arena_Free tests") {
+        ok(0, "PerlUpb_Arena_Free works as expected");
+    }
+
+    TODO("Implement raw arena function tests") {
+        ok(0, "PerlUpb_Arena_CreateRaw / DestroyRaw / GetRaw work correctly");
+    }
+
+    TODO("Implement re-entrancy tests for arena") {
+        ok(0, "arena operations are safe under re-entrancy");
+    }
 
     SvREFCNT_dec(arena_sv);
 

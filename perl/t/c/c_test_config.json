@@ -17,6 +17,33 @@
       "t/c/upb-perl-test.h"
     ]
   },
+  "descriptor/base": {
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor/message": {
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor/field": {
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor/enum": {
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor/enum_value": {
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor/oneof": {
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor/file": {
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor/service": {
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor/method": {
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+  },
   "convert/sv_to_upb": {
     "deps": [
       "xs/protobuf.h",

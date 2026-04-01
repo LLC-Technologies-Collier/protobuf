@@ -7,4 +7,4 @@
 *   [x] Create test file `t/c/integration/220_all_c_layers_coro.c` using libcoro to stress all components. (Note: Coro is used here for C-level stress testing to ensure re-entrancy and safety. The Perl API will aim to be event-loop agnostic.)
 *   [x] libcoro final integration tests pass.
 *   [x] All C layer integration tests pass.
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.

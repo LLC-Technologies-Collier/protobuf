@@ -33,16 +33,32 @@ static void test_verify_str_data(pTHX) {
     // SV* sv2 = newSViv(456);
     // PerlUpb_VerifyStrData(aTHX_ sv2); // This would croak
     // SvREFCNT_dec(sv2);
-    ok(1, "Skipping croak test for PerlUpb_VerifyStrData in C test");
+    TODO("Implement croak verification for PerlUpb_VerifyStrData") {
+        ok(0, "PerlUpb_VerifyStrData croaks on invalid input");
+    }
+}
+
+static void test_class_name_to_full_name(pTHX) {
+    TODO("Implement PerlUpb_ClassNameToFullName tests") {
+        ok(0, "PerlUpb_ClassNameToFullName converts A::B to A.B");
+    }
+}
+
+static void test_utils_reentrancy(pTHX) {
+    TODO("Implement re-entrancy tests for utils") {
+        ok(0, "utils operations are safe under re-entrancy");
+    }
 }
 
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(6);
+    plan(8);
 
     test_get_str_data(aTHX);
     test_verify_str_data(aTHX);
+    test_class_name_to_full_name(aTHX);
+    test_utils_reentrancy(aTHX);
 
     test_perl_destroy(my_perl);
     return 0;

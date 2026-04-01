@@ -59,7 +59,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(3 + NUM_COROS);
+    plan(2 + NUM_COROS);
 
     PerlUpb_ObjCache_Init(aTHX);
     ok(1, "PerlUpb_ObjCache_Init called");

@@ -15,7 +15,15 @@
 // #include "ppport.h"
 
 #define plan(n) fprintf(stderr, "1..%d\n", (n))
-#define ok(val, name) fprintf(stderr, "%s %d - %s\n", (val) ? "ok" : "not ok", ++test_num, (name))
+
+extern const char* todo_reason;
+
+#define todo_start(reason) todo_reason = (reason)
+#define todo_end() todo_reason = NULL
+
+#define TODO(reason) for(int _todo_i = (todo_start(reason), 0); _todo_i < 1; _todo_i++, todo_end())
+
+#define ok(val, name) fprintf(stderr, "%s %d - %s%s%s\n", (val) ? "ok" : "not ok", ++test_num, (name), (todo_reason ? " # TODO " : ""), (todo_reason ? todo_reason : ""))
 #define fail(name) ok(0, name)
 #define is(got, expected, name) fprintf(stderr, "%s %d - %s\n", ((got) == (expected)) ? "ok" : "not ok", ++test_num, (name)); if ((got) != (expected)) { fprintf(stderr, "  # Got: %ld\n  # Expected: %ld\n", (long)(got), (long)(expected)); }
 #define is_u(got, expected, name) fprintf(stderr, "%s %d - %s\n", ((got) == (expected)) ? "ok" : "not ok", ++test_num, (name)); if ((got) != (expected)) { fprintf(stderr, "  # Got: %" PRIu64 "\n  # Expected: %" PRIu64 "\n", (uint64_t)(got), (uint64_t)(expected)); }

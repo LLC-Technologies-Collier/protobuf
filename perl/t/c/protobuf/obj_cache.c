@@ -4,7 +4,7 @@
 #include <string.h>
 
 static void test_cache(pTHX) {
-    plan(13);
+    plan(15);
 
     // Initialize cache
     PerlUpb_ObjCache_Init(aTHX);
@@ -72,6 +72,14 @@ static void test_cache(pTHX) {
     PerlUpb_ObjCache_Delete(aTHX_ ptr2);
     retrieved_rv = PerlUpb_ObjCache_Get(aTHX_ ptr2);
     ok(retrieved_rv == NULL, "Get ptr2 after delete returns NULL");
+
+    TODO("Implement PerlUpb_ObjCache_Clear tests") {
+        ok(0, "PerlUpb_ObjCache_Clear clears entire cache");
+    }
+
+    TODO("Implement re-entrancy tests for obj_cache") {
+        ok(0, "obj_cache operations are safe under re-entrancy");
+    }
 
     return;
 }

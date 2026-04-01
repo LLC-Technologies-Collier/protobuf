@@ -83,7 +83,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(3 + NUM_COROS);
+    plan(2 + NUM_COROS);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);

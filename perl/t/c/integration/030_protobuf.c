@@ -10,7 +10,7 @@
 #include "XSUB.h"
 
 static void test_arena_cache_interaction(pTHX) {
-    plan(6);
+    plan(7);
 
     PerlUpb_ObjCache_Init(aTHX);
     ok(1, "Cache initialized");
@@ -35,6 +35,10 @@ static void test_arena_cache_interaction(pTHX) {
 
     PerlUpb_Arena_Destroy(aTHX_ arena_sv); // This frees the arena and the wrapper
     ok(1, "Arena freed");
+
+    TODO("Implement more comprehensive interaction tests") {
+        ok(0, "Interactions between obj_cache, arena, and utils covered");
+    }
 }
 
 int main(int argc, char** argv) {
