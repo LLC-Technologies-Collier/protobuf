@@ -4,7 +4,7 @@
 #include <string.h>
 
 static void test_cache(pTHX) {
-    plan(17);
+    plan(19);
 
     // Initialize cache
     PerlUpb_ObjCache_Init(aTHX);
@@ -87,6 +87,14 @@ static void test_cache(pTHX) {
 
     TODO("Verify cache integrity during high-frequency context switching in Coro/Mojo") {
         ok(0, "Weak references remain stable during interleaved GC cycles");
+    }
+
+    TODO("Implement LRU eviction or memory-pressure based clearing for the object cache") {
+        ok(0, "Cache does not exceed configurable memory bounds");
+    }
+
+    TODO("Implement a high-performance trace/audit log for cache hits/misses") {
+        ok(0, "Detailed core-level auditing for memory leak detection");
     }
 
     return;

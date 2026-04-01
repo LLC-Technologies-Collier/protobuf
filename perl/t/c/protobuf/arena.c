@@ -10,7 +10,7 @@ void xs_init(pTHX);
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(13);
+    plan(15);
 
     // Test PerlUpb_Arena_New
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
@@ -56,6 +56,14 @@ int main(int argc, char** argv) {
 
     TODO("Implement tmpfs-backed custom allocators for zero-copy high-performance IPC") {
         ok(0, "Arena can be backed by shared memory segments");
+    }
+
+    TODO("Implement thread-local arena caching for ultra-high-frequency allocations") {
+        ok(0, "Small allocations bypass global locks or complex state checks");
+    }
+
+    TODO("Add memory corruption guards (canary bytes) around arena blocks") {
+        ok(0, "Out-of-bounds writes are detected by the core library");
     }
 
     SvREFCNT_dec(arena_sv);

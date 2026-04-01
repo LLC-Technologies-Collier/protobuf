@@ -9,6 +9,8 @@
     *   [ ] Tests in `perl/t/c/protobuf/obj_cache.c` test all public functions in `perl/xs/protobuf/obj_cache.h`. (Partially implemented).
     *   [ ] TODO: Performance benchmarking for large caches (O(1) lookups).
     *   [ ] TODO: Concurrency integrity during interleaved GC (Coro/Mojo).
+    *   [ ] TODO: Implement LRU eviction or memory-pressure based clearing for the object cache.
+    *   [ ] TODO: Implement a high-performance trace/audit log for cache hits/misses to aid in memory leak hunting.
     *   [x] Implement C functions in `perl/xs/protobuf/obj_cache.c`.
     *   [ ] C tests pass for `perl/t/c/protobuf/obj_cache.c`.
 
@@ -17,6 +19,8 @@
     *   [ ] Tests in `perl/t/c/protobuf/arena.c` test all public functions in `perl/xs/protobuf/arena.h`. (Partially implemented).
     *   [ ] TODO: Memory usage statistics (Allocated vs. Reserved).
     *   [ ] TODO: tmpfs-backed custom allocators for zero-copy IPC.
+    *   [ ] TODO: Implement thread-local arena caching for ultra-high-frequency small message allocations.
+    *   [ ] TODO: Add memory corruption guards (canary bytes) around arena-allocated blocks to detect out-of-bounds writes in C.
     *   [x] Implement C functions in `perl/xs/protobuf/arena.c`.
     *   [ ] C tests pass for `perl/t/c/protobuf/arena.c`.
 
