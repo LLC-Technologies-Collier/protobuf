@@ -24,4 +24,9 @@ subtest 'any packing and unpacking' => sub {
     is($unpacked->value, 12345, 'Unpacked data matches original');
 };
 
+TODO: {
+    local $TODO = 'Implement Direct Any Unpacking (C-Layer)';
+    ok(0, 'Unpacking Any directly to C structures avoids intermediate Perl objects');
+}
+
 done_testing();

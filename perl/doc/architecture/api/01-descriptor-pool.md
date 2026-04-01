@@ -33,6 +33,9 @@ The `Protobuf::DescriptorPool` class manages a collection of descriptors. It is 
 -   **Interpreter Isolation**: Each `PerlInterpreter` (e.g. in ithreads or different worker processes) normally maintains its own distinct `upb_DefPool` and object cache state to avoid race conditions.
 -   **Global Pool Sharing**: (Planned) To optimize memory usage in large-scale deployments (e.g. dozens of worker processes), the architecture includes support for a **shared, read-only global pool**. Once a pool is "frozen" (no more additions allowed), it can be safely mapped into multiple interpreters, sharing the underlying C definitions while maintaining per-interpreter Perl wrappers in the object cache.
 -   **Lock-Free Retrieval**: High-performance implementations should aim for lock-free or highly-concurrent descriptor retrieval to avoid bottlenecking concurrent message parsing (e.g. in Mojo or Coro).
+-   **Dynamic Descriptor Reloading**: (Planned) Implement support for updating existing descriptor definitions in the pool without invalidating active message instances, supporting high-availability protocol upgrades.
+-   **Reflection Cache**: (Planned) To minimize XS overhead for frequent reflection tasks, the `DescriptorPool` will maintain a Perl-level cache of message and field definitions.
+-   **Symbol Dependency Visualization**: (Planned) Provide a `graph()` utility to export the full symbol dependency tree in DOT or JSON format for architectural analysis of large protocol registries.
 
 ## Lifecycle
 

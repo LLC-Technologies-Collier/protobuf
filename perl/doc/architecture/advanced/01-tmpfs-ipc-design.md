@@ -46,5 +46,13 @@ The harness will include a "Chaos Mode" where it writes garbage into the shared 
 *   **Truncated data:** Send signal before write is complete.
 *   **Memory corruption:** Randomly flip bits in the shared block.
 
+## Advanced Optimization Goals
+
+To achieve world-class IPC performance and safety, the implementation includes (or is planned to include) the following:
+
+-   **Zero-Copy Deserialization**: (Planned) Implement a specialized `upb_Decode` path that can parse messages directly from the `mmap()`'ed `tmpfs` block without copying the data into a Perl SV.
+-   **Integrated Fuzzer Verification**: (Planned) Every IPC release MUST be verified against a continuous fuzzing harness that simulates malicious shared memory state.
+-   **Multi-Language Handshake**: (Planned) Define a standard "shared memory handshake" protocol to allow the Perl implementation to discover and negotiate capabilities with official Python and C++ runtimes sharing the same pool.
+
 ## Conclusion
 This design provides a blueprint for a production-ready, secure, and extremely fast IPC mechanism that bypasses the limitations of the Perl interpreter's threading model.

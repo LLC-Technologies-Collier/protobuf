@@ -11,6 +11,7 @@ To guarantee that the Perl UPB implementation is as rock-solid and rigorous as l
 *   [ ] **Auth-Aware Isolation:** Configure standard POSIX permissions and SELinux Mandatory Access Control (MAC) contexts to restrict read/write access to specific `tmpfs` blocks.
 *   [x] Spawn two concurrent processes: one using the **Perl** UPB runtime, and another peer (simulated with another Perl process for now).
 *   [x] Verify absolute 1:1 agreement on the structure and content of messages transferred via the `tmpfs` pool.
+*   [x] Review and update perl/doc/architecture/advanced/01-tmpfs-ipc-design.md documents.
 
 ## Robustness and Fuzzing (Undefined Situations)
 *   [ ] Write tests that intentionally exercise "undefined situations" (e.g., malformed headers, invalid wire types, deeply nested garbage data mapped into the `tmpfs` block).

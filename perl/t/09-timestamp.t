@@ -23,4 +23,9 @@ subtest 'timestamp operations' => sub {
     like($iso, qr/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/, 'ISO8601 format correct');
 };
 
+TODO: {
+    local $TODO = 'Implement Vectorized Timestamp Conversions';
+    ok(0, 'High-throughput Timestamp processing uses SSE4.1/AVX2 optimizations');
+}
+
 done_testing();

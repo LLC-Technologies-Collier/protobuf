@@ -21,7 +21,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(10);
+    plan(13);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -98,6 +98,18 @@ int main(int argc, char** argv) {
     extern void PerlUpb_Repeated_Free(pTHX_ SV* sv);
     PerlUpb_Repeated_Free(aTHX_ rep_wrapper);
     SvREFCNT_dec(rep_wrapper);
+
+    TODO("Implement high-performance cross-arena repeated field deep-copy") {
+        ok(0, "Deep-copy for arrays between different arenas bypassing Perl verified");
+    }
+
+    TODO("Implement SIMD-accelerated array scanning (find/grep) utilities") {
+        ok(0, "SSE4.1/AVX2 optimization for array element lookups verified");
+    }
+
+    TODO("Implement deterministic unique-set merging for repeated fields") {
+        ok(0, "C-level array merging with deduplication support verified");
+    }
 
     PerlUpb_Arena_Destroy(aTHX_ PerlUpb_Message_GetArena(aTHX_ msg_sv));
     PerlUpb_Message_Free(aTHX_ msg_sv);

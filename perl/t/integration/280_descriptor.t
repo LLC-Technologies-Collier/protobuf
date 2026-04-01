@@ -42,4 +42,19 @@ subtest 'descriptor pool and arena interaction' => sub {
     is($enum_def->name, 'TestEnum', 'Enum name is correct');
 };
 
+TODO: {
+    local $TODO = 'Implement Descriptor-Pool Isolation Stress';
+    ok(0, 'Overlapping symbol names in different pools are correctly isolated');
+}
+
+TODO: {
+    local $TODO = 'Verify Cross-Interpreter Descriptor Migration';
+    ok(0, 'Descriptors maintain pool identity when migrated between interpreters');
+}
+
+TODO: {
+    local $TODO = 'Implement Real-Time Schema Integrity Monitor';
+    ok(0, 'Mojo service can validate descriptor pool integrity against source');
+}
+
 done_testing();

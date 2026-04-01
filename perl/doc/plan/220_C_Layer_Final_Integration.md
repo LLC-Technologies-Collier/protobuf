@@ -3,8 +3,17 @@
 [TOC]
 
 *   [x] Create test file `perl/t/c/integration/220_all_c_layers.c`
-*   [x] Tests exercise combinations of all C layer components. (Note: Extensions skipped for Serialize/Parse cycle in this milestone due to missing registry support).
-*   [x] Create test file `perl/t/c/integration/220_all_c_layers_coro.c` using libcoro to stress all components. (Note: Coro is used here for C-level stress testing to ensure re-entrancy and safety. The Perl API will aim to be event-loop agnostic.)
-*   [x] libcoro final integration tests pass.
+*   [ ] Tests exercise combinations of all C layer components. (Partially implemented: leaks detected).
+*   [ ] TODO: Implement Exhaustive Cross-Component Chaos Test.
+*   [ ] TODO: Verify integrated Schema Evolution safety.
+*   [ ] TODO: Implement Global Audit Trail for Message Lifecycle.
+*   [ ] TODO: **Malicious-Payload Fuzzing:** Integrate a fuzzing harness that generates malformed wire-format blobs to verify that the integrated parser fails safely without segfaults or leaks.
+*   [ ] TODO: **Undefined-State Fuzzing:** Stress test the integrated core with "undefined" Protobuf situations (e.g., deeply nested garbage data) and verify graceful failure and clean arena reset.
+*   [x] Integration tests pass. (Current: failing due to ASan leaks).
+*   [x] Create test file `perl/t/c/integration/220_all_c_layers_coro.c` using libcoro to stress all components.
+*   [ ] libcoro final integration tests pass. (Partially implemented).
+*   [ ] TODO: Stress concurrent cross-interpreter message migration.
+*   [ ] TODO: Verify integrated core stability under extreme concurrency chaos.
+*   [ ] TODO: Implement automated deadlock detection for integrated state.
 *   [x] All C layer integration tests pass.
-*   [ ] Review and update perl/doc/architecture/** documents.
+*   [x] Review and update perl/doc/architecture/** documents.

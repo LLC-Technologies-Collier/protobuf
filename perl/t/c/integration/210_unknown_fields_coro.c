@@ -67,7 +67,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(2 + NUM_COROS + 3);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -85,6 +85,18 @@ int main(int argc, char** argv) {
         args[i].mdef_sv = mdef_sv;
     }
     RUN_CORO_TEST(coro_test_func, args);
+
+    TODO("Stress concurrent unknown field growth under memory pressure") {
+        ok(0, "System remains stable when multiple coroutines force unknown buffer reallocation");
+    }
+
+    TODO("Verify integrated cache stability during concurrent unknown reification") {
+        ok(0, "Message wrappers created from unknown blobs consistently follow ObjCache rules");
+    }
+
+    TODO("Implement race detection for concurrent unknown field analysis") {
+        ok(0, "TSan-equivalent checks for concurrent unknown data access");
+    }
 
     SvREFCNT_dec(mdef_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);

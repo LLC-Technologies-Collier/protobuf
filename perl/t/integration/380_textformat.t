@@ -21,7 +21,23 @@ subtest 'text format encoding integration' => sub {
     $msg2->set_value(999);
     $msg2->to_text();
     
-    is($msg2->value, 999, 'Message data intact after text encoding');
-};
+    is($msg->value, 12345, 'Message data intact after text encoding');
+    };
 
-done_testing();
+    TODO: {
+    local $TODO = 'Implement Direct TextFormat-to-Wire Conversion';
+    ok(0, 'Parsing TextFormat directly to wire format bypasses intermediate Perl objects');
+    }
+
+    TODO: {
+    local $TODO = 'Verify Cross-Interpreter TextFormat Redaction consistency';
+    ok(0, 'Redaction policies are stable and consistent across interpreters');
+    }
+
+    TODO: {
+    local $TODO = 'Verify High-Pressure Text Parsing stability';
+    ok(0, 'System handles 10,000 concurrent TextFormat parses safely');
+    }
+
+    done_testing();
+

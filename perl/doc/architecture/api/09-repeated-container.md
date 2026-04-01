@@ -31,5 +31,18 @@ scalar(@$arr);
 @$arr = (); # CLEAR
 ```
 
+## Advanced Performance Goals
+
+To achieve world-class array performance, the implementation includes (or is planned to include) the following:
+
+-   **SIMD-Accelerated Bulk Operations**: (Planned) Implement SSE4.1/AVX2 optimized C functions for bulk appending and scanning of numeric repeated fields.
+-   **COW (Copy-On-Write)**: (Planned) Support for COW semantics during repeated field cloning when messages share an arena, avoiding expensive memory copies.
+-   **In-Place Search/Sort**: (Planned) High-performance C-level utilities for in-place sorting and binary searching of scalar repeated fields to support rapid data processing directly on the upb structures.
+-   **Integrated Merging**: (Planned) Optimized C-level merging logic for repeated fields that can maintain deterministic ordering or perform unique-set deduplication during `parse_from` operations.
+-   **Cross-Arena Deep Copy**: (Planned) Implement direct deep-copy for repeated fields when moving data between messages on different arenas, bypassing Perl-level array intermediate steps.
+-   **SIMD Bulk Transfer (Perl-to-C)**: (Planned) Optimize the `push` operation for tied arrays to detect large Perl array transfers and utilize SIMD-accelerated C-level bulk population of the `upb_Array`.
+-   **Native XS Operations**: (Planned) Implement high-performance `grep` and `map` logic directly in the XS layer for tied repeated fields, allowing data transformation and filtering at C-speed.
+-   **Bulk Scanning Mode**: (Planned) Provide a specialized "bulk read" mode for repeated message fields that allows iterating over elements without the overhead of creating individual Perl object wrappers.
+
 ## Object Identity and Caching
 ...

@@ -45,4 +45,19 @@ subtest 'base message functionality' => sub {
     };
 };
 
+TODO: {
+    local $TODO = 'Implement Zero-Copy Field Access for large blobs';
+    ok(0, 'String/Bytes accessors avoid memory copies via direct buffer SVs');
+}
+
+TODO: {
+    local $TODO = 'Implement Moo-to-Native Method Bypass';
+    ok(0, 'High-frequency accessors bypass Moo dispatch for ultra-fast performance');
+}
+
+TODO: {
+    local $TODO = 'Provide Real-Time Message Validation Profiler';
+    ok(0, 'Message types support fine-grained validation vs movement profiling');
+}
+
 done_testing();

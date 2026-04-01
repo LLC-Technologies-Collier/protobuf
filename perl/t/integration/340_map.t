@@ -37,6 +37,22 @@ subtest 'message map cross-message copy' => sub {
     # Verify independence
     $msg1->map_string_nested_message->{key}->set_a(200);
     is($msg2->map_string_nested_message->{key}->a, 100, 'Messages in target map are independent (deep copied)');
-};
+    };
 
-done_testing();
+    TODO: {
+    local $TODO = 'Implement O(1) Map-to-Map Deep Copy';
+    ok(0, 'Assigning one map to another uses C-level cloning');
+    }
+
+    TODO: {
+    local $TODO = 'Implement Shared-Arena Map Snapshotting';
+    ok(0, 'Map snapshots provide zero-copy tied views of data');
+    }
+
+    TODO: {
+    local $TODO = 'Verify Cross-Interpreter Map Mutation Stress';
+    ok(0, 'Maps maintain consistent state during concurrent multi-interpreter mutation');
+    }
+
+    done_testing();
+

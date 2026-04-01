@@ -200,6 +200,34 @@
       "t/c/upb-perl-test.h"
     ]
   },
+  "repeated/repeated": {
+    "deps": [
+      "xs/repeated/repeated.h",
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "repeated/composite": {
+    "deps": [
+      "xs/repeated/composite.h",
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "repeated/scalar": {
+    "deps": [
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "unknown_fields/set": {
+    "deps": [
+      "xs/unknown_fields/set.h",
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "unknown_fields/build": {
+    "deps": [
+      "t/c/upb-perl-test.h"
+    ]
+  },
   "integration/030_asan_test": {
     "deps": [
       "t/c/upb-perl-test.h"

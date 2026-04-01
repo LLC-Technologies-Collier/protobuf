@@ -46,4 +46,14 @@ $_->join for @coros;
 
 is_deeply(\@errors, [], "All coroutines completed without errors");
 
+TODO: {
+    local $TODO = 'Stress concurrent TextFormat parsing from 100 coroutines';
+    ok(0, 'System remains stable under massive concurrent text parsing');
+}
+
+TODO: {
+    local $TODO = 'Verify Coro re-entrancy during text formatting of complex trees';
+    ok(0, 'Context switches during large text generation do not cause corruption');
+}
+
 done_testing();

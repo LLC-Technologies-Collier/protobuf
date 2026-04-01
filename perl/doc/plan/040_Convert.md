@@ -83,7 +83,9 @@
     4.  **Reach for More (World-Class Goals):**
     *   [ ] TODO: Implement transparent Math::BigInt support for 64-bit integer overflows.
     *   [ ] TODO: Implement zero-copy ByteBuffer conversions for large String/Bytes fields.
-    *   [ ] TODO: Implement range-validated strict type checking for narrowing conversions (e.g. SV to int32).
+    *   [ ] TODO: Implement range-validated strict type checking for narrowing conversions.
+    *   [ ] TODO: Implement **Type-Fuzzing:** Verify that conversion logic fails safely (croaks) when passed incompatible Perl SV types (e.g., CodeRefs, Globs) without memory corruption.
+    *   [ ] TODO: Implement **Boundary-Fuzzing:** Verify that integer conversions correctly handle boundary conditions (MIN/MAX) and overflow/underflow situations with consistent error reporting.
 
     5.  **Final Review:**
     *   [ ] Ensure all C tests in `perl/t/c/convert/` pass. (Current: failing due to array size mismatches and leaks).

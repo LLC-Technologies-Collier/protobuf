@@ -54,4 +54,19 @@ $_->join for @coros;
 
 is_deeply(\@errors, [], "All coroutines completed without errors");
 
+TODO: {
+    local $TODO = 'Stress concurrent cross-coroutine message migration';
+    ok(0, 'Complex message trees can be migrated between Coroutines safely');
+}
+
+TODO: {
+    local $TODO = 'Verify Coro re-entrancy during massive message population';
+    ok(0, 'System handles coroutine context switches during 10,000 field mutations safely');
+}
+
+TODO: {
+    local $TODO = 'Implement lock-free message state tracking for Coro';
+    ok(0, 'High-frequency concurrent message access does not bottle-neck on global state');
+}
+
 done_testing();

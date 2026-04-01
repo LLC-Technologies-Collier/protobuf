@@ -12,6 +12,9 @@
 *   **perl/xs/repeated/repeated.c:**
     *   [x] Create test file `perl/t/c/repeated/repeated.c`.
     *   [x] Tests cover all public functions in `xs/repeated/repeated.h`.
+    *   [ ] TODO: Implement SIMD-accelerated scalar appending.
+    *   [ ] TODO: Implement COW (Copy-On-Write) for large repeated fields.
+    *   [ ] TODO: Implement In-Place Sort/Binary Search utilities.
     *   [x] Implement C functions.
     *   [x] C tests pass.
 *   **perl/xs/repeated/scalar.c:**

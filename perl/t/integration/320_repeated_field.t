@@ -40,4 +40,19 @@ subtest 'repeated message cross-message interaction' => sub {
     is($msg2->repeated_message->[0]->nested_string, "orig", 'Messages in target are independent (copied)');
 };
 
+TODO: {
+    local $TODO = 'Implement Direct Array-to-Array Deep Copy';
+    ok(0, 'Assigning one repeated field to another uses C-level cloning');
+}
+
+TODO: {
+    local $TODO = 'Implement Shared-Arena Array Slicing';
+    ok(0, 'Array slices provide zero-copy tied views of data subsets');
+}
+
+TODO: {
+    local $TODO = 'Verify Cross-Interpreter Container Migration Stress';
+    ok(0, 'Tied arrays maintain consistent state when migrated across interpreters');
+}
+
 done_testing();

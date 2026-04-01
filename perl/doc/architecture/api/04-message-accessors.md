@@ -37,6 +37,10 @@ To achieve world-class serialization and access performance, the implementation 
 -   **SIMD-Accelerated Serialization**: (Planned) Research and implement SSE4.1/AVX2 optimized serialization for fixed-length numeric arrays and large string fields.
 -   **Reflection Cache**: (Planned) Implement a C-level cache for `upb_MiniTable` and `upb_FieldDef` lookups during dynamic field access to minimize reflection overhead in tight loops.
 -   **COW (Copy-On-Write)**: (Planned) Architect sub-message cloning and merging to use COW semantics where possible when messages share an arena, avoiding expensive deep copies for read-only sub-graphs.
+-   **Deterministic Serialization**: (Planned) Provide an option for deterministic field ordering during serialization to ensure stable wire-format signatures for caching and verification.
+-   **High-Performance Merging**: (Planned) Implement optimized C-level merging logic (`parse_from`) that leverages arena sharing to minimize allocations when combining data from multiple sources.
+-   **Zero-Copy Field Access**: (Planned) Implement zero-copy accessors for string and bytes fields that return Perl SVs pointing directly into the `upb` message buffer, eliminating allocation and copy overhead for large data blobs.
+-   **Method Dispatch Bypass**: (Planned) Optimize the generated Perl classes to support direct XS calls for hot accessors, bypassing the Moo method dispatch layer in high-performance processing loops.
 
 ## Type Handling
 

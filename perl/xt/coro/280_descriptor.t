@@ -46,4 +46,14 @@ $_->join for @coros;
 
 is_deeply(\@errors, [], "All coroutines completed without errors");
 
+TODO: {
+    local $TODO = 'Stress concurrent DescriptorPool lookups from 100 coroutines';
+    ok(0, 'High-frequency concurrent pool access is stable and lock-free');
+}
+
+TODO: {
+    local $TODO = 'Verify Coro re-entrancy during descriptor additions';
+    ok(0, 'System handles coroutine context switches during descriptor set loading safely');
+}
+
 done_testing();

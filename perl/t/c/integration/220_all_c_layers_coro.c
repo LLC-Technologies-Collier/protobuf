@@ -86,7 +86,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(2 + NUM_COROS + 3);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -104,6 +104,18 @@ int main(int argc, char** argv) {
         args[i].mdef_sv = mdef_sv;
     }
     RUN_CORO_TEST(coro_test_func, args);
+
+    TODO("Stress concurrent cross-interpreter message migration") {
+        ok(0, "System handles complex message trees migrating between interpreters safely");
+    }
+
+    TODO("Verify integrated core stability under extreme concurrency chaos") {
+        ok(0, "All C-layer components remain stable during randomized concurrent mutation");
+    }
+
+    TODO("Implement automated deadlock detection for integrated state") {
+        ok(0, "System identifies potential lock contention in concurrent integrated usage");
+    }
 
     SvREFCNT_dec(mdef_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);

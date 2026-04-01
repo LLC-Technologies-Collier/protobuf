@@ -35,4 +35,19 @@ subtest 'add and find' => sub {
 
 ok(1, 'All basic tests passed');
 
+TODO: {
+    local $TODO = 'Implement Dynamic Descriptor Reloading';
+    ok(0, 'Pool supports updating definitions without invalidating messages');
+}
+
+TODO: {
+    local $TODO = 'Implement Descriptor-Level Reflection Cache';
+    ok(0, 'Frequently accessed definitions are cached at the Perl level');
+}
+
+TODO: {
+    local $TODO = 'Provide Symbol Dependency Graph Visualization';
+    ok(0, 'DescriptorPool provides dependency graph in DOT format');
+}
+
 done_testing();

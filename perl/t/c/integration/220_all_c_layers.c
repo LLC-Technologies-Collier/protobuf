@@ -24,7 +24,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(18);
+    plan(21);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -141,6 +141,18 @@ int main(int argc, char** argv) {
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
 
     ok(1, "Final cleanup clean");
+
+    TODO("Implement Exhaustive Cross-Component Chaos Test") {
+        ok(0, "Massive concurrent mutation of all integrated field types verified");
+    }
+
+    TODO("Verify integrated Schema Evolution safety") {
+        ok(0, "Parsing data into evolved MessageDefs handles mismatches gracefully");
+    }
+
+    TODO("Implement Global Audit Trail for Message Lifecycle") {
+        ok(0, "Comprehensive tracing of message mutations and arena state verified");
+    }
 
     test_perl_destroy(my_perl);
     return 0;

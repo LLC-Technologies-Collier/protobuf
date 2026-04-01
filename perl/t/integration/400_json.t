@@ -20,4 +20,19 @@ subtest 'json integration' => sub {
     is($msg2->name, 'integration', 'Name matches after json roundtrip');
 };
 
+TODO: {
+    local $TODO = 'Implement Direct JSON-to-Wire Bulk Processor';
+    ok(0, 'Bulk processing of JSON streams to wire format bypasses Perl objects');
+}
+
+TODO: {
+    local $TODO = 'Verify Cross-Interpreter JSON Shared Buffer consistency';
+    ok(0, 'JSON parsing/generation is stable when sharing buffers across interpreters');
+}
+
+TODO: {
+    local $TODO = 'Verify JSON Stress under Memory Limits';
+    ok(0, 'System handles JSON parser OOM conditions gracefully under pressure');
+}
+
 done_testing();

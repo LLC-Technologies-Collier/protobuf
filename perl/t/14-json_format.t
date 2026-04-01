@@ -33,4 +33,19 @@ subtest 'json format decoding' => sub {
     is($msg->nested_message->nested_string, 'nested_parsed', 'Parsed nested message correctly');
 };
 
+TODO: {
+    local $TODO = 'Implement Direct JSON-to-Wire Conversion';
+    ok(0, 'Parsing JSON directly to wire format bypasses intermediate Perl objects');
+}
+
+TODO: {
+    local $TODO = 'Implement Streaming JSON Serialization';
+    ok(0, 'Streaming JSON directly to file handle avoids intermediate Perl strings');
+}
+
+TODO: {
+    local $TODO = 'Verify JSON Schema Mapping consistency';
+    ok(0, 'JSON output remains consistent with JSON-schema during evolution');
+}
+
 done_testing();

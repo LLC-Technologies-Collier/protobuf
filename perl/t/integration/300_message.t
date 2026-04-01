@@ -58,4 +58,19 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
     };
 };
 
+TODO: {
+    local $TODO = 'Implement Direct-to-Disk Zero-Copy Serialization';
+    ok(0, 'Streaming serialization to file descriptor avoids intermediate Perl strings');
+}
+
+TODO: {
+    local $TODO = 'Verify Cross-Interpreter Object Identity Stability';
+    ok(0, 'Messages maintain ObjCache identity when migrated across interpreters');
+}
+
+TODO: {
+    local $TODO = 'Provide Real-Time Message Dependency Graph Analysis';
+    ok(0, 'Integrated core can trace and visualize full object lifecycles');
+}
+
 done_testing();

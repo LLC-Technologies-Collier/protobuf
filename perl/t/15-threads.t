@@ -44,4 +44,19 @@ EOF
     like($err_output, qr/Protobuf objects cannot be safely cloned across ithreads/, 'Stderr contains the custom croak message');
 };
 
+TODO: {
+    local $TODO = 'Implement Thread-Safe Global Freezing';
+    ok(0, 'Frozen DescriptorPools can be safely shared across ithreads');
+}
+
+TODO: {
+    local $TODO = 'Implement Cross-Thread Message Serialization Handoff';
+    ok(0, 'High-level utility handles safe message transfer between threads');
+}
+
+TODO: {
+    local $TODO = 'Integrate ThreadSanitizer (TSan) for race detection';
+    ok(0, 'System-wide data races are automatically detected during concurrent tests');
+}
+
 done_testing();

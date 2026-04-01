@@ -9,6 +9,11 @@
 *   [x] Add leak tests using Test::LeakTrace to `perl/t/04-message-*.t`. (Verified via ASan)
 *   [x] Add `ok_test_coverage('Protobuf::Message')` to `perl/t/04-message-*.t`. (Verified manually)
 *   [x] Implement `Protobuf::Message` module (`perl/lib/Protobuf/Message.pm`).
+*   [ ] TODO: Implement Zero-Copy Field Access for large blobs.
+*   [ ] TODO: Implement Moo-to-Native Method Bypass for hot accessors.
+*   [ ] TODO: Provide Real-Time Message Validation Profiler API.
+*   [ ] TODO: **Type::Tiny Integration:** Integrate with `Type::Tiny` to provide optional rigorous type-checking for field mutators in generated classes.
+*   [ ] TODO: **Compiled Type Checks:** Implement C-level compiled type checks that can be exported to `Type::Tiny` for ultra-fast validation of complex message constraints.
 *   [x] Implement `Moo` dynamic method creation for field access.
 *   [x] Implement XS Bindings (`perl/lib/Protobuf/Message.xs`).
 *   [x] Implement typemaps for `upb_Message *` in `perl/typemap`.

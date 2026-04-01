@@ -24,4 +24,19 @@ subtest 'text format encoding' => sub {
     like($text, qr/nested_message \{.*nested_string: "inner".*\}/s, 'Contains nested message');
 };
 
+TODO: {
+    local $TODO = 'Implement Direct-to-Stream Text Printing (C-Layer)';
+    ok(0, 'Printing text format directly to file handle avoids intermediate Perl strings');
+}
+
+TODO: {
+    local $TODO = 'Implement Lossless Text Formatting for Unknown Fields';
+    ok(0, 'Unknown fields are included in text output with structured representation');
+}
+
+TODO: {
+    local $TODO = 'Provide Custom Text Format Redactors';
+    ok(0, 'Specific fields can be redacted during text formatting via callbacks');
+}
+
 done_testing();

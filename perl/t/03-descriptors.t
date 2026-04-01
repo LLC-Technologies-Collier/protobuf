@@ -32,4 +32,19 @@ subtest 'load and explore descriptors' => sub {
     };
 };
 
+TODO: {
+    local $TODO = 'Implement Direct-to-Native Reflection';
+    ok(0, 'Internal tasks can access C-level defs bypassing Perl wrappers');
+}
+
+TODO: {
+    local $TODO = 'Implement Descriptor-Level Memory Profile';
+    ok(0, 'Each descriptor subclass provides memory overhead reporting');
+}
+
+TODO: {
+    local $TODO = 'Implement Proto3-to-Proto2 Compatibility Layer';
+    ok(0, 'Descriptors support cross-version compatibility mappings');
+}
+
 done_testing();

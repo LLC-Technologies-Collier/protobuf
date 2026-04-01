@@ -95,7 +95,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(2 + NUM_COROS + 3);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -113,6 +113,18 @@ int main(int argc, char** argv) {
         args[i].mdef_sv = mdef_sv;
     }
     RUN_CORO_TEST(coro_test_func, args);
+
+    TODO("Stress concurrent parse/serialize cycles with high memory pressure") {
+        ok(0, "System remains stable during high-frequency allocation/deallocation of coroutine messages");
+    }
+
+    TODO("Verify integrated cache stability during concurrent message construction") {
+        ok(0, "Message wrappers consistently follow ObjCache rules across coroutines");
+    }
+
+    TODO("Implement automated race detection for integrated message state") {
+        ok(0, "TSan-equivalent checks for concurrent message accessor usage");
+    }
 
     SvREFCNT_dec(mdef_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);

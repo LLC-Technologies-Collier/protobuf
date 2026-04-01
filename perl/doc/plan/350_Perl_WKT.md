@@ -7,6 +7,7 @@
 *   **Protobuf::Any:**
     *   [x] Create test file `t/07-any.t`.
     *   [x] Tests in `t/07-any.t` cover all methods of `Protobuf::Any`, including packing and unpacking.
+    *   [ ] TODO: Implement Direct Any Unpacking (C-Layer).
     *   [ ] Add leak tests using Test::LeakTrace to `t/07-any.t`.
     *   [ ] Add `ok_test_coverage('Protobuf::Any')` to `t/07-any.t`.
     *   [x] Implement Perl and XS layers for Protobuf::Any.
@@ -16,6 +17,7 @@
 *   **Protobuf::Duration:**
     *   [x] Create test file `t/08-duration.t`.
     *   [x] Tests in `t/08-duration.t` cover all methods of `Protobuf::Duration`.
+    *   [ ] TODO: Implement Vectorized Duration Conversions.
     *   [ ] Add leak tests using Test::LeakTrace to `t/08-duration.t`.
     *   [ ] Add `ok_test_coverage('Protobuf::Duration')` to `t/08-duration.t`.
     *   [x] Implement Perl and XS layers for Protobuf::Duration.
@@ -25,6 +27,7 @@
 *   **Protobuf::Timestamp:**
     *   [x] Create test file `t/09-timestamp.t`.
     *   [x] Tests in `t/09-timestamp.t` cover all methods of `Protobuf::Timestamp`.
+    *   [ ] TODO: Implement Vectorized Timestamp Conversions.
     *   [ ] Add leak tests using Test::LeakTrace to `t/09-timestamp.t`.
     *   [ ] Add `ok_test_coverage('Protobuf::Timestamp')` to `t/09-timestamp.t`.
     *   [x] Implement Perl and XS layers for Protobuf::Timestamp.
@@ -43,6 +46,7 @@
 *   **Protobuf::Struct:**
     *   [x] Create test file `t/11-struct.t`.
     *   [x] Tests in `t/11-struct.t` cover all methods of `Protobuf::Struct`, `Protobuf::Value`, and `Protobuf::ListValue`.
+    *   [ ] TODO: Implement Struct-Specific Memory Profiling.
     *   [ ] Add leak tests using Test::LeakTrace to `t/11-struct.t`.
     *   [ ] Add `ok_test_coverage()` for `Protobuf::Struct`, `Protobuf::Value`, `Protobuf::ListValue` to `t/11-struct.t`.
     *   [x] Implement Perl and XS layers for Struct, Value, ListValue.

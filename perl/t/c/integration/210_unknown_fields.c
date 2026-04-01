@@ -18,7 +18,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(7);
+    plan(10);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -70,6 +70,18 @@ int main(int argc, char** argv) {
     SV* ret_data2 = PerlUpb_UnknownFieldSet_GetData(aTHX_ set_sv);
     is(SvCUR(ret_data2), 0, "Unknown fields cleared");
     SvREFCNT_dec(ret_data2);
+
+    TODO("Implement selective Unknown Field Scrubbing") {
+        ok(0, "Removing specific unknown tags while preserving others verified");
+    }
+
+    TODO("Verify integrated Unknown-to-Message reflection safety") {
+        ok(0, "Using cached MessageDefs to reify unknown blobs verified");
+    }
+
+    TODO("Verify unknown field preservation across deep-message merges") {
+        ok(0, "Merging messages with unknown data preserves all unrecognized fields correctly");
+    }
 
     // Cleanup
     extern void PerlUpb_UnknownFieldSet_Free(pTHX_ SV* sv);

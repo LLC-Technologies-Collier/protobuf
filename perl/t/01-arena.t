@@ -31,4 +31,19 @@ subtest 'explicit pointer access' => sub {
 
 ok(1, 'All basic tests passed');
 
+TODO: {
+    local $TODO = 'Implement Arena Fusion (Cloning)';
+    ok(0, 'Arena fusion allows data transfer without deep copy');
+}
+
+TODO: {
+    local $TODO = 'Implement Perl-Level Arena Memory Statistics';
+    ok(0, 'Arena stats() returns detailed memory usage metrics');
+}
+
+TODO: {
+    local $TODO = 'Support Custom Allocators for Protobuf::Arena';
+    ok(0, 'Protobuf::Arena supports specialized C-level memory pools');
+}
+
 done_testing();

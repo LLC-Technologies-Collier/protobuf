@@ -29,4 +29,9 @@ subtest 'struct and value operations' => sub {
     is($struct->fields->{foo}->kind, 'string_value', 'Oneof kind is string_value');
 };
 
+TODO: {
+    local $TODO = 'Implement Struct-Specific Memory Profiling';
+    ok(0, 'Struct and ListValue objects provide detailed memory overhead reporting');
+}
+
 done_testing();

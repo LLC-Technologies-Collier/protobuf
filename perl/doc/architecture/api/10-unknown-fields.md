@@ -25,6 +25,14 @@ $msg->unknown_fields->add($raw_bytes);
 $msg->unknown_fields->clear;
 ```
 
+## Advanced Features and Performance
+
+To achieve world-class observability and flexibility, the implementation includes (or is planned to include) the following:
+
+-   **Direct Unknown-to-Message Conversion**: (Planned) Implement C-level logic to attempt parsing existing unknown field blobs into a newly provided `MessageDef`. This facilitates "lazy schema upgrades" where previously unrecognized data can be reified into typed fields.
+-   **Unknown Field Indexing**: (Planned) For high-frequency tag analysis, implement internal C-level indexing of the unknown buffer to allow O(1) existence checks and retrieval of specific unknown tags.
+-   **Trace Auditing**: (Planned) Integrate with the core trace/audit log to record discovery of unknown fields, aiding in identifying version drift in distributed systems.
+
 ## Memory Management
 
 *   The `UnknownFieldSet` object holds a strong reference to the parent message's Perl SV.

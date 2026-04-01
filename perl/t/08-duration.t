@@ -17,4 +17,9 @@ subtest 'duration operations' => sub {
     is($dur->to_seconds, 123.456, 'Conversion back to seconds matches');
 };
 
+TODO: {
+    local $TODO = 'Implement Vectorized Duration Conversions';
+    ok(0, 'High-throughput Duration processing uses SSE4.1/AVX2 optimizations');
+}
+
 done_testing();

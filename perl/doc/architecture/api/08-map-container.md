@@ -31,5 +31,13 @@ exists $map->{$key};
 keys %$map;
 ```
 
+## Advanced Performance Goals
+
+To achieve world-class dictionary performance, the implementation includes (or is planned to include) the following:
+
+-   **O(1) Bulk Projection**: (Planned) Implement a C-level function to project an entire `upb_Map` into a native Perl hash in a single XS call, eliminating the overhead of repeated `FETCH` operations for bulk reads.
+-   **Shared-Arena Key Deduplication**: (Planned) Enhance the arena allocator to deduplicate string keys across multiple maps, significantly reducing memory footprint for large message sets with common keys.
+-   **Collision Analysis**: (Planned) Provide diagnostic utilities to monitor and report hash collision rates within `upb_Map` instances to aid in schema and performance optimization.
+
 ## Memory Management
 ...

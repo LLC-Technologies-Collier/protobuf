@@ -49,4 +49,14 @@ $_->join for @coros;
 
 is_deeply(\@errors, [], "All coroutines completed without errors");
 
+TODO: {
+    local $TODO = 'Stress concurrent JSON parsing from 100 coroutines';
+    ok(0, 'System remains stable under massive concurrent JSON decoding');
+}
+
+TODO: {
+    local $TODO = 'Verify Coro safety for JSON generation with shared pool';
+    ok(0, 'High-frequency concurrent JSON encoding is lock-free and efficient');
+}
+
 done_testing();

@@ -102,6 +102,22 @@ subtest 'WKT integration with Type::Tiny' => sub {
     my $unpacked = $any->unpack();
     isa_ok($unpacked, 'protobuf_test_messages::proto2::TestAllTypesProto2');
     is($unpacked->optional_int32, 42, 'Any unpacked correctly');
-};
+    };
 
-done_testing();
+    TODO: {
+    local $TODO = 'Implement C-to-Type::Tiny Compiled Validation';
+    ok(0, 'Protobuf validation logic is exported as compiled subroutines for Type::Tiny');
+    }
+
+    TODO: {
+    local $TODO = 'Generate Type Libraries for every .proto file';
+    ok(0, 'Types::Protobuf module is automatically created with message constraints');
+    }
+
+    TODO: {
+    local $TODO = 'Implement Intelligent Union-Type (Oneof) Coercion';
+    ok(0, 'HashRef keys intelligently populate oneof branches during coercion');
+    }
+
+    done_testing();
+

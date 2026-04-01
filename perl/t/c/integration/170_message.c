@@ -19,7 +19,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(12);
+    plan(15);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -115,6 +115,18 @@ int main(int argc, char** argv) {
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
 
     ok(1, "Completed clean destruction");
+
+    TODO("Implement Deterministic Serialization integration test") {
+        ok(0, "Consistent field ordering verified across multiple serialization runs");
+    }
+
+    TODO("Verify integrated Oneof state transitions") {
+        ok(0, "Setting oneof members correctly invalidates others in integrated C context");
+    }
+
+    TODO("Implement high-performance parse_from (Merge) logic") {
+        ok(0, "Optimized message merging with shared arena support verified");
+    }
 
     test_perl_destroy(my_perl);
     return 0;

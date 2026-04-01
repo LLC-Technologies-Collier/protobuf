@@ -56,4 +56,14 @@ $_->join for @coros;
 
 is_deeply(\@errors, [], "All coroutines completed without errors");
 
+TODO: {
+    local $TODO = 'Stress concurrent Any unpacking from 100 coroutines';
+    ok(0, 'High-frequency concurrent reification of Any messages is stable');
+}
+
+TODO: {
+    local $TODO = 'Verify Coro safety for high-throughput temporal conversions';
+    ok(0, 'System remains stable during 10,000 Timestamp/Duration conversions in Coros');
+}
+
 done_testing();

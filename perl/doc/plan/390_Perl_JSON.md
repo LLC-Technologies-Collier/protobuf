@@ -9,6 +9,9 @@
 *   [ ] Add leak tests using Test::LeakTrace to `t/14-json_format.t`.
 *   [ ] Add `ok_test_coverage('Protobuf::JSON')` to `t/14-json_format.t`.
 *   [x] Implement Protobuf::JSON. (Implemented directly on `Protobuf::Message` as `to_json` and `from_json`)
+*   [ ] TODO: Implement Direct JSON-to-Wire Conversion.
+*   [ ] TODO: Implement Streaming JSON Serialization.
+*   [ ] TODO: Verify JSON Schema Mapping consistency.
 *   [x] Perl tests pass.
 *   [x] Refine C API (if any) and re-test.
 *   [x] Review and update perl/doc/architecture/** documents.

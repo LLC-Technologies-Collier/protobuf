@@ -76,4 +76,19 @@ subtest 'message map field accessors' => sub {
     is($map->{m1}->a, 456, 'Update reflected in map');
 };
 
+TODO: {
+    local $TODO = 'Implement O(1) Bulk Map Projection';
+    ok(0, 'Projecting entire upb_Map to Perl hash avoids redundant FETCH overhead');
+}
+
+TODO: {
+    local $TODO = 'Implement Shared-Arena Key Deduplication';
+    ok(0, 'String keys are shared across maps in the same arena to save memory');
+}
+
+TODO: {
+    local $TODO = 'Provide Real-Time Map Collision Analysis';
+    ok(0, 'Map collision statistics are reportable via XS interface');
+}
+
 done_testing();

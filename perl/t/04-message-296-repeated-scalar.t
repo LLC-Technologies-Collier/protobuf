@@ -39,4 +39,19 @@ subtest 'repeated scalar field accessors' => sub {
     is_deeply($arr2, [100, 20], 'get() returns expected values');
 };
 
+TODO: {
+    local $TODO = 'Implement SIMD-Accelerated Bulk Append';
+    ok(0, 'Pushing large Perl arrays uses optimized C-level bulk transfer');
+}
+
+TODO: {
+    local $TODO = 'Implement Native XS grep for repeated fields';
+    ok(0, 'Grep operations on tied arrays run at C-speed without SV wrapping');
+}
+
+TODO: {
+    local $TODO = 'Provide Lazy-Wrapper Deferral for bulk scanning';
+    ok(0, 'High-throughput scanning bypasses Perl object creation for message elements');
+}
+
 done_testing();

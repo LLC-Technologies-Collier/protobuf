@@ -9,6 +9,9 @@
 *   [x] Add leak tests using Test::LeakTrace to `perl/t/01-arena.t`. (Skipped: Test::LeakTrace not available, verified via XS counters or ASan instead).
 *   [x] Add `ok_test_coverage('Protobuf::Arena')` to `perl/t/01-arena.t`. (Verified manually).
 *   [x] Implement `Protobuf::Arena` module (`perl/lib/Protobuf/Arena.pm`).
+*   [ ] TODO: Implement Arena Fusion (Cloning) method.
+*   [ ] TODO: Implement stats() method for memory usage metrics.
+*   [ ] TODO: Support Custom Allocators via new() parameter.
 *   [x] Implement XS Bindings (`perl/lib/Protobuf/Arena.xs`).
 *   [x] Implement typemap for `upb_Arena *` in `perl/typemap`.
 *   [x] Perl tests pass for Protobuf::Arena.
