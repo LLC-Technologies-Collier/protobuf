@@ -19,3 +19,14 @@ const char* PerlUpb_VerifyStrData(pTHX_ SV *sv) {
     STRLEN len;
     return SvPV(sv, len);
 }
+
+char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
+    char* full_name = savepv(class_name);
+    for (char* p = full_name; *p; p++) {
+        if (*p == ':' && *(p+1) == ':') {
+            *p = '.';
+            memmove(p+1, p+2, strlen(p+2) + 1);
+        }
+    }
+    return full_name;
+}

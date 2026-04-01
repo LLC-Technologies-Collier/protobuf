@@ -128,13 +128,7 @@ SV* PerlUpb_Message_FromJson(pTHX_ SV* class_name, SV* json_sv) {
     const char* json_str = SvPV(json_sv, len);
     const char* class_str = SvPV_nolen(class_name);
 
-    char* full_name = savepv(class_str);
-    for (char* p = full_name; *p; p++) {
-        if (*p == ':' && *(p+1) == ':') {
-            *p = '.';
-            memmove(p+1, p+2, strlen(p+2) + 1);
-        }
-    }
+    char* full_name = PerlUpb_ClassNameToFullName(aTHX_ class_str);
 
     SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
     const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ pool_sv);

@@ -6,6 +6,7 @@
 
 #include "xs/protobuf/arena.h"
 #include "xs/protobuf/message.h"
+#include "xs/protobuf/utils.h"
 #include "xs/message/message.h"
 #include "xs/message/access.h"
 #include "xs/message/serialize.h"
@@ -162,13 +163,7 @@ _xs_parse(class_name, data)
     const char* class_name
     SV* data
     CODE:
-        char* full_name = savepv(class_name);
-        for (char* p = full_name; *p; p++) {
-            if (*p == ':' && *(p+1) == ':') {
-                *p = '.';
-                memmove(p+1, p+2, strlen(p+2) + 1);
-            }
-        }
+        char* full_name = PerlUpb_ClassNameToFullName(aTHX_ class_name);
         
         SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
         const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ pool_sv);

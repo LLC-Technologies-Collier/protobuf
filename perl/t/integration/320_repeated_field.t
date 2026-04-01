@@ -11,7 +11,7 @@ subtest 'repeated field cross-message interaction' => sub {
     my $msg1 = test::TestMessage->new();
     push @{$msg1->repeated_int}, 10, 20, 30;
     
-    diag("msg1->repeated_int type: " . ref($msg1->repeated_int));
+    note("msg1->repeated_int type: " . ref($msg1->repeated_int));
     
     my $msg2 = test::TestMessage->new();
     # This should copy elements
