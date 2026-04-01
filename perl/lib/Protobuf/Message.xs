@@ -23,6 +23,12 @@
 #include "xs/descriptor/method.h"
 
 // -- Message --
+#define GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef_var) \
+    const upb_FieldDef* fdef_var = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name); \
+    if (!fdef_var) { \
+        croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef)); \
+    }
+
 MODULE = Protobuf::Message  PACKAGE = Protobuf::Message
 PROTOTYPES: ENABLE
 
@@ -53,10 +59,7 @@ _xs_get(self, field_name)
     const char* field_name
     CODE:
         const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
-        const upb_FieldDef* fdef = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name);
-        if (!fdef) {
-            croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef));
-        }
+        GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef);
         RETVAL = PerlUpb_Message_GetField(aTHX_ self, fdef);
     OUTPUT:
         RETVAL
@@ -68,10 +71,7 @@ _xs_set(self, field_name, value)
     SV* value
     CODE:
         const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
-        const upb_FieldDef* fdef = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name);
-        if (!fdef) {
-            croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef));
-        }
+        GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef);
         PerlUpb_Message_SetField(aTHX_ self, fdef, value);
 
 bool
@@ -80,10 +80,7 @@ _xs_has(self, field_name)
     const char* field_name
     CODE:
         const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
-        const upb_FieldDef* fdef = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name);
-        if (!fdef) {
-            croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef));
-        }
+        GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef);
         RETVAL = PerlUpb_Message_HasField(aTHX_ self, fdef);
     OUTPUT:
         RETVAL
@@ -94,10 +91,7 @@ _xs_clear(self, field_name)
     const char* field_name
     CODE:
         const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
-        const upb_FieldDef* fdef = PerlUpb_MessageDef_FindFieldByName(aTHX_ mdef, field_name);
-        if (!fdef) {
-            croak("Field '%s' not found in message '%s'", field_name, upb_MessageDef_FullName(mdef));
-        }
+        GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef);
         PerlUpb_Message_ClearField(aTHX_ self, fdef);
 
 const char*

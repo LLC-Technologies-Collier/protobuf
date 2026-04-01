@@ -6,7 +6,6 @@
 #include "perl/xs/protobuf.h"
 
 #include "perl/xs/repeated/repeated.h"
-#include "perl/xs/repeated/scalar.h"
 #include "perl/xs/repeated/composite.h"
 
 // Top-level init

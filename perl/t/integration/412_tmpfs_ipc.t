@@ -1,11 +1,12 @@
 use strict;
 use warnings;
 use Test::More;
-use Protobuf::DescriptorPool;
+use lib "t/lib";
+use TestHelpers;
 use POSIX qw( mkfifo );
 use File::Temp qw( tempdir );
 
-my $pool = Protobuf::DescriptorPool->generated_pool();
+my $pool = TestHelpers->get_generated_pool();
 foreach my $file ('t/data/test_descriptor.bin') {
     open my $fh, '<:raw', $file or die $!;
     my $data = do { local $/; <$fh> };

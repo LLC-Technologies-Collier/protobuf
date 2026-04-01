@@ -10,8 +10,6 @@
 #include "perl/xs/message/access.h"
 #include "perl/xs/message/serialize.h"
 #include "perl/xs/message/compare.h"
-#include "perl/xs/message/init.h"
-#include "perl/xs/message/wkt.h"
 
 // Top-level init
 bool PerlUpb_InitMessage(pTHX_ SV* module);

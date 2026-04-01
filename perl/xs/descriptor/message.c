@@ -95,17 +95,10 @@ bool PerlUpb_MessageDef_IsMessageSet(pTHX_ const upb_MessageDef *m) {
 }
 
 #include "xs/protobuf/obj_cache.h"
+#include "xs/descriptor/base.h"
 
 SV* PerlUpb_MessageDef_GetWrapper(pTHX_ const upb_MessageDef *m) {
-    if (!m) return &PL_sv_undef;
-    SV* cached = PerlUpb_ObjCache_Get(aTHX_ m);
-    if (cached) return cached;
-
-    SV* sv = newSViv((IV)m);
-    SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::Descriptor::MessageDef", GV_ADD));
-    PerlUpb_ObjCache_Add(aTHX_ m, obj);
-    return obj;
+    RETURN_CACHED_OR_CREATE_BLESSED(m, "Protobuf::Descriptor::MessageDef");
 }
 
 const upb_MessageDef* PerlUpb_MessageDef_GetMessage(pTHX_ SV *sv) {

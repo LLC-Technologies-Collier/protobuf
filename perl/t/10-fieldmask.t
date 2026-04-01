@@ -1,9 +1,10 @@
 use strict;
 use warnings;
 use Test::More;
-use Protobuf::DescriptorPool;
+use lib "t/lib";
+use TestHelpers;
 
-my $pool = Protobuf::DescriptorPool->generated_pool();
+my $pool = TestHelpers->get_generated_pool();
 open my $fh, '<:raw', 't/data/wkt_descriptor.bin' or die $!;
 my $data = do { local $/; <$fh> };
 $pool->add_serialized_file_descriptor_set($data);

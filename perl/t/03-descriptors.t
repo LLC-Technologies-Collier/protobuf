@@ -1,10 +1,11 @@
 use strict;
 use warnings;
 use Test::More;
-use Protobuf::DescriptorPool;
+use lib "t/lib";
+use TestHelpers;
 
 subtest 'load and explore descriptors' => sub {
-    my $pool = Protobuf::DescriptorPool->new;
+    my $pool = TestHelpers->get_empty_pool();
     
     my $file_path = 't/data/test_descriptor.bin';
     open my $fh, '<:raw', $file_path or die "Could not open $file_path: $!";

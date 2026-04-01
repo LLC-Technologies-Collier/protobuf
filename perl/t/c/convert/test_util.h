@@ -39,4 +39,26 @@ typedef struct {
 bool load_test_descriptors(pTHX_ upb_Arena *arena);
 const upb_FieldDef* get_field_def(const char *msg_name, const char *field_name);
 
+#define VALID_SCALAR(elem) (SvPOK(elem) || SvIOK(elem) || SvNOK(elem))
+
+#define GEN_CHECK_SV_REPEATED_SCALAR(type_name, expected_size) \
+static void check_sv_repeated_##type_name##_val(pTHX_ SV *sv, const char *prefix) { \
+    ok(sv_derived_from(sv, "Protobuf::Internal::Repeated"), sdiagnostic("%s: SV is a Repeated wrapper", prefix)); \
+    if (!sv_derived_from(sv, "Protobuf::Internal::Repeated")) return; \
+    int size = PerlUpb_Repeated_Size(aTHX_ sv); \
+    is(size, expected_size, sdiagnostic("%s: Array has %d elements", prefix, expected_size)); \
+    SV *elem0 = PerlUpb_Repeated_GetItem(aTHX_ sv, 0); \
+    ok(elem0, sdiagnostic("%s: Fetched element 0", prefix)); \
+    if (elem0) { \
+        ok(VALID_SCALAR(elem0), sdiagnostic("%s: Element 0 is valid", prefix)); \
+        SvREFCNT_dec(elem0); \
+    } \
+    SV *elem1 = PerlUpb_Repeated_GetItem(aTHX_ sv, 1); \
+    ok(elem1, sdiagnostic("%s: Fetched element 1", prefix)); \
+    if (elem1) { \
+        ok(VALID_SCALAR(elem1), sdiagnostic("%s: Element 1 is valid", prefix)); \
+        SvREFCNT_dec(elem1); \
+    } \
+}
+
 #endif // PERL_PROTOBUF_CONVERT_TEST_UTIL_H_

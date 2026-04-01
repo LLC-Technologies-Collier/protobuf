@@ -31,25 +31,7 @@ static void set_repeated_int64_val(upb_MessageValue *val, upb_Arena *arena) {
     val->array_val = arr;
 }
 
-static void check_sv_repeated_int64_val(pTHX_ SV *sv, const char *prefix) {
-    ok(sv_derived_from(sv, "Protobuf::Internal::Repeated"), sdiagnostic("%s: SV is a Repeated wrapper", prefix));
-    if (!sv_derived_from(sv, "Protobuf::Internal::Repeated")) return;
-
-    int size = PerlUpb_Repeated_Size(aTHX_ sv);
-    is(size, 2, sdiagnostic("%s: Array has 2 elements", prefix));
-    SV *elem0 = PerlUpb_Repeated_GetItem(aTHX_ sv, 0);
-    ok(elem0, sdiagnostic("%s: Fetched element 0", prefix));
-    if (elem0) {
-        ok(SvPOK(elem0) || SvIOK(elem0) || SvNOK(elem0), sdiagnostic("%s: Element 0 is valid", prefix));
-        SvREFCNT_dec(elem0);
-    }
-    SV *elem1 = PerlUpb_Repeated_GetItem(aTHX_ sv, 1);
-    ok(elem1, sdiagnostic("%s: Fetched element 1", prefix));
-    if (elem1) {
-        ok(SvPOK(elem1) || SvIOK(elem1) || SvNOK(elem1), sdiagnostic("%s: Element 1 is valid", prefix));
-        SvREFCNT_dec(elem1);
-    }
-}
+GEN_CHECK_SV_REPEATED_SCALAR(int64, 2)
 
 const upb_to_sv_test_case int64_upb_to_sv_test_cases[] = {
     {"optional_int64", "int64", kUpb_FieldType_Int64, set_int64_max, check_sv_int64_max, 2},

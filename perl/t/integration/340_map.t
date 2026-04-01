@@ -1,9 +1,10 @@
 use strict;
 use warnings;
 use Test::More;
-use Protobuf::DescriptorPool;
+use lib "t/lib";
+use TestHelpers;
 
-my $pool = Protobuf::DescriptorPool->generated_pool();
+my $pool = TestHelpers->get_generated_pool();
 my $file_path = 't/data/test_descriptor.bin';
 open my $fh, '<:raw', $file_path or die "Could not open $file_path: $!";
 my $data = do { local $/; <$fh> };

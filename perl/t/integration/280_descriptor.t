@@ -2,13 +2,14 @@ use strict;
 use warnings;
 use Test::More;
 use Protobuf::Arena;
-use Protobuf::DescriptorPool;
+use lib "t/lib";
+use TestHelpers;
 
 subtest 'descriptor pool and arena interaction' => sub {
     my $arena = Protobuf::Arena->new;
     ok($arena, 'Created arena');
 
-    my $pool = Protobuf::DescriptorPool->new;
+    my $pool = TestHelpers->get_empty_pool();
     ok($pool, 'Created descriptor pool');
 
     my $file_path = 't/data/test_descriptor.bin';

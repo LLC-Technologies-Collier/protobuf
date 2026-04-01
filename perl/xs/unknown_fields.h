@@ -6,7 +6,6 @@
 #include "perl/xs/protobuf.h"
 
 #include "perl/xs/unknown_fields/set.h"
-#include "perl/xs/unknown_fields/build.h"
 
 // Top-level init
 bool PerlUpb_InitUnknownFields(pTHX_ SV* module);

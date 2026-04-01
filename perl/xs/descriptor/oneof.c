@@ -41,17 +41,10 @@ const upb_FieldDef* PerlUpb_OneofDef_LookupNumber(pTHX_ const upb_OneofDef *o, u
 }
 
 #include "xs/protobuf/obj_cache.h"
+#include "xs/descriptor/base.h"
 
 SV* PerlUpb_OneofDef_GetWrapper(pTHX_ const upb_OneofDef *o) {
-    if (!o) return &PL_sv_undef;
-    SV* cached = PerlUpb_ObjCache_Get(aTHX_ o);
-    if (cached) return cached;
-
-    SV* sv = newSViv((IV)o);
-    SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::Descriptor::OneofDef", GV_ADD));
-    PerlUpb_ObjCache_Add(aTHX_ o, obj);
-    return obj;
+    RETURN_CACHED_OR_CREATE_BLESSED(o, "Protobuf::Descriptor::OneofDef");
 }
 
 const upb_OneofDef* PerlUpb_OneofDef_GetOneof(pTHX_ SV *sv) {

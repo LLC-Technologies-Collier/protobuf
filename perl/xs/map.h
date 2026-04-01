@@ -6,8 +6,6 @@
 #include "perl/xs/protobuf.h"
 
 #include "perl/xs/map/map.h"
-#include "perl/xs/map/scalar.h"
-#include "perl/xs/map/message.h"
 #include "perl/xs/map/iterator.h"
 
 // Top-level init
