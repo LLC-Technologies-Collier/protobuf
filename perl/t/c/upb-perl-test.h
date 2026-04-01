@@ -122,3 +122,11 @@ void test_perl_destroy(PerlInterpreter *my_perl);
 #define SKIP(reason, count) \
     for(int _skip_i = 0; _skip_i < (count); _skip_i++) \
         fprintf(stderr, "ok %d - # skip %s\n", ++test_num, (reason))
+
+// TODO: Implement world-class build and test capabilities
+// 1. Configurable sanitizer support (ASan, UBSan, MSan)
+// 2. Automate C-level benchmark compilation and execution (make bench)
+// 3. Linker-level symbol visibility control for ABI stability
+// 4. Indented subtest support in the C harness (TAP 13 compliant)
+// 5. LEAK_CHECK { ... } block for local allocation neutrality
+// 6. STRESS_THREADS(n, func) macro for concurrency verification

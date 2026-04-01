@@ -8,6 +8,9 @@
 *   [x] Update `perl/t/c/upb-perl-test.h` and `perl/t/c/upb-perl-test.c` with these enhancements.
 *   [x] Backfill existing C tests with `TODO` stubs for missing functionality.
 *   [x] Add `SKIP` functionality stub for C tests.
+*   [ ] TODO: Implement indented subtest support in the C harness (TAP 13 compliant).
+*   [ ] TODO: Implement `LEAK_CHECK { ... }` block using `upb_Arena` stats to verify local allocation neutrality.
+*   [ ] TODO: Add `STRESS_THREADS(n, func)` macro for standardized C-level concurrency verification.
 
 ## Implemented Macros
 *   `plan(n)`
