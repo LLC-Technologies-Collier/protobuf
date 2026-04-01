@@ -48,8 +48,5 @@ SV* PerlUpb_OneofDef_GetWrapper(pTHX_ const upb_OneofDef *o) {
 }
 
 const upb_OneofDef* PerlUpb_OneofDef_GetOneof(pTHX_ SV *sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Descriptor::OneofDef")) {
-        return NULL;
-    }
-    return (const upb_OneofDef*)SvIV(SvRV(sv));
+    EXTRACT_CACHED_DESCRIPTOR(upb_OneofDef, sv, "Protobuf::Descriptor::OneofDef");
 }

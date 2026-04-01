@@ -17,8 +17,5 @@ SV* PerlUpb_EnumDef_GetWrapper(pTHX_ const upb_EnumDef *e) {
 }
 
 const upb_EnumDef* PerlUpb_EnumDef_GetEnum(pTHX_ SV *sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Descriptor::Enum")) {
-        return NULL;
-    }
-    return (const upb_EnumDef*)SvIV(SvRV(sv));
+    EXTRACT_CACHED_DESCRIPTOR(upb_EnumDef, sv, "Protobuf::Descriptor::Enum");
 }

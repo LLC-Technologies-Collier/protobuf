@@ -80,8 +80,5 @@ SV* PerlUpb_FileDef_GetWrapper(pTHX_ const upb_FileDef *f) {
 }
 
 const upb_FileDef* PerlUpb_FileDef_GetFile(pTHX_ SV *sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Descriptor::File")) {
-        return NULL;
-    }
-    return (const upb_FileDef*)SvIV(SvRV(sv));
+    EXTRACT_CACHED_DESCRIPTOR(upb_FileDef, sv, "Protobuf::Descriptor::File");
 }

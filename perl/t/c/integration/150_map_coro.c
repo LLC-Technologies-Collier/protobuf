@@ -7,6 +7,7 @@
 #include "xs/protobuf/arena.h"
 #include "xs/protobuf/message.h"
 #include "libcoro/coro.h"
+#include "t/c/coro_util.h"
 #include "t/c/convert/test_util.h"
 #include "upb/reflection/message.h"
 #include <stdio.h>
@@ -21,10 +22,7 @@
 #define NUM_OPS 50
 #define STACK_SIZE 65536
 
-coro_context main_ctx;
-coro_context *coro_ctxs[NUM_COROS];
-struct coro_stack coro_stacks[NUM_COROS];
-int coro_active[NUM_COROS];
+DECLARE_CORO_STATE()
 
 typedef struct {
     int id;
@@ -37,7 +35,7 @@ void test_map_access(pTHX_ coro_arg_t *carg) {
     SV* val_sv = newSViv(carg->id * 100);
     
     PerlUpb_Map_SetItem(aTHX_ carg->map_sv, key_sv, val_sv);
-    coro_transfer(coro_ctxs[carg->id - 1], &main_ctx); // Yield
+    coro_yield(carg->id);
 
     SV* ret_val = PerlUpb_Map_GetItem(aTHX_ carg->map_sv, key_sv);
     if (!SvIOK(ret_val) || SvIV(ret_val) != (carg->id * 100)) {
@@ -54,10 +52,9 @@ void coro_test_func(void *arg) {
     dTHX;
     for (int i = 0; i < NUM_OPS; i++) {
         test_map_access(aTHX_ carg);
-        coro_transfer(coro_ctxs[carg->id - 1], &main_ctx); // Yield
+        coro_yield(carg->id);
     }
-    coro_active[carg->id - 1] = 0;
-    coro_transfer(coro_ctxs[carg->id - 1], &main_ctx);
+    coro_finish(carg->id);
 }
 
 int main(int argc, char** argv) {
@@ -79,38 +76,11 @@ int main(int argc, char** argv) {
     upb_Map* map_ptr = upb_Message_Mutable(msg, map_field, arena).map;
     SV* map_sv = PerlUpb_Map_New(aTHX_ map_ptr, map_field, arena_sv);
 
-    coro_create(&main_ctx, NULL, NULL, NULL, 0);
-
     coro_arg_t args[NUM_COROS];
     for (int i = 0; i < NUM_COROS; i++) {
-        coro_stack_alloc(&coro_stacks[i], STACK_SIZE);
-        args[i].id = i + 1;
-        args[i].errors = 0;
         args[i].map_sv = map_sv;
-        coro_active[i] = 1;
-        coro_ctxs[i] = (coro_context *)malloc(sizeof(coro_context));
-        coro_create(coro_ctxs[i], coro_test_func, &args[i], coro_stacks[i].sptr, coro_stacks[i].ssze);
     }
-
-    int active_count = NUM_COROS;
-    int j = 0;
-    while (active_count > 0) {
-        int idx = j % NUM_COROS;
-        if (coro_active[idx]) {
-            coro_transfer(&main_ctx, coro_ctxs[idx]);
-            if (!coro_active[idx]) active_count--;
-        }
-        j++;
-    }
-
-    int total_errors = 0;
-    for (int i = 0; i < NUM_COROS; i++) {
-        total_errors += args[i].errors;
-        ok(args[i].errors == 0, "Coro completed without errors");
-        coro_stack_free(&coro_stacks[i]);
-        free(coro_ctxs[i]);
-    }
-    is(total_errors, 0, "Total errors from all coroutines");
+    RUN_CORO_TEST(coro_test_func, args);
 
     extern void PerlUpb_Map_Free(pTHX_ SV* sv);
     PerlUpb_Map_Free(aTHX_ map_sv);

@@ -10,6 +10,7 @@
 #include "xs/protobuf/message.h"
 #include "t/c/convert/test_util.h"
 #include "libcoro/coro.h"
+#include "t/c/coro_util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,10 +23,7 @@
 #define NUM_OPS 10
 #define STACK_SIZE 65536
 
-coro_context main_ctx;
-coro_context *coro_ctxs[NUM_COROS];
-struct coro_stack coro_stacks[NUM_COROS];
-int coro_active[NUM_COROS];
+DECLARE_CORO_STATE()
 
 typedef struct {
     int id;
@@ -46,7 +44,7 @@ void test_repeated_ops(pTHX_ coro_arg_t *carg) {
         SV* av_ref = newRV_noinc((SV*)av);
         PerlUpb_Message_SetField(aTHX_ msg_sv, f_rep_int32, av_ref);
         
-        coro_transfer(coro_ctxs[carg->id - 1], &main_ctx); // Yield
+        coro_yield(carg->id);
 
         SV* ret_av_ref = PerlUpb_Message_GetField(aTHX_ msg_sv, f_rep_int32);
         if (PerlUpb_Repeated_Size(aTHX_ ret_av_ref) != 5) {
@@ -65,8 +63,7 @@ void coro_test_func(void *arg) {
     coro_arg_t *carg = (coro_arg_t *)arg;
     dTHX;
     test_repeated_ops(aTHX_ carg);
-    coro_active[carg->id - 1] = 0;
-    coro_transfer(coro_ctxs[carg->id - 1], &main_ctx);
+    coro_finish(carg->id);
 }
 
 int main(int argc, char** argv) {
@@ -85,38 +82,11 @@ int main(int argc, char** argv) {
     const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_test_messages.proto2.TestAllTypesProto2");
     SV* mdef_sv = PerlUpb_MessageDef_GetWrapper(aTHX_ mdef);
 
-    coro_create(&main_ctx, NULL, NULL, NULL, 0);
-
     coro_arg_t args[NUM_COROS];
     for (int i = 0; i < NUM_COROS; i++) {
-        coro_stack_alloc(&coro_stacks[i], STACK_SIZE);
-        args[i].id = i + 1;
-        args[i].errors = 0;
         args[i].mdef_sv = mdef_sv;
-        coro_active[i] = 1;
-        coro_ctxs[i] = (coro_context *)malloc(sizeof(coro_context));
-        coro_create(coro_ctxs[i], coro_test_func, &args[i], coro_stacks[i].sptr, coro_stacks[i].ssze);
     }
-
-    int active_count = NUM_COROS;
-    int j = 0;
-    while (active_count > 0) {
-        int idx = j % NUM_COROS;
-        if (coro_active[idx]) {
-            coro_transfer(&main_ctx, coro_ctxs[idx]);
-            if (!coro_active[idx]) active_count--;
-        }
-        j++;
-    }
-
-    int total_errors = 0;
-    for (int i = 0; i < NUM_COROS; i++) {
-        total_errors += args[i].errors;
-        ok(args[i].errors == 0, "Coro completed without errors");
-        coro_stack_free(&coro_stacks[i]);
-        free(coro_ctxs[i]);
-    }
-    is(total_errors, 0, "Total errors from all coroutines");
+    RUN_CORO_TEST(coro_test_func, args);
 
     SvREFCNT_dec(mdef_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);

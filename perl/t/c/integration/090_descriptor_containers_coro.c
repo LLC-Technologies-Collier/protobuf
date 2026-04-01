@@ -5,6 +5,7 @@
 #include "xs/protobuf/arena.h"
 #include "t/c/convert/test_util.h"
 #include "libcoro/coro.h"
+#include "t/c/coro_util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,9 +18,7 @@
 #define NUM_OPS 100
 #define STACK_SIZE 32768
 
-coro_context main_ctx;
-coro_context *coro_ctxs[NUM_COROS];
-struct coro_stack coro_stacks[NUM_COROS];
+DECLARE_CORO_STATE()
 
 typedef struct {
     int id;
@@ -54,7 +53,7 @@ void test_container_access(pTHX_ coro_arg_t *carg) {
     }
     SvREFCNT_dec(val_sv);
 
-    coro_transfer(coro_ctxs[carg->id - 1], &main_ctx); // Yield
+    coro_yield(carg->id);
 
     // Test sequence creation and count
     SV* seq_sv = PerlUpb_GenericSequence_New(aTHX_ carg->parent_sv, carg->msg_def, &msg_fields_seq_vtable);
@@ -80,8 +79,9 @@ void coro_test_func(void *arg) {
     dTHX;
     for (int i = 0; i < NUM_OPS; i++) {
         test_container_access(aTHX_ carg);
-        coro_transfer(coro_ctxs[carg->id - 1], &main_ctx); // Yield
+        coro_yield(carg->id);
     }
+    coro_finish(carg->id);
 }
 
 int main(int argc, char** argv) {
@@ -97,34 +97,13 @@ int main(int argc, char** argv) {
     const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
     if (!msg_def) { return 1; }
 
-    coro_create(&main_ctx, NULL, NULL, NULL, 0);
-
     SV* parent_sv = newSViv(1);
     coro_arg_t args[NUM_COROS];
     for (int i = 0; i < NUM_COROS; i++) {
-        coro_stack_alloc(&coro_stacks[i], STACK_SIZE);
-        args[i].id = i + 1;
-        args[i].errors = 0;
         args[i].msg_def = msg_def;
         args[i].parent_sv = parent_sv;
-        coro_ctxs[i] = (coro_context *)malloc(sizeof(coro_context));
-        coro_create(coro_ctxs[i], coro_test_func, &args[i], coro_stacks[i].sptr, coro_stacks[i].ssze);
     }
-
-    cdiag("Running C-level coro stress test for containers...");
-    for (int j = 0; j < NUM_OPS * 2 * NUM_COROS; j++) {
-        coro_transfer(&main_ctx, coro_ctxs[j % NUM_COROS]);
-    }
-    cdiag("Finished C-level coro stress test.");
-
-    int total_errors = 0;
-    for (int i = 0; i < NUM_COROS; i++) {
-        total_errors += args[i].errors;
-        ok(args[i].errors == 0, "Coro completed without errors");
-        coro_stack_free(&coro_stacks[i]);
-        free(coro_ctxs[i]);
-    }
-    is(total_errors, 0, "Total errors from all coroutines");
+    RUN_CORO_TEST(coro_test_func, args);
 
     SvREFCNT_dec(parent_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);

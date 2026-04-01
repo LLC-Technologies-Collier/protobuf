@@ -18,4 +18,12 @@
         return obj; \
     } while(0)
 
+#define EXTRACT_CACHED_DESCRIPTOR(ptr_type, sv, class_name) \
+    do { \
+        if (!(sv) || !SvROK(sv) || !sv_derived_from(sv, class_name)) { \
+            return NULL; \
+        } \
+        return (const ptr_type *)SvIV(SvRV(sv)); \
+    } while(0)
+
 #endif // PERL_PROTOBUF_DESCRIPTOR_BASE_H_

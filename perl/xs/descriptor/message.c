@@ -102,8 +102,5 @@ SV* PerlUpb_MessageDef_GetWrapper(pTHX_ const upb_MessageDef *m) {
 }
 
 const upb_MessageDef* PerlUpb_MessageDef_GetMessage(pTHX_ SV *sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Descriptor::MessageDef")) {
-        return NULL;
-    }
-    return (const upb_MessageDef*)SvIV(SvRV(sv));
+    EXTRACT_CACHED_DESCRIPTOR(upb_MessageDef, sv, "Protobuf::Descriptor::MessageDef");
 }

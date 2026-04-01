@@ -30,8 +30,5 @@ SV* PerlUpb_FieldDef_GetWrapper(pTHX_ const upb_FieldDef *f) {
 }
 
 const upb_FieldDef* PerlUpb_FieldDef_GetField(pTHX_ SV *sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Descriptor::Field")) {
-        return NULL;
-    }
-    return (const upb_FieldDef*)SvIV(SvRV(sv));
+    EXTRACT_CACHED_DESCRIPTOR(upb_FieldDef, sv, "Protobuf::Descriptor::Field");
 }
