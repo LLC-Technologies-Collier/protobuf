@@ -4,8 +4,7 @@
 #include "XSUB.h"
 #include "ppport.h"
 
-#include "xs/descriptor/oneof.h"
-#include "xs/descriptor/field.h"
+#include "xs/all_descriptors.h"
 
 MODULE = Protobuf::Descriptor::OneofDef  PACKAGE = Protobuf::Descriptor::OneofDef
 PROTOTYPES: ENABLE

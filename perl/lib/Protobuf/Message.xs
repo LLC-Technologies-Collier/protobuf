@@ -4,24 +4,9 @@
 #include "XSUB.h"
 #include "ppport.h"
 
-#include "xs/protobuf/arena.h"
-#include "xs/protobuf/message.h"
+#include "xs/all_descriptors.h"
 #include "xs/protobuf/utils.h"
-#include "xs/message/message.h"
-#include "xs/message/access.h"
-#include "xs/message/serialize.h"
 #include "xs/unknown_fields/set.h"
-#include "xs/descriptor_pool/pool.h"
-#include "xs/descriptor_pool/add.h"
-#include "xs/descriptor_pool/find.h"
-#include "xs/descriptor/file.h"
-#include "xs/descriptor/message.h"
-#include "xs/descriptor/enum.h"
-#include "xs/descriptor/field.h"
-#include "xs/descriptor/enum_value.h"
-#include "xs/descriptor/oneof.h"
-#include "xs/descriptor/service.h"
-#include "xs/descriptor/method.h"
 
 // -- Message --
 #define GET_FIELD_DEF_OR_CROAK(mdef, field_name, fdef_var) \
