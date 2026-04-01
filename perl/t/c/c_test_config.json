@@ -180,6 +180,26 @@
       "t/c/upb-perl-test.h"
     ]
   },
+  "message/message": {
+    "deps": [
+      "xs/message/message.h",
+      "xs/message/access.h",
+      "xs/message/serialize.h",
+      "xs/message/compare.h",
+      "xs/message/meta.h",
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "message/init": {
+    "deps": [
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "message/wkt": {
+    "deps": [
+      "t/c/upb-perl-test.h"
+    ]
+  },
   "integration/030_asan_test": {
     "deps": [
       "t/c/upb-perl-test.h"

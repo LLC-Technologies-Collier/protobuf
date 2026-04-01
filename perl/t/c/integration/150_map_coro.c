@@ -60,7 +60,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(2 + NUM_COROS + 3);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -81,6 +81,18 @@ int main(int argc, char** argv) {
         args[i].map_sv = map_sv;
     }
     RUN_CORO_TEST(coro_test_func, args);
+
+    TODO("Stress concurrent map mutation and integrated iterator stability") {
+        ok(0, "System remains stable when one coroutine iterates while others modify the map");
+    }
+
+    TODO("Verify integrated cache integrity for map values under concurrency") {
+        ok(0, "Map value wrappers consistently follow ObjCache rules across coroutines");
+    }
+
+    TODO("Implement concurrent memory pressure stress during map population") {
+        ok(0, "Arena expansion and map resizing are thread-safe in the C layer");
+    }
 
     extern void PerlUpb_Map_Free(pTHX_ SV* sv);
     PerlUpb_Map_Free(aTHX_ map_sv);

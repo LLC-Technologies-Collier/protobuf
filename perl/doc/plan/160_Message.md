@@ -22,6 +22,9 @@
 *   **perl/xs/message/message.c:**
     *   [x] Create test file `perl/t/c/message/message.c`.
     *   [x] Tests cover all public functions in `xs/message/message.h`.
+    *   [ ] TODO: Implement SIMD-accelerated serialization for fixed-length types.
+    *   [ ] TODO: Implement C-level MiniTable reflection cache.
+    *   [ ] TODO: Implement COW (Copy-On-Write) semantics for sub-messages.
     *   [x] Implement C functions.
     *   [x] C tests pass.
 *   **perl/xs/message/meta.c:**

@@ -17,7 +17,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(11);
+    plan(14);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
@@ -81,6 +81,18 @@ int main(int argc, char** argv) {
     ok(!upb_FieldDef_IsExtension(normal_field), "Verify IsExtension false for normal field");
     
     ok(1, "Croak test for normal field (skipped in C)");
+
+    TODO("Implement Cross-Arena Extension Copy Stress tests") {
+        ok(0, "Deep-copy logic for extensions between messages on different arenas verified");
+    }
+
+    TODO("Implement Audit/Trace for Extension Access") {
+        ok(0, "Trace logging for extension inflation and discard events");
+    }
+
+    TODO("Verify ExtensionDict stability during re-parsing of parent message") {
+        ok(0, "Wrappers remain valid or are safely invalidated when parent message is re-parsed");
+    }
 
     // Cleanup
     SvREFCNT_dec(ext_field_sv);

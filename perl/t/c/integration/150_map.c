@@ -18,7 +18,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(11);
+    plan(10);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
@@ -78,6 +78,18 @@ int main(int argc, char** argv) {
     extern void PerlUpb_MapIterator_Free(pTHX_ SV* sv);
     PerlUpb_MapIterator_Free(aTHX_ iter_sv);
     SvREFCNT_dec(iter_sv);
+
+    TODO("Implement Sub-message map value roundtrip with ObjCache identity") {
+        ok(0, "Sub-messages retrieved from maps are correctly cached and identical");
+    }
+
+    TODO("Implement O(1) bulk projection of upb_Map to Perl HV") {
+        ok(0, "C-level map projection avoids lazy wrapper overhead for bulk reads");
+    }
+
+    TODO("Verify integrated map stability during concurrent field deletion") {
+        ok(0, "Iterators and getters remain safe while map entries are removed");
+    }
 
     // Cleanup
     extern void PerlUpb_Map_Free(pTHX_ SV* sv);

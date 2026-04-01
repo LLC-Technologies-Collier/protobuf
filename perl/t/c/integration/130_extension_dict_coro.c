@@ -71,7 +71,7 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2 + NUM_COROS);
+    plan(2 + NUM_COROS + 3);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -95,6 +95,18 @@ int main(int argc, char** argv) {
         args[i].field_sv = field_sv;
     }
     RUN_CORO_TEST(coro_test_func, args);
+
+    TODO("Stress concurrent extension mutation safety") {
+        ok(0, "Multiple coroutines modifying different extensions in one message verified");
+    }
+
+    TODO("Verify integrated cache stability during concurrent extension access") {
+        ok(0, "Extension field wrappers are consistently cached across coroutines");
+    }
+
+    TODO("Stress concurrent extension dictionary iterator creation") {
+        ok(0, "System remains stable under massive concurrent iteration of extensions");
+    }
 
     SvREFCNT_dec(field_sv);
     extern void PerlUpb_ExtensionDict_Free(pTHX_ SV* sv);
