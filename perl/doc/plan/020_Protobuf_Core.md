@@ -7,7 +7,7 @@
 *   **perl/xs/protobuf/obj_cache.c:**
     *   [x] Create test file `perl/t/c/protobuf/obj_cache.c`.
     *   [x] Tests in `perl/t/c/protobuf/obj_cache.c` test all public functions in `perl/xs/protobuf/obj_cache.h`.
-    *   [ ] TODO: Performance benchmarking for large caches (O(1) lookups).
+    *   [x] TODO: Performance benchmarking for large caches (O(1) lookups).
     *   [ ] TODO: Concurrency integrity during interleaved GC (Coro/Mojo).
     *   [ ] TODO: Implement **Lock-Free Cache Operations:** Ensure that object retrieval and caching are thread-safe without heavy global locks.
     *   [x] TODO: Implement **interpreter-isolation verification:** Verify that cache state is strictly isolated between multiple Perl interpreters (ithreads).
