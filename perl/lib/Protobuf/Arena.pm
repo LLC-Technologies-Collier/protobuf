@@ -25,22 +25,25 @@ sub new_tmpfs {
 
 sub DEMOLISH {
     my $self = shift;
-    # If it was created via new_tmpfs, the XS layer handles cleanup via the blessed object.
-    # If it was created via new(), it's a simple hash with _arena_ptr.
-    if (exists $self->{_arena_ptr} && $self->{_arena_ptr} && !exists $self->{_is_tmpfs}) {
-        _xs_destroy_raw($self->{_arena_ptr});
-    }
+    $self->_xs_destroy();
     return;
-}
-
-sub stats {
-    my $self = shift;
-    return { memory_used => 0 };
 }
 
 sub Clone {
     my $self = shift;
     return Protobuf::Arena->new();
+}
+
+sub __test_canary_corruption {
+    my $self = shift;
+    $self->_xs_test_canary_corruption();
+    return;
+}
+
+sub __test_block_canary {
+    my $self = shift;
+    $self->_xs_test_block_canary();
+    return;
 }
 
 __PACKAGE__->meta->make_immutable;

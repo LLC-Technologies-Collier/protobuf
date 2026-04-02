@@ -12,29 +12,19 @@
 #include <unistd.h>
 #include <errno.h>
 
-typedef enum {
-    PERL_UPB_BLOCK_MMAP = 0,
-    PERL_UPB_BLOCK_MALLOC = 1
-} PerlUpb_BlockType;
-
-typedef struct {
-    upb_alloc base;
-    PerlUpb_BlockType type;
-    int fd;         // Used if MMAP
-    void* region;
-    size_t size;
-    size_t offset;
-} PerlUpb_BlockAlloc;
-
 // Generalized Linear allocator
 static void* PerlUpb_BlockAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize,
                                      size_t size, size_t* actual_size) {
     PerlUpb_BlockAlloc* b = (PerlUpb_BlockAlloc*)alloc;
 
-    if (size == 0) return NULL; // Free is a no-op
+    if (size == 0) {
+        if (ptr != NULL) PerlUpb_VerifyCanaries(ptr, oldsize, "BlockAlloc free");
+        return NULL;
+    }
 
     if (ptr != NULL) {
         // Realloc
+        PerlUpb_VerifyCanaries(ptr, oldsize, "BlockAlloc realloc");
         void* new_ptr = PerlUpb_BlockAlloc_Func(alloc, NULL, 0, size, actual_size);
         if (new_ptr && oldsize > 0) {
             memcpy(new_ptr, ptr, oldsize);
@@ -42,22 +32,20 @@ static void* PerlUpb_BlockAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
         return new_ptr;
     }
 
-    // Alignment (8 bytes)
-    size_t aligned_size = (size + 7) & ~7;
+    // Alignment (16 bytes for canaries)
+    size_t requested_size = size + 2 * PERL_UPB_CANARY_SIZE;
+    size_t aligned_size = (requested_size + 15) & ~15;
     if (b->offset + aligned_size > b->size) return NULL;
 
-    void* ret = (char*)b->region + b->offset;
+    void* raw = (char*)b->region + b->offset;
+    PerlUpb_WriteCanaries(raw, size);
+    void* ret = (char*)raw + PERL_UPB_CANARY_SIZE;
+    
     b->offset += aligned_size;
     
-    if (actual_size) *actual_size = aligned_size;
+    if (actual_size) *actual_size = size;
     return ret;
 }
-
-// Special wrapper for Custom Allocator Arenas
-typedef struct {
-    PerlUpb_Arena base;
-    PerlUpb_BlockAlloc* alloc;
-} PerlUpb_Arena_Custom;
 
 SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
     int fd = open(path, O_RDWR | O_CREAT, 0666);

@@ -21,7 +21,12 @@ subtest 'stats method' => sub {
     my $stats = $arena->stats();
     ok($stats, 'Got stats');
     is(ref($stats), 'HASH', 'Stats is a hash');
-    ok(exists $stats->{memory_used}, 'Has memory_used metric');
+    ok(exists $stats->{allocated}, 'Has allocated metric');
+    ok(exists $stats->{reserved}, 'Has reserved metric');
+    ok(exists $stats->{blocks}, 'Has blocks metric');
+
+    is($arena->space_allocated(), $stats->{allocated}, 'space_allocated() matches stats');
+    is($arena->space_reserved(), $stats->{reserved}, 'space_reserved() matches stats');
 };
 
 subtest 'cloning' => sub {
@@ -52,14 +57,27 @@ TODO: {
     ok(0, 'Arena fusion allows data transfer without deep copy');
 }
 
-TODO: {
-    local $TODO = 'Implement Perl-Level Arena Memory Statistics';
-    ok(0, 'Arena stats() returns detailed memory usage metrics');
-}
+# The following are now implemented
+subtest 'Arena memory usage statistics' => sub {
+    my $arena = Protobuf::Arena->new;
+    my $stats = $arena->stats;
+    ok($stats->{reserved} > 0, 'Reserved space is positive');
+    ok($stats->{allocated} >= 0, 'Allocated space is non-negative');
+    is($stats->{blocks}, 1, 'Initial block count is 1');
+};
 
-TODO: {
-    local $TODO = 'Support Custom Allocators for Protobuf::Arena';
-    ok(0, 'Protobuf::Arena supports specialized C-level memory pools');
-}
+subtest 'Custom Allocators (tmpfs)' => sub {
+    use File::Temp qw(tempdir);
+    use File::Spec;
+    my $tmp = tempdir(CLEANUP => 1);
+    my $path = File::Spec->catfile($tmp, "pool_test.shm");
+    my $size = 32768;
+
+    my $arena = Protobuf::Arena->new_tmpfs($path, $size);
+    ok($arena, 'Created tmpfs arena');
+    my $stats = $arena->stats;
+    is($stats->{reserved}, $size, 'Reserved matches tmpfs size');
+    ok(-f $path, 'Tmpfs file created');
+};
 
 done_testing();

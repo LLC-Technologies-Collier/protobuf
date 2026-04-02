@@ -5,12 +5,69 @@
 #include "perl/xs/protobuf/arena.h"
 #include "upb/mem/arena.h"
 
+// -- Canary Logic --
+
+// (Now in arena.h as static inline)
+
+// -- Stats Tracking Allocator --
+
+static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize,
+                                     size_t size, size_t* actual_size) {
+    PerlUpb_StatsAlloc* s = (PerlUpb_StatsAlloc*)alloc;
+    void* ret = NULL;
+    
+    // For now, assume canaries are ALWAYS enabled for testing or if requested.
+    // We can pull a flag from the registry later.
+    
+    if (size > 0) {
+        // Allocate/Realloc
+        size_t requested_size = size + 2 * PERL_UPB_CANARY_SIZE;
+        size_t old_requested_size = ptr ? (oldsize + 2 * PERL_UPB_CANARY_SIZE) : 0;
+        void* old_ptr = ptr ? (char*)ptr - PERL_UPB_CANARY_SIZE : NULL;
+        
+        if (ptr) PerlUpb_VerifyCanaries(ptr, oldsize, "Before realloc");
+
+        void* raw = upb_alloc_global.func(&upb_alloc_global, old_ptr, old_requested_size, requested_size, NULL);
+        if (raw) {
+            PerlUpb_WriteCanaries(raw, size);
+            ret = (char*)raw + PERL_UPB_CANARY_SIZE;
+            
+            if (ptr == NULL) {
+                s->total_reserved += size;
+                s->total_blocks++;
+            } else {
+                s->total_reserved = (s->total_reserved - oldsize) + size;
+            }
+        }
+    } else if (ptr != NULL) {
+        // Free
+        PerlUpb_VerifyCanaries(ptr, oldsize, "Before free");
+        void* raw = (char*)ptr - PERL_UPB_CANARY_SIZE;
+        upb_alloc_global.func(&upb_alloc_global, raw, oldsize + 2 * PERL_UPB_CANARY_SIZE, 0, NULL);
+        s->total_reserved -= oldsize;
+        s->total_blocks--;
+    }
+    
+    if (actual_size && ret) *actual_size = size;
+    return ret;
+}
+
 // -- Arena Factory Implementation --
 
 upb_Arena* PerlUpb_Arena_Acquire(pTHX_ PerlUpb_ArenaLifecycle lifecycle) {
-    // For now, this is a simple wrapper.
+    // For now, Acquire simply initializes with the stats-tracking allocator if 
+    // it was passed as NULL, but actually, the Acquire function currently 
+    // doesn't have access to the wrapper.
     // Future work will implement thread-local caching for TRANSIENT arenas here.
     return upb_Arena_New();
+}
+
+// Specialized Acquire for Stats Tracking
+upb_Arena* PerlUpb_Arena_AcquireWithStats(pTHX_ PerlUpb_StatsAlloc* s) {
+    s->base.func = PerlUpb_StatsAlloc_Func;
+    s->total_reserved = 0;
+    s->total_blocks = 0;
+    return upb_Arena_Init(NULL, 0, &s->base);
 }
 
 // -- Arena Wrapper Functions --
@@ -20,7 +77,7 @@ void* PerlUpb_Arena_CreateRaw(pTHX) {
     if (!arena_wrapper) {
         croak("Failed to allocate PerlUpb_Arena");
     }
-    arena_wrapper->arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_PERMANENT);
+    arena_wrapper->arena = PerlUpb_Arena_AcquireWithStats(aTHX_ &arena_wrapper->stats_alloc);
     if (!arena_wrapper->arena) {
         safefree(arena_wrapper);
         croak("Failed to acquire upb_Arena");
@@ -119,5 +176,49 @@ void PerlUpb_Arena_Destroy(pTHX_ SV *sv) {
 
 uintptr_t PerlUpb_Arena_SpaceAllocated(pTHX_ SV *sv) {
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ sv);
-    return upb_Arena_SpaceAllocated(arena, NULL);
+    return (uintptr_t)upb_Arena_SpaceAllocated(arena, NULL);
+}
+
+uintptr_t PerlUpb_Arena_SpaceReserved(pTHX_ SV *sv) {
+    PerlUpb_ArenaStats stats;
+    PerlUpb_Arena_GetStats(aTHX, sv, &stats);
+    return (uintptr_t)stats.reserved;
+}
+
+void PerlUpb_Arena_GetStats(pTHX_ SV *sv, PerlUpb_ArenaStats *stats) {
+    if (!sv || !SvROK(sv) || !sv_isa(sv, "Protobuf::Arena")) {
+        memset(stats, 0, sizeof(PerlUpb_ArenaStats));
+        return;
+    }
+    
+    SV *rv = SvRV(sv);
+    void* raw_ptr = NULL;
+    bool is_tmpfs = false;
+
+    if (SvTYPE(rv) == SVt_PVHV) {
+        SV** is_tmpfs_p = hv_fetch((HV*)rv, "_is_tmpfs", 9, 0);
+        is_tmpfs = (is_tmpfs_p && SvTRUE(*is_tmpfs_p));
+
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (svp && SvIOK(*svp)) {
+            raw_ptr = INT2PTR(void*, SvIV(*svp));
+        }
+    }
+
+    if (!raw_ptr) {
+        memset(stats, 0, sizeof(PerlUpb_ArenaStats));
+        return;
+    }
+
+    if (is_tmpfs) {
+        PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)raw_ptr;
+        stats->allocated = wrapper->alloc->offset;
+        stats->reserved = wrapper->alloc->size;
+        stats->blocks = 1;
+    } else {
+        PerlUpb_Arena* wrapper = (PerlUpb_Arena*)raw_ptr;
+        stats->allocated = upb_Arena_SpaceAllocated(wrapper->arena, NULL);
+        stats->reserved = wrapper->stats_alloc.total_reserved;
+        stats->blocks = wrapper->stats_alloc.total_blocks;
+    }
 }

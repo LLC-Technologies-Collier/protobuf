@@ -5,6 +5,7 @@ use warnings;
 
 our $VERSION = '0.01';
 
-# XS loaded by Protobuf.pm or via separate call
+require XSLoader;
+XSLoader::load(__PACKAGE__, $VERSION);
 
 1;

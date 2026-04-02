@@ -4,6 +4,7 @@
 #include "XSUB.h"
 #include "perl/xs/protobuf/utils.h"
 #include "xs/protobuf/obj_cache.h"
+#include <immintrin.h>
 
 const char* PerlUpb_GetStrData(pTHX_ SV *sv) {
     if (!sv || !SvPOK(sv)) {
@@ -22,14 +23,60 @@ const char* PerlUpb_VerifyStrData(pTHX_ SV *sv) {
 }
 
 char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
-    char* full_name = savepv(class_name);
-    for (char* p = full_name; *p; p++) {
-        if (*p == ':' && *(p+1) == ':') {
-            *p = '.';
-            memmove(p+1, p+2, strlen(p+2) + 1);
+    if (!class_name) return NULL;
+    STRLEN len = strlen(class_name);
+    char* full_name = (char*)safemalloc(len + 1);
+    char* d = full_name;
+    const char* s = class_name;
+    STRLEN remaining = len;
+
+    // SSE4.1 Optimization for long strings without colons
+    while (remaining >= 16) {
+        __m128i chunk = _mm_loadu_si128((const __m128i*)s);
+        __m128i colons = _mm_cmpeq_epi8(chunk, _mm_set1_epi8(':'));
+        uint32_t mask = (uint32_t)_mm_movemask_epi8(colons);
+        
+        if (mask == 0) {
+            _mm_storeu_si128((__m128i*)d, chunk);
+            d += 16;
+            s += 16;
+            remaining -= 16;
+        } else {
+            break; 
         }
     }
+
+    while (*s) {
+        if (*s == ':' && *(s+1) == ':') {
+            *d++ = '.';
+            s += 2;
+        } else {
+            *d++ = *s++;
+        }
+    }
+    *d = '\0';
     return full_name;
+}
+
+char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name) {
+    if (!full_name) return NULL;
+    STRLEN len = strlen(full_name);
+    // Each '.' becomes '::' (1 extra byte per dot)
+    int dots = 0;
+    for (const char* p = full_name; *p; p++) if (*p == '.') dots++;
+    
+    char* class_name = (char*)safemalloc(len + dots + 1);
+    char* d = class_name;
+    for (const char* s = full_name; *s; s++) {
+        if (*s == '.') {
+            *d++ = ':';
+            *d++ = ':';
+        } else {
+            *d++ = *s;
+        }
+    }
+    *d = '\0';
+    return class_name;
 }
 
 void PerlUpb_Error_Die(pTHX_ const char* fmt, ...) {
