@@ -79,12 +79,3 @@ void PerlUpb_Message_Clear(pTHX_ SV* message_sv) {
     upb_Message_ClearByDef(msg, mdef);
 }
 
-SV* PerlUpb_Message_ToPerl(pTHX_ SV* message_sv) {
-    const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
-    const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);
-    SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ message_sv);
-    
-    if (!msg || !mdef) croak("Invalid message object");
-
-    return PerlUpb_Message_ToSv(aTHX_ msg, mdef, arena_sv);
-}

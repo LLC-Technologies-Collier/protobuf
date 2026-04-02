@@ -161,3 +161,13 @@ SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mde
     
     return newRV_noinc((SV*)hv);
 }
+
+SV *PerlUpb_Message_ToPerl(pTHX_ SV *message_sv) {
+    const upb_Message *msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    const upb_MessageDef *mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);
+    SV *arena_sv = PerlUpb_Message_GetArena(aTHX_ message_sv);
+    
+    if (!msg || !mdef) croak("Invalid message object for to_perl");
+
+    return PerlUpb_Message_ToSv(aTHX_ msg, mdef, arena_sv);
+}

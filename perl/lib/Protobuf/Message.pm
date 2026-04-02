@@ -80,14 +80,35 @@ sub serialize {
 
 sub to_perl {
     my ($self) = @_;
+    if ($self->can('descriptor')) {
+         my $full_name = $self->descriptor->full_name;
+         $full_name =~ s/^\.//;
+         if ($full_name =~ /^google\.protobuf\.(?:Struct|Value|ListValue)$/) {
+             # WKTs have their own optimized to_perl
+         } else {
+             # Fallback to generic XS-based converter
+             return _xs_to_perl($self);
+         }
+    }
     return _xs_to_perl($self);
 }
 
 sub from_perl {
     my ($self, $data) = @_;
-    croak('from_perl expects a HASH ref') unless ref($data) eq 'HASH';
+    # WKTs will override this if they need special handling,
+    # or they can be detected here.
+    if ($self->can('descriptor')) {
+         my $full_name = $self->descriptor->full_name;
+         $full_name =~ s/^\.//;
+         if ($full_name =~ /^google\.protobuf\.(?:Struct|Value|ListValue)$/) {
+             # These WKTs have injected methods, but they might need
+             # to be called explicitly if Moo doesn't override correctly.
+         }
+    }
+
+    croak('Message::from_perl expects a HASH ref') unless ref($data) eq 'HASH';
     foreach my $key (keys %$data) {
-        $self->set($key, $data->{$key});
+        $self->$key($data->{$key});
     }
     return $self;
 }

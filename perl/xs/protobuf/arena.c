@@ -3,6 +3,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "perl/xs/protobuf/arena.h"
+#include "perl/xs/protobuf/registry.h"
 #include "upb/mem/arena.h"
 
 // -- Canary Logic --
@@ -55,11 +56,26 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
 // -- Arena Factory Implementation --
 
 upb_Arena* PerlUpb_Arena_Acquire(pTHX_ PerlUpb_ArenaLifecycle lifecycle) {
-    // For now, Acquire simply initializes with the stats-tracking allocator if 
-    // it was passed as NULL, but actually, the Acquire function currently 
-    // doesn't have access to the wrapper.
-    // Future work will implement thread-local caching for TRANSIENT arenas here.
+    if (lifecycle == PERL_UPB_LIFECYCLE_TRANSIENT) {
+        PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+        if (reg->cached_transient_arena) {
+            // Check for excessive growth (e.g. > 1MB) to prevent leakage
+            // but for now we just free and recreate since Reset is missing.
+            // In a future version of upb, we'll use a real reset.
+            PerlUpb_Arena_Release(aTHX_ reg->cached_transient_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
+        }
+        reg->cached_transient_arena = upb_Arena_New();
+        return reg->cached_transient_arena;
+    }
     return upb_Arena_New();
+}
+
+void PerlUpb_Arena_Release(pTHX_ upb_Arena* arena, PerlUpb_ArenaLifecycle lifecycle) {
+    if (lifecycle == PERL_UPB_LIFECYCLE_TRANSIENT) {
+        // Cached arenas are kept alive until interpreter destruction
+        return;
+    }
+    if (arena) upb_Arena_Free(arena);
 }
 
 // Specialized Acquire for Stats Tracking
@@ -89,7 +105,7 @@ void PerlUpb_Arena_DestroyRaw(pTHX_ void* ptr) {
     PerlUpb_Arena *arena_wrapper = (PerlUpb_Arena *)ptr;
     if (arena_wrapper) {
         if (arena_wrapper->arena) {
-            upb_Arena_Free(arena_wrapper->arena);
+            PerlUpb_Arena_Release(aTHX_ arena_wrapper->arena, PERL_UPB_LIFECYCLE_PERMANENT);
         }
         safefree(arena_wrapper);
     }

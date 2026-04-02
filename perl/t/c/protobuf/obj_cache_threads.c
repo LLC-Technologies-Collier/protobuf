@@ -55,7 +55,6 @@ void* thread_stress_func(void *arg) {
 }
 
 int main(int argc, char** argv) {
-    PERL_SYS_INIT(&argc, &argv);
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
     {
         dTHX;
@@ -91,6 +90,5 @@ int main(int argc, char** argv) {
         ok(1, "Cache cleared after threading test");
     }
     test_perl_destroy(my_perl);
-    PERL_SYS_TERM();
     return 0;
 }

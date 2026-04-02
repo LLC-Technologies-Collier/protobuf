@@ -12,8 +12,8 @@ sub to_time_piece {
 
 sub from_time_piece {
     my ($self, $tp) = @_;
-    $self->set_seconds($tp->epoch);
-    $self->set_nanos(0); # Time::Piece doesn't support nanos well
+    $self->seconds($tp->epoch);
+    $self->nanos(0); # Time::Piece doesn't support nanos well
     return $self;
 }
 

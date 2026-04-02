@@ -272,7 +272,6 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
 
 
         upb_DefPool_Free(test_pool);
-        PerlUpb_Arena_Destroy(aTHX_ arena_sv);
         SvREFCNT_dec(arena_sv);
 
 

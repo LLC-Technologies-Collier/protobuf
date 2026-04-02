@@ -1,4 +1,5 @@
 #include "t/c/upb-perl-test.h"
+#include "xs/protobuf/arena.h"
 #include <stdlib.h>
 
 void* test_thread_func(void* arg) {

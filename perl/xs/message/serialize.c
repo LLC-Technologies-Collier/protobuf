@@ -67,12 +67,12 @@ SV* PerlUpb_Message_Serialize(pTHX_ SV* message_sv) {
 
     upb_EncodeStatus status = upb_Encode(msg, mt, 0, enc_arena, &buf, &size);
     if (status != kUpb_EncodeStatus_Ok) {
-        upb_Arena_Free(enc_arena);
+        PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
         croak("Failed to serialize message: %d", status);
     }
 
     SV* result = newSVpvn(buf, size);
-    upb_Arena_Free(enc_arena);
+    PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
     return result;
 }
 
@@ -92,12 +92,12 @@ SV* PerlUpb_Message_Serialize_Deterministic(pTHX_ SV* message_sv) {
 
     upb_EncodeStatus status = upb_Encode(msg, mt, kUpb_EncodeOption_Deterministic, enc_arena, &buf, &size);
     if (status != kUpb_EncodeStatus_Ok) {
-        upb_Arena_Free(enc_arena);
+        PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
         croak("Failed to serialize message deterministically: %d", status);
     }
 
     SV* result = newSVpvn(buf, size);
-    upb_Arena_Free(enc_arena);
+    PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
     return result;
 }
 

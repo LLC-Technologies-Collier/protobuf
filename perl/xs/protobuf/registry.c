@@ -18,6 +18,7 @@ void PerlUpb_Registry_Init(pTHX) {
         
         // Default capacity
         reg->max_cache_capacity = 100000;
+        reg->cached_transient_arena = NULL;
         
         sv_setiv(*svp, PTR2IV(reg));
     }

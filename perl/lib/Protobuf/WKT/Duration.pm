@@ -12,8 +12,8 @@ sub from_seconds {
     my ($self, $seconds) = @_;
     my $s = int($seconds);
     my $n = int(($seconds - $s) * 1_000_000_000);
-    $self->set_seconds($s);
-    $self->set_nanos($n);
+    $self->seconds($s);
+    $self->nanos($n);
     return $self;
 }
 

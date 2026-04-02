@@ -39,8 +39,8 @@ static void check_sv_message(pTHX_ SV *sv, const char *prefix) {
     if (SvTYPE(deref) != SVt_PVHV) return;
 
     HV *hv = (HV*)deref;
-    ok(hv_exists(hv, "upb_msg", 7), sdiagnostic("%s: Hash has upb_msg key", prefix));
-    ok(hv_exists(hv, "arena_sv", 8), sdiagnostic("%s: Hash has arena_sv key", prefix));
+    ok(hv_exists(hv, "_upb_ptr", 8), sdiagnostic("%s: Hash has _upb_ptr key", prefix));
+    ok(hv_exists(hv, "_arena_sv", 9), sdiagnostic("%s: Hash has _arena_sv key", prefix));
     ok(hv_exists(hv, "_descriptor", 11), sdiagnostic("%s: Hash has _descriptor key", prefix));
     // Tests for object blessing and ISA are done in Perl-level tests.
 }

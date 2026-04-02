@@ -21,7 +21,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
     upb_Arena* arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
     google_protobuf_FileDescriptorProto* proto = google_protobuf_FileDescriptorProto_parse(data, len, arena);
     if (!proto) {
-        upb_Arena_Free(arena);
+        PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
         croak("Failed to parse FileDescriptorProto");
     }
 
@@ -30,7 +30,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
     const upb_FileDef* file = upb_DefPool_AddFile((upb_DefPool*)pool, proto, &status);
     
     // The pool keeps its own internal state, so the proto is no longer needed.
-    upb_Arena_Free(arena);
+    PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
 
     if (!file) {
         croak("Failed to add file to pool: %s", upb_Status_ErrorMessage(&status));
@@ -49,7 +49,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* se
     upb_Arena* arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
     google_protobuf_FileDescriptorSet* set = google_protobuf_FileDescriptorSet_parse(data, len, arena);
     if (!set) {
-        upb_Arena_Free(arena);
+        PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
         croak("Failed to parse FileDescriptorSet");
     }
 
@@ -63,13 +63,13 @@ SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* se
         upb_Status_Clear(&status);
         const upb_FileDef* file = upb_DefPool_AddFile((upb_DefPool*)pool, files[i], &status);
         if (!file) {
-            upb_Arena_Free(arena);
+            PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
             SvREFCNT_dec(av);
             croak("Failed to add file %zu to pool: %s", i, upb_Status_ErrorMessage(&status));
         }
         av_push(av, PerlUpb_FileDef_GetWrapper(aTHX_ file));
     }
 
-    upb_Arena_Free(arena);
+    PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
     return newRV_noinc((SV*)av);
 }

@@ -95,6 +95,47 @@ _xs_which_oneof(self, oneof_name)
         RETVAL
 
 SV*
+_xs_get_by_fdef(self, fdef_sv)
+    SV* self
+    SV* fdef_sv
+    CODE:
+        const upb_FieldDef* fdef = PerlUpb_FieldDef_GetField(aTHX_ fdef_sv);
+        if (!fdef) croak("Invalid FieldDef provided to _xs_get_by_fdef");
+        RETVAL = PerlUpb_Message_GetField(aTHX_ self, fdef);
+    OUTPUT:
+        RETVAL
+
+void
+_xs_set_by_fdef(self, fdef_sv, value)
+    SV* self
+    SV* fdef_sv
+    SV* value
+    CODE:
+        const upb_FieldDef* fdef = PerlUpb_FieldDef_GetField(aTHX_ fdef_sv);
+        if (!fdef) croak("Invalid FieldDef provided to _xs_set_by_fdef");
+        PerlUpb_Message_SetField(aTHX_ self, fdef, value);
+
+bool
+_xs_has_by_fdef(self, fdef_sv)
+    SV* self
+    SV* fdef_sv
+    CODE:
+        const upb_FieldDef* fdef = PerlUpb_FieldDef_GetField(aTHX_ fdef_sv);
+        if (!fdef) croak("Invalid FieldDef provided to _xs_has_by_fdef");
+        RETVAL = PerlUpb_Message_HasField(aTHX_ self, fdef);
+    OUTPUT:
+        RETVAL
+
+void
+_xs_clear_by_fdef(self, fdef_sv)
+    SV* self
+    SV* fdef_sv
+    CODE:
+        const upb_FieldDef* fdef = PerlUpb_FieldDef_GetField(aTHX_ fdef_sv);
+        if (!fdef) croak("Invalid FieldDef provided to _xs_clear_by_fdef");
+        PerlUpb_Message_ClearField(aTHX_ self, fdef);
+
+SV*
 _xs_serialize(self)
     SV* self
     CODE:

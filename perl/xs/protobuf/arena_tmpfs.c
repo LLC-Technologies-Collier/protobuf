@@ -122,7 +122,7 @@ void PerlUpb_Arena_DestroyRaw_Tmpfs(pTHX_ void* ptr, bool is_tmpfs) {
 
     PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)ptr;
     if (wrapper) {
-        if (wrapper->base.arena) upb_Arena_Free(wrapper->base.arena);
+        if (wrapper->base.arena) PerlUpb_Arena_Release(aTHX_ wrapper->base.arena, PERL_UPB_LIFECYCLE_PERMANENT);
         if (wrapper->alloc) {
             if (wrapper->alloc->type == PERL_UPB_BLOCK_MMAP) {
                 munmap(wrapper->alloc->region, wrapper->alloc->size);
