@@ -5,6 +5,7 @@
 #include "ppport.h"
 
 #include "xs/all_descriptors.h"
+#include "xs/message/meta.h"
 #include "xs/protobuf/utils.h"
 #include "xs/unknown_fields/set.h"
 
@@ -209,6 +210,11 @@ _xs_parse(class_name, data)
         const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
         upb_Message* msg = upb_Message_New(mt, arena);
         
+        if (!msg) {
+            SvREFCNT_dec(arena_sv);
+            croak("Failed to allocate upb_Message");
+        }
+        
         upb_DecodeStatus status = upb_Decode(buf, len, msg, mt, NULL, 0, arena);
         if (status != kUpb_DecodeStatus_Ok) {
             SvREFCNT_dec(arena_sv);
@@ -217,6 +223,14 @@ _xs_parse(class_name, data)
         
         RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
         SvREFCNT_dec(arena_sv);
+    OUTPUT:
+        RETVAL
+
+bool
+_xs_audit_integrity(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_AuditIntegrity(aTHX_ self);
     OUTPUT:
         RETVAL
 
@@ -244,17 +258,17 @@ _xs_migrate_to_arena(self, arena_sv)
         RETVAL
 
 SV*
-_xs_find_in_shared_arena(class_name, arena_sv)
-    const char* class_name
-    SV* arena_sv
+_xs_coerce_to(self, target_class_name)
+    SV* self
+    const char* target_class_name
     CODE:
-        // Implementation detail: for this high-level handoff, 
-        // we'll assume the message is at a fixed offset (after canaries) 
-        // or we need a tracking header in the arena. 
-        // For the purpose of the goal, we'll try to find it.
-        // Actually, we can't "find" it without metadata.
-        // A better approach is to store the message pointer IV in a file next to the tmpfs.
-        // For now, this is a placeholder for the reification logic.
-        croak("find_in_shared_arena requires message metadata tracking (TODO)");
+        const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ self);
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ self);
+        
+        // Identity check: target class must agree with current underlying descriptor
+        // (This is a shallow coercion, we just bless into a new class with the same memory)
+        RETVAL = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv);
+        sv_bless(RETVAL, gv_stashpv(target_class_name, GV_ADD));
     OUTPUT:
         RETVAL

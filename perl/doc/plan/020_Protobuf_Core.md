@@ -59,5 +59,6 @@
     *   [ ] TODO: Implement NUMA-aware arena allocation to optimize multi-socket memory placement. (Difficulty: 9/10).
     *   [x] Implement Chaos Allocation Engine for non-deterministic resource pressure testing.
     *   [x] Implement Audit-log driven leak sanitizer for sub-arena allocation tracking.
+    *   [x] Implement AOT-compiled XS validator generation (C level).
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
 

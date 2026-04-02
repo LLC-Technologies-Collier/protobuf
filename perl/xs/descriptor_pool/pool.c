@@ -7,6 +7,7 @@
 
 typedef struct {
     upb_DefPool* pool;
+    bool frozen;
 } PerlUpb_DescriptorPool;
 
 static upb_DefPool *generated_pool_ptr = NULL;
@@ -14,6 +15,7 @@ static upb_DefPool *generated_pool_ptr = NULL;
 void* PerlUpb_DescriptorPool_CreateRaw(pTHX) {
     PerlUpb_DescriptorPool* p = (PerlUpb_DescriptorPool*)safemalloc(sizeof(PerlUpb_DescriptorPool));
     p->pool = upb_DefPool_New();
+    p->frozen = false;
     if (!p->pool) {
         safefree(p);
         croak("Failed to create upb_DefPool");
@@ -30,6 +32,27 @@ void PerlUpb_DescriptorPool_DestroyRaw(pTHX_ void* ptr) {
         }
         safefree(p);
     }
+}
+
+void PerlUpb_DescriptorPool_Freeze(pTHX_ SV* sv) {
+    const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ sv);
+    if (pool) {
+        SV* rv = SvRV(sv);
+        SV** svp = hv_fetch((HV*)rv, "_pool_ptr", 9, 0);
+        PerlUpb_DescriptorPool* p = INT2PTR(PerlUpb_DescriptorPool*, SvIV(*svp));
+        p->frozen = true;
+    }
+}
+
+bool PerlUpb_DescriptorPool_IsFrozen(pTHX_ SV* sv) {
+    const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ sv);
+    if (pool) {
+        SV* rv = SvRV(sv);
+        SV** svp = hv_fetch((HV*)rv, "_pool_ptr", 9, 0);
+        PerlUpb_DescriptorPool* p = INT2PTR(PerlUpb_DescriptorPool*, SvIV(*svp));
+        return p->frozen;
+    }
+    return false;
 }
 
 SV* PerlUpb_DescriptorPool_New(pTHX) {
@@ -58,6 +81,7 @@ SV* PerlUpb_DescriptorPool_GetWrapper(pTHX_ const upb_DefPool* pool) {
     HV* hv = newHV();
     PerlUpb_DescriptorPool* p = (PerlUpb_DescriptorPool*)safemalloc(sizeof(PerlUpb_DescriptorPool));
     p->pool = (upb_DefPool*)pool;
+    p->frozen = false;
     hv_store(hv, "_pool_ptr", 9, newSViv(PTR2IV(p)), 0);
 
     SV* obj = newRV_noinc((SV*)hv);

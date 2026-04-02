@@ -12,6 +12,9 @@
 #include "upb/reflection/cmake/google/protobuf/descriptor.upb.h"
 
 SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
+    if (PerlUpb_DescriptorPool_IsFrozen(aTHX_ self)) {
+        croak("Cannot add file to a frozen DescriptorPool");
+    }
     const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ self);
     if (!pool) return &PL_sv_undef;
 
@@ -40,6 +43,9 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
 }
 
 SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* serialized) {
+    if (PerlUpb_DescriptorPool_IsFrozen(aTHX_ self)) {
+        croak("Cannot add file to a frozen DescriptorPool");
+    }
     const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ self);
     if (!pool) return &PL_sv_undef;
 

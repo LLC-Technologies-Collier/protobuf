@@ -19,7 +19,7 @@ my $file = $pool->find_file_by_name('google/protobuf/descriptor.proto');
 # If descriptor.proto isn't in that set, let's look for a message we KNOW is there.
 if (!$file) {
     diag("descriptor.proto not found in set, trying test.proto");
-    $file = $pool->find_file_by_name('test.proto');
+    $file = $pool->find_file_by_name('perl/t/c/test.proto') || $pool->find_file_by_name('t/c/test.proto') || $pool->find_file_by_name('test.proto');
 }
 ok($file, "Found a descriptor file to generate from");
 

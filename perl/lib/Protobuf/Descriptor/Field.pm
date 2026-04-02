@@ -44,6 +44,11 @@ sub is_map {
     return _xs_is_map($self);
 }
 
+sub is_required {
+    my ($self) = @_;
+    return _xs_is_required($self);
+}
+
 sub message_type {
     my ($self) = @_;
     return _xs_message_type($self);

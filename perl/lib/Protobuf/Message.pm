@@ -99,6 +99,16 @@ sub serialize {
     return _xs_serialize($self);
 }
 
+sub audit_integrity {
+    my ($self) = @_;
+    return _xs_audit_integrity($self);
+}
+
+sub coerce_to {
+    my ($self, $target_class) = @_;
+    return _xs_coerce_to($self, $target_class);
+}
+
 sub to_perl {
     my ($self) = @_;
     if ($self->can('descriptor')) {

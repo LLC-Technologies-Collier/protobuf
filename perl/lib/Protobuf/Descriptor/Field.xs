@@ -67,6 +67,15 @@ _xs_is_map(self)
     OUTPUT:
         RETVAL
 
+bool
+_xs_is_required(self)
+    SV* self
+    CODE:
+        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
+        RETVAL = f ? upb_FieldDef_IsRequired(f) : false;
+    OUTPUT:
+        RETVAL
+
 SV*
 _xs_message_type(self)
     SV* self

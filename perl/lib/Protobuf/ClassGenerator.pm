@@ -9,6 +9,7 @@ our %FIELD_REGISTRY;
 
 sub generate_for_file {
     my ($class, $file) = @_;
+    return unless $file;
     
     my $count = $file->top_level_message_count;
     for my $i (0 .. $count - 1) {
@@ -36,6 +37,37 @@ sub type_library {
 sub generate_docs {
     my ($class) = @_;
     return "<html><body><h1>Protobuf Documentation</h1></body></html>";
+}
+
+sub generate_validator_xs {
+    my ($class, $mdef) = @_;
+    my $full_name = $mdef->full_name;
+    my $normalized = $full_name;
+    $normalized =~ s/^\.//;
+    my $perl_class = $normalized;
+    $perl_class =~ s/\./::/g;
+
+    my $c_func = "validate_" . $normalized;
+    $c_func =~ s/[:\.]/_/g;
+    
+    my $code = "/* AOT Validator for $full_name */\n";
+    $code .= "bool $c_func(pTHX_ SV* sv) {\n";
+    $code .= "    if (!sv || !SvROK(sv)) return false;\n";
+    $code .= "    if (!sv_derived_from(sv, \"$perl_class\")) return false;\n";
+    
+    $code .= "    HV* hv = (HV*)SvRV(sv);\n";
+    
+    my $field_count = $mdef->field_count;
+    for my $i (0 .. $field_count - 1) {
+        my $f = $mdef->get_field($i);
+        if ($f->is_required) {
+            my $name = $f->name;
+            $code .= "    if (!hv_exists(hv, \"$name\", " . length($name) . ")) return false;\n";
+        }
+    }
+    
+    $code .= "    return true;\n}\n";
+    return $code;
 }
 
 sub generate_for_message {

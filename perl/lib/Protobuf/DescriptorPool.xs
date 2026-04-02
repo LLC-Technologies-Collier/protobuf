@@ -85,3 +85,17 @@ _xs_find_extension_by_name(self, name)
     OUTPUT:
         RETVAL
 
+void
+_xs_freeze(self)
+    SV* self
+    CODE:
+        PerlUpb_DescriptorPool_Freeze(aTHX_ self);
+
+bool
+_xs_is_frozen(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_IsFrozen(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
