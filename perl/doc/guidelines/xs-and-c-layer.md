@@ -32,6 +32,7 @@ This document outlines the specific conventions and testing patterns for the XS 
 ## Multi-Module XS Conventions
 - **Colocated Files:** Every package requiring XS exports (e.g., `Protobuf::Internal`) MUST have a corresponding `.xs` and `.pm` file.
 - **Initialization:** Use a centralized `PerlUpb_Protobuf_InitModule(aTHX)` function called from the `BOOT:` section of the main module's `.xs` file.
+- **Per-Interpreter Registry:** All interpreter-local C state (Caches, Audit Logs, etc.) MUST be stored in the centralized registry struct (`PerlUpb_Registry`) retrieved via `PerlUpb_Registry_Get(aTHX)`. Avoid direct usage of `get_sv` in performance-critical paths.
 - **Boot Alignment:** Ensure `MODULE` and `PACKAGE` declarations in `.xs` files exactly match the Perl package name to avoid symbol lookup errors.
 
 ## Vectorized Processing (VPP Style)

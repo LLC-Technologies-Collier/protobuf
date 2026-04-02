@@ -33,6 +33,15 @@ To avoid expensive global Perl SV lookups (`get_sv`) in performance-critical C p
 *   **State Managed:** Object Cache (`HV*`), LRU List (`AV*`), Audit Log (`void*`), and global configuration (e.g., `max_cache_capacity`).
 *   **Access:** XS functions SHOULD use `PerlUpb_Registry_Get(aTHX)` to retrieve the current interpreter's state. This pattern de-risks future feature implementation (like thread-local arena caching) by providing a single, type-safe C hook for all global state.
 
+## Generalized Block Allocators
+
+To support high-performance allocation patterns (like zero-copy IPC and thread-local caching), we utilize a generalized block allocator (`PerlUpb_BlockAlloc`).
+
+*   **Header:** `xs/protobuf/arena.h` (Internal logic in `xs/protobuf/arena_tmpfs.c`)
+*   **Abstraction:** Wraps a contiguous memory region and provides a `upb_alloc` compliant interface.
+*   **Backends:** Supports `PERL_UPB_BLOCK_MMAP` (for file-backed shared memory) and `PERL_UPB_BLOCK_MALLOC` (for RAM-backed local memory).
+*   **Usage:** Used by the Arena Factory to acquire arenas with specific performance characteristics (e.g., `PerlUpb_Arena_NewBlock`).
+
 ## Typemap Strategy
 
 *   **Location:** Typemap entries will be placed in the `perl/typemap` file.

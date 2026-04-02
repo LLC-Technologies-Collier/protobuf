@@ -11,7 +11,12 @@ The Perl Protobuf implementation, like its Ruby and PHP counterparts, will heavi
     *   The `Protobuf::DescriptorPool` arena's lifecycle is tied to the pool object.
     *   **Crucial:** `Protobuf::Descriptor` objects, which contain raw pointers to C definitions (like `upb_MessageDef*`), *must* hold a strong reference to the `Protobuf::DescriptorPool` instance that owns the underlying C `upb_DefPool`. This prevents the pool from being destroyed prematurely.
 4.  **Submessages & Arenas:** When a message field is accessed, the returned `Protobuf::Message` object (whether a new stub or a reified message) uses the *parent's* arena. All upb C functions for field access (`upb_Message_Set...`, `upb_Message_Get...`, `upb_Message_Mutable`) handle the arena management internally. There is no need for explicit arena fusing in the XS layer.
-5.  **Object Caching:** To ensure object identity and efficiency, the XS layer should maintain caches (e.g., hash tables) mapping UPB C pointers to their corresponding Perl wrapper SVs. This applies to:
+5.  **Generalized Block Allocators:** To support specialized performance needs (like shared memory or thread-local caching), the implementation provides a generalized `PerlUpb_BlockAlloc` structure. This is a custom `upb_alloc` implementation that manages a contiguous memory block.
+    *   **MMAP Blocks:** Used for `tmpfs` zero-copy IPC. The memory is backed by a shared file.
+    *   **MALLOC Blocks:** Used for RAM-backed linear arenas (e.g., for thread-local "fast-path" caching).
+    *   **Abstraction:** The `PerlUpb_Arena_NewBlock` helper handles the creation of these specialized arenas, hiding the allocation details from the rest of the C layer.
+6.  **Object Caching:** To ensure object identity and efficiency, the XS layer should maintain caches (e.g., hash tables) mapping UPB C pointers to their corresponding Perl wrapper SVs.
+ This applies to:
     *   `upb_MessageDef*`, `upb_EnumDef*`, etc. -> `Protobuf::Descriptor` SVs (cached within the pool).
     *   `upb_Message*` -> `Protobuf::Message` SVs (cached on the arena or parent message).
     Functions returning wrappers must consult and update these caches.

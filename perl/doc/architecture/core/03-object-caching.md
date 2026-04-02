@@ -8,7 +8,7 @@ To ensure object identity and improve performance, the implementation uses a glo
 
 The C implementation of the object cache is located in `perl/xs/protobuf/obj_cache.c` and `perl/xs/protobuf/obj_cache.h`.
 
-*   **Global Cache:** A single `HV*` (Perl Hash) is initialized during module load, stored in the Perl global `Protobuf::_obj_cache`.
+*   **Registry-Based Storage:** To eliminate expensive global Perl SV lookups (`get_sv`), the Object Cache (`HV*`), LRU array (`AV*`), and Audit Log are stored within a centralized **Per-Interpreter Registry** (`PerlUpb_Registry`).
 *   **Keys:** Hexadecimal string representations of C pointer addresses (e.g., `0x7fd1a2b3c4d5`).
 *   **Values:** Weak references (using `sv_rvweaken`) to the blessed Perl objects.
 
@@ -18,7 +18,7 @@ The cache is designed for high-throughput, multi-threaded environments (ithreads
 
 1.  **Striped Locking:** Replaces a single global lock with a **16-stripe mutex** array. Pointers are hashed to a specific stripe to minimize contention during concurrent access.
 2.  **Lock Abstraction:** Uses `perl/xs/protobuf/port.h` to provide portable mutex macros (`PERL_PROTOBUF_MUTEX_LOCK`, etc.) that utilize Perl's native mutexes when `USE_ITHREADS` is defined.
-3.  **Interpreter Isolation:** The cache `HV*` is per-interpreter. A global initialization mutex ensures thread-safe retrieval of this hash from the Perl stash.
+3.  **Interpreter Isolation:** The Registry is stored in the interpreter's `PL_modglobal` hash. This ensures that every thread/coroutine has zero-contention access to its own state.
 
 ## LRU Eviction
 
