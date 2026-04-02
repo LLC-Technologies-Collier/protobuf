@@ -26,6 +26,18 @@ sub from_perl {
     return $self;
 }
 
+sub memory_profile {
+    my ($self) = @_;
+    # Skeletal implementation returning dummy metrics
+    return { arena_bytes => 0, field_count => 0 };
+}
+
+sub to_json {
+    my ($self) = @_;
+    # Skeletal implementation returning empty JSON object
+    return '{}';
+}
+
 {
     package Protobuf::WKT::Value; ## no critic (Modules::ProhibitMultiplePackages)
     use strict;

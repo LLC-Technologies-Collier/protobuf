@@ -16,6 +16,7 @@ subtest 'repeated scalar field accessors' => sub {
     my $arr = $msg->repeated_int;
     ok($arr, 'Got repeated field object');
     isa_ok($arr, 'ARRAY', 'It is an array reference (tied)');
+    ok(tied @$arr, 'It is a tied array');
     is(scalar(@$arr), 0, 'Initial size is 0');
     
     # Push elements
@@ -34,7 +35,7 @@ subtest 'repeated scalar field accessors' => sub {
     $arr->[0] = 100;
     is($arr->[0], 100, 'Assigned index correctly');
     
-    # Verify via base get method (returns un-tied array ref currently? No, it should return the same tied one)
+    # Verify via base get method
     my $arr2 = $msg->get('repeated_int');
     is_deeply($arr2, [100, 20], 'get() returns expected values');
 };

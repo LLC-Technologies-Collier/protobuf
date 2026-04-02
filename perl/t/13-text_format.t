@@ -22,6 +22,12 @@ subtest 'text format encoding' => sub {
     like($text, qr/value: 12345/, 'Contains integer field');
     like($text, qr/name: "hello world"/, 'Contains string field');
     like($text, qr/nested_message \{.*nested_string: "inner".*\}/s, 'Contains nested message');
+
+    subtest 'text format with unknowns' => sub {
+        my $msg2 = test::TestMessage->new();
+        my $text2 = $msg2->to_text_with_unknowns();
+        ok(defined($text2), 'Got text with unknowns');
+    };
 };
 
 TODO: {

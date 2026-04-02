@@ -23,22 +23,28 @@ subtest 'text format encoding integration' => sub {
     $msg2->to_text();
     
     is($msg->value, 12345, 'Message data intact after text encoding');
-    };
+};
 
-    TODO: {
+subtest 'text to wire bridge' => sub {
+    my $msg = test::TestMessage->new();
+    $msg->set_value(10);
+    my $wire = $msg->to_wire();
+    ok($wire, 'Got wire from message (via bridge)');
+};
+
+TODO: {
     local $TODO = 'Implement Direct TextFormat-to-Wire Conversion';
     ok(0, 'Parsing TextFormat directly to wire format bypasses intermediate Perl objects');
-    }
+}
 
-    TODO: {
+TODO: {
     local $TODO = 'Verify Cross-Interpreter TextFormat Redaction consistency';
     ok(0, 'Redaction policies are stable and consistent across interpreters');
-    }
+}
 
-    TODO: {
+TODO: {
     local $TODO = 'Verify High-Pressure Text Parsing stability';
     ok(0, 'System handles 10,000 concurrent TextFormat parses safely');
-    }
+}
 
-    done_testing();
-
+done_testing();

@@ -37,22 +37,28 @@ subtest 'struct inside listvalue inside struct' => sub {
     my $serialized = $struct->serialize();
     my $parsed = google::protobuf::Struct->parse($serialized);
     is_deeply($parsed->to_perl, $data, 'Struct serialization roundtrip works');
-    };
+};
 
-    TODO: {
+subtest 'struct json bridge' => sub {
+    my $struct = google::protobuf::Struct->new();
+    my $json = $struct->to_json();
+    ok($json, 'Got JSON from struct');
+    is($json, '{}', 'Matches skeletal expectation');
+};
+
+TODO: {
     local $TODO = 'Implement Direct Struct-to-JSON Bridge (C-Layer)';
     ok(0, 'High-performance Struct serialization bypasses intermediate Perl hashes');
-    }
+}
 
-    TODO: {
+TODO: {
     local $TODO = 'Verify Cross-Interpreter WKT Registry';
     ok(0, 'WKT definitions in shared pools are consistent across interpreters');
-    }
+}
 
-    TODO: {
+TODO: {
     local $TODO = 'Verify High-Pressure Temporal Stress stability';
     ok(0, 'System handles 10,000 concurrent Timestamp/Duration conversions safely');
-    }
+}
 
-    done_testing();
-
+done_testing();

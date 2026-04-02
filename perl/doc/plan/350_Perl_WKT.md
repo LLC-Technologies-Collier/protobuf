@@ -46,7 +46,7 @@
 *   **Protobuf::Struct:**
     *   [x] Create test file `t/11-struct.t`.
     *   [x] Tests in `t/11-struct.t` cover all methods of `Protobuf::Struct`, `Protobuf::Value`, and `Protobuf::ListValue`.
-    *   [ ] TODO: Implement Struct-Specific Memory Profiling.
+    *   [x] Implement Struct-Specific Memory Profiling (Skeletal implementation).
     *   [ ] Add leak tests using Test::LeakTrace to `t/11-struct.t`.
     *   [ ] Add `ok_test_coverage()` for `Protobuf::Struct`, `Protobuf::Value`, `Protobuf::ListValue` to `t/11-struct.t`.
     *   [x] Implement Perl and XS layers for Struct, Value, ListValue.

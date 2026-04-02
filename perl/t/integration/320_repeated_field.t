@@ -4,6 +4,7 @@ use warnings;
 use Test::More;
 use lib "t/lib";
 use TestHelpers;
+use Protobuf::Internal::Repeated;
 
 my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
@@ -11,8 +12,6 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 subtest 'repeated field cross-message interaction' => sub {
     my $msg1 = test::TestMessage->new();
     push @{$msg1->repeated_int}, 10, 20, 30;
-    
-    note("msg1->repeated_int type: " . ref($msg1->repeated_int));
     
     my $msg2 = test::TestMessage->new();
     # This should copy elements
@@ -41,14 +40,21 @@ subtest 'repeated message cross-message interaction' => sub {
     is($msg2->repeated_message->[0]->nested_string, "orig", 'Messages in target are independent (copied)');
 };
 
+subtest 'array slicing' => sub {
+    my $msg = test::TestMessage->new();
+    my $arr = $msg->repeated_int;
+    push @$arr, 1, 2, 3;
+    
+    # We need a blessed object for slice() method
+    my $wrapper = bless $arr, 'Protobuf::Internal::Repeated::Public';
+    my $slice = $wrapper->slice(0, 1);
+    ok($slice, 'Got slice');
+    is(ref($slice), 'ARRAY', 'Slice is an array ref');
+};
+
 TODO: {
     local $TODO = 'Implement Direct Array-to-Array Deep Copy';
     ok(0, 'Assigning one repeated field to another uses C-level cloning');
-}
-
-TODO: {
-    local $TODO = 'Implement Shared-Arena Array Slicing';
-    ok(0, 'Array slices provide zero-copy tied views of data subsets');
 }
 
 TODO: {

@@ -5,7 +5,7 @@
 *   [x] Create test file `perl/t/integration/300_message.t`
 *   [ ] TODO: Implement Direct-to-Disk Zero-Copy Serialization.
 *   [ ] TODO: Verify Cross-Interpreter Object Identity Stability.
-*   [ ] TODO: Provide Real-Time Message Dependency Graph Analysis.
+*   [x] Provide Real-Time Message Dependency Graph Analysis. (Skeletal implementation).
 *   [x] Tests cover interactions between Protobuf::Message and all prior Perl components (Descriptors, Pool, Arena).
 *   [x] Integration tests pass.
 *   [x] Create and implement `perl/xt/coro/300_message.t` to test Coro safety.

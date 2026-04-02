@@ -38,6 +38,13 @@ subtest 'scalar map field accessors' => sub {
     # Clear
     %$map = ();
     is(scalar(keys %$map), 0, 'Size after clear is 0');
+
+    subtest 'as_hash' => sub {
+        $map->{10} = 100;
+        my $h = $map->as_hash();
+        is(ref($h), 'HASH', 'as_hash returns a hash ref');
+        is($h->{10}, 100, 'Data preserved in as_hash');
+    };
 };
 
 subtest 'string map field accessors' => sub {

@@ -4,6 +4,7 @@ use warnings;
 use Test::More;
 use lib "t/lib";
 use TestHelpers;
+use Protobuf::Internal::Map;
 
 my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
@@ -38,22 +39,33 @@ subtest 'message map cross-message copy' => sub {
     # Verify independence
     $msg1->map_string_nested_message->{key}->set_a(200);
     is($msg2->map_string_nested_message->{key}->a, 100, 'Messages in target map are independent (deep copied)');
-    };
+};
 
-    TODO: {
+subtest 'map copy_from' => sub {
+    my $msg1 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $map1 = $msg1->map_int32_int32;
+    $map1->{1} = 10;
+
+    my $msg2 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $map2 = $msg2->map_int32_int32;
+
+    $map2->copy_from($map1);
+    is($map2->{1}, 10, 'Data copied via copy_from');
+};
+
+TODO: {
     local $TODO = 'Implement O(1) Map-to-Map Deep Copy';
     ok(0, 'Assigning one map to another uses C-level cloning');
-    }
+}
 
-    TODO: {
+TODO: {
     local $TODO = 'Implement Shared-Arena Map Snapshotting';
     ok(0, 'Map snapshots provide zero-copy tied views of data');
-    }
+}
 
-    TODO: {
+TODO: {
     local $TODO = 'Verify Cross-Interpreter Map Mutation Stress';
     ok(0, 'Maps maintain consistent state during concurrent multi-interpreter mutation');
-    }
+}
 
-    done_testing();
-
+done_testing();

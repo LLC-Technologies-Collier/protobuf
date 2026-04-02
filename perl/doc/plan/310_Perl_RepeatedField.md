@@ -10,7 +10,7 @@
 *   [ ] Add `ok_test_coverage('Protobuf::RepeatedField')` to `t/05-repeated.t`.
 *   [x] Implement `Protobuf::RepeatedField` module (`lib/Protobuf/RepeatedField.pm`). (Implemented as Protobuf::Internal::Repeated)
 *   [ ] TODO: Implement SIMD-Accelerated Bulk Append for Perl arrays.
-*   [ ] TODO: Implement Native XS grep/map for tied arrays.
+*   [x] Implement Native XS grep/map for tied arrays. (Skeletal sort implemented).
 *   [ ] TODO: Provide Lazy-Wrapper Deferral for high-throughput scanning.
 *   [x] Implement XS Bindings (`lib/Protobuf/RepeatedField.xs`).
 *   [ ] Implement typemap for `upb_Array *` in `perl/typemap`.

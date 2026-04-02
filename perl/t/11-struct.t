@@ -27,6 +27,12 @@ subtest 'struct and value operations' => sub {
     
     # Check oneof
     is($struct->fields->{foo}->kind, 'string_value', 'Oneof kind is string_value');
+
+    subtest 'memory profile' => sub {
+        my $profile = $struct->memory_profile();
+        ok($profile, 'Got memory profile');
+        ok(exists $profile->{arena_bytes}, 'Has arena_bytes metric');
+    };
 };
 
 TODO: {

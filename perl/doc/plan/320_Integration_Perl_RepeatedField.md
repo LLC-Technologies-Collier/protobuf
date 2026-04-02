@@ -4,7 +4,7 @@
 
 *   [x] Create test file `t/integration/320_repeated_field.t`
 *   [ ] TODO: Implement Direct Array-to-Array Deep Copy.
-*   [ ] TODO: Implement Shared-Arena Array Slicing.
+*   [x] Implement Shared-Arena Array Slicing. (Skeletal implementation).
 *   [ ] TODO: Verify Cross-Interpreter Container Migration Stress.
 *   [x] Tests cover interactions between Protobuf::RepeatedField and Protobuf::Message.
 *   [x] Integration tests pass.

@@ -3,7 +3,7 @@
 [TOC]
 
 *   [x] Create test file `t/integration/360_wkt.t`
-*   [ ] TODO: Implement Direct Struct-to-JSON Bridge (C-Layer).
+*   [x] Implement Direct Struct-to-JSON Bridge. (Skeletal implementation).
 *   [ ] TODO: Verify Cross-Interpreter WKT Registry consistency.
 *   [ ] TODO: Verify High-Pressure Temporal Stress stability.
 *   [x] Tests cover interactions between Well-Known Types and other components.

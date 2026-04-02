@@ -47,7 +47,7 @@ sub get {
     if (ref($val) eq 'Protobuf::Internal::Map') {
         my %hash;
         tie %hash, 'Protobuf::Internal::Map', $val;
-        return \%hash;
+        return bless \%hash, 'Protobuf::Internal::Map::Public';
     }
     
     return $val;
@@ -97,9 +97,35 @@ sub to_text {
     return _xs_to_text($self);
 }
 
+sub to_text_with_unknowns {
+    my ($self) = @_;
+    # Skeletal implementation
+    return $self->to_text();
+}
+
+sub to_wire {
+    my ($self) = @_;
+    # Skeletal implementation returning serialized binary
+    return $self->serialize();
+}
+
 sub to_json {
     my ($self) = @_;
     return _xs_to_json($self);
+}
+
+sub to_json_streaming {
+    my ($self) = @_;
+    # Skeletal implementation
+    return $self->to_json();
+}
+
+sub to_json_compact {
+    my ($self) = @_;
+    # Skeletal implementation returning JSON without whitespace
+    my $json = $self->to_json();
+    $json =~ s/\s+//g;
+    return $json;
 }
 
 sub from_json {
@@ -110,6 +136,12 @@ sub from_json {
 sub unknown_fields {
     my ($self) = @_;
     return _xs_unknown_fields($self);
+}
+
+sub dependency_graph {
+    my ($self) = @_;
+    # Skeletal implementation returning self for now
+    return { root => ref($self), children => [] };
 }
 
 sub parse {

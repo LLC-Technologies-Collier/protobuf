@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use Log::Any qw($log);
 
+our %DESCRIPTOR_REGISTRY;
+
 sub generate_for_file {
     my ($class, $file) = @_;
     
@@ -57,7 +59,7 @@ sub _generate_for_message {
         }
         elsif ($type eq 'Struct' && !$perl_class->can('to_perl')) {
             require Protobuf::WKT::Struct;
-            $wkt_logic = "sub to_perl { shift->Protobuf::WKT::Struct::to_perl(\@_) } sub from_perl { shift->Protobuf::WKT::Struct::from_perl(\@_) }\n";
+            $wkt_logic = "sub to_perl { shift->Protobuf::WKT::Struct::to_perl(\@_) } sub from_perl { shift->Protobuf::WKT::Struct::from_perl(\@_) } sub memory_profile { shift->Protobuf::WKT::Struct::memory_profile(\@_) } sub to_json { shift->Protobuf::WKT::Struct::to_json(\@_) }\n";
         }
         elsif ($type eq 'Value' && !$perl_class->can('to_perl')) {
             require Protobuf::WKT::Struct;
@@ -78,6 +80,8 @@ sub _generate_for_message {
         return unless $wkt_logic;
     }
     
+    $DESCRIPTOR_REGISTRY{$perl_class} = $mdef;
+
     # Generate the class using string eval
     my $code = '';
     if (!$perl_class->can('new')) {
@@ -85,7 +89,7 @@ sub _generate_for_message {
 package $perl_class;
 use Moo;
 extends 'Protobuf::Message';
-sub descriptor { return \$mdef; }
+sub descriptor { return \$Protobuf::ClassGenerator::DESCRIPTOR_REGISTRY{'$perl_class'}; }
 EOC
     } else {
         $code .= "package $perl_class;\n";

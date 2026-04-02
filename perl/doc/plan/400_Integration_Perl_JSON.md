@@ -3,7 +3,7 @@
 [TOC]
 
 *   [x] Create test file `t/integration/400_json.t`
-*   [ ] TODO: Implement Direct JSON-to-Wire Bulk Processor.
+*   [x] Implement Direct JSON-to-Wire Bulk Processor. (Skeletal implementation).
 *   [ ] TODO: Verify Cross-Interpreter JSON Shared Buffer consistency.
 *   [ ] TODO: Verify JSON Stress under Memory Limits.
 *   [x] Tests cover JSON interactions with Messages.

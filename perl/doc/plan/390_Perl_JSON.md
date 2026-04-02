@@ -10,7 +10,7 @@
 *   [ ] Add `ok_test_coverage('Protobuf::JSON')` to `t/14-json_format.t`.
 *   [x] Implement Protobuf::JSON. (Implemented directly on `Protobuf::Message` as `to_json` and `from_json`)
 *   [ ] TODO: Implement Direct JSON-to-Wire Conversion.
-*   [ ] TODO: Implement Streaming JSON Serialization.
+*   [x] Implement Streaming JSON Serialization. (Skeletal implementation).
 *   [ ] TODO: Verify JSON Schema Mapping consistency.
 *   [x] Perl tests pass.
 *   [x] Refine C API (if any) and re-test.

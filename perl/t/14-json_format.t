@@ -33,6 +33,12 @@ subtest 'json format decoding' => sub {
     is($msg->nested_message->nested_string, 'nested_parsed', 'Parsed nested message correctly');
 };
 
+subtest 'json streaming' => sub {
+    my $msg = test::TestMessage->new();
+    my $json = $msg->to_json_streaming();
+    ok($json, 'Got JSON from streaming bridge');
+};
+
 TODO: {
     local $TODO = 'Implement Direct JSON-to-Wire Conversion';
     ok(0, 'Parsing JSON directly to wire format bypasses intermediate Perl objects');

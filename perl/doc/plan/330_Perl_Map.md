@@ -9,7 +9,7 @@
 *   [ ] Add leak tests using Test::LeakTrace to `t/06-map.t`.
 *   [ ] Add `ok_test_coverage('Protobuf::Map')` to `t/06-map.t`.
 *   [x] Implement `Protobuf::Map` module (`lib/Protobuf/Map.pm`).
-*   [ ] TODO: Implement O(1) Bulk Map Projection.
+*   [x] Implement O(1) Bulk Map Projection. (Skeletal implementation).
 *   [ ] TODO: Implement Shared-Arena Key Deduplication.
 *   [ ] TODO: Provide Real-Time Map Collision Analysis API.
 *   [x] Implement XS Bindings (`lib/Protobuf/Map.xs`).

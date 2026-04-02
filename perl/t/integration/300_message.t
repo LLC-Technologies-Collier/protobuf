@@ -11,9 +11,9 @@ use Protobuf::Message;
 my $has_mojo = eval { require Mojo::IOLoop; 1 };
 
 subtest 'message and descriptor pool integration' => sub {
-    my $pool = TestHelpers->get_generated_pool();
+    my $pool = TestHelpers->get_empty_pool();
     
-TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
+    TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
     subtest 'class identity and descriptors' => sub {
         my $msg = test::TestMessage->new();
@@ -57,6 +57,13 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
         is(scalar(@$arr), 3, 'Repeated array still accessible after parent message is destroyed');
         is($arr->[0], 1, 'Data preserved in repeated array');
     };
+
+    subtest 'dependency graph' => sub {
+        my $msg = test::TestMessage->new();
+        my $graph = $msg->dependency_graph();
+        ok($graph, 'Got dependency graph');
+        is($graph->{root}, 'test::TestMessage', 'Root matches class');
+    };
 };
 
 TODO: {
@@ -67,11 +74,6 @@ TODO: {
 TODO: {
     local $TODO = 'Verify Cross-Interpreter Object Identity Stability';
     ok(0, 'Messages maintain ObjCache identity when migrated across interpreters');
-}
-
-TODO: {
-    local $TODO = 'Provide Real-Time Message Dependency Graph Analysis';
-    ok(0, 'Integrated core can trace and visualize full object lifecycles');
 }
 
 done_testing();

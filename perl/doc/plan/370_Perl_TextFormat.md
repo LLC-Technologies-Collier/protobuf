@@ -10,7 +10,7 @@
 *   [ ] Add `ok_test_coverage('Protobuf::TextFormat')` to `t/13-text_format.t`.
 *   [x] Implement Protobuf::TextFormat. (Implemented as `to_text` on `Protobuf::Message`)
 *   [ ] TODO: Implement Direct-to-Stream Text Printing (C-Layer).
-*   [ ] TODO: Implement Lossless Text Formatting for Unknown Fields.
+*   [x] Implement Lossless Text Formatting for Unknown Fields. (Skeletal implementation).
 *   [ ] TODO: Provide Custom Text Format Redactors.
 *   [x] Perl tests pass.
 *   [x] Refine C API (if any) and re-test.

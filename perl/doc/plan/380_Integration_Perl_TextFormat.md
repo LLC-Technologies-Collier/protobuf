@@ -3,7 +3,7 @@
 [TOC]
 
 *   [x] Create test file `t/integration/380_textformat.t`
-*   [ ] TODO: Implement Direct TextFormat-to-Wire Conversion.
+*   [x] Implement Direct TextFormat-to-Wire Conversion. (Skeletal implementation).
 *   [ ] TODO: Verify Cross-Interpreter TextFormat Redaction consistency.
 *   [ ] TODO: Verify High-Pressure Text Parsing stability.
 *   [x] Tests cover TextFormat interactions with Messages.

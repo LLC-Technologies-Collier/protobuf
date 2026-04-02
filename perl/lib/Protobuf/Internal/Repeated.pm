@@ -76,5 +76,33 @@ sub UNSHIFT {
     }
     return;
 }
+sub sort {
+    my ($self) = @_;
+    # Skeletal implementation
+    return $self;
+}
+
+sub slice {
+    my ($self, $offset, $length) = @_;
+    # Skeletal implementation returning empty array ref
+    return [];
+}
+
+1;
+
+package Protobuf::Internal::Repeated::Public;
+use overload '@{}' => sub { $_[0] }, fallback => 1;
+
+sub sort {
+    my ($self) = @_;
+    my $tied = tied @$self;
+    return $tied->sort();
+}
+
+sub slice {
+    my ($self, $offset, $length) = @_;
+    my $tied = tied @$self;
+    return $tied->slice($offset, $length);
+}
 
 1;

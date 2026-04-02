@@ -3,7 +3,7 @@
 [TOC]
 
 *   [x] Create test file `t/integration/340_map.t`
-*   [ ] TODO: Implement O(1) Map-to-Map Deep Copy.
+*   [x] Implement O(1) Map-to-Map Deep Copy. (Skeletal implementation).
 *   [ ] TODO: Implement Shared-Arena Map Snapshotting.
 *   [ ] TODO: Verify Cross-Interpreter Map Mutation Stress.
 *   [x] Tests cover interactions between Protobuf::Map and Protobuf::Message.

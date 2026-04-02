@@ -21,6 +21,14 @@ subtest 'json integration' => sub {
     is($msg2->name, 'integration', 'Name matches after json roundtrip');
 };
 
+subtest 'json compact bridge' => sub {
+    my $msg = test::TestMessage->new();
+    $msg->set_value(10);
+    my $json = $msg->to_json_compact();
+    ok($json, 'Got compact JSON from message');
+    unlike($json, qr/\s/, 'Compact JSON has no whitespace');
+};
+
 TODO: {
     local $TODO = 'Implement Direct JSON-to-Wire Bulk Processor';
     ok(0, 'Bulk processing of JSON streams to wire format bypasses Perl objects');

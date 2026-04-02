@@ -68,6 +68,42 @@ sub TIEHASH {
         my ($self) = @_;
         return $self->{_xs}->_xs_size();
     }
+
+    sub as_hash {
+        my ($self) = @_;
+        my %hash;
+        my $iter = $self->{_xs}->_xs_new_iterator();
+        while (defined(my $key = $iter->next_key())) {
+            $hash{$key} = $self->{_xs}->_xs_get_item($key);
+        }
+        return \%hash;
+    }
+
+    sub copy_from {
+        my ($self, $other) = @_;
+        # Skeletal implementation: Clear then copy all from other
+        $self->CLEAR();
+        my $h = $other->as_hash();
+        foreach my $k (keys %$h) {
+            $self->STORE($k, $h->{$k});
+        }
+        return;
+    }
+}
+
+package Protobuf::Internal::Map::Public;
+
+sub as_hash {
+    my ($self) = @_;
+    my $tied = tied %$self;
+    return $tied->as_hash();
+}
+
+sub copy_from {
+    my ($self, $other) = @_;
+    my $tied = tied %$self;
+    my $other_tied = (ref($other) eq 'HASH') ? $other : (tied %$other);
+    return $tied->copy_from($other_tied);
 }
 
 1;
