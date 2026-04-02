@@ -15,3 +15,19 @@ SV* PerlUpb_FieldDef_GetWrapper(pTHX_ const upb_FieldDef *f) {
 const upb_FieldDef* PerlUpb_FieldDef_GetField(pTHX_ SV *sv) {
     EXTRACT_CACHED_DESCRIPTOR(upb_FieldDef, sv, "Protobuf::Descriptor::Field");
 }
+
+SV* PerlUpb_FieldDef_Name(pTHX_ const upb_FieldDef *f) {
+    if (!f) return newSV(0);
+    const char* name = upb_FieldDef_Name(f);
+    return name ? newSVpv(name, 0) : newSV(0);
+}
+
+int PerlUpb_FieldDef_Type(pTHX_ const upb_FieldDef *f) {
+    if (!f) return 0;
+    return upb_FieldDef_Type(f);
+}
+
+int PerlUpb_FieldDef_Label(pTHX_ const upb_FieldDef *f) {
+    if (!f) return 0;
+    return upb_FieldDef_Label(f);
+}

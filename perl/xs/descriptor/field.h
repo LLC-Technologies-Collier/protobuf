@@ -13,4 +13,8 @@
 SV* PerlUpb_FieldDef_GetWrapper(pTHX_ const upb_FieldDef *f);
 const upb_FieldDef* PerlUpb_FieldDef_GetField(pTHX_ SV *sv);
 
+SV* PerlUpb_FieldDef_Name(pTHX_ const upb_FieldDef *f);
+int PerlUpb_FieldDef_Type(pTHX_ const upb_FieldDef *f);
+int PerlUpb_FieldDef_Label(pTHX_ const upb_FieldDef *f);
+
 #endif // PERL_PROTOBUF_DESCRIPTOR_FIELD_H_

@@ -18,31 +18,40 @@
     ]
   },
   "descriptor/base": {
-    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": ["t/c/convert/test_util.c"]
   },
   "descriptor/message": {
-    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": ["t/c/convert/test_util.c"]
   },
   "descriptor/field": {
-    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": ["t/c/convert/test_util.c"]
   },
   "descriptor/enum": {
-    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": ["t/c/convert/test_util.c"]
   },
   "descriptor/enum_value": {
-    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": ["t/c/convert/test_util.c"]
   },
   "descriptor/oneof": {
-    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": ["t/c/convert/test_util.c"]
   },
   "descriptor/file": {
-    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": ["t/c/convert/test_util.c"]
   },
   "descriptor/service": {
-    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": ["t/c/convert/test_util.c"]
   },
   "descriptor/method": {
-    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h"]
+    "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
+    "extra_src": ["t/c/convert/test_util.c"]
   },
   "convert/sv_to_upb": {
     "deps": [

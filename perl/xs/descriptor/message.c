@@ -27,3 +27,9 @@ SV* PerlUpb_MessageDef_GetWrapper(pTHX_ const upb_MessageDef *m) {
 const upb_MessageDef* PerlUpb_MessageDef_GetMessage(pTHX_ SV *sv) {
     EXTRACT_CACHED_DESCRIPTOR(upb_MessageDef, sv, "Protobuf::Descriptor::MessageDef");
 }
+
+SV* PerlUpb_MessageDef_FullName(pTHX_ const upb_MessageDef *m) {
+    if (!m) return newSV(0);
+    const char* full_name = upb_MessageDef_FullName(m);
+    return full_name ? newSVpv(full_name, 0) : newSV(0);
+}

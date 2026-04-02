@@ -54,6 +54,18 @@ When writing XS code that interacts with the Perl interpreter, special care must
 *   **Loading Descriptors:** `upb_DefPool_AddFile()`: Used in `DescriptorPool.xs`.
 *   **Finding Definitions:** `upb_DefPool_FindMessageByName()`, etc. The returned C pointers should be used as keys to the object cache to get/create the `Protobuf::Descriptor` Perl wrapper.
 
+### 2.6. Descriptor Accessors
+
+To facilitate property access from the Perl layer, a set of C-level accessors is provided. These functions wrap the underlying `upb` calls and return data in a form ready for Perl (e.g., as `SV*`).
+
+*   **MessageDef:**
+    *   `PerlUpb_MessageDef_FullName(pTHX_ mdef)`: Returns the message's full name as a Perl SV.
+    *   `PerlUpb_MessageDef_FindFieldByNameWithSize(pTHX_ mdef, name, len)`: Efficiently locates a field definition.
+*   **FieldDef:**
+    *   `PerlUpb_FieldDef_Name(pTHX_ fdef)`: Returns the field name as a Perl SV.
+    *   `PerlUpb_FieldDef_Type(pTHX_ fdef)`: Returns the `upb_FieldType` as an integer.
+    *   `PerlUpb_FieldDef_Label(pTHX_ fdef)`: Returns the `upb_Label` (e.g., Optional, Required, Repeated) as an integer.
+
 ### 2.3. Message Operations (`upb_Message`)
 
 *   **Creation:**
