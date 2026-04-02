@@ -2,7 +2,7 @@
 
 _Status: C Layer Implemented_
 
-To ensure object identity and improve performance, the implementation uses a global (per-interpreter) cache to map underlying UPB C objects (pointers) to their corresponding Perl wrapper SVs. This mechanism is critical for maintaining consistent Perl object identity and efficient memory management.
+To ensure object identity and improve performance, the implementation uses a global (per-interpreter) cache to map underlying UPB C objects (pointers) to their corresponding Perl wrapper SVs. This mechanism is critical for maintaining consistent Perl object identity and efficient memory management. Verified consistent object identity for wrapped messages in C integration tests.
 
 ## Cache Mechanism
 

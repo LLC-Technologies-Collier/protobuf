@@ -2,6 +2,7 @@
 #include "xs/protobuf.h"
 #include "xs/convert/sv_to_upb.h"
 #include "xs/convert/upb_to_sv.h"
+#include "xs/protobuf/message.h"
 #include "t/c/convert/test_util.h"
 #include "upb/reflection/def.h"
 #include "upb/mem/arena.h"
@@ -18,8 +19,6 @@
 #include "perl.h"
 #include "XSUB.h"
 
-
-
 static void test_int32_roundtrip(pTHX_ upb_Arena *arena, SV *arena_sv) {
     const upb_FieldDef *f = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_int32"); 
     ok(f, "Roundtrip/int32: Got FieldDef");
@@ -33,7 +32,6 @@ static void test_int32_roundtrip(pTHX_ upb_Arena *arena, SV *arena_sv) {
     ok(SvIOK(new_sv), "Roundtrip/int32: new_sv is IOK");
     is(SvIV(new_sv), 987, "Roundtrip/int32: value matches");
     SvREFCNT_dec(orig_sv);
-    // new_sv is mortal
 }
 
 static void test_string_roundtrip(pTHX_ upb_Arena *arena, SV *arena_sv) {
@@ -52,7 +50,51 @@ static void test_string_roundtrip(pTHX_ upb_Arena *arena, SV *arena_sv) {
     ok(SvPOK(new_sv), "Roundtrip/string: new_sv is POK");
     is_string(SvPV_nolen(new_sv), str, "Roundtrip/string: value matches");
     SvREFCNT_dec(orig_sv);
-    // new_sv is mortal
+}
+
+static void test_uint32_roundtrip(pTHX_ upb_Arena *arena, SV *arena_sv) {
+    const upb_FieldDef *f = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_uint32");
+    ok(f, "Roundtrip/uint32: Got FieldDef");
+    if (!f) return;
+
+    SV *orig_sv = newSVuv(4294967295U);
+    upb_MessageValue val;
+    ok(PerlUpb_SvToUpb(aTHX_ orig_sv, f, &val, arena), "Roundtrip/uint32: SvToUpb success");
+
+    SV *new_sv = PerlUpb_UpbToSv(aTHX_ &val, f, arena_sv);
+    ok(SvIOK(new_sv), "Roundtrip/uint32: new_sv is IOK");
+    is_u(SvUV(new_sv), 4294967295U, "Roundtrip/uint32: value matches");
+    SvREFCNT_dec(orig_sv);
+}
+
+static void test_bool_roundtrip(pTHX_ upb_Arena *arena, SV *arena_sv) {
+    const upb_FieldDef *f = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_bool");
+    ok(f, "Roundtrip/bool: Got FieldDef");
+    if (!f) return;
+
+    SV *orig_sv = &PL_sv_yes;
+    upb_MessageValue val;
+    ok(PerlUpb_SvToUpb(aTHX_ orig_sv, f, &val, arena), "Roundtrip/bool: SvToUpb success");
+
+    SV *new_sv = PerlUpb_UpbToSv(aTHX_ &val, f, arena_sv);
+    ok(SvTRUE(new_sv), "Roundtrip/bool: new_sv is true");
+    is(val.bool_val, true, "Roundtrip/bool: upb value is true");
+}
+
+static void test_cache_identity(pTHX_ upb_Arena *arena, SV *arena_sv) {
+    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_test_messages.proto2.TestAllTypesProto2");
+    ok(mdef, "Cache/identity: Got MessageDef");
+    if (!mdef) return;
+
+    upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
+
+    SV *sv1 = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv);
+    SV *sv2 = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv);
+
+    ok(sv1 != NULL, "Cache/identity: sv1 is not NULL");
+    ok(SvRV(sv1) == SvRV(sv2), "Cache/identity: Same message pointer returns same underlying SV");
+    SvREFCNT_dec(sv1);
+    SvREFCNT_dec(sv2);
 }
 
 int main(int argc, char** argv) {
@@ -65,12 +107,15 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    plan(1 + 4 + 5 + 3);
+    plan(24);
     test_num = 0;
     ok(1, "Descriptors loaded");
 
     test_int32_roundtrip(aTHX_ arena, arena_sv);
     test_string_roundtrip(aTHX_ arena, arena_sv);
+    test_uint32_roundtrip(aTHX_ arena, arena_sv);
+    test_bool_roundtrip(aTHX_ arena, arena_sv);
+    test_cache_identity(aTHX_ arena, arena_sv);
 
     TODO("Implement exhaustive primitive roundtrip tests for all UPB types") {
         ok(0, "All 18 protobuf types verified for conversion accuracy in roundtrip");

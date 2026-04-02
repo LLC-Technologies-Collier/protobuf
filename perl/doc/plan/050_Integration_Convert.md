@@ -3,9 +3,9 @@
 [TOC]
 
 *   [x] Create test file `perl/t/c/integration/050_convert.c`.
-*   [ ] Tests cover interactions between convert functions and core utilities (arena, cache). (Partially implemented: int32, string).
+*   [x] Tests cover interactions between convert functions and core utilities (arena, cache). (Verified: int32, string, uint32, bool).
 *   [ ] TODO: Implement exhaustive primitive roundtrip tests for all 18 UPB types.
-*   [ ] TODO: Verify integrated Object Cache identity for message conversions.
+*   [x] TODO: Verify integrated Object Cache identity for message conversions.
 *   [ ] TODO: Verify Math::BigInt roundtrip support in integrated context.
 *   [x] Create test file `perl/t/c/integration/050_convert_coro.c`
 *   [ ] Tests in `perl/t/c/integration/050_convert_coro.c` use libcoro to stress concurrent C function usage for convert. (Partially implemented).
