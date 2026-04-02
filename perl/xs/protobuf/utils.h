@@ -4,6 +4,11 @@
 #include "EXTERN.h"
 #include "perl.h"
 
+struct upb_MessageDef;
+typedef struct upb_MessageDef upb_MessageDef;
+struct upb_FieldDef;
+typedef struct upb_FieldDef upb_FieldDef;
+
 // String utils
 const char* PerlUpb_GetStrData(pTHX_ SV *sv);
 const char* PerlUpb_VerifyStrData(pTHX_ SV *sv);
@@ -33,5 +38,9 @@ int64_t PerlUpb_SVToI64(pTHX_ SV* sv);
 uint64_t PerlUpb_SVToU64(pTHX_ SV* sv);
 SV* PerlUpb_I64ToSV(pTHX_ int64_t val);
 SV* PerlUpb_U64ToSV(pTHX_ uint64_t val);
+
+// Context-aware error reporting
+void PerlUpb_CroakWithContext(pTHX_ const char* msg, const upb_MessageDef* mdef,
+                             const upb_FieldDef* fdef);
 
 #endif // PERL_PROTOBUF_UTILS_H_

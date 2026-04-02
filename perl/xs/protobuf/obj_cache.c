@@ -126,7 +126,7 @@ size_t PerlUpb_ObjCache_GetCapacity(pTHX) {
 }
 
 void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
-    if (!ptr || !obj) return;
+    if (!ptr || !obj || !SvROK(obj)) return;
     ensure_mutexes_init();
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
 
@@ -136,12 +136,15 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
     HV* cache = get_cache_hv(aTHX, reg);
     char key[64];
     get_cache_key(ptr, key);
+    // fprintf(stderr, "PerlUpb: Cache ADD ptr=%p key='%s'\n", ptr, key);
 
-    SV* rv = newSVsv(obj);
-    sv_rvweaken(rv);
+    // Create a NEW reference to the target object (the HV) and weaken it
+    SV* target = SvRV(obj);
+    SV* weak_rv = newRV_inc(target);
+    sv_rvweaken(weak_rv);
 
-    if (!hv_store(cache, key, strlen(key), rv, 0)) {
-        SvREFCNT_dec(rv);
+    if (!hv_store(cache, key, strlen(key), weak_rv, 0)) {
+        SvREFCNT_dec(weak_rv);
     }
 
     PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[stripe]);
@@ -160,9 +163,8 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
             if (sscanf(oldest_key, "%p", &evict_ptr) == 1) {
                 int evict_stripe = get_stripe(evict_ptr);
                 PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[evict_stripe]);
-                if (hv_delete(cache, oldest_key, len, G_DISCARD)) {
-                    PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_EVICT, evict_ptr);
-                }
+                hv_delete(cache, oldest_key, len, G_DISCARD);
+                PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_EVICT, evict_ptr);
                 PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[evict_stripe]);
             }
         }
@@ -189,14 +191,16 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
     if (svp) {
         SV* rv = *svp;
         if (rv && SvROK(rv)) {
-            SV* obj = SvRV(rv);
-            if (obj && obj != &PL_sv_undef) {
-                result = newRV_inc(obj);
+            SV* target = SvRV(rv);
+            if (target && target != &PL_sv_undef) {
+                // Return a NEW strong reference (RV) to the object
+                result = newRV_inc(target);
                 PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_HIT, ptr);
             }
         }
         
         if (!result) {
+            // Weak ref was collected or invalid, cleanup entry
             hv_delete(cache, key, strlen(key), G_DISCARD);
             PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_MISS, ptr);
         }
@@ -210,20 +214,50 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
 
 void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr) {
     if (!ptr) return;
+    char key[64];
+    get_cache_key(ptr, key);
+    PerlUpb_ObjCache_DeleteEntry(aTHX_ key);
+}
+
+void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_str) {
+    if (!key_str) return;
     ensure_mutexes_init();
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
 
-    int stripe = get_stripe(ptr);
-    PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[stripe]);
+    void* target_ptr;
+    if (sscanf(key_str, "%p", &target_ptr) != 1) return;
 
+    char normalized_key[64];
+    get_cache_key(target_ptr, normalized_key);
+
+    bool deleted = false;
+    
+    // First try the expected stripe
+    int expected_stripe = get_stripe(target_ptr);
+    PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[expected_stripe]);
     HV* cache = get_cache_hv(aTHX, reg);
-    char key[64];
-    get_cache_key(ptr, key);
-    if (hv_delete(cache, key, strlen(key), G_DISCARD)) {
-        PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_DELETE, ptr);
+    if (hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD)) {
+        deleted = true;
+    }
+    PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[expected_stripe]);
+
+    if (!deleted) {
+        // Fallback: Check ALL stripes (some pointers might hash differently if get_stripe uses a different logic than storage)
+        for (int i = 0; i < NUM_CACHE_STRIPES; i++) {
+            if (i == expected_stripe) continue;
+            PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[i]);
+            if (hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD)) {
+                deleted = true;
+                PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[i]);
+                break;
+            }
+            PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[i]);
+        }
     }
 
-    PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[stripe]);
+    if (deleted) {
+        PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_DELETE, target_ptr);
+    }
 }
 
 void PerlUpb_ObjCache_Clear(pTHX) {

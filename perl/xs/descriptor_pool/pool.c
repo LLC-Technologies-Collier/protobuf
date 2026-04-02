@@ -72,7 +72,6 @@ SV* PerlUpb_DescriptorPool_GetWrapper(pTHX_ const upb_DefPool* pool) {
 
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ pool);
     if (cached) {
-        SvREFCNT_inc(cached);
         return cached;
     }
 
@@ -141,11 +140,14 @@ SV* PerlUpb_DescriptorPool_GetFile(pTHX_ SV* sv, int index) {
 }
 
 SV* PerlUpb_DescriptorPool_GeneratedPool(pTHX) {
-    SV* global_pool_sv = get_sv("Protobuf::DescriptorPool::_generated_pool_ptr", GV_ADD);
-    if (!SvIOK(global_pool_sv)) {
-        upb_DefPool* pool = upb_DefPool_New();
-        sv_setiv(global_pool_sv, PTR2IV(pool));
-        return PerlUpb_DescriptorPool_GetWrapper(aTHX_ pool);
+    if (!generated_pool_ptr) {
+        SV* global_pool_sv = get_sv("Protobuf::DescriptorPool::_generated_pool_ptr", GV_ADD);
+        if (SvIOK(global_pool_sv)) {
+            generated_pool_ptr = INT2PTR(upb_DefPool*, SvIV(global_pool_sv));
+        } else {
+            generated_pool_ptr = upb_DefPool_New();
+            sv_setiv(global_pool_sv, PTR2IV(generated_pool_ptr));
+        }
     }
-    return PerlUpb_DescriptorPool_GetWrapper(aTHX_ INT2PTR(upb_DefPool*, SvIV(global_pool_sv)));
+    return PerlUpb_DescriptorPool_GetWrapper(aTHX_ generated_pool_ptr);
 }

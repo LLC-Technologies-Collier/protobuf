@@ -42,6 +42,22 @@ clear_cache()
     CODE:
         PerlUpb_ObjCache_Clear(aTHX);
 
+void
+delete_cache_entry(key_str)
+    const char* key_str
+    CODE:
+        PerlUpb_ObjCache_DeleteEntry(aTHX, key_str);
+
+void
+delete_cache_ptr(ptr_str)
+    const char* ptr_str
+    PREINIT:
+        void* ptr;
+    CODE:
+        if (sscanf(ptr_str, "%p", &ptr) == 1) {
+            PerlUpb_ObjCache_Delete(aTHX_ ptr);
+        }
+
 SV*
 class_name_to_full_name(class_name)
     const char* class_name

@@ -4,6 +4,7 @@
 #include "XSUB.h"
 #include "perl/xs/protobuf/utils.h"
 #include "xs/protobuf/obj_cache.h"
+#include "upb/reflection/def.h"
 #include <immintrin.h>
 
 const char* PerlUpb_GetStrData(pTHX_ SV *sv) {
@@ -215,6 +216,21 @@ SV* PerlUpb_I64ToSV(pTHX_ int64_t val) {
     SPAGAIN; SV* bigint_sv = newSVsv(POPs);
     PUTBACK; FREETMPS; LEAVE;
     return bigint_sv;
+}
+
+void PerlUpb_CroakWithContext(pTHX_ const char* msg, const upb_MessageDef* mdef,
+                             const upb_FieldDef* fdef) {
+    if (!mdef) {
+        croak("%s", msg);
+    }
+
+    const char* mname = upb_MessageDef_FullName(mdef);
+    if (!fdef) {
+        croak("%s (in message %s)", msg, mname);
+    }
+
+    const char* fname = upb_FieldDef_Name(fdef);
+    croak("%s (at %s.%s)", msg, mname, fname);
 }
 
 SV* PerlUpb_U64ToSV(pTHX_ uint64_t val) {

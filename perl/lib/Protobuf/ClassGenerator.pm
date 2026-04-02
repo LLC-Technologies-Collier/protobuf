@@ -29,9 +29,57 @@ sub _generate_recursively {
     }
 }
 
+sub generate_type_library {
+    my ($class, $file) = @_;
+    my $pkg = $file->get_package;
+    my $lib_name = $pkg;
+    $lib_name =~ s/^\.//;
+    $lib_name =~ s/\./::/g;
+    $lib_name = "Protobuf::Types::$lib_name";
+
+    my $code = "package $lib_name;\n";
+    $code .= "use Type::Library -base;\n";
+    $code .= "use Type::Utils -all;\n";
+    $code .= "use Types::Standard -types;\n";
+    $code .= "use Protobuf::Message;\n\n";
+
+    my $msg_count = $file->top_level_message_count;
+    for my $i (0 .. $msg_count - 1) {
+        my $mdef = $file->get_top_level_message($i);
+        $code .= _generate_types_recursively($mdef);
+    }
+
+    $code .= "1;\n";
+    return $code;
+}
+
 sub type_library {
-    my ($class) = @_;
-    return "package MyProtobuf::Types; use Type::Library; 1;";
+    my ($class, $file) = @_;
+    return $class->generate_type_library($file);
+}
+
+sub _generate_types_recursively {
+    my ($mdef) = @_;
+    my $full_name = $mdef->full_name;
+    my $normalized = $full_name;
+    $normalized =~ s/^\.//;
+    my $perl_class = $normalized;
+    $perl_class =~ s/\./::/g;
+    
+    my $type_name = $mdef->name;
+    
+    my $code = "declare '$type_name',\n";
+    $code .= "    as InstanceOf['$perl_class'],\n";
+    $code .= "    where { \$_->validate };\n\n";
+    
+    $code .= "coerce '$type_name',\n";
+    $code .= "    from HashRef, via { '$perl_class'->from_perl(\$_) };\n\n";
+
+    my $nested_count = $mdef->nested_message_count;
+    for my $i (0 .. $nested_count - 1) {
+        $code .= _generate_types_recursively($mdef->get_nested_message($i));
+    }
+    return $code;
 }
 
 sub generate_docs {
