@@ -14,30 +14,49 @@
 
 // #include "ppport.h"
 
-#define plan(n) fprintf(stderr, "1..%d\n", (n))
+#define plan(n) fprintf(stderr, "%*s1..%d\n", indent_level * 4, "", (n))
 
 extern const char* todo_reason;
+extern int indent_level;
 
 #define todo_start(reason) todo_reason = (reason)
 #define todo_end() todo_reason = NULL
 
 #define TODO(reason) for(int _todo_i = (todo_start(reason), 0); _todo_i < 1; _todo_i++, todo_end())
 
-#define ok(val, name) fprintf(stderr, "%s %d - %s%s%s\n", (val) ? "ok" : "not ok", ++test_num, (name), (todo_reason ? " # TODO " : ""), (todo_reason ? todo_reason : ""))
+#define ok(val, name) fprintf(stderr, "%*s%s %d - %s%s%s\n", indent_level * 4, "", (val) ? "ok" : "not ok", ++test_num, (name), (todo_reason ? " # TODO " : ""), (todo_reason ? todo_reason : ""))
 #define fail(name) ok(0, name)
-#define is(got, expected, name) fprintf(stderr, "%s %d - %s\n", ((got) == (expected)) ? "ok" : "not ok", ++test_num, (name)); if ((got) != (expected)) { fprintf(stderr, "  # Got: %ld\n  # Expected: %ld\n", (long)(got), (long)(expected)); }
-#define is_u(got, expected, name) fprintf(stderr, "%s %d - %s\n", ((got) == (expected)) ? "ok" : "not ok", ++test_num, (name)); if ((got) != (expected)) { fprintf(stderr, "  # Got: %" PRIu64 "\n  # Expected: %" PRIu64 "\n", (uint64_t)(got), (uint64_t)(expected)); }
-#define is_string(got, expected, name) fprintf(stderr, "%s %d - %s\n", (strcmp((got), (expected)) == 0) ? "ok" : "not ok", ++test_num, (name)); if (strcmp((got), (expected)) != 0) { fprintf(stderr, "  # Got: %s\n  # Expected: %s\n", (got), (expected)); }
-#define is_blob(got, expected, len, name) fprintf(stderr, "%s %d - %s\n", (memcmp((got), (expected), (len)) == 0) ? "ok" : "not ok", ++test_num, (name)); if (memcmp((got), (expected), (len)) != 0) { fprintf(stderr, "  # Blobs differ\n"); }
-#define is_string_view(got, expected, len, name) fprintf(stderr, "%s %d - %s\n", (strncmp((got).data, (expected), (len)) == 0 && (got).size == (len)) ? "ok" : "not ok", ++test_num, (name)); if (strncmp((got).data, (expected), (len)) != 0 || (got).size != (len)) { fprintf(stderr, "  # Got: %.*s (len %zu)\n  # Expected: %s (len %zu)\n", (int)(got).size, (got).data, (got).size, (expected), (len)); }
+#define is(got, expected, name) fprintf(stderr, "%*s%s %d - %s\n", indent_level * 4, "", ((got) == (expected)) ? "ok" : "not ok", ++test_num, (name)); if ((got) != (expected)) { fprintf(stderr, "%*s  # Got: %ld\n%*s  # Expected: %ld\n", indent_level * 4, "", (long)(got), indent_level * 4, "", (long)(expected)); }
+#define is_u(got, expected, name) fprintf(stderr, "%*s%s %d - %s\n", indent_level * 4, "", ((got) == (expected)) ? "ok" : "not ok", ++test_num, (name)); if ((got) != (expected)) { fprintf(stderr, "%*s  # Got: %" PRIu64 "\n%*s  # Expected: %" PRIu64 "\n", indent_level * 4, "", (uint64_t)(got), indent_level * 4, "", (uint64_t)(expected)); }
+#define is_string(got, expected, name) fprintf(stderr, "%*s%s %d - %s\n", indent_level * 4, "", (strcmp((got), (expected)) == 0) ? "ok" : "not ok", ++test_num, (name)); if (strcmp((got), (expected)) != 0) { fprintf(stderr, "%*s  # Got: %s\n%*s  # Expected: %s\n", indent_level * 4, "", (got), indent_level * 4, "", (expected)); }
+#define is_blob(got, expected, len, name) fprintf(stderr, "%*s%s %d - %s\n", indent_level * 4, "", (memcmp((got), (expected), (len)) == 0) ? "ok" : "not ok", ++test_num, (name)); if (memcmp((got), (expected), (len)) != 0) { fprintf(stderr, "%*s  # Blobs differ\n", indent_level * 4, ""); }
+#define is_string_view(got, expected, len, name) fprintf(stderr, "%*s%s %d - %s\n", indent_level * 4, "", (strncmp((got).data, (expected), (len)) == 0 && (got).size == (len)) ? "ok" : "not ok", ++test_num, (name)); if (strncmp((got).data, (expected), (len)) != 0 || (got).size != (len)) { fprintf(stderr, "%*s  # Got: %.*s (len %zu)\n%*s  # Expected: %s (len %zu)\n", indent_level * 4, "", (int)(got).size, (got).data, (got).size, indent_level * 4, "", (expected), (len)); }
+
+#define subtest(name, block) \
+    STMT_START { \
+        fprintf(stderr, "%*s# Subtest: %s\n", indent_level * 4, "", name); \
+        int _parent_test_num = test_num; \
+        test_num = 0; \
+        indent_level++; \
+        block; \
+        indent_level--; \
+        test_num = _parent_test_num; \
+        ok(1, name); \
+    } STMT_END
+
+#define LEAK_CHECK(block) \
+    STMT_START { \
+        /* TODO: Implement upb_Arena based leak checking */ \
+        block; \
+    } STMT_END
 
 #define like(str, pattern, name) \
     STMT_START { \
         bool _like_pass = false; \
         if (!str) { \
-            fprintf(stderr, "# String to match is NULL for [%s]\n", name); \
+            fprintf(stderr, "%*s# String to match is NULL for [%s]\n", indent_level * 4, "", name); \
         } else if (!pattern) { \
-            fprintf(stderr, "# Pattern is NULL for [%s]\n", name); \
+            fprintf(stderr, "%*s# Pattern is NULL for [%s]\n", indent_level * 4, "", name); \
         } else { \
             int errornumber; \
             PCRE2_SIZE erroroffset; \
@@ -47,14 +66,14 @@ extern const char* todo_reason;
             if (re == NULL) { \
                 PCRE2_UCHAR buffer[256]; \
                 pcre2_get_error_message(errornumber, buffer, sizeof(buffer)); \
-                fprintf(stderr, "# Regex compilation failed for [%s] at offset %d: %s\n", name, (int)erroroffset, buffer); \
+                fprintf(stderr, "%*s# Regex compilation failed for [%s] at offset %d: %s\n", indent_level * 4, "", name, (int)erroroffset, buffer); \
             } else { \
                 pcre2_match_data *match_data = pcre2_match_data_create_from_pattern(re, NULL); \
                 int rc = pcre2_match(re, (PCRE2_SPTR)str, strlen(str), 0, 0, match_data, NULL); \
                 if (rc >= 0) { \
                     _like_pass = true; \
                 } else { \
-                    fprintf(stderr, "  # String [%s] does not match pattern [%s] for [%s]\n", str, pattern, name); \
+                    fprintf(stderr, "%*s  # String [%s] does not match pattern [%s] for [%s]\n", indent_level * 4, "", str, pattern, name); \
                 } \
                 pcre2_match_data_free(match_data); \
                 pcre2_code_free(re); \
@@ -67,9 +86,9 @@ extern const char* todo_reason;
     STMT_START { \
         bool _like_pass = false; \
         if (!str) { \
-            fprintf(stderr, "# String to match is NULL for [%s]\n", name); \
+            fprintf(stderr, "%*s# String to match is NULL for [%s]\n", indent_level * 4, "", name); \
         } else if (!pattern) { \
-            fprintf(stderr, "# Pattern is NULL for [%s]\n", name); \
+            fprintf(stderr, "%*s# Pattern is NULL for [%s]\n", indent_level * 4, "", name); \
         } else { \
             int errornumber; \
             PCRE2_SIZE erroroffset; \
@@ -79,14 +98,14 @@ extern const char* todo_reason;
             if (re == NULL) { \
                 PCRE2_UCHAR buffer[256]; \
                 pcre2_get_error_message(errornumber, buffer, sizeof(buffer)); \
-                fprintf(stderr, "# Regex compilation failed for [%s] at offset %d: %s\n", name, (int)erroroffset, buffer); \
+                fprintf(stderr, "%*s# Regex compilation failed for [%s] at offset %d: %s\n", indent_level * 4, "", name, (int)erroroffset, buffer); \
             } else { \
                 pcre2_match_data *match_data = pcre2_match_data_create_from_pattern(re, NULL); \
                 int rc = pcre2_match(re, (PCRE2_SPTR)str, str_len, 0, 0, match_data, NULL); \
                 if (rc >= 0) { \
                     _like_pass = true; \
                 } else { \
-                    fprintf(stderr, "  # String [%.*s] does not match pattern [%s] for [%s]\n", (int)str_len, str, pattern, name); \
+                    fprintf(stderr, "%*s  # String [%.*s] does not match pattern [%s] for [%s]\n", indent_level * 4, "", (int)str_len, str, pattern, name); \
                 } \
                 pcre2_match_data_free(match_data); \
                 pcre2_code_free(re); \
@@ -95,7 +114,7 @@ extern const char* todo_reason;
         ok(_like_pass, name); \
     } STMT_END
 
-#define cdiag(fmt, ...) { fprintf(stderr, "# " fmt, ##__VA_ARGS__); fprintf(stderr, "\n"); }
+#define cdiag(fmt, ...) { fprintf(stderr, "%*s# " fmt, indent_level * 4, "", ##__VA_ARGS__); fprintf(stderr, "\n"); }
 
 // Helper for formatted test names
 static char* sdiagnostic(const char *fmt, ...) {

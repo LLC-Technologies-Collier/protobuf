@@ -7,6 +7,11 @@ use File::Find;
 use ExtUtils::Embed;
 use JSON::MaybeXS;
 
+my $asan_flags = $ENV{USE_ASAN} ? "-fsanitize=address" : "";
+my $ubsan_flags = $ENV{USE_UBSAN} ? "-fsanitize=undefined" : "";
+my $msan_flags = $ENV{USE_MSAN} ? "-fsanitize=memory" : "";
+my $sanitizer_flags = join(" ", grep { $_ } $asan_flags, $ubsan_flags, $msan_flags);
+
 # Attempt to generate ppport.h
 eval { require Devel::PPPort; };
 if (!$@) {
@@ -205,7 +210,7 @@ EOM
         my $link_line = join " ", grep { length $_ > 0 } (
             '$(CC)', '$(CCFLAGS)', $extra_ccflags, '-o', $target, $all_objects_str,
             't/c/upb-perl-test.o', '-L$(CURDIR)', '-lprotobuf_common',
-            $embed_cflags, $embed_ldflags, $ldflags, '-lpcre2-8 -fsanitize=address'
+            $embed_cflags, $embed_ldflags, $ldflags, "-lpcre2-8 $sanitizer_flags"
         );
 
         $c_test_rules .= sprintf(
@@ -239,10 +244,11 @@ EOM
         $make_frag .= 'test_c: build_c_tests $(COMMON_LIB)' . "\n";
         foreach my $target (sort @c_test_targets) {
             $make_frag .= "\t" . sprintf('@echo "Running test: %s"', $target) . "\n";
-            my $run_command = 'LD_LIBRARY_PATH="$(PERL_ARCHLIB):$(LD_LIBRARY_PATH)" ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 ' . $target;
+            my $run_command = 'LD_LIBRARY_PATH="' . $Config{archlibexp} . ':$$LD_LIBRARY_PATH" ASAN_OPTIONS=detect_leaks=0:abort_on_error=1:detect_odr_violation=0 ' . $target;
             $make_frag .= "\t" . $run_command . "\n";
         }
     }
+
 
     return $make_frag;
 }
@@ -269,10 +275,11 @@ WriteMakefile(
     DEFINE            => '',
     INC               => '-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I../bazel-bin/src/google/protobuf/_virtual_imports/descriptor_proto -I$(PERL_INC)',
     MYEXTLIB          => 'libprotobuf_common.$(DLEXT)',
-    CCFLAGS           => "-g $Config{ccflags} -fPIC -fsanitize=address",
+    CCFLAGS           => "-g $Config{ccflags} -fPIC $sanitizer_flags",
     XSMULTI           => 1,
     LIBS              => ['-L$(CURDIR) -lprotobuf_common'], # Link the common static library
-    LDDLFLAGS         => "$Config{lddlflags} -fsanitize=address",
+    LDDLFLAGS         => "$Config{lddlflags} $sanitizer_flags",
+    LDFLAGS           => "$Config{ldflags} $sanitizer_flags",
     
     # Link the common static library into all .so files
     # LIBS              => ['-L$(CURDIR) -lprotobuf_common'],

@@ -1,6 +1,7 @@
 #include "t/c/upb-perl-test.h"
 
 int test_num = 0;
+int indent_level = 0;
 const char* todo_reason = NULL;
 
 PerlInterpreter* test_perl_init(int argc, char** argv) {
