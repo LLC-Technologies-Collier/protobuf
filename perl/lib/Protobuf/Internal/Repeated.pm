@@ -89,10 +89,21 @@ sub slice {
     return [];
 }
 
+sub audit_integrity {
+    my ($self) = @_;
+    return $self->_xs_audit_integrity();
+}
+
 1;
 
 package Protobuf::Internal::Repeated::Public;
 use overload '@{}' => sub { $_[0] }, fallback => 1;
+
+sub audit_integrity {
+    my ($self) = @_;
+    my $tied = tied @$self;
+    return $tied->audit_integrity();
+}
 
 sub sort {
     my ($self) = @_;

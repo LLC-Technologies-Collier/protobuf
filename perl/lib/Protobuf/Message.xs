@@ -234,6 +234,18 @@ _xs_audit_integrity(self)
     OUTPUT:
         RETVAL
 
+bool
+_xs_validate(self)
+    SV* self
+    CODE:
+        // By default, generic validation just checks if it's a valid object.
+        // For generated classes, the ClassGenerator will provide 
+        // specialized AOT validators that bypass this generic path.
+        const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ self);
+        RETVAL = (msg != NULL);
+    OUTPUT:
+        RETVAL
+
 SV*
 _xs_migrate_to_arena(self, arena_sv)
     SV* self

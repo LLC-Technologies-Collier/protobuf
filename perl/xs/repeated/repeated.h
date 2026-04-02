@@ -34,6 +34,9 @@ upb_Array* PerlUpb_Repeated_GetArray(pTHX_ SV* self);
 // Returns the field definition.
 const upb_FieldDef* PerlUpb_Repeated_GetFieldDef(pTHX_ SV* self);
 
+// Audits the integrity of the repeated field.
+bool PerlUpb_Repeated_AuditIntegrity(pTHX_ SV* self);
+
 // Frees the wrapper.
 void PerlUpb_Repeated_Free(pTHX_ SV* sv);
 

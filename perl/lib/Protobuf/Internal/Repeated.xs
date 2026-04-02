@@ -72,6 +72,14 @@ _xs_clear(self)
     CODE:
         PerlUpb_Repeated_Clear(aTHX_ self);
 
+bool
+_xs_audit_integrity(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Repeated_AuditIntegrity(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
 void
 DESTROY(self)
     SV* self

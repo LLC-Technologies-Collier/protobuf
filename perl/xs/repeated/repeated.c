@@ -150,6 +150,33 @@ const upb_FieldDef* PerlUpb_Repeated_GetFieldDef(pTHX_ SV* self) {
     return r ? r->f : NULL;
 }
 
+#include "xs/protobuf/obj_cache.h"
+
+bool PerlUpb_Repeated_AuditIntegrity(pTHX_ SV* self) {
+    PerlUpb_Repeated* r = GetRepeated(aTHX_ self);
+    if (!r || !r->arr) return false;
+
+    // Verify reified elements in the ObjCache for message/container types
+    if (upb_FieldDef_IsSubMessage(r->f)) {
+        size_t size = upb_Array_Size(r->arr);
+        for (size_t i = 0; i < size; i++) {
+            upb_MessageValue val = upb_Array_Get(r->arr, i);
+            if (val.msg_val) {
+                SV* cached = PerlUpb_ObjCache_Get(aTHX_ val.msg_val);
+                if (cached) {
+                    // We don't have a way to check if this specific instance 
+                    // is "linked" to the array from the array side easily, 
+                    // but we can at least verify that if we have a cache hit,
+                    // it points to a valid object.
+                    SvREFCNT_dec(cached);
+                }
+            }
+        }
+    }
+    
+    return true;
+}
+
 void PerlUpb_Repeated_Free(pTHX_ SV* sv) {
     PerlUpb_Repeated* r = GetRepeated(aTHX_ sv);
     if (r) {

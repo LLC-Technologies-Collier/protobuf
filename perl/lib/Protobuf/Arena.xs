@@ -110,3 +110,22 @@ _xs_test_block_canary(self)
             wrapper->alloc->base.func(&wrapper->alloc->base, p, size, 0, NULL);
         }
 
+void
+_xs_set_numa_node(self, node)
+    SV* self
+    int node
+    CODE:
+        if (!sv_derived_from(self, "Protobuf::Arena")) croak("Not a Protobuf::Arena");
+        SV* rv = SvRV(self);
+        if (SvTYPE(rv) != SVt_PVHV) croak("Arena must be a hash ref");
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (!svp || !SvIOK(*svp)) croak("Invalid arena object");
+        // Only managed arenas (PerlUpb_Arena) support NUMA node setting for now.
+        // Tmpfs arenas are mmapped on a file and policy is different.
+        SV** is_tmpfs = hv_fetch((HV*)rv, "_is_tmpfs", 9, 0);
+        if (is_tmpfs && SvTRUE(*is_tmpfs)) {
+             croak("set_numa_node not supported for tmpfs arenas");
+        }
+        PerlUpb_Arena* a = INT2PTR(PerlUpb_Arena*, SvIV(*svp));
+        a->stats_alloc.numa_node = node;
+

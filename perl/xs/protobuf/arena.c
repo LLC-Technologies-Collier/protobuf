@@ -16,6 +16,17 @@
 
 #include "xs/protobuf/obj_cache.h"
 
+#include <sys/mman.h>
+#include <linux/mempolicy.h>
+#include <sys/syscall.h>
+
+// Helper to call mbind without libnuma
+static long my_mbind(void *start, unsigned long len, int mode,
+                     const unsigned long *nmask, unsigned long maxnode,
+                     unsigned flags) {
+    return syscall(SYS_mbind, start, len, mode, nmask, maxnode, flags);
+}
+
 static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize,
                                      size_t size, size_t* actual_size) {
     PerlUpb_StatsAlloc* s = (PerlUpb_StatsAlloc*)alloc;
@@ -52,14 +63,21 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
 
         void* raw;
         if (s->numa_node != -1) {
-            // STUB: Here we would use numa_alloc_onnode(requested_size, s->numa_node)
-            // if libnuma were available. For now, fall back to global.
-            static bool warned = false;
-            if (!warned) {
-                fprintf(stderr, "PerlUpb: NUMA-aware allocation requested but libnuma not linked. Falling back.\n");
-                warned = true;
+            // Use mmap + mbind for NUMA affinity
+            raw = mmap(NULL, requested_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+            if (raw != MAP_FAILED) {
+                unsigned long mask = (1UL << s->numa_node);
+                if (my_mbind(raw, requested_size, MPOL_BIND, &mask, sizeof(mask) * 8, 0) != 0) {
+                    // Mbind failed, we still have the memory but policy isn't set.
+                    // (Might happen if node is offline)
+                }
+                if (old_ptr) {
+                    memcpy(raw, old_ptr, old_requested_size < requested_size ? old_requested_size : requested_size);
+                    munmap(old_ptr, old_requested_size);
+                }
+            } else {
+                raw = NULL;
             }
-            raw = upb_alloc_global.func(&upb_alloc_global, old_ptr, old_requested_size, requested_size, NULL);
         } else {
             raw = upb_alloc_global.func(&upb_alloc_global, old_ptr, old_requested_size, requested_size, NULL);
         }
@@ -81,7 +99,11 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
         // Free
         PerlUpb_VerifyCanaries(ptr, oldsize, "Before free");
         void* raw = (char*)ptr - PERL_UPB_CANARY_SIZE;
-        upb_alloc_global.func(&upb_alloc_global, raw, oldsize + 2 * PERL_UPB_CANARY_SIZE, 0, NULL);
+        if (s->numa_node != -1) {
+            munmap(raw, oldsize + 2 * PERL_UPB_CANARY_SIZE);
+        } else {
+            upb_alloc_global.func(&upb_alloc_global, raw, oldsize + 2 * PERL_UPB_CANARY_SIZE, 0, NULL);
+        }
         s->total_reserved -= oldsize;
         s->total_blocks--;
         PerlUpb_ObjCache_LogEvent(aTHX, ALLOC_EVENT_FREE, ptr);

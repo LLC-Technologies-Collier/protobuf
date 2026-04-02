@@ -104,6 +104,11 @@ sub audit_integrity {
     return _xs_audit_integrity($self);
 }
 
+sub validate {
+    my ($self) = @_;
+    return _xs_validate($self);
+}
+
 sub coerce_to {
     my ($self, $target_class) = @_;
     return _xs_coerce_to($self, $target_class);

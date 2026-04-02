@@ -29,6 +29,11 @@ sub attach_tmpfs {
     return _xs_attach_tmpfs_raw($path, $size);
 }
 
+sub set_numa_node {
+    my ($self, $node) = @_;
+    return $self->_xs_set_numa_node($node);
+}
+
 sub DEMOLISH {
     my $self = shift;
     $self->_xs_destroy();

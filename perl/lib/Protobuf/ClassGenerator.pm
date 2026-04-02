@@ -107,6 +107,15 @@ package $perl_class;
 use Moo;
 extends 'Protobuf::Message';
 sub descriptor { return \$Protobuf::ClassGenerator::DESCRIPTOR_REGISTRY{'$perl_class'}; }
+sub validate {
+    my \$self = shift;
+    my \$c_func = '_xs_validate_' . '$normalized';
+    \$c_func =~ s/[:\\.]/_/g;
+    if (\$self->can(\$c_func)) {
+        return \$self->\$c_func();
+    }
+    return \$self->SUPER::validate();
+}
 EOC
     
     my $field_count = $mdef->field_count;
