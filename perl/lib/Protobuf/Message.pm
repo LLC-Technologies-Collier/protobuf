@@ -28,10 +28,11 @@ sub new {
 sub DESTROY {
     my ($self) = @_;
     _xs_free($self);
+    return;
 }
 
 sub CLONE {
-    croak("Protobuf objects cannot be safely cloned across ithreads. Use pre-forking or an event loop (e.g. Coro, AnyEvent, Mojo) instead.");
+    croak('Protobuf objects cannot be safely cloned across ithreads. Use pre-forking or an event loop (e.g. Coro, AnyEvent, Mojo) instead.');
 }
 
 sub get {
@@ -84,7 +85,7 @@ sub to_perl {
 
 sub from_perl {
     my ($self, $data) = @_;
-    croak("from_perl expects a HASH ref") unless ref($data) eq 'HASH';
+    croak('from_perl expects a HASH ref') unless ref($data) eq 'HASH';
     foreach my $key (keys %$data) {
         $self->set($key, $data->{$key});
     }
@@ -115,6 +116,8 @@ sub parse {
     my ($class, $data) = @_;
     return _xs_parse($class, $data);
 }
+
+__PACKAGE__->meta->make_immutable;
 
 1;
 __END__

@@ -54,4 +54,6 @@ sub enum_type {
     return _xs_enum_type($self);
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;

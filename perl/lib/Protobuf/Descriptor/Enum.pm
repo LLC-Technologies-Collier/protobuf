@@ -29,4 +29,6 @@ sub value_name {
     return _xs_value_name($self, $index);
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;

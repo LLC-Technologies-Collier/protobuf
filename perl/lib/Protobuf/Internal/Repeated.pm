@@ -33,19 +33,21 @@ sub FETCHSIZE {
 sub STORESIZE {
     my ($self, $count) = @_;
     $self->_xs_resize($count);
+    return;
 }
 
 sub PUSH {
-    my $self = shift;
-    foreach my $val (@_) {
+    my ($self, @values) = @_;
+    foreach my $val (@values) {
         $self->_xs_append($val);
     }
+    return;
 }
 
 sub POP {
     my ($self) = @_;
     my $size = $self->_xs_size();
-    return undef if $size == 0;
+    return if $size == 0;
     my $val = $self->_xs_get_item($size - 1);
     $self->_xs_delete($size - 1, 1);
     return $val;
@@ -54,23 +56,25 @@ sub POP {
 sub CLEAR {
     my ($self) = @_;
     $self->_xs_clear();
+    return;
 }
 
 sub SHIFT {
     my ($self) = @_;
     my $size = $self->_xs_size();
-    return undef if $size == 0;
+    return if $size == 0;
     my $val = $self->_xs_get_item(0);
     $self->_xs_delete(0, 1);
     return $val;
 }
 
 sub UNSHIFT {
-    my $self = shift;
+    my ($self, @values) = @_;
     # Add elements in reverse order at index 0 to preserve ordering
-    foreach my $val (reverse @_) {
+    foreach my $val (reverse @values) {
         $self->_xs_insert(0, $val);
     }
+    return;
 }
 
 1;

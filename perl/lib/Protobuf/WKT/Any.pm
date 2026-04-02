@@ -3,7 +3,7 @@ package Protobuf::WKT::Any;
 use strict;
 use warnings;
 
-sub pack {
+sub pack { ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my ($self, $msg) = @_;
     
     my $mdef = $msg->descriptor();
@@ -18,7 +18,7 @@ sub pack {
     return $self;
 }
 
-sub unpack {
+sub unpack { ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my ($self, $expected_class) = @_;
     
     my $type_url = $self->get('type_url');

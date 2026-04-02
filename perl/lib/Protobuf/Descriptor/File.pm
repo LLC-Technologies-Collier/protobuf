@@ -18,7 +18,7 @@ sub name {
     return _xs_name($self);
 }
 
-sub package {
+sub get_package {
     my ($self) = @_;
     return _xs_package($self);
 }
@@ -28,9 +28,11 @@ sub top_level_message_count {
     return _xs_top_level_message_count($self);
 }
 
-sub top_level_message {
+sub get_top_level_message {
     my ($self, $index) = @_;
     return _xs_top_level_message($self, $index);
 }
+
+__PACKAGE__->meta->make_immutable;
 
 1;

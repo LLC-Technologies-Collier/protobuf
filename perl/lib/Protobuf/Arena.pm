@@ -19,6 +19,7 @@ sub DEMOLISH {
     if (exists $self->{_arena_ptr} && $self->{_arena_ptr}) {
         _xs_destroy_raw($self->{_arena_ptr});
     }
+    return;
 }
 
 sub stats {
@@ -30,6 +31,8 @@ sub Clone {
     my $self = shift;
     return Protobuf::Arena->new();
 }
+
+__PACKAGE__->meta->make_immutable;
 
 1;
 __END__

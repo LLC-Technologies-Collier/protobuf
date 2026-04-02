@@ -24,7 +24,7 @@ sub field_count {
     return _xs_field_count($self);
 }
 
-sub field {
+sub get_field {
     my ($self, $index) = @_;
     return _xs_field($self, $index);
 }
@@ -33,5 +33,7 @@ sub is_synthetic {
     my ($self) = @_;
     return _xs_is_synthetic($self);
 }
+
+__PACKAGE__->meta->make_immutable;
 
 1;

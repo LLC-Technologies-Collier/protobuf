@@ -24,7 +24,7 @@ sub field_count {
     return _xs_field_count($self);
 }
 
-sub field {
+sub get_field {
     my ($self, $index) = @_;
     return _xs_field($self, $index);
 }
@@ -44,7 +44,7 @@ sub oneof_count {
     return _xs_oneof_count($self);
 }
 
-sub oneof {
+sub get_oneof {
     my ($self, $index) = @_;
     return _xs_oneof($self, $index);
 }
@@ -54,9 +54,11 @@ sub nested_message_count {
     return _xs_nested_message_count($self);
 }
 
-sub nested_message {
+sub get_nested_message {
     my ($self, $index) = @_;
     return _xs_nested_message($self, $index);
 }
+
+__PACKAGE__->meta->make_immutable;
 
 1;

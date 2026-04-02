@@ -11,7 +11,7 @@ subtest 'load and explore descriptors' => sub {
     ok($files, 'Added descriptor set');
     my $last_file = $files->[-1];
     isa_ok($last_file, 'Protobuf::Descriptor::File');
-    is($last_file->package, 'test', 'Correct package');
+    is($last_file->get_package, 'test', 'Correct package');
     
     subtest 'message descriptors' => sub {
         my $mdef = $pool->find_message_by_name('test.TestMessage');

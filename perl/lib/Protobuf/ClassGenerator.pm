@@ -9,9 +9,10 @@ sub generate_for_file {
     
     my $count = $file->top_level_message_count;
     for my $i (0 .. $count - 1) {
-        my $mdef = $file->top_level_message($i);
+        my $mdef = $file->get_top_level_message($i);
         _generate_for_message($mdef);
     }
+    return;
 }
 
 sub _generate_for_message {
@@ -21,8 +22,8 @@ sub _generate_for_message {
     my $normalized = $full_name;
     $normalized =~ s/^\.//;
     
-    my $hex_norm = unpack("H*", $normalized);
-    my $hex_target = unpack("H*", "google.protobuf.Struct");
+    my $hex_norm = unpack('H*', $normalized);
+    my $hex_target = unpack('H*', 'google.protobuf.Struct');
     $log->debug("normalized=[$normalized] hex=$hex_norm target_hex=$hex_target");
 
     my $perl_class = $normalized;
@@ -39,7 +40,7 @@ sub _generate_for_message {
         'google.protobuf.FieldMask' => 'FieldMask',
     );
 
-    my $wkt_logic = "";
+    my $wkt_logic = '';
     if (my $type = $wkt_map{$normalized} || ($normalized =~ /Struct$/ ? 'Struct' : undef)) {
         $log->debug("MATCHED WKT $type for $normalized");
         if ($type eq 'Any' && !$perl_class->can('pack')) {
@@ -78,7 +79,7 @@ sub _generate_for_message {
     }
     
     # Generate the class using string eval
-    my $code = "";
+    my $code = '';
     if (!$perl_class->can('new')) {
         $code .= <<"EOC";
 package $perl_class;
@@ -94,7 +95,7 @@ EOC
 
     my $field_count = $mdef->field_count;
     for my $i (0 .. $field_count - 1) {
-        my $fdef = $mdef->field($i);
+        my $fdef = $mdef->get_field($i);
         my $name = $fdef->name;
         $code .= <<"EOC";
 sub $name {
@@ -118,7 +119,7 @@ EOC
 
     my $oneof_count = $mdef->oneof_count;
     for my $i (0 .. $oneof_count - 1) {
-        my $odef = $mdef->oneof($i);
+        my $odef = $mdef->get_oneof($i);
         my $name = $odef->name;
         $code .= <<"EOC";
 sub $name {
@@ -130,14 +131,18 @@ EOC
 
     $code .= "1;\n";
 
-    eval $code;
+    {
+        ## no critic (BuiltinFunctions::ProhibitStringyEval)
+        eval $code; ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    }
     die "Failed to generate class $perl_class: $@" if $@;
     
     # Recursively generate nested messages
     my $nested_count = $mdef->nested_message_count;
     for my $i (0 .. $nested_count - 1) {
-        _generate_for_message($mdef->nested_message($i));
+        _generate_for_message($mdef->get_nested_message($i));
     }
+    return;
 }
 
 1;

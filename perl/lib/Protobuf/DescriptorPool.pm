@@ -28,10 +28,11 @@ sub DEMOLISH {
     if (exists $self->{_pool_ptr} && $self->{_pool_ptr}) {
         _xs_destroy_raw($self->{_pool_ptr});
     }
+    return;
 }
 
 sub CLONE {
-    croak("Protobuf objects cannot be safely cloned across ithreads. Use pre-forking or an event loop (e.g. Coro, AnyEvent, Mojo) instead.");
+    croak('Protobuf objects cannot be safely cloned across ithreads. Use pre-forking or an event loop (e.g. Coro, AnyEvent, Mojo) instead.');
 }
 
 sub generated_pool {
@@ -40,7 +41,7 @@ sub generated_pool {
 
 sub add_serialized_file {
     my ($self, $serialized) = @_;
-    croak("Serialized descriptor data is required") unless defined $serialized;
+    croak('Serialized descriptor data is required') unless defined $serialized;
     my $file = _xs_add_serialized_file($self, $serialized);
     if ($file) {
         Protobuf::ClassGenerator->generate_for_file($file);
@@ -50,10 +51,10 @@ sub add_serialized_file {
 
 sub add_serialized_file_descriptor_set {
     my ($self, $serialized) = @_;
-    croak("Serialized descriptor set data is required") unless defined $serialized;
+    croak('Serialized descriptor set data is required') unless defined $serialized;
     my $files = _xs_add_serialized_file_descriptor_set($self, $serialized);
     if ($files && ref($files) eq 'ARRAY') {
-        $log->debug("Added " . scalar(@$files) . " files from descriptor set");
+        $log->debug('Added ' . scalar(@$files) . ' files from descriptor set');
         foreach my $file (@$files) {
             Protobuf::ClassGenerator->generate_for_file($file);
         }
@@ -81,6 +82,8 @@ sub find_extension_by_name {
     return _xs_find_extension_by_name($self, $name);
 }
 
+__PACKAGE__->meta->make_immutable;
+
 1;
 __END__
 
@@ -98,8 +101,5 @@ Protobuf::DescriptorPool - Pool of Protocol Buffer descriptors
 =head1 DESCRIPTION
 
 This module manages a collection of Protocol Buffer descriptors.
-
-=cut
-scriptors.
 
 =cut
