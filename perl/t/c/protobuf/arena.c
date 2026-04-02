@@ -10,7 +10,7 @@ void xs_init(pTHX);
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(20);
+    plan(22);
 
     // Test PerlUpb_Arena_Acquire (Permanent)
     upb_Arena* pa = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_PERMANENT);
@@ -145,6 +145,14 @@ int main(int argc, char** argv) {
         upb_Arena_Free(a);
         ok(1, "Out-of-bounds writes are detected by the core library");
     });
+
+    TODO("Implement NUMA-aware arena allocation to optimize multi-socket memory placement") {
+        ok(0, "Arena blocks are allocated on optimal NUMA nodes for the current thread");
+    }
+
+    TODO("Implement Audit-log driven leak sanitizer for sub-arena allocation tracking") {
+        ok(0, "System can identify leaks of specific sub-arena allocations via audit log analysis");
+    }
 
     SvREFCNT_dec(arena_sv);
 

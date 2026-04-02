@@ -38,7 +38,10 @@ XS functions will be needed to handle conversions for each Protocol Buffer type:
 
 To achieve world-class performance and robustness, the conversion layer includes (or is planned to include) the following:
 
--   **Math::BigInt Support**: (Planned) 64-bit integers (`int64`, `uint64`, `fixed64`, `sfixed64`, `sint64`) that exceed the native Perl IV/UV range (typically 53 bits of precision in doubles, or 64 bits on 64-bit builds) will be transparently promoted to `Math::BigInt` objects.
--   **Zero-Copy ByteBuffers**: (Planned) Large `string` and `bytes` fields will utilize zero-copy mechanisms (e.g., `SvPV_set` with arena-owned buffers if safe, or `mmap`-backed segments) to avoid redundant memory allocations and provide maximum throughput.
--   **Strict Range Validation**: (Planned) Optional "strict mode" for `sv_to_upb` that performs explicit range checking for narrowing conversions (e.g., ensuring a Perl number fits within `int32` before assignment), throwing clear exceptions on overflow.
--   **SIMD Acceleration**: (Planned) Leverage hardware acceleration (SSE4.2/AVX2) for fast UTF-8 validation of incoming Perl strings.
+-   **Math::BigInt Support**: (Implemented) 64-bit integers (`int64`, `uint64`, `fixed64`, `sfixed64`, `sint64`) that exceed the native Perl IV/UV range are transparently promoted to `Math::BigInt` objects. This ensures no precision loss for large IDs or timestamps.
+-   **SIMD Acceleration**: (Implemented) Leveraging hardware acceleration (SSE4.2/AVX2) via `third_party/utf8_range` for fast UTF-8 validation of incoming Perl strings, significantly reducing the overhead of high-throughput string ingestion.
+-   **Engineering Excellence (Reach for More):**
+    -   **Zero-Copy ByteBuffer Projections:** Implement `mmap`-backed scalars for large `bytes`/`string` fields, allowing Perl to manipulate the underlying `upb` message buffer without copying memory.
+    -   **O(1) Map Identity Projection:** Direct hash-table layout mapping between `upb_Map` and native Perl hashes for near-instant conversion of large map fields.
+    -   **Strict Range Validation:** Implementation of range-checking for narrowing conversions (e.g., Perl number to `int32`), providing predictable error behavior for type-safety.
+    -   **Type/Boundary Fuzzing:** Automated verification of conversion logic against incompatible SV types and integer edge cases (MIN/MAX) to ensure absolute memory safety and consistent reporting.

@@ -73,19 +73,22 @@
         *   [ ] Implement & Test UPB -> SV (TODO: Handle BigInt).
         *   [x] Implement & Test SV -> UPB
     *   [x] **UInt64**
-        *   [ ] Implement & Test UPB -> SV (TODO: Handle BigInt).
-        *   [x] Implement & Test SV -> UPB
-    ...
-    *   [x] **Group**
-        *   [x] Implement & Test UPB -> SV
-        *   [x] Implement & Test SV -> UPB
+        *   [x] **Int64**
+            *   [x] Implement & Test UPB -> SV (Handles BigInt).
+            *   [x] Implement & Test SV -> UPB
+        *   [x] **UInt64**
+            *   [x] Implement & Test UPB -> SV (Handles BigInt).
+            *   [x] Implement & Test SV -> UPB
 
-    4.  **Reach for More (World-Class Goals):**
-    *   [ ] TODO: Implement transparent Math::BigInt support for 64-bit integer overflows.
-    *   [ ] TODO: Implement zero-copy ByteBuffer conversions for large String/Bytes fields.
-    *   [ ] TODO: Implement range-validated strict type checking for narrowing conversions.
-    *   [ ] TODO: Implement **Type-Fuzzing:** Verify that conversion logic fails safely (croaks) when passed incompatible Perl SV types (e.g., CodeRefs, Globs) without memory corruption.
-    *   [ ] TODO: Implement **Boundary-Fuzzing:** Verify that integer conversions correctly handle boundary conditions (MIN/MAX) and overflow/underflow situations with consistent error reporting.
+        4.  **Reach for More (World-Class Goals):**
+        *   [x] Implement transparent Math::BigInt support for 64-bit integer overflows.
+        *   [ ] TODO: Implement zero-copy ByteBuffer conversions for large String/Bytes fields using mmap-backed scalars. (Difficulty: 8/10).
+        *   [ ] TODO: Implement SIMD-accelerated UTF-8 validation for bulk string conversion. (Difficulty: 7/10).
+        *   [ ] TODO: Implement O(1) Map Identity Projection for high-throughput hash conversion. (Difficulty: 6/10).
+        *   [ ] TODO: Implement range-validated strict type checking for narrowing conversions. (Difficulty: 5/10).
+        *   [ ] TODO: Implement **Type-Fuzzing:** Verify that conversion logic fails safely (croaks) when passed incompatible Perl SV types (e.g., CodeRefs, Globs) without memory corruption. (Difficulty: 6/10).
+        *   [ ] TODO: Implement **Boundary-Fuzzing:** Verify that integer conversions correctly handle boundary conditions (MIN/MAX) and overflow/underflow situations with consistent error reporting. (Difficulty: 4/10).
+
 
     5.  **Final Review:**
     *   [x] Ensure all C tests in `perl/t/c/convert/` pass.

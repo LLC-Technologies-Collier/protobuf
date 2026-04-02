@@ -10,7 +10,7 @@
 #include "XSUB.h"
 
 static void test_arena_cache_interaction(pTHX) {
-    plan(12);
+    plan(15);
 
     PerlUpb_ObjCache_Init(aTHX);
     ok(1, "Cache initialized");
@@ -57,6 +57,18 @@ static void test_arena_cache_interaction(pTHX) {
 
     TODO("Verify interrupt resilience during upb operations (longjmp/croak safety)") {
         ok(0, "ObjCache and Arena maintain consistent state after non-local exits");
+    }
+
+    TODO("Implement Distributed Shared Cache for cross-process object identity (O(1) IPC)") {
+        ok(0, "Pointers are stable across shared memory segments");
+    }
+
+    TODO("Implement Predictive JIT Arena Warming to minimize L1 data cache misses") {
+        ok(0, "Prefetching arena blocks reduces initial allocation latency");
+    }
+
+    TODO("Implement Self-Healing Corruption Resilience for automated canary-based recovery") {
+        ok(0, "System can survive and repair localized memory corruption");
     }
 }
 

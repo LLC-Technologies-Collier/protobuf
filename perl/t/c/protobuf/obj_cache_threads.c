@@ -2,6 +2,7 @@
 #include "xs/protobuf.h"
 #include "xs/protobuf/obj_cache.h"
 #include <string.h>
+#include <pthread.h>
 
 #define NUM_THREADS 10
 #define NUM_OPS_PER_THREAD 1000
@@ -64,25 +65,17 @@ int main(int argc, char** argv) {
         ok(1, "Object cache initialized for threading test");
 
         thread_arg_t args[NUM_THREADS];
+        pthread_t threads[NUM_THREADS];
+        
         for (int i = 0; i < NUM_THREADS; i++) {
             args[i].original_perl = my_perl;
             args[i].id = i;
+            pthread_create(&threads[i], NULL, thread_stress_func, &args[i]);
         }
 
-        STRESS_THREADS(NUM_THREADS, thread_stress_func, &args[0]);
-        // Note: STRESS_THREADS in my harness implementation just takes one arg pointer, 
-        // I should probably fix the macro or pass an array.
-        // Wait, STRESS_THREADS(n, func, arg) in upb-perl-test.h:
-        /*
-        #define STRESS_THREADS(n, func, arg) \
-            STMT_START { \
-                pthread_t* _threads = (pthread_t*)malloc(sizeof(pthread_t) * (n)); \
-                for (int _ti = 0; _ti < (n); _ti++) { \
-                    pthread_create(&_threads[_ti], NULL, (void* (*)(void*))func, (void*)arg); \
-                } ...
-        */
-        // It passes the same 'arg' to all threads. I need different args.
-        // Let's modify the macro or just do it manually here.
+        for (int i = 0; i < NUM_THREADS; i++) {
+            pthread_join(threads[i], NULL);
+        }
         
         ok(1, "Threaded cache stress test completed");
         
