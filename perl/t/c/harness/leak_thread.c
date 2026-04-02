@@ -20,7 +20,8 @@ int main(int argc, char** argv) {
         // no allocation
     }, "Should PASS leak check");
 
-    STRESS_THREADS(4, test_thread_func, NULL);
+    void* thread_args[4] = {NULL, NULL, NULL, NULL};
+    STRESS_THREADS(4, test_thread_func, thread_args);
 
     upb_Arena_Free(arena);
     return 0;

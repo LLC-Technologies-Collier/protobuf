@@ -56,11 +56,12 @@ extern int indent_level;
         } \
     } STMT_END
 
-#define STRESS_THREADS(n, func, arg) \
+#define STRESS_THREADS(n, func, arg_array) \
     STMT_START { \
         pthread_t* _threads = (pthread_t*)malloc(sizeof(pthread_t) * (n)); \
         for (int _ti = 0; _ti < (n); _ti++) { \
-            pthread_create(&_threads[_ti], NULL, (void* (*)(void*))func, (void*)arg); \
+            void* _arg = (void*)&((arg_array)[_ti]); \
+            pthread_create(&_threads[_ti], NULL, (void* (*)(void*))func, _arg); \
         } \
         for (int _ti = 0; _ti < (n); _ti++) { \
             pthread_join(_threads[_ti], NULL); \
