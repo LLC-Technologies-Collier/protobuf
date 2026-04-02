@@ -9,5 +9,5 @@
 *   [x] Implement C-level test harness (`perl/t/c/upb-perl-test.h`).
 *   [x] Implement configurable sanitizer support (ASan, UBSan, MSan) via environment variables.
 *   [x] Automate C-level benchmark compilation and execution (`make bench`).
-*   [ ] TODO: Implement linker-level symbol visibility control for `libprotobuf_common.so` to ensure ABI stability.
+*   [x] Implement linker-level symbol visibility control for `libprotobuf_common.so` to ensure ABI stability.
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

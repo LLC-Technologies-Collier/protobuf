@@ -1,0 +1,10 @@
+{
+  global:
+    PerlUpb_*;
+    upb_*;
+    _upb_*;
+    google_*;
+    utf8_range_*;
+  local:
+    *;
+};

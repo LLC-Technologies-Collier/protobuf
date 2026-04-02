@@ -2,15 +2,18 @@
 
 [TOC]
 
-## Purpose of `libprotobuf_common.a`
+## Purpose of `libprotobuf_common.so`
 
-`libprotobuf_common.a` is intended to be a static library containing custom C helper functions specifically for this Perl-UPB binding. This library is SEPARATE from the core `upb` libraries. It will include functions that facilitate:
+`libprotobuf_common.so` is a shared library containing the `upb` core, third-party dependencies (`utf8_range`), and custom C helper functions specifically for this Perl-UPB binding. This library centralizes common logic used across all XS sub-modules (`Arena.so`, `Message.so`, etc.).
 
-*   Marshalling data between Perl SVs and upb types.
-*   Common XS error handling routines.
-*   Utility functions not provided by `upb` but needed by the XS layer.
+## Symbol Visibility and ABI Stability
 
-This library will be built by the MakeMaker process as a prerequisite for building the XS module.
+To ensure ABI stability and prevent symbol collisions, we use a linker version script (`libprotobuf_common.map`) to strictly control which symbols are exported from `libprotobuf_common.so`.
+
+*   **Global Symbols:** Only symbols within the `PerlUpb_*`, `upb_*`, `_upb_*`, `google_*`, and `utf8_range_*` namespaces are exported.
+*   **Local Symbols:** All other symbols (including internal helpers and leaked `main` functions from test objects) are hidden from the global namespace using `local: *;`.
+
+This approach ensures that the shared library only exposes its intended public API.
 
 ## C API Naming Conventions for XS
 

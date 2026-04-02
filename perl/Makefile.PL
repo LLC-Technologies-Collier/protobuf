@@ -106,9 +106,9 @@ sub MY::postamble {
 all :: ${common_lib}
 
 # Rule to build the static library
-${common_lib}: ${common_o_string}
+${common_lib}: ${common_o_string} libprotobuf_common.map
 	\$(RM_F) ${common_lib}
-	\$(CC) -shared -o ${common_lib} ${common_o_string} \$(LDFLAGS)
+	\$(CC) -shared -Wl,--version-script=libprotobuf_common.map -o ${common_lib} ${common_o_string} \$(LDFLAGS)
 
 EOM
 
