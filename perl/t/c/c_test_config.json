@@ -26,6 +26,15 @@
       "xs/protobuf/obj_cache.c"
     ]
   },
+  "protobuf/obj_cache_lru": {
+    "deps": [
+      "xs/protobuf.h",
+      "t/c/upb-perl-test.h"
+    ],
+    "extra_src": [
+      "xs/protobuf/obj_cache.c"
+    ]
+  },
   "protobuf/arena": {
     "deps": [
       "xs/protobuf.h",

@@ -21,4 +21,10 @@ void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr);
 // Clears the entire cache (during interpreter shutdown)
 void PerlUpb_ObjCache_Clear(pTHX);
 
+// Sets the maximum number of items in the cache.
+void PerlUpb_ObjCache_SetCapacity(pTHX_ size_t capacity);
+
+// Returns the current cache capacity.
+size_t PerlUpb_ObjCache_GetCapacity(pTHX);
+
 #endif // PERL_PROTOBUF_OBJ_CACHE_H_
