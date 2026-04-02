@@ -23,7 +23,15 @@ To ensure ABI stability and prevent symbol collisions, we use a linker version s
 
 1.  **XS Loading:** When the main `Protobuf.so` or any sub-module is loaded, it links against `libprotobufperl.so`.
 2.  **BOOT Section:** The `BOOT:` section in `lib/Protobuf.xs` MUST call `PerlUpb_Protobuf_InitModule(aTHX)`.
-3.  **Component Registration:** `PerlUpb_Protobuf_InitModule` initializes the object cache, audit log, and registers internal XS functions in the `Protobuf::Internal` namespace.
+3.  **Component Registration:** `PerlUpb_Protobuf_InitModule` initializes the **Per-Interpreter Registry**, object cache, audit log, and registers internal XS functions in the `Protobuf::Internal` namespace.
+
+## Per-Interpreter Registry
+
+To avoid expensive global Perl SV lookups (`get_sv`) in performance-critical C paths, the implementation utilizes a centralized registry struct (`PerlUpb_Registry`) stored in the interpreter's `PL_modglobal` hash.
+
+*   **Header:** `xs/protobuf/registry.h`
+*   **State Managed:** Object Cache (`HV*`), LRU List (`AV*`), Audit Log (`void*`), and global configuration (e.g., `max_cache_capacity`).
+*   **Access:** XS functions SHOULD use `PerlUpb_Registry_Get(aTHX)` to retrieve the current interpreter's state. This pattern de-risks future feature implementation (like thread-local arena caching) by providing a single, type-safe C hook for all global state.
 
 ## Typemap Strategy
 

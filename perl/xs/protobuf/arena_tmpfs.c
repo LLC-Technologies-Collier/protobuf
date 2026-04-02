@@ -12,30 +12,30 @@
 #include <unistd.h>
 #include <errno.h>
 
+typedef enum {
+    PERL_UPB_BLOCK_MMAP = 0,
+    PERL_UPB_BLOCK_MALLOC = 1
+} PerlUpb_BlockType;
+
 typedef struct {
     upb_alloc base;
-    int fd;
+    PerlUpb_BlockType type;
+    int fd;         // Used if MMAP
     void* region;
     size_t size;
     size_t offset;
-    bool is_owner;
-} PerlUpb_TmpfsAlloc;
+} PerlUpb_BlockAlloc;
 
-// Linear allocator from mmap region
-static void* PerlUpb_TmpfsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize,
+// Generalized Linear allocator
+static void* PerlUpb_BlockAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize,
                                      size_t size, size_t* actual_size) {
-    PerlUpb_TmpfsAlloc* t = (PerlUpb_TmpfsAlloc*)alloc;
+    PerlUpb_BlockAlloc* b = (PerlUpb_BlockAlloc*)alloc;
 
-    if (size == 0) {
-        // Free is a no-op for this linear allocator; arena owns everything.
-        return NULL;
-    }
+    if (size == 0) return NULL; // Free is a no-op
 
     if (ptr != NULL) {
-        // Realloc: we only support appending. If ptr is the last allocation, 
-        // we could theoretically expand it, but for simplicity, we just 
-        // allocate new space and copy.
-        void* new_ptr = PerlUpb_TmpfsAlloc_Func(alloc, NULL, 0, size, actual_size);
+        // Realloc
+        void* new_ptr = PerlUpb_BlockAlloc_Func(alloc, NULL, 0, size, actual_size);
         if (new_ptr && oldsize > 0) {
             memcpy(new_ptr, ptr, oldsize);
         }
@@ -44,36 +44,28 @@ static void* PerlUpb_TmpfsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
 
     // Alignment (8 bytes)
     size_t aligned_size = (size + 7) & ~7;
-    if (t->offset + aligned_size > t->size) {
-        return NULL; // OOM in shared region
-    }
+    if (b->offset + aligned_size > b->size) return NULL;
 
-    void* ret = (char*)t->region + t->offset;
-    t->offset += aligned_size;
+    void* ret = (char*)b->region + b->offset;
+    b->offset += aligned_size;
     
-    if (actual_size) {
-        *actual_size = aligned_size;
-    }
-
+    if (actual_size) *actual_size = aligned_size;
     return ret;
 }
 
-// Special wrapper for Tmpfs Arena
+// Special wrapper for Custom Allocator Arenas
 typedef struct {
     PerlUpb_Arena base;
-    PerlUpb_TmpfsAlloc* alloc;
-} PerlUpb_Arena_Tmpfs;
+    PerlUpb_BlockAlloc* alloc;
+} PerlUpb_Arena_Custom;
 
 SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
     int fd = open(path, O_RDWR | O_CREAT, 0666);
-    if (fd < 0) {
-        croak("Failed to open tmpfs file %s: %s", path, strerror(errno));
-    }
+    if (fd < 0) croak("Failed to open tmpfs file %s: %s", path, strerror(errno));
 
-    // Ensure file is large enough
     if (ftruncate(fd, size) != 0) {
         close(fd);
-        croak("Failed to truncate tmpfs file %s to %zu: %s", path, size, strerror(errno));
+        croak("Failed to truncate tmpfs file %s: %s", path, strerror(errno));
     }
 
     void* region = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -82,30 +74,28 @@ SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
         croak("Failed to mmap tmpfs file %s: %s", path, strerror(errno));
     }
 
-    PerlUpb_TmpfsAlloc* t_alloc = (PerlUpb_TmpfsAlloc*)safemalloc(sizeof(PerlUpb_TmpfsAlloc));
-    t_alloc->base.func = PerlUpb_TmpfsAlloc_Func;
-    t_alloc->fd = fd;
-    t_alloc->region = region;
-    t_alloc->size = size;
-    t_alloc->offset = 0;
-    t_alloc->is_owner = true;
+    PerlUpb_BlockAlloc* b_alloc = (PerlUpb_BlockAlloc*)safemalloc(sizeof(PerlUpb_BlockAlloc));
+    b_alloc->base.func = PerlUpb_BlockAlloc_Func;
+    b_alloc->type = PERL_UPB_BLOCK_MMAP;
+    b_alloc->fd = fd;
+    b_alloc->region = region;
+    b_alloc->size = size;
+    b_alloc->offset = 0;
 
-    upb_Arena* arena = upb_Arena_Init(NULL, 0, &t_alloc->base);
+    upb_Arena* arena = upb_Arena_Init(NULL, 0, &b_alloc->base);
     if (!arena) {
         munmap(region, size);
         close(fd);
-        safefree(t_alloc);
-        croak("Failed to initialize upb_Arena with tmpfs allocator");
+        safefree(b_alloc);
+        croak("Failed to initialize upb_Arena with block allocator");
     }
 
-    PerlUpb_Arena_Tmpfs* wrapper = (PerlUpb_Arena_Tmpfs*)safemalloc(sizeof(PerlUpb_Arena_Tmpfs));
+    PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)safemalloc(sizeof(PerlUpb_Arena_Custom));
     wrapper->base.arena = arena;
-    wrapper->alloc = t_alloc;
+    wrapper->alloc = b_alloc;
 
     HV* hv = newHV();
     hv_store(hv, "_arena_ptr", 10, newSViv(PTR2IV(wrapper)), 0);
-    // Flag it as a tmpfs arena for special cleanup if needed, though 
-    // PerlUpb_Arena_Destroy will be updated to handle it.
     hv_store(hv, "_is_tmpfs", 9, newSViv(1), 0);
 
     SV* rv = newRV_noinc((SV*)hv);
@@ -113,21 +103,45 @@ SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
     return rv;
 }
 
-// Update DestroyRaw to handle PerlUpb_Arena_Tmpfs
+// Internal helper for RAM-backed linear arenas
+upb_Arena* PerlUpb_Arena_NewBlock(pTHX_ size_t size, PerlUpb_BlockAlloc** out_alloc) {
+    void* region = safemalloc(size);
+    
+    PerlUpb_BlockAlloc* b_alloc = (PerlUpb_BlockAlloc*)safemalloc(sizeof(PerlUpb_BlockAlloc));
+    b_alloc->base.func = PerlUpb_BlockAlloc_Func;
+    b_alloc->type = PERL_UPB_BLOCK_MALLOC;
+    b_alloc->fd = -1;
+    b_alloc->region = region;
+    b_alloc->size = size;
+    b_alloc->offset = 0;
+
+    upb_Arena* arena = upb_Arena_Init(NULL, 0, &b_alloc->base);
+    if (!arena) {
+        safefree(region);
+        safefree(b_alloc);
+        return NULL;
+    }
+
+    if (out_alloc) *out_alloc = b_alloc;
+    return arena;
+}
+
 void PerlUpb_Arena_DestroyRaw_Tmpfs(pTHX_ void* ptr, bool is_tmpfs) {
     if (!is_tmpfs) {
         PerlUpb_Arena_DestroyRaw(aTHX_ ptr);
         return;
     }
 
-    PerlUpb_Arena_Tmpfs* wrapper = (PerlUpb_Arena_Tmpfs*)ptr;
+    PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)ptr;
     if (wrapper) {
-        if (wrapper->base.arena) {
-            upb_Arena_Free(wrapper->base.arena);
-        }
+        if (wrapper->base.arena) upb_Arena_Free(wrapper->base.arena);
         if (wrapper->alloc) {
-            munmap(wrapper->alloc->region, wrapper->alloc->size);
-            close(wrapper->alloc->fd);
+            if (wrapper->alloc->type == PERL_UPB_BLOCK_MMAP) {
+                munmap(wrapper->alloc->region, wrapper->alloc->size);
+                close(wrapper->alloc->fd);
+            } else {
+                safefree(wrapper->alloc->region);
+            }
             safefree(wrapper->alloc);
         }
         safefree(wrapper);

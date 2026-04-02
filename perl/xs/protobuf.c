@@ -3,6 +3,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "perl/xs/protobuf.h"
+#include "perl/xs/protobuf/registry.h"
 
 XS(XS_Protobuf_Internal_get_cache_audit_log) {
     dXSARGS;
@@ -46,6 +47,7 @@ XS(XS_Protobuf_Internal_clear_cache) {
 
 // Initialize all sub-components
 void PerlUpb_Protobuf_InitModule(pTHX) {
+    PerlUpb_Registry_Init(aTHX);
     PerlUpb_ObjCache_Init(aTHX);
     newXS("Protobuf::Internal::get_cache_audit_log", XS_Protobuf_Internal_get_cache_audit_log, __FILE__);
     newXS("Protobuf::Internal::set_cache_capacity", XS_Protobuf_Internal_set_cache_capacity, __FILE__);
@@ -55,4 +57,9 @@ void PerlUpb_Protobuf_InitModule(pTHX) {
 }
 
 // get_descriptor_proto_fds() function remains here for now
-// ... its implementation ...
+#include "google/protobuf/descriptor.upb_minitable.h"
+SV* get_descriptor_proto_fds(void) {
+    dTHX;
+    // This is a stub for now or would return the serialized descriptor data.
+    return &PL_sv_undef;
+}

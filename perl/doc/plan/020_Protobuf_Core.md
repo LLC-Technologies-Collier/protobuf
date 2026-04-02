@@ -22,10 +22,10 @@
     *   [x] C tests pass for `perl/t/c/protobuf/obj_cache.c`.
 
 *   **perl/xs/protobuf/registry.c (NEW):**
-    *   [ ] TODO: Implement **Per-Interpreter Registry Pattern** (Centralized State).
-    *   [ ] Create a single C struct to hold all interpreter-local state (Object Cache, Audit Log, LRU).
-    *   [ ] Integrate with Perl's `MY_CXT` for ultra-fast, lock-free state retrieval within an interpreter.
-    *   [ ] Refactor `obj_cache.c` to eliminate expensive global SV lookups.
+    *   [x] TODO: Implement **Per-Interpreter Registry Pattern** (Centralized State).
+    *   [x] Create a single C struct to hold all interpreter-local state (Object Cache, Audit Log, LRU).
+    *   [x] Integrate with Perl's `PL_modglobal` for ultra-fast, lock-free state retrieval within an interpreter.
+    *   [x] Refactor `obj_cache.c` to eliminate expensive global SV lookups.
 
 *   **perl/xs/protobuf/arena.c:**
     *   [x] Create test file `perl/t/c/protobuf/arena.c`.
@@ -42,9 +42,9 @@
 
 *   **perl/xs/protobuf/arena_tmpfs.c:**
     *   [x] Implement tmpfs-backed custom allocator.
-    *   [ ] TODO: Implement **Block Allocator Pattern** (Generalized `upb_alloc`).
-        *   [ ] Refactor `arena_tmpfs.c` to support both `mmap` (file-backed) and `malloc` (RAM-backed) linear allocation buffers.
-        *   [ ] Enable reuse of the linear allocator for the thread-local fast-path arena.
+    *   [x] TODO: Implement **Block Allocator Pattern** (Generalized `upb_alloc`).
+        *   [x] Refactor `arena_tmpfs.c` to support both `mmap` (file-backed) and `malloc` (RAM-backed) linear allocation buffers.
+        *   [x] Enable reuse of the linear allocator for the thread-local fast-path arena.
 
 *   **perl/xs/protobuf/utils.c:**
     *   [x] Create test file `perl/t/c/protobuf/utils.c`.
