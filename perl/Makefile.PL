@@ -54,7 +54,7 @@ my @COMMON_O_FILES = map {
     $o;
 } @COMMON_C_FILES;
 
-my $COMMON_LIB = 'libprotobuf_common.$(DLEXT)';
+my $COMMON_LIB = 'libprotobufperl.$(DLEXT)';
 my $COMMON_O_STRING = join(' ', @COMMON_O_FILES);
 
 my @COMMON_FILES_PAIRS;
@@ -80,7 +80,7 @@ sub MY::postamble {
 
     my %done_o;
     my @obj_rules;
-    # .... OBJECT FILE RULES for libprotobuf_common.a ....
+    # .... OBJECT FILE RULES for libprotobufperl.a ....
     foreach my $pair (@$file_pairs) {
         my $c_file = $pair->{c};
         my $o_file = $pair->{o};
@@ -106,9 +106,9 @@ sub MY::postamble {
 all :: ${common_lib}
 
 # Rule to build the static library
-${common_lib}: ${common_o_string} libprotobuf_common.map
+${common_lib}: ${common_o_string} libprotobufperl.map
 	\$(RM_F) ${common_lib}
-	\$(CC) -shared -Wl,--version-script=libprotobuf_common.map -o ${common_lib} ${common_o_string} \$(LDFLAGS)
+	\$(CC) -shared -Wl,--version-script=libprotobufperl.map -o ${common_lib} ${common_o_string} \$(LDFLAGS)
 
 EOM
 
@@ -209,7 +209,7 @@ EOM
 
         my $link_line = join " ", grep { length $_ > 0 } (
             '$(CC)', '$(CCFLAGS)', $extra_ccflags, '-o', $target, $all_objects_str,
-            't/c/upb-perl-test.o', '-L$(CURDIR)', '-lprotobuf_common',
+            't/c/upb-perl-test.o', '-L$(CURDIR)', '-lprotobufperl',
             $embed_cflags, $embed_ldflags, $ldflags, "-lpcre2-8 $sanitizer_flags"
         );
 
@@ -238,7 +238,7 @@ EOM
 
         my $link_line = join " ", (
             '$(CC)', '$(CCFLAGS)', '-o', $target, $object,
-            't/c/upb-perl-test.o', '-L$(CURDIR)', '-lprotobuf_common',
+            't/c/upb-perl-test.o', '-L$(CURDIR)', '-lprotobufperl',
             $embed_cflags, $embed_ldflags, $sanitizer_flags
         );
 
@@ -315,16 +315,13 @@ WriteMakefile(
     LICENSE           => 'apache_2_0',
     DEFINE            => '',
     INC               => '-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I../bazel-bin/src/google/protobuf/_virtual_imports/descriptor_proto -I$(PERL_INC)',
-    MYEXTLIB          => 'libprotobuf_common.$(DLEXT)',
+    MYEXTLIB          => 'libprotobufperl.$(DLEXT)',
     CCFLAGS           => "-g $Config{ccflags} -fPIC $sanitizer_flags",
     XSMULTI           => 1,
-    LIBS              => ['-L$(CURDIR) -lprotobuf_common'], # Link the common static library
+    LIBS              => ['-L$(CURDIR) -lprotobufperl'], # Link the common shared library
     LDDLFLAGS         => "$Config{lddlflags} $sanitizer_flags",
     LDFLAGS           => "$Config{ldflags} $sanitizer_flags",
     
-    # Link the common static library into all .so files
-    # LIBS              => ['-L$(CURDIR) -lprotobuf_common'],
-
     # Clean the generated object files and the static library
     clean             => { FILES => join(' ', @COMMON_O_FILES, $COMMON_LIB, 'blib') },
 );

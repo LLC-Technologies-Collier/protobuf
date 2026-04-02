@@ -23,9 +23,16 @@ This document outlines the specific conventions and testing patterns for the XS 
 - **Thread Stress**: Use `STRESS_THREADS(n, func, arg)` to verify concurrency safety (currently a stub).
 - **XS-Based C Runner:** For C logic that requires a Perl interpreter context (`aTHX`), use the XS runner defined in `perl/t/c/Test.xs`.
 
-### Concurrency Testing
-- Concurrency safety MUST be verified using `libcoro` (in `t/c/integration/`) and Perl-level event loops like `Mojo::IOLoop` (in `xt/mojo/`).
-- Integration tests should stress re-entrancy and thread-local state management in the C layer.
+### Concurrency and Thread Safety
+- **Striped Mutexes:** For high-contention resources (like caches), utilize the striped mutex implementation in `obj_cache.c`.
+- **Lock Ordering:** Maintain a strict lock acquisition order (e.g., Global/Audit Lock -> Stripe Lock) to prevent deadlocks.
+- **Thread Stability:** Inside thread-stress functions, always wrap Perl-related logic in `ENTER; SAVETMPS; ... FREETMPS; LEAVE;` blocks.
+- **Pointer Recovery:** Use `sscanf(key, "%p", &ptr)` to reliably recover original C pointers from stringified hash keys.
+
+## Multi-Module XS Conventions
+- **Colocated Files:** Every package requiring XS exports (e.g., `Protobuf::Internal`) MUST have a corresponding `.xs` and `.pm` file.
+- **Initialization:** Use a centralized `PerlUpb_Protobuf_InitModule(aTHX)` function called from the `BOOT:` section of the main module's `.xs` file.
+- **Boot Alignment:** Ensure `MODULE` and `PACKAGE` declarations in `.xs` files exactly match the Perl package name to avoid symbol lookup errors.
 
 ## Python Parity
 - The primary goal of this implementation is full feature parity with the Python upb-based implementation.

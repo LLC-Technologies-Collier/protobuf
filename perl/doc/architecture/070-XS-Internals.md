@@ -2,24 +2,28 @@
 
 [TOC]
 
-## Purpose of `libprotobuf_common.so`
+## Purpose of `libprotobufperl.so`
 
-`libprotobuf_common.so` is a shared library containing the `upb` core, third-party dependencies (`utf8_range`), and custom C helper functions specifically for this Perl-UPB binding. This library centralizes common logic used across all XS sub-modules (`Arena.so`, `Message.so`, etc.).
+`libprotobufperl.so` is a shared library containing the `upb` core, third-party dependencies (`utf8_range`), and custom C helper functions specifically for this Perl-UPB binding. This library centralizes common logic used across all XS sub-modules (`Arena.so`, `Message.so`, etc.).
 
 ## Symbol Visibility and ABI Stability
 
-To ensure ABI stability and prevent symbol collisions, we use a linker version script (`libprotobuf_common.map`) to strictly control which symbols are exported from `libprotobuf_common.so`.
+To ensure ABI stability and prevent symbol collisions, we use a linker version script (`libprotobufperl.map`) to strictly control which symbols are exported from `libprotobufperl.so`.
 
 *   **Global Symbols:** Only symbols within the `PerlUpb_*`, `upb_*`, `_upb_*`, `google_*`, and `utf8_range_*` namespaces are exported.
 *   **Local Symbols:** All other symbols (including internal helpers and leaked `main` functions from test objects) are hidden from the global namespace using `local: *;`.
 
-This approach ensures that the shared library only exposes its intended public API.
-
 ## C API Naming Conventions for XS
 
-*   Functions intended to be called from XS should be prefixed with `perl_upb_`.
-*   Helper functions internal to the C code (not directly called by XS macros) should be declared `static` and follow standard C naming conventions.
-*   Clearly document parameters and return values in header files.
+*   Functions intended for global export MUST be prefixed with `PerlUpb_`.
+*   Functions intended to be called from XS should follow the `PerlUpb_<Component>_<Method>` pattern.
+*   The top-level initialization function is `PerlUpb_Protobuf_InitModule(pTHX)`.
+
+## Initialization Flow
+
+1.  **XS Loading:** When the main `Protobuf.so` or any sub-module is loaded, it links against `libprotobufperl.so`.
+2.  **BOOT Section:** The `BOOT:` section in `lib/Protobuf.xs` MUST call `PerlUpb_Protobuf_InitModule(aTHX)`.
+3.  **Component Registration:** `PerlUpb_Protobuf_InitModule` initializes the object cache, audit log, and registers internal XS functions in the `Protobuf::Internal` namespace.
 
 ## Typemap Strategy
 

@@ -27,4 +27,15 @@ void PerlUpb_ObjCache_SetCapacity(pTHX_ size_t capacity);
 // Returns the current cache capacity.
 size_t PerlUpb_ObjCache_GetCapacity(pTHX);
 
+// Audit log event types
+#define OBJ_CACHE_EVENT_ADD    1
+#define OBJ_CACHE_EVENT_HIT    2
+#define OBJ_CACHE_EVENT_MISS   3
+#define OBJ_CACHE_EVENT_DELETE 4
+#define OBJ_CACHE_EVENT_EVICT  5
+
+// Returns the audit log as a Perl array reference.
+SV* PerlUpb_ObjCache_GetAuditLog(pTHX);
+
 #endif // PERL_PROTOBUF_OBJ_CACHE_H_
+

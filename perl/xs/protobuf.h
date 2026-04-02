@@ -11,7 +11,7 @@
 #include "perl/xs/protobuf/utils.h"
 
 // Top-level module initialization
-void protobuf_init_module(pTHX);
+void PerlUpb_Protobuf_InitModule(pTHX);
 
 SV* get_descriptor_proto_fds(void); // Remains here for now
 
