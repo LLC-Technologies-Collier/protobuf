@@ -46,9 +46,14 @@ Testing the XS layer involves a combination of Perl-level tests and dedicated C-
     -   `is_string(got, expected, name)`: String comparison.
     -   `TODO("reason") { ... }`: Mark tests as deferred (Schwern-style).
     -   `SKIP("reason", count)`: Skip a block of tests.
-    -   `subtest("name", { ... })`: (Planned) Indented subtest support for better organization.
+    -   `subtest("name", { ... })`: Indented subtest support for hierarchical organization.
+    -   `LEAK_CHECK(arena, { ... }, "name")`: Verifies local allocation neutrality using arena-level statistics.
 *   **Concurrency Stress:** Tests in `t/c/integration/` MUST use the `STRESS_THREADS(n, func)` or `libcoro` patterns to verify re-entrancy and thread-local state safety.
-*   **Memory Safety:** Verification under AddressSanitizer (ASan) is mandatory. Leak checking using `LEAK_CHECK { ... }` blocks based on `upb_Arena` stats is a high-reaching goal to ensure local allocation neutrality.
+*   **Engineering Excellence (Reach for More):**
+    -   **Chaos Allocation Engine:** Future tests will utilize a pluggable C allocator to randomly inject `malloc` failures, verifying the robustness of error propagation and resource cleanup.
+    -   **SIMD-Aware Instruction Coverage:** Implementation of reporting tools to ensure VPP-style vectorized paths (SSE4.1/AVX2) are comprehensively exercised.
+    -   **Binary-Diff Serialization:** Use of canonical golden binaries to verify bit-exact stability of serialization output across versions.
+*   **Memory Safety:** Verification under AddressSanitizer (ASan) is mandatory.
 *   **Embedding Perl:** The C tests embed a minimal Perl interpreter to use basic SV manipulation functions. This is done via `PERL_SYS_INIT3`, `perl_alloc`, `perl_construct`, and `perl_parse` with a minimal script like `"-e", "0"`. `perl_destruct` and `perl_free` are called at the end.
 *   **ERRSV Content:** Due to the minimal embedded interpreter, reliably asserting the exact string content of `ERRSV` after a `croak` is difficult, as other operations within the embedded Perl might alter `ERRSV`. C tests should primarily focus on confirming that a croak *occurred* (e.g., by checking the non-zero return from `JMPENV_PUSH`), rather than matching the exact error message. Detailed error message testing is best done in the Perl-level `.t` tests, which have a full `Test::More` environment.
 

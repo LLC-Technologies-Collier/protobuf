@@ -9,22 +9,27 @@
 *   [x] Backfill existing C tests with `TODO` stubs for missing functionality.
 *   [x] Add SKIP functionality for C tests.
 *   [x] Implement indented subtest support in the C harness (TAP 13 compliant).
-*   [x] Implement LEAK_CHECK { ... } block (C-layer).
+*   [x] Implement LEAK_CHECK(arena, block, name) block (C-layer).
 *   [x] Implement STRESS_THREADS(n, func, arg) macro for standardized C-level concurrency verification.
-
+*   [ ] TODO: Implement Chaos Allocation Engine to verify robust error recovery on `malloc` failure. (Difficulty: 6/10).
+*   [ ] TODO: Implement SIMD-aware instruction-level coverage reporting for vectorized paths. (Difficulty: 9/10).
+*   [ ] TODO: Implement Binary-Diff Serialization verification for canonical output stability. (Difficulty: 4/10).
 
 ## Implemented Macros
 *   `plan(n)`
 *   `ok(val, name)`
 *   `is(got, expected, name)`
+*   `isnt(got, expected, name)`
 *   `is_u(got, expected, name)`
+*   `isnt_u(got, expected, name)`
 *   `is_string(got, expected, name)`
 *   `is_blob(got, expected, len, name)`
 *   `is_string_view(got, expected, len, name)`
 *   `like(str, pattern, name)`
 *   `like_n(str, len, pattern, name)`
 *   `subtest(name, block)`
-*   `LEAK_CHECK(block)`
+*   `LEAK_CHECK(arena, block, name)`
 *   `STRESS_THREADS(n, func, arg)`
 *   `cdiag(fmt, ...)`
+*   `SKIP(reason, count)`
 
