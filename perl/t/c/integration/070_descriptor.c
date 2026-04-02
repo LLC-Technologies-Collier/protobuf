@@ -11,10 +11,30 @@
 #include "t/c/convert/test_util.h"
 #include <stdio.h>
 
+static void test_descriptor_cache_identity(pTHX_ const upb_MessageDef *mdef) {
+    const upb_FieldDef *f = upb_MessageDef_Field(mdef, 0);
+    ok(f != NULL, "CacheIdentity: Got a field");
+    if (!f) return;
+
+    SV *sv1 = PerlUpb_FieldDef_GetWrapper(aTHX_ f);
+    SV *sv2 = PerlUpb_FieldDef_GetWrapper(aTHX_ f);
+
+    ok(sv1 != NULL, "CacheIdentity: sv1 is not NULL");
+    ok(SvRV(sv1) == SvRV(sv2), "CacheIdentity: Same field pointer returns same underlying SV");
+    SvREFCNT_dec(sv1);
+    SvREFCNT_dec(sv2);
+
+    SV *msv1 = PerlUpb_MessageDef_GetWrapper(aTHX_ mdef);
+    SV *msv2 = PerlUpb_MessageDef_GetWrapper(aTHX_ mdef);
+    ok(SvRV(msv1) == SvRV(msv2), "CacheIdentity: Same message def pointer returns same underlying SV");
+    SvREFCNT_dec(msv1);
+    SvREFCNT_dec(msv2);
+}
+
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(12 + 3);
+    plan(12 + 4 + 3);
 
     upb_Arena *arena = upb_Arena_New();
     if (!load_test_descriptors(aTHX_ arena)) {
@@ -79,7 +99,7 @@ int main(int argc, char** argv) {
     }
 
     TODO("Verify integrated Object Cache identity for all descriptor types") {
-        ok(0, "Retrieving the same FieldDef/EnumDef twice returns the same Perl SV");
+        test_descriptor_cache_identity(aTHX_ msg_def);
     }
 
     TODO("Implement integrated EnumValueDef and OneofDef resolution tests") {

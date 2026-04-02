@@ -42,10 +42,32 @@ static const PerlUpb_ByNameMap_VTable mock_vtable = {
     mock_count, mock_lookup, mock_key, mock_value, mock_wrap
 };
 
+static void test_as_hash(pTHX_ SV* map_sv) {
+    SV* hash_rv = PerlUpb_ByNameMap_AsHash(aTHX_ map_sv);
+    ok(SvROK(hash_rv) && SvTYPE(SvRV(hash_rv)) == SVt_PVHV, "AsHash returns a hash reference");
+    HV* hv = (HV*)SvRV(hash_rv);
+    
+    is(hv_iterinit(hv), 3, "Projected hash has 3 keys");
+    
+    SV** foo_ptr = hv_fetch(hv, "foo", 3, 0);
+    ok(foo_ptr != NULL, "Found 'foo' in hash");
+    if (foo_ptr) {
+        is(SvIV(*foo_ptr), 10, "Value for 'foo' is 10");
+    }
+
+    SV** bar_ptr = hv_fetch(hv, "bar", 3, 0);
+    ok(bar_ptr != NULL, "Found 'bar' in hash");
+    if (bar_ptr) {
+        is(SvIV(*bar_ptr), 20, "Value for 'bar' is 20");
+    }
+
+    SvREFCNT_dec(hash_rv);
+}
+
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(9);
+    plan(16);
 
     SV* parent_sv = newSViv(1); // Fake parent
     SV* map_sv = PerlUpb_ByNameMap_New(aTHX_ parent_sv, NULL, &mock_vtable);
@@ -67,9 +89,7 @@ int main(int argc, char** argv) {
     is(SvIV(val1), 20, "Value at index 1 is 20");
     SvREFCNT_dec(val1);
 
-    TODO("Implement Direct-to-Hash Projection for high-frequency bulk access") {
-        ok(0, "C-level projection of ByNameMap to standard Perl HV");
-    }
+    test_as_hash(aTHX_ map_sv);
 
     TODO("Verify concurrent iterator stability for ByNameMap") {
         ok(0, "Iterators remain valid during interleaved read-only access in coroutines");

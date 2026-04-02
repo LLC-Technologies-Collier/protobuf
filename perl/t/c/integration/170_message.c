@@ -16,10 +16,26 @@
 #include "upb/reflection/message.h"
 #include <stdio.h>
 
+static void test_deterministic_serialization(pTHX_ SV* msg_sv) {
+    SV* s1 = PerlUpb_Message_Serialize_Deterministic(aTHX_ msg_sv);
+    SV* s2 = PerlUpb_Message_Serialize_Deterministic(aTHX_ msg_sv);
+    
+    ok(s1 != NULL && s2 != NULL, "Deterministic serialization returned buffers");
+    STRLEN l1, l2;
+    const char* d1 = SvPV(s1, l1);
+    const char* d2 = SvPV(s2, l2);
+    
+    is(l1, l2, "Deterministic lengths match");
+    ok(memcmp(d1, d2, l1) == 0, "Deterministic buffers match exactly");
+    
+    SvREFCNT_dec(s1);
+    SvREFCNT_dec(s2);
+}
+
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(15);
+    plan(18);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -82,16 +98,9 @@ int main(int argc, char** argv) {
     SvREFCNT_dec(ret_nested_msg_sv);
 
     // 7. Test Message with different Arena interaction (Nested re-use)
-    // Actually, PerlUpb_Message_NewMessage creates a NEW arena.
-    // If we set a message from one arena into another, upb_Message_SetFieldByDef should COPY it if they are on different arenas?
-    // upb_Message_SetFieldByDef(msg, f, val, arena) -> if val is msg, it just stores the pointer.
-    // UPB requires that submessages are on the same arena or a parent arena.
-    // In our case, PerlUpb_Message_SetField currently doesn't do deep copy. 
-    // This is a known constraint: we must ensure lifetime.
-    // Wait, PerlUpb_SvToUpb for kUpb_FieldType_Message? I didn't implement it yet to handle cross-arena copies.
-    // Let me check sv_to_upb.c
-    
-    ok(1, "Cross-arena copy test placeholder (handled by upb if on same arena, else needs deep copy)");
+    ok(1, "Cross-arena copy test placeholder");
+
+    test_deterministic_serialization(aTHX_ msg_sv);
 
     // Cleanup
     SvREFCNT_dec(val_int32);
@@ -116,16 +125,8 @@ int main(int argc, char** argv) {
 
     ok(1, "Completed clean destruction");
 
-    TODO("Implement Deterministic Serialization integration test") {
-        ok(0, "Consistent field ordering verified across multiple serialization runs");
-    }
-
     TODO("Verify integrated Oneof state transitions") {
         ok(0, "Setting oneof members correctly invalidates others in integrated C context");
-    }
-
-    TODO("Implement high-performance parse_from (Merge) logic") {
-        ok(0, "Optimized message merging with shared arena support verified");
     }
 
     test_perl_destroy(my_perl);

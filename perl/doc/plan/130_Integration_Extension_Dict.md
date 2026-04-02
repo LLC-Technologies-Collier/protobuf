@@ -3,7 +3,7 @@
 [TOC]
 
 *   [x] Create test file `perl/t/c/integration/130_extension_dict.c`.
-*   [ ] Tests cover interactions with messages and extensions. (Partially implemented).
+*   [x] Tests cover interactions with messages and extensions. (Verified initial get, set/get roundtrip, and iteration).
 *   [ ] TODO: Implement Cross-Arena Extension Copy Stress tests.
 *   [ ] TODO: Implement Audit/Trace for Extension Access.
 *   [ ] TODO: Verify ExtensionDict stability during re-parsing of parent message.

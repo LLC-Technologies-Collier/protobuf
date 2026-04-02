@@ -1,17 +1,31 @@
 #include "t/c/upb-perl-test.h"
 #include "xs/protobuf.h"
 #include "xs/map/map.h"
+#include "xs/protobuf/arena.h"
 #include "xs/descriptor/field.h"
 #include "xs/descriptor/message.h"
+
+static void test_map_creation(pTHX) {
+    SV* arena_sv = PerlUpb_Arena_New(aTHX);
+    // Passing NULL for upb_Map and FieldDef is fine for GetMap check and Size(0)
+    SV* map_sv = PerlUpb_Map_New(aTHX_ NULL, NULL, arena_sv);
+    
+    ok(map_sv != NULL, "PerlUpb_Map_New returns non-NULL");
+    ok(sv_derived_from(map_sv, "Protobuf::Internal::Map"), "Map SV has correct class");
+    is(PerlUpb_Map_Size(aTHX_ map_sv), 0, "Initial map size is 0");
+    
+    extern void PerlUpb_Map_Free(pTHX_ SV* sv);
+    PerlUpb_Map_Free(aTHX_ map_sv);
+    SvREFCNT_dec(map_sv);
+    PerlUpb_Arena_Destroy(aTHX_ arena_sv);
+}
 
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(2);
+    plan(4);
 
-    // Mock Map data
-    // In a real test, we'd use a real upb_Map and FieldDef.
-    ok(1, "Map test placeholder");
+    test_map_creation(aTHX);
     ok(1, "Map functions cover creation and basic access");
 
     test_perl_destroy(my_perl);

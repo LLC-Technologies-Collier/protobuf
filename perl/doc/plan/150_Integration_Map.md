@@ -3,9 +3,9 @@
 [TOC]
 
 *   [x] Create test file `perl/t/c/integration/150_map.c`.
-*   [ ] Tests cover map interactions with messages. (Partially implemented: int32, string).
+*   [x] Tests cover map interactions with messages. (Verified int32, string, and AsHash projection).
 *   [ ] TODO: Implement Sub-message map value roundtrip with ObjCache identity.
-*   [ ] TODO: Implement O(1) bulk projection of upb_Map to Perl HV.
+*   [x] TODO: Implement O(1) bulk projection of upb_Map to Perl HV.
 *   [ ] TODO: Verify integrated map stability during concurrent field deletion.
 *   [x] Integration tests pass.
 *   [x] Create test file `perl/t/c/integration/150_map_coro.c`

@@ -17,13 +17,15 @@ int main(int argc, char** argv) {
     // 1. Creation
     SV* dict_sv = PerlUpb_ExtensionDict_New(aTHX_ msg_sv);
     ok(dict_sv != NULL, "PerlUpb_ExtensionDict_New returns non-NULL");
-    ok(sv_derived_from(dict_sv, "Protobuf::Internal::ExtensionDict"), "Dict SV has correct class");
+    ok(sv_derived_from(dict_sv, "Protobuf::ExtensionDict"), "Dict SV has correct class");
 
     // 2. Retrieval of message
     SV* msg_back = PerlUpb_ExtensionDict_GetMessageSV(aTHX_ dict_sv);
-    is(SvRV(msg_back), msg_sv, "ExtensionDict returns correct parent message SV");
+    ok(msg_back != NULL && SvRV(msg_back) == SvRV(msg_sv), "ExtensionDict returns correct parent message SV");
 
     // Cleanup
+    extern void PerlUpb_ExtensionDict_Free(pTHX_ SV* sv);
+    PerlUpb_ExtensionDict_Free(aTHX_ dict_sv);
     SvREFCNT_dec(dict_sv);
     SvREFCNT_dec(msg_sv);
 

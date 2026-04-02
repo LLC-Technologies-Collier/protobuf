@@ -2,10 +2,20 @@
 #include "xs/protobuf.h"
 #include "xs/descriptor_pool/pool.h"
 
+static void test_generated_pool(pTHX) {
+    SV* g1 = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
+    ok(g1 != NULL, "GeneratedPool returns non-NULL");
+    ok(sv_derived_from(g1, "Protobuf::DescriptorPool"), "GeneratedPool has correct class");
+    
+    SV* g2 = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
+    // Use underlying SV comparison for identity
+    ok(SvRV(g1) == SvRV(g2), "GeneratedPool returns same underlying SV (singleton)");
+}
+
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(3);
+    plan(6);
 
     // 1. Creation
     SV* pool_sv = PerlUpb_DescriptorPool_New(aTHX);
@@ -15,6 +25,9 @@ int main(int argc, char** argv) {
     // 2. Retrieval of raw pool
     const upb_DefPool* raw_pool = PerlUpb_DescriptorPool_GetPool(aTHX_ pool_sv);
     ok(raw_pool != NULL, "PerlUpb_DescriptorPool_GetPool returns raw upb_DefPool");
+
+    // 3. Generated Pool
+    test_generated_pool(aTHX);
 
     // Cleanup
     SvREFCNT_dec(pool_sv);

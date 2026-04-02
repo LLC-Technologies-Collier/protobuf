@@ -6,9 +6,9 @@
 
 *   **perl/xs/extension_dict/dict.c:**
     *   [x] Create test file `perl/t/c/extension_dict/dict.c`.
-    *   [ ] Tests cover all public functions. (Current: failing class verification and parent retrieval).
+    *   [x] Tests cover all public functions. (Verified class and parent retrieval).
     *   [x] Implement C functions.
-    *   [ ] C tests pass. (Current: Leak detected in PerlUpb_ExtensionDict_New).
+    *   [x] C tests pass. (Fixed leak and parent identity check).
 *   **perl/xs/extension_dict/iterator.c:**
     *   [x] Create test file `perl/t/c/extension_dict/iterator.c`. (TODO stub created).
     *   [ ] Tests cover all public functions.

@@ -7,7 +7,7 @@
 *   **perl/xs/descriptor_pool/pool.c:**
     *   [x] Create test file `perl/t/c/descriptor_pool/pool.c`.
     *   [x] Tests cover all public functions in the corresponding .h file, including checks for re-entrancy and safe state management.
-    *   [ ] TODO: Implement Thread-Safe Global Pool sharing across interpreters.
+    *   [ ] TODO: Implement Thread-Safe Global Pool sharing across interpreters. (Verified singleton access within interpreter).
     *   [x] Implement C functions.
     *   [x] C tests pass.
 *   **perl/xs/descriptor_pool/add.c:**

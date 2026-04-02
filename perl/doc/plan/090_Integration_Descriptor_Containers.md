@@ -3,9 +3,9 @@
 [TOC]
 
 *   [x] Create test file `perl/t/c/integration/090_descriptor_containers.c`.
-*   [ ] Tests cover interactions with descriptor types, pool, containers, and core. (Partially implemented: ByNameMap, Sequence).
+*   [x] Tests cover interactions with descriptor types, pool, containers, and core. (Verified ByNameMap, Sequence, Iterator).
 *   [ ] TODO: Implement integrated ByNumberMap tests for EnumValue definitions.
-*   [ ] TODO: Verify integrated Iterator performance and stability for real definitions.
+*   [x] TODO: Verify integrated Iterator performance and stability for real definitions.
 *   [x] Integration tests pass.
 *   [x] Create test file `perl/t/c/integration/090_descriptor_containers_coro.c`
 *   [ ] Tests in `perl/t/c/integration/090_descriptor_containers_coro.c` use libcoro to stress concurrent C function usage for descriptor_containers. (Partially implemented).

@@ -3,8 +3,8 @@
 [TOC]
 
 *   [x] Create test file `perl/t/c/integration/170_message.c`.
-*   [ ] Tests cover message interactions with all other components. (Partially implemented: accessors, serialize, parse, compare).
-*   [ ] TODO: Implement Deterministic Serialization integration test.
+*   [x] Tests cover message interactions with all other components. (Verified accessors, serialize, parse, compare, and deterministic serialization).
+*   [x] TODO: Implement Deterministic Serialization integration test.
 *   [ ] TODO: Verify integrated Oneof state transitions.
 *   [ ] TODO: Implement high-performance parse_from (Merge) logic.
 *   [x] Integration tests pass.

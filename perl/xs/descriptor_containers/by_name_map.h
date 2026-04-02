@@ -28,4 +28,7 @@ SV* PerlUpb_ByNameMap_Lookup(pTHX_ SV* self, const char* name);
 SV* PerlUpb_ByNameMap_Key(pTHX_ SV* self, int index);
 SV* PerlUpb_ByNameMap_Value(pTHX_ SV* self, int index);
 
+// Returns a standard Perl hash containing all items in the map.
+SV* PerlUpb_ByNameMap_AsHash(pTHX_ SV* self);
+
 #endif // PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_BY_NAME_MAP_H_

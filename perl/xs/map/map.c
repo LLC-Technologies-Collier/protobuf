@@ -109,6 +109,29 @@ int PerlUpb_Map_Size(pTHX_ SV* self) {
     return (m && m->map) ? upb_Map_Size(m->map) : 0;
 }
 
+SV* PerlUpb_Map_AsHash(pTHX_ SV* self) {
+    PerlUpb_Map* m = GetMap(aTHX_ self);
+    if (!m || !m->map) return &PL_sv_undef;
+
+    HV* hv = newHV();
+    const upb_FieldDef *key_f, *val_f;
+    GetMapEntryDefs(m->f, &key_f, &val_f);
+
+    size_t iter = kUpb_Map_Begin;
+    upb_MessageValue k, v;
+    while (upb_Map_Next(m->map, &k, &v, &iter)) {
+        SV* k_sv = PerlUpb_UpbToSv_Element(aTHX_ &k, key_f, m->arena_sv);
+        SV* v_sv = PerlUpb_UpbToSv_Element(aTHX_ &v, val_f, m->arena_sv);
+        
+        STRLEN len;
+        char* key_str = SvPV(k_sv, len);
+        hv_store(hv, key_str, len, v_sv, 0);
+        SvREFCNT_dec(k_sv);
+    }
+
+    return newRV_noinc((SV*)hv);
+}
+
 void PerlUpb_Map_Free(pTHX_ SV* sv) {
     PerlUpb_Map* m = GetMap(aTHX_ sv);
     if (m) {

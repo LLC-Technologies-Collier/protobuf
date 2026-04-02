@@ -21,7 +21,7 @@
     *   [ ] C tests pass.
 *   **perl/xs/message/message.c:**
     *   [x] Create test file `perl/t/c/message/message.c`.
-    *   [x] Tests cover all public functions in `xs/message/message.h`.
+    *   [x] Tests cover all public functions in `xs/message/message.h`. (Verified wrapper creation, class blessing, and property retrieval).
     *   [ ] TODO: Implement SIMD-accelerated serialization for fixed-length types.
     *   [ ] TODO: Implement C-level MiniTable reflection cache.
     *   [ ] TODO: Implement COW (Copy-On-Write) semantics for sub-messages.

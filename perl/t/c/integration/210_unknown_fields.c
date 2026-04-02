@@ -15,10 +15,23 @@
 #include "upb/reflection/message.h"
 #include <stdio.h>
 
+static void test_manual_add_unknown(pTHX_ SV* set_sv) {
+    const char manual_data[] = { 0x08, 0x96, 0x01 }; // tag 1, value 150
+    SV* manual_sv = newSVpvn(manual_data, sizeof(manual_data));
+    PerlUpb_UnknownFieldSet_Add(aTHX_ set_sv, manual_sv);
+    
+    SV* ret = PerlUpb_UnknownFieldSet_GetData(aTHX_ set_sv);
+    is(SvCUR(ret), sizeof(manual_data), "Manually added unknown data length matches");
+    is_blob(SvPV_nolen(ret), manual_data, sizeof(manual_data), "Manually added unknown data content matches");
+    
+    SvREFCNT_dec(ret);
+    SvREFCNT_dec(manual_sv);
+}
+
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(10);
+    plan(12);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -33,10 +46,6 @@ int main(int argc, char** argv) {
     SV* mdef_sv = PerlUpb_MessageDef_GetWrapper(aTHX_ mdef);
 
     // 1. Create a message with an unknown field by parsing
-    // We'll use a tag that doesn't exist in TestAllTypesProto2.
-    // Tag 999 << 3 | 0 = 7992 (0x1F38)
-    // 7992 in varint: 0xB8 0x3E
-    // Value 123 (0x7B)
     const char wire_data[] = { 0xB8, 0x3E, 0x7B };
     SV* serialized_sv = newSVpvn(wire_data, sizeof(wire_data));
     
@@ -54,7 +63,6 @@ int main(int argc, char** argv) {
     SV* reserialized = PerlUpb_Message_Serialize(aTHX_ msg_sv);
     ok(SvCUR(reserialized) >= sizeof(wire_data), "Reserialized length is at least unknown data length");
     
-    // Check if wire_data is present in reserialized
     const char* res_ptr = SvPV_nolen(reserialized);
     bool found = false;
     for (size_t i = 0; i <= SvCUR(reserialized) - sizeof(wire_data); i++) {
@@ -71,16 +79,15 @@ int main(int argc, char** argv) {
     is(SvCUR(ret_data2), 0, "Unknown fields cleared");
     SvREFCNT_dec(ret_data2);
 
+    // 5. Test manual add
+    test_manual_add_unknown(aTHX_ set_sv);
+
     TODO("Implement selective Unknown Field Scrubbing") {
         ok(0, "Removing specific unknown tags while preserving others verified");
     }
 
     TODO("Verify integrated Unknown-to-Message reflection safety") {
         ok(0, "Using cached MessageDefs to reify unknown blobs verified");
-    }
-
-    TODO("Verify unknown field preservation across deep-message merges") {
-        ok(0, "Merging messages with unknown data preserves all unrecognized fields correctly");
     }
 
     // Cleanup

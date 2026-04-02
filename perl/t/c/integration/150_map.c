@@ -15,10 +15,25 @@
 #include "upb/reflection/message.h"
 #include <stdio.h>
 
+static void test_map_as_hash(pTHX_ SV* map_sv) {
+    SV* hash_rv = PerlUpb_Map_AsHash(aTHX_ map_sv);
+    ok(SvROK(hash_rv) && SvTYPE(SvRV(hash_rv)) == SVt_PVHV, "AsHash returns hash ref");
+    HV* hv = (HV*)SvRV(hash_rv);
+    
+    is(hv_iterinit(hv), 1, "Projected map hash has 1 key");
+    
+    SV** val_ptr = hv_fetch(hv, "10", 2, 0);
+    ok(val_ptr != NULL, "Found key '10' in projected hash");
+    if (val_ptr) {
+        is(SvIV(*val_ptr), 42, "Value for key '10' is 42");
+    }
+    SvREFCNT_dec(hash_rv);
+}
+
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(10);
+    plan(14);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
@@ -79,12 +94,10 @@ int main(int argc, char** argv) {
     PerlUpb_MapIterator_Free(aTHX_ iter_sv);
     SvREFCNT_dec(iter_sv);
 
+    test_map_as_hash(aTHX_ map_ii_sv);
+
     TODO("Implement Sub-message map value roundtrip with ObjCache identity") {
         ok(0, "Sub-messages retrieved from maps are correctly cached and identical");
-    }
-
-    TODO("Implement O(1) bulk projection of upb_Map to Perl HV") {
-        ok(0, "C-level map projection avoids lazy wrapper overhead for bulk reads");
     }
 
     TODO("Verify integrated map stability during concurrent field deletion") {

@@ -11,6 +11,9 @@ SV* PerlUpb_Message_Parse(pTHX_ SV* descriptor_sv, SV* data_sv);
 // Serializes a Protobuf::Message wrapper into a string SV.
 SV* PerlUpb_Message_Serialize(pTHX_ SV* message_sv);
 
+// Serializes a Protobuf::Message wrapper into a string SV with deterministic field ordering.
+SV* PerlUpb_Message_Serialize_Deterministic(pTHX_ SV* message_sv);
+
 // Serializes a Protobuf::Message wrapper into a TextFormat string SV.
 SV* PerlUpb_Message_ToText(pTHX_ SV* message_sv);
 

@@ -1,14 +1,29 @@
 #include "t/c/upb-perl-test.h"
 #include "xs/protobuf.h"
 #include "xs/repeated/repeated.h"
+#include "xs/protobuf/arena.h"
+
+static void test_repeated_creation(pTHX) {
+    SV* arena_sv = PerlUpb_Arena_New(aTHX);
+    // Passing NULL for upb_Array and FieldDef is fine for GetRepeated check and Size(0)
+    SV* rep_sv = PerlUpb_Repeated_New(aTHX_ NULL, NULL, arena_sv);
+    
+    ok(rep_sv != NULL, "PerlUpb_Repeated_New returns non-NULL");
+    ok(sv_derived_from(rep_sv, "Protobuf::Internal::Repeated"), "Repeated SV has correct class");
+    is(PerlUpb_Repeated_Size(aTHX_ rep_sv), 0, "Initial repeated size is 0");
+    
+    extern void PerlUpb_Repeated_Free(pTHX_ SV* sv);
+    PerlUpb_Repeated_Free(aTHX_ rep_sv);
+    SvREFCNT_dec(rep_sv);
+    PerlUpb_Arena_Destroy(aTHX_ arena_sv);
+}
 
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(5);
+    plan(7);
 
-    // Mock Repeated data
-    ok(1, "Repeated test placeholder");
+    test_repeated_creation(aTHX);
     ok(1, "Repeated functions cover creation and basic access");
 
     TODO("Implement SIMD-accelerated scalar appending") {

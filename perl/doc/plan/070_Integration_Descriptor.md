@@ -3,8 +3,8 @@
 [TOC]
 
 *   [x] Create test file `perl/t/c/integration/070_descriptor.c`.
-*   [ ] Tests cover interactions between descriptor types, convert, and core utilities. (Partially implemented).
-*   [ ] TODO: Verify integrated Object Cache identity for all descriptor types.
+*   [x] Tests cover interactions between descriptor types, convert, and core utilities. (Verified enum/message subdef resolution).
+*   [x] TODO: Verify integrated Object Cache identity for all descriptor types.
 *   [ ] TODO: Implement integrated EnumValueDef and OneofDef resolution tests.
 *   [ ] TODO: Verify DescriptorPool lifetime safety during active descriptor usage.
 *   [x] Integration tests pass.

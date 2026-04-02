@@ -7,7 +7,7 @@
 *   **perl/xs/descriptor_containers/by_name_map.c:**
     *   [x] Create test file `perl/t/c/descriptor_containers/by_name_map.c`.
     *   [x] Tests cover all public functions in the corresponding .h file, including checks for re-entrancy and safe state management.
-    *   [ ] TODO: Implement Direct-to-Hash Projection for high-frequency bulk access.
+    *   [x] TODO: Implement Direct-to-Hash Projection for high-frequency bulk access.
     *   [ ] TODO: Verify concurrent iterator stability during interleaved read-only access.
     *   [x] Implement C functions.
     *   [x] C tests pass.

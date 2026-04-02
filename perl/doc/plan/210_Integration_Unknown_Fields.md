@@ -3,7 +3,7 @@
 [TOC]
 
 *   [x] Create test file `perl/t/c/integration/210_unknown_fields.c`.
-*   [ ] Tests cover unknown fields interactions with messages. (Partially implemented).
+*   [x] Tests cover unknown fields interactions with messages. (Verified parsing, retrieval, reserialization, and manual addition).
 *   [ ] TODO: Implement selective Unknown Field Scrubbing by tag.
 *   [ ] TODO: Verify integrated Unknown-to-Message reflection safety.
 *   [ ] TODO: Verify unknown field preservation across deep-message merges.

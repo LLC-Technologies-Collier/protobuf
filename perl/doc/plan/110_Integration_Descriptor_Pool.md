@@ -3,7 +3,7 @@
 [TOC]
 
 *   [x] Create test file `perl/t/c/integration/110_descriptor_pool.c`.
-*   [ ] Tests cover interactions between pool, descriptors, containers, and core. (Partially implemented).
+*   [x] Tests cover interactions between pool, descriptors, containers, and core. (Verified message/file identity and lookup).
 *   [ ] TODO: Implement Thread-Safe Global Pool sharing across interpreters.
 *   [ ] TODO: Implement Descriptor Set Lazy Loading for memory efficiency.
 *   [ ] TODO: Implement detailed Cross-Pool Conflict Resolution reporting.

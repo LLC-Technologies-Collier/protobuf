@@ -76,6 +76,31 @@ SV* PerlUpb_Message_Serialize(pTHX_ SV* message_sv) {
     return result;
 }
 
+SV* PerlUpb_Message_Serialize_Deterministic(pTHX_ SV* message_sv) {
+    const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);
+    if (!msg || !mdef) {
+        croak("Invalid message object");
+    }
+
+    const upb_MiniTable *mt = upb_MessageDef_MiniTable(mdef);
+    if (!mt) croak("Failed to get MiniTable");
+
+    upb_Arena* enc_arena = upb_Arena_New();
+    char* buf = NULL;
+    size_t size = 0;
+
+    upb_EncodeStatus status = upb_Encode(msg, mt, kUpb_EncodeOption_Deterministic, enc_arena, &buf, &size);
+    if (status != kUpb_EncodeStatus_Ok) {
+        upb_Arena_Free(enc_arena);
+        croak("Failed to serialize message deterministically: %d", status);
+    }
+
+    SV* result = newSVpvn(buf, size);
+    upb_Arena_Free(enc_arena);
+    return result;
+}
+
 SV* PerlUpb_Message_ToText(pTHX_ SV* message_sv) {
     const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
     const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);

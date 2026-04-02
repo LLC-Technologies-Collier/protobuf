@@ -58,6 +58,23 @@ SV* PerlUpb_ByNameMap_Value(pTHX_ SV* self, int index) {
     return map->vtable->wrap(aTHX_ item);
 }
 
+SV* PerlUpb_ByNameMap_AsHash(pTHX_ SV* self) {
+    PerlUpb_ByNameMap* map = PerlUpb_ByNameMap_Get(aTHX_ self);
+    if (!map) return &PL_sv_undef;
+
+    HV* hv = newHV();
+    int count = map->vtable->count(map->parent);
+    for (int i = 0; i < count; i++) {
+        const char* key = map->vtable->key(map->parent, i);
+        const void* item = map->vtable->value(map->parent, i);
+        if (key && item) {
+            SV* val = map->vtable->wrap(aTHX_ item);
+            hv_store(hv, key, strlen(key), val, 0);
+        }
+    }
+    return newRV_noinc((SV*)hv);
+}
+
 // Cleanup function (to be called from DESTROY)
 void PerlUpb_ByNameMap_Free(pTHX_ SV* sv) {
     PerlUpb_ByNameMap* map = PerlUpb_ByNameMap_Get(aTHX_ sv);

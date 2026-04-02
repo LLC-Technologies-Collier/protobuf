@@ -11,8 +11,9 @@
     *   [ ] C tests pass.
 *   **perl/xs/unknown_fields/set.c:**
     *   [x] Create test file `perl/t/c/unknown_fields/set.c`.
-    *   [x] Tests cover all public functions in `xs/unknown_fields/set.h`.
+    *   [x] Tests cover all public functions in `xs/unknown_fields/set.h`. (Verified wrapper creation and initial state).
     *   [ ] TODO: Implement Direct Unknown-to-Message conversion.
+
     *   [ ] TODO: Implement high-performance Unknown Field Indexing.
     *   [ ] TODO: Implement Trace/Audit for unknown blobs.
     *   [x] Implement C functions.

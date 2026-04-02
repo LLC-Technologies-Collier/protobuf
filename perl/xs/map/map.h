@@ -27,6 +27,9 @@ void PerlUpb_Map_Clear(pTHX_ SV* self);
 // Returns the number of items in the map.
 int PerlUpb_Map_Size(pTHX_ SV* self);
 
+// Returns a standard Perl hash containing all items in the map.
+SV* PerlUpb_Map_AsHash(pTHX_ SV* self);
+
 // Frees the map wrapper.
 void PerlUpb_Map_Free(pTHX_ SV* self);
 

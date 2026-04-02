@@ -6,6 +6,7 @@
 #include "xs/protobuf.h"
 #include "xs/descriptor_containers/by_name_map.h"
 #include "xs/descriptor_containers/generic_sequence.h"
+#include "xs/descriptor_containers/iterators.h"
 #include "xs/descriptor/field.h"
 #include "xs/descriptor/message.h"
 #include "t/c/convert/test_util.h"
@@ -16,8 +17,6 @@
 int msg_field_count(const void* p) { return upb_MessageDef_FieldCount((const upb_MessageDef*)p); }
 const void* msg_field_get(const void* p, int i) { return upb_MessageDef_Field((const upb_MessageDef*)p, i); }
 SV* msg_field_wrap(pTHX_ const void* p) {
-    // In the real implementation, this would use the object cache and return a Protobuf::Descriptor::Field.
-    // For this test, we just return a simple blessed wrapper or even just an IV.
     SV* sv = newSViv((IV)p);
     SV* obj = newRV_noinc(sv);
     sv_bless(obj, gv_stashpv("Protobuf::Descriptor::Field", GV_ADD));
@@ -40,10 +39,40 @@ static const PerlUpb_ByNameMap_VTable msg_fields_map_vtable = {
     msg_field_count, msg_field_lookup, msg_field_key, msg_field_value, msg_field_wrap
 };
 
+static void test_map_iterator(pTHX_ SV* map_sv) {
+    SV* iter_sv = PerlUpb_DescriptorMapIterator_New(aTHX_ map_sv);
+    ok(iter_sv != NULL, "Created MapIterator");
+    ok(sv_derived_from(iter_sv, "Protobuf::Internals::DescriptorMapIterator"), "Blessed correctly");
+
+    int total = PerlUpb_ByNameMap_Count(aTHX_ map_sv);
+    int count = 0;
+    while (1) {
+        SV* key = PerlUpb_DescriptorMapIterator_NextKey(aTHX_ iter_sv);
+        if (key == &PL_sv_undef) break;
+        
+        SV* val = PerlUpb_DescriptorMapIterator_NextValue(aTHX_ iter_sv);
+        // Only check first few to avoid flooding TAP output
+        if (count < 2) {
+            ok(SvPOK(key), "Iterator key is a string");
+            ok(sv_derived_from(val, "Protobuf::Descriptor::Field"), "Iterator value is a FieldDescriptor");
+        }
+        
+        SvREFCNT_dec(key);
+        SvREFCNT_dec(val);
+        count++;
+    }
+
+    is(count, total, "Iterated correct number of items");
+    
+    extern void PerlUpb_DescriptorMapIterator_Free(pTHX_ SV* sv);
+    PerlUpb_DescriptorMapIterator_Free(aTHX_ iter_sv);
+    SvREFCNT_dec(iter_sv);
+}
+
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(11 + 2);
+    plan(17);
 
     upb_Arena *arena = upb_Arena_New();
     if (!load_test_descriptors(aTHX_ arena)) {
@@ -83,19 +112,16 @@ int main(int argc, char** argv) {
 
         SV* key0 = PerlUpb_ByNameMap_Key(aTHX_ map_sv, 0);
         ok(SvPOK(key0), "Key 0 is a string");
-        cdiag("Key 0 name: %s", SvPV_nolen(key0));
         SvREFCNT_dec(key0);
 
         SV* val0 = PerlUpb_ByNameMap_Value(aTHX_ map_sv, 0);
         ok(sv_derived_from(val0, "Protobuf::Descriptor::Field"), "Value 0 is a FieldDescriptor");
         SvREFCNT_dec(val0);
 
+        test_map_iterator(aTHX_ map_sv);
+
         TODO("Implement integrated ByNumberMap tests for EnumValue definitions") {
             ok(0, "Enum values correctly integrated with ByNumberMap container logic");
-        }
-
-        TODO("Verify integrated Iterator performance and stability for real definitions") {
-            ok(0, "Iterating over message fields using MapIterator is stable and efficient");
         }
 
         extern void PerlUpb_ByNameMap_Free(pTHX_ SV* sv);
@@ -106,8 +132,6 @@ int main(int argc, char** argv) {
         SvREFCNT_dec(seq_sv);
         SvREFCNT_dec(map_sv);
         SvREFCNT_dec(parent_sv);
-    } else {
-        fprintf(stderr, "# Skipping integration tests as msg_def is NULL\n");
     }
 
     upb_Arena_Free(arena);

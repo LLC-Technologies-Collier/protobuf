@@ -53,6 +53,23 @@
     "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
     "extra_src": ["t/c/convert/test_util.c"]
   },
+  "descriptor_pool/pool": {
+    "deps": ["xs/protobuf.h", "xs/descriptor_pool/pool.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor_pool/add": {
+    "deps": ["xs/protobuf.h", "xs/descriptor_pool/pool.h", "t/c/upb-perl-test.h"]
+  },
+  "descriptor_pool/find": {
+    "deps": ["xs/protobuf.h", "xs/descriptor_pool/pool.h", "t/c/upb-perl-test.h"]
+  },
+  "map/map": {
+    "deps": ["xs/protobuf.h", "xs/map/map.h", "t/c/upb-perl-test.h"],
+    "extra_src": ["xs/map/map.c", "xs/protobuf/arena.c"]
+  },
+  "extension_dict/dict": {
+    "deps": ["xs/protobuf.h", "xs/extension_dict/dict.h", "t/c/upb-perl-test.h"],
+    "extra_src": ["xs/extension_dict/dict.c", "xs/protobuf/arena.c", "xs/protobuf/message.c", "xs/protobuf/obj_cache.c", "xs/descriptor/field.c", "xs/convert/sv_to_upb.c", "xs/convert/upb_to_sv.c"]
+  },
   "convert/sv_to_upb": {
     "deps": [
       "xs/protobuf.h",
@@ -177,18 +194,6 @@
       "xs/descriptor_containers/by_number_map.c"
     ]
   },
-  "extension_dict/dict": {
-    "deps": [
-      "xs/extension_dict/dict.h",
-      "t/c/upb-perl-test.h"
-    ]
-  },
-  "extension_dict/iterator": {
-    "deps": [
-      "xs/extension_dict/iterator.h",
-      "t/c/upb-perl-test.h"
-    ]
-  },
   "message/message": {
     "deps": [
       "xs/message/message.h",
@@ -196,7 +201,15 @@
       "xs/message/serialize.h",
       "xs/message/compare.h",
       "xs/message/meta.h",
-      "t/c/upb-perl-test.h"
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h"
+    ],
+    "extra_src": [
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/protobuf/arena.c",
+      "t/c/convert/test_util.c"
     ]
   },
   "message/init": {
@@ -212,7 +225,17 @@
   "repeated/repeated": {
     "deps": [
       "xs/repeated/repeated.h",
+      "xs/protobuf/arena.h",
       "t/c/upb-perl-test.h"
+    ],
+    "extra_src": [
+      "xs/repeated/repeated.c",
+      "xs/protobuf/arena.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/convert/sv_to_upb.c",
+      "xs/convert/upb_to_sv.c",
+      "xs/descriptor/field.c",
+      "xs/protobuf/message.c"
     ]
   },
   "repeated/composite": {
@@ -229,7 +252,17 @@
   "unknown_fields/set": {
     "deps": [
       "xs/unknown_fields/set.h",
-      "t/c/upb-perl-test.h"
+      "xs/protobuf/message.h",
+      "t/c/upb-perl-test.h",
+      "t/c/convert/test_util.h"
+    ],
+    "extra_src": [
+      "xs/unknown_fields/set.c",
+      "xs/protobuf/message.c",
+      "xs/protobuf/obj_cache.c",
+      "xs/protobuf/arena.c",
+      "xs/descriptor/field.c",
+      "t/c/convert/test_util.c"
     ]
   },
   "unknown_fields/build": {
