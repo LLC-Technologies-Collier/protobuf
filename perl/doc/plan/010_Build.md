@@ -8,6 +8,6 @@
 *   [x] Configure `MY::postamble` for compiling C tests in `perl/t/c/`.
 *   [x] Implement C-level test harness (`perl/t/c/upb-perl-test.h`).
 *   [x] Implement configurable sanitizer support (ASan, UBSan, MSan) via environment variables.
-*   [ ] TODO: Automate C-level benchmark compilation and execution (`make bench`).
+*   [x] Automate C-level benchmark compilation and execution (`make bench`).
 *   [ ] TODO: Implement linker-level symbol visibility control for `libprotobuf_common.so` to ensure ABI stability.
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

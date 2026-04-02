@@ -222,8 +222,33 @@ EOM
     $c_test_rules .= "# end c test rules\n";
     $make_frag .= $c_test_rules;
 
-    # Add all C test targets to .PHONY
-    $make_frag .= ".PHONY: " . join(" ", @c_test_targets) . " test_c build_c_tests\n";
+    # C Benchmarks rules
+    my @c_bench_targets;
+    my $c_bench_rules = "# c benchmark rules\n";
+    my @bench_sources = glob("t/c/benchmark/*.c");
+    foreach my $source (@bench_sources) {
+        my $target = $source;
+        $target =~ s/\.c$//;
+        my $object = "$target.o";
+        push @c_bench_targets, $target;
+
+        $c_bench_rules .= "$object: $source t/c/upb-perl-test.h\n" .
+                         "\t".'@mkdir -p $(@D)'."\n" .
+                         "\t".'$(CC) $(CCFLAGS) $(INC)'." -c $source -o $object\n\n";
+
+        my $link_line = join " ", (
+            '$(CC)', '$(CCFLAGS)', '-o', $target, $object,
+            't/c/upb-perl-test.o', '-L$(CURDIR)', '-lprotobuf_common',
+            $embed_cflags, $embed_ldflags, $sanitizer_flags
+        );
+
+        $c_bench_rules .= "$target: $object \$(COMMON_LIB) t/c/upb-perl-test.o\n\t$link_line\n\n";
+    }
+    $c_bench_rules .= "# end c benchmark rules\n";
+    $make_frag .= $c_bench_rules;
+
+    # Add all C test and benchmark targets to .PHONY
+    $make_frag .= ".PHONY: " . join(" ", @c_test_targets, @c_bench_targets) . " test_c build_c_tests bench build_bench\n";
 
     # Rule to generate test_descriptor.bin
     $make_frag .= <<'EOM';
@@ -239,12 +264,28 @@ EOM
         $make_frag .= 'build_c_tests: ' . join(' ', @c_test_targets) . "\n";
     }
 
+    # Target to build all C benchmarks
+    if (@c_bench_targets) {
+        $make_frag .= 'build_bench: ' . join(' ', @c_bench_targets) . "\n";
+    }
+
     # Rule to run all C tests
     if (@c_test_targets) {
         $make_frag .= 'test_c: build_c_tests $(COMMON_LIB)' . "\n";
         foreach my $target (sort @c_test_targets) {
             $make_frag .= "\t" . sprintf('@echo "Running test: %s"', $target) . "\n";
             my $run_command = 'LD_LIBRARY_PATH="' . $Config{archlibexp} . ':$$LD_LIBRARY_PATH" ASAN_OPTIONS=detect_leaks=0:abort_on_error=1:detect_odr_violation=0 ' . $target;
+            $make_frag .= "\t" . $run_command . "\n";
+        }
+    }
+
+    # Rule to run all C benchmarks
+    if (@c_bench_targets) {
+        $make_frag .= 'bench: build_bench $(COMMON_LIB)' . "\n";
+        foreach my $target (sort @c_bench_targets) {
+            $make_frag .= "\t" . sprintf('@echo "Running benchmark: %s"', $target) . "\n";
+            # For benchmarks, we might want to disable ASan for accurate results if it's on
+            my $run_command = 'LD_LIBRARY_PATH="' . $Config{archlibexp} . ':$$LD_LIBRARY_PATH" ' . $target;
             $make_frag .= "\t" . $run_command . "\n";
         }
     }
