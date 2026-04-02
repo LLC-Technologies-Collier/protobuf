@@ -5,6 +5,14 @@
 #include "perl/xs/protobuf/arena.h"
 #include "upb/mem/arena.h"
 
+// -- Arena Factory Implementation --
+
+upb_Arena* PerlUpb_Arena_Acquire(pTHX_ PerlUpb_ArenaLifecycle lifecycle) {
+    // For now, this is a simple wrapper.
+    // Future work will implement thread-local caching for TRANSIENT arenas here.
+    return upb_Arena_New();
+}
+
 // -- Arena Wrapper Functions --
 
 void* PerlUpb_Arena_CreateRaw(pTHX) {
@@ -12,10 +20,10 @@ void* PerlUpb_Arena_CreateRaw(pTHX) {
     if (!arena_wrapper) {
         croak("Failed to allocate PerlUpb_Arena");
     }
-    arena_wrapper->arena = upb_Arena_New();
+    arena_wrapper->arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_PERMANENT);
     if (!arena_wrapper->arena) {
         safefree(arena_wrapper);
-        croak("Failed to create upb_Arena");
+        croak("Failed to acquire upb_Arena");
     }
     return (void*)arena_wrapper;
 }

@@ -61,7 +61,7 @@ SV* PerlUpb_Message_Serialize(pTHX_ SV* message_sv) {
     const upb_MiniTable *mt = upb_MessageDef_MiniTable(mdef);
     if (!mt) croak("Failed to get MiniTable");
 
-    upb_Arena* enc_arena = upb_Arena_New();
+    upb_Arena* enc_arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
     char* buf = NULL;
     size_t size = 0;
 
@@ -86,7 +86,7 @@ SV* PerlUpb_Message_Serialize_Deterministic(pTHX_ SV* message_sv) {
     const upb_MiniTable *mt = upb_MessageDef_MiniTable(mdef);
     if (!mt) croak("Failed to get MiniTable");
 
-    upb_Arena* enc_arena = upb_Arena_New();
+    upb_Arena* enc_arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
     char* buf = NULL;
     size_t size = 0;
 

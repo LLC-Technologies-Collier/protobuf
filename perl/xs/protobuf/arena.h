@@ -10,6 +10,15 @@ typedef struct {
     upb_Arena *arena;
 } PerlUpb_Arena;
 
+// Arena Lifecycle Hints
+typedef enum {
+    PERL_UPB_LIFECYCLE_PERMANENT = 0, // Stays in Perl (e.g. Message, Pool)
+    PERL_UPB_LIFECYCLE_TRANSIENT = 1  // Short-lived (e.g. transient serialization)
+} PerlUpb_ArenaLifecycle;
+
+// Arena Factory
+upb_Arena* PerlUpb_Arena_Acquire(pTHX_ PerlUpb_ArenaLifecycle lifecycle);
+
 SV *PerlUpb_Arena_New(pTHX);
 SV *PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size);
 upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv);

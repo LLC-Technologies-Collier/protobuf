@@ -32,9 +32,9 @@
     *   [x] Tests in `perl/t/c/protobuf/arena.c` test all public functions in `perl/xs/protobuf/arena.h`.
     *   [x] TODO: Memory usage statistics (Allocated).
     *   [x] TODO: tmpfs-backed custom allocators for zero-copy IPC.
-    *   [ ] TODO: Implement **Arena Factory Pattern** (`PerlUpb_Arena_Acquire`).
-        *   [ ] Support lifecycle hints: `PERL_UPB_LIFECYCLE_PERMANENT` (standard) vs `PERL_UPB_LIFECYCLE_TRANSIENT` (fast-path).
-        *   [ ] Abstract away the distinction between fresh arenas and cached arenas from the rest of the C layer.
+    *   [x] TODO: Implement **Arena Factory Pattern** (`PerlUpb_Arena_Acquire`).
+        *   [x] Support lifecycle hints: `PERL_UPB_LIFECYCLE_PERMANENT` (standard) vs `PERL_UPB_LIFECYCLE_TRANSIENT` (fast-path).
+        *   [x] Abstract away the distinction between fresh arenas and cached arenas from the rest of the C layer.
     *   [ ] TODO: Implement thread-local arena caching for ultra-high-frequency small message allocations. (Difficulty: 3/10 after Factory/Registry).
     *   [ ] TODO: Add memory corruption guards (canary bytes) around arena-allocated blocks to detect out-of-bounds writes in C.
     *   [x] Implement C functions in `perl/xs/protobuf/arena.c`.

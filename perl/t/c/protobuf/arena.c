@@ -10,7 +10,17 @@ void xs_init(pTHX);
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(18);
+    plan(20);
+
+    // Test PerlUpb_Arena_Acquire (Permanent)
+    upb_Arena* pa = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_PERMANENT);
+    ok(pa != NULL, "PerlUpb_Arena_Acquire (Permanent) returns non-NULL");
+    upb_Arena_Free(pa);
+
+    // Test PerlUpb_Arena_Acquire (Transient)
+    upb_Arena* ta = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
+    ok(ta != NULL, "PerlUpb_Arena_Acquire (Transient) returns non-NULL");
+    upb_Arena_Free(ta);
 
     // Test PerlUpb_Arena_New
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
