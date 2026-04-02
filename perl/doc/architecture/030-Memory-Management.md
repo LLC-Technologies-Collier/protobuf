@@ -9,8 +9,9 @@
 
 ## Advanced Memory Management
 
-1.  **Thread-Local Arena Caching**: (Planned) To optimize ultra-high-frequency allocations of small messages, the implementation will support thread-local arena caching, bypassing global locks or complex state checks.
-2.  **Zero-Copy IPC**: (Planned) Support for tmpfs-backed custom allocators will allow `upb_Arena` to reside in shared memory segments for zero-copy high-performance inter-process communication.
+1.  **Thread-Local Arena Caching (VPP Pattern)**: (Planned) To optimize ultra-high-frequency allocations of small messages, the implementation will support thread-local arena caching. Inspired by the **Vector Packet Processor (VPP)** architecture, this pattern keeps a "warm" arena per interpreter to ensure that message memory resides in the L1/L2 data cache.
+2.  **Vectorized Processing**: (Planned) Implement a "Batch Parse" API that ingest a vector of incoming binary blobs. By processing messages in batches through a single graph node (parsing logic), we minimize instruction cache (I-cache) thrashing and maximize hardware pre-fetcher efficiency.
+3.  **Zero-Copy IPC**: (Planned) Support for tmpfs-backed custom allocators will allow `upb_Arena` to reside in shared memory segments for zero-copy high-performance inter-process communication, mimicking VPP's zero-copy packet handoff between graph nodes.
 3.  **Safety Guards**: (Planned) Add memory corruption guards (canary bytes) around arena-allocated blocks to detect out-of-bounds writes in the C layer during development and automated testing.
 4.  **Observability**: (Implemented) Observation APIs to report detailed arena memory usage statistics (Allocated) to aid in capacity planning and leak detection. See `PerlUpb_Arena_SpaceAllocated`.
 5.  **Merging Efficiency**: (Implemented) High-performance message merging (`parse_from`) is architected to utilize arena sharing, allowing data from one message tree to be integrated into another with minimal new allocations. Verified basic arena-sharing integrity in C integration tests.

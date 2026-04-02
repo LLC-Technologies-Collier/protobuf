@@ -34,6 +34,12 @@ This document outlines the specific conventions and testing patterns for the XS 
 - **Initialization:** Use a centralized `PerlUpb_Protobuf_InitModule(aTHX)` function called from the `BOOT:` section of the main module's `.xs` file.
 - **Boot Alignment:** Ensure `MODULE` and `PACKAGE` declarations in `.xs` files exactly match the Perl package name to avoid symbol lookup errors.
 
+## Vectorized Processing (VPP Style)
+- **Instruction Cache (I-cache) Optimization:** Prefer processing batches (vectors) of messages through a single C logic path before switching tasks. This minimizes I-cache thrashing, a key performance principle from the **Vector Packet Processor (VPP)**.
+- **Data Cache (D-cache) Warming:** Utilize thread-local "fast-path" arenas to ensure that the memory addresses used for high-frequency small messages remain warm in the L1/L2 data cache.
+- **SIMD-Accelerated Batching:** Implementation of bulk scanners or parsers should leverage the linear memory layout of vectorized batches to utilize SIMD (SSE4.2/AVX2) for tag searching and UTF-8 validation.
+- **Batch Parse API:** High-performance interfaces SHOULD support taking a vector (array) of binary blobs and returning a batch of reified objects to maximize throughput.
+
 ## Python Parity
 - The primary goal of this implementation is full feature parity with the Python upb-based implementation.
 - Alignment with Python's behavior for `AddSerializedFile`, `DescriptorPool` resolution, and `SymbolDatabase` is mandatory.

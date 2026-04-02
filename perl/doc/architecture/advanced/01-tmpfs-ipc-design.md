@@ -8,8 +8,9 @@ This document describes the architecture for an ultra-high-performance Inter-Pro
 ### 1. The Transport Layer: `tmpfs`
 Instead of serializing messages into a TCP or Unix domain socket, messages are serialized directly into a memory-mapped file residing in a `tmpfs` mount (typically `/dev/shm`).
 
+*   **VPP-Style Graph Handoff:** This mechanism mirrors the **Vector Packet Processor (VPP)** architecture's zero-copy handoff. By moving the pointer to the shared memory block instead of the data itself, we eliminate kernel protocol stack overhead and context switches.
 *   **Mapping:** Processes `mmap()` a shared file.
-*   **Speed:** Data transfer happens at memory bandwidth speeds without kernel context switches for network protocol stacks.
+*   **Speed:** Data transfer happens at memory bandwidth speeds.
 *   **State:** The file contains the **serialized wire format** of the Protobuf message, not the raw C structures (to avoid address space layout randomization issues with C pointers).
 
 ### 2. The Signaling Mechanism: `eventfd` or Unix Sockets

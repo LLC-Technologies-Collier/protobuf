@@ -21,15 +21,30 @@
     *   [x] Implement C functions in `perl/xs/protobuf/obj_cache.c`.
     *   [x] C tests pass for `perl/t/c/protobuf/obj_cache.c`.
 
+*   **perl/xs/protobuf/registry.c (NEW):**
+    *   [ ] TODO: Implement **Per-Interpreter Registry Pattern** (Centralized State).
+    *   [ ] Create a single C struct to hold all interpreter-local state (Object Cache, Audit Log, LRU).
+    *   [ ] Integrate with Perl's `MY_CXT` for ultra-fast, lock-free state retrieval within an interpreter.
+    *   [ ] Refactor `obj_cache.c` to eliminate expensive global SV lookups.
+
 *   **perl/xs/protobuf/arena.c:**
     *   [x] Create test file `perl/t/c/protobuf/arena.c`.
     *   [x] Tests in `perl/t/c/protobuf/arena.c` test all public functions in `perl/xs/protobuf/arena.h`.
     *   [x] TODO: Memory usage statistics (Allocated).
     *   [x] TODO: tmpfs-backed custom allocators for zero-copy IPC.
-    *   [ ] TODO: Implement thread-local arena caching for ultra-high-frequency small message allocations.
+    *   [ ] TODO: Implement **Arena Factory Pattern** (`PerlUpb_Arena_Acquire`).
+        *   [ ] Support lifecycle hints: `PERL_UPB_LIFECYCLE_PERMANENT` (standard) vs `PERL_UPB_LIFECYCLE_TRANSIENT` (fast-path).
+        *   [ ] Abstract away the distinction between fresh arenas and cached arenas from the rest of the C layer.
+    *   [ ] TODO: Implement thread-local arena caching for ultra-high-frequency small message allocations. (Difficulty: 3/10 after Factory/Registry).
     *   [ ] TODO: Add memory corruption guards (canary bytes) around arena-allocated blocks to detect out-of-bounds writes in C.
     *   [x] Implement C functions in `perl/xs/protobuf/arena.c`.
     *   [x] C tests pass for `perl/t/c/protobuf/arena.c`.
+
+*   **perl/xs/protobuf/arena_tmpfs.c:**
+    *   [x] Implement tmpfs-backed custom allocator.
+    *   [ ] TODO: Implement **Block Allocator Pattern** (Generalized `upb_alloc`).
+        *   [ ] Refactor `arena_tmpfs.c` to support both `mmap` (file-backed) and `malloc` (RAM-backed) linear allocation buffers.
+        *   [ ] Enable reuse of the linear allocator for the thread-local fast-path arena.
 
 *   **perl/xs/protobuf/utils.c:**
     *   [x] Create test file `perl/t/c/protobuf/utils.c`.
