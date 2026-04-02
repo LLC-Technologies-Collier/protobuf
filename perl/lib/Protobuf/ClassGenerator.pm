@@ -13,9 +13,19 @@ sub generate_for_file {
     my $count = $file->top_level_message_count;
     for my $i (0 .. $count - 1) {
         my $mdef = $file->get_top_level_message($i);
-        _generate_for_message($mdef);
+        _generate_recursively($mdef);
     }
     return;
+}
+
+sub _generate_recursively {
+    my ($mdef) = @_;
+    _generate_for_message($mdef);
+    
+    my $nested_count = $mdef->nested_message_count;
+    for my $i (0 .. $nested_count - 1) {
+        _generate_recursively($mdef->get_nested_message($i));
+    }
 }
 
 sub type_library {
@@ -26,6 +36,11 @@ sub type_library {
 sub generate_docs {
     my ($class) = @_;
     return "<html><body><h1>Protobuf Documentation</h1></body></html>";
+}
+
+sub generate_for_message {
+    my ($class, $mdef) = @_;
+    return _generate_for_message($mdef);
 }
 
 sub _generate_for_message {

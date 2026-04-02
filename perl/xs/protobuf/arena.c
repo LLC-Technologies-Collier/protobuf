@@ -50,7 +50,20 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
         
         if (ptr) PerlUpb_VerifyCanaries(ptr, oldsize, "Before realloc");
 
-        void* raw = upb_alloc_global.func(&upb_alloc_global, old_ptr, old_requested_size, requested_size, NULL);
+        void* raw;
+        if (s->numa_node != -1) {
+            // STUB: Here we would use numa_alloc_onnode(requested_size, s->numa_node)
+            // if libnuma were available. For now, fall back to global.
+            static bool warned = false;
+            if (!warned) {
+                fprintf(stderr, "PerlUpb: NUMA-aware allocation requested but libnuma not linked. Falling back.\n");
+                warned = true;
+            }
+            raw = upb_alloc_global.func(&upb_alloc_global, old_ptr, old_requested_size, requested_size, NULL);
+        } else {
+            raw = upb_alloc_global.func(&upb_alloc_global, old_ptr, old_requested_size, requested_size, NULL);
+        }
+
         if (raw) {
             PerlUpb_WriteCanaries(raw, size);
             ret = (char*)raw + PERL_UPB_CANARY_SIZE;
@@ -108,6 +121,7 @@ upb_Arena* PerlUpb_Arena_AcquireWithStats(pTHX_ PerlUpb_StatsAlloc* s) {
     s->base.func = PerlUpb_StatsAlloc_Func;
     s->total_reserved = 0;
     s->total_blocks = 0;
+    s->numa_node = -1;
     s->use_chaos = true;
     return upb_Arena_Init(NULL, 0, &s->base);
 }

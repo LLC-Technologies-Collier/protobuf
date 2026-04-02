@@ -58,6 +58,27 @@ sub set {
     return _xs_set($self, $field_name, $value);
 }
 
+sub set_oneof {
+    my ($self, $oneof_name, $value) = @_;
+    my $mdef = $self->descriptor;
+    my $oneof = $mdef->find_oneof_by_name($oneof_name);
+    croak("Oneof '$oneof_name' not found") unless $oneof;
+
+    # Intelligent Coercion: find first field in oneof that accepts this value type
+    foreach my $f ($oneof->fields) {
+        # This is a simplified heuristic: if it's a message, check type; 
+        # if it's scalar, check if value looks like that type.
+        # For now, we'll try to set and catch errors, or use basic type checking.
+        eval {
+            $self->set($f->name, $value);
+        };
+        if (!$@) {
+            return $f->name; # Successfully set
+        }
+    }
+    croak("Could not coerce value into any field of oneof '$oneof_name'");
+}
+
 sub has_field {
     my ($self, $field_name) = @_;
     return _xs_has($self, $field_name);
@@ -180,6 +201,25 @@ sub reset_connection {
 sub parse {
     my ($class, $data) = @_;
     return _xs_parse($class, $data);
+}
+
+sub freeze_to_shared {
+    my ($self, $path, $size) = @_;
+    $size ||= 1024 * 1024;
+    my $arena = Protobuf::Arena->new_tmpfs($path, $size);
+    # Deep copy the message into the shared arena
+    my $shared_msg = _xs_migrate_to_arena($self, $arena);
+    return $shared_msg;
+}
+
+sub thaw_from_shared {
+    my ($class, $path, $size) = @_;
+    $size ||= 1024 * 1024;
+    my $arena = Protobuf::Arena->attach_tmpfs($path, $size);
+    # In a real implementation, we'd need to find the root message 
+    # pointer within the arena. For this high-level utility, 
+    # we'll assume the message is at the start or tracked.
+    return _xs_find_in_shared_arena($class, $arena);
 }
 
 __PACKAGE__->meta->make_immutable;

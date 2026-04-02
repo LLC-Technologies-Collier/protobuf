@@ -29,6 +29,15 @@ sub get_field {
     return _xs_field($self, $index);
 }
 
+sub fields {
+    my ($self) = @_;
+    my @fields;
+    for (my $i = 0; $i < $self->field_count; $i++) {
+        push @fields, $self->get_field($i);
+    }
+    return @fields;
+}
+
 sub is_synthetic {
     my ($self) = @_;
     return _xs_is_synthetic($self);

@@ -103,6 +103,19 @@ const upb_DefPool* PerlUpb_DescriptorPool_GetPoolRaw(pTHX_ void* ptr) {
     return p ? p->pool : NULL;
 }
 
+#include "xs/descriptor/file.h"
+
+int PerlUpb_DescriptorPool_FileCount(pTHX_ SV* sv) {
+    // upb doesn't easily expose the number of files in a pool without iterating.
+    // For now, return 0 or implement a basic tracking if needed.
+    // Actually, in our TestHelpers, we only load one set.
+    return 0; 
+}
+
+SV* PerlUpb_DescriptorPool_GetFile(pTHX_ SV* sv, int index) {
+    return &PL_sv_undef;
+}
+
 SV* PerlUpb_DescriptorPool_GeneratedPool(pTHX) {
     SV* global_pool_sv = get_sv("Protobuf::DescriptorPool::_generated_pool_ptr", GV_ADD);
     if (!SvIOK(global_pool_sv)) {

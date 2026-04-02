@@ -3,6 +3,7 @@ package TestHelpers;
 use strict;
 use warnings;
 use Protobuf::DescriptorPool;
+use Protobuf::ClassGenerator;
 
 =head1 NAME
 
@@ -47,6 +48,27 @@ sub load_test_protos {
     }
     
     return $last_result;
+}
+
+sub generate_classes {
+    my ($class, $pool) = @_;
+    # Find the FileDef for 'test.proto'
+    my $file = $pool->find_file_by_name('t/c/test.proto') || $pool->find_file_by_name('test.proto');
+    if ($file) {
+        Protobuf::ClassGenerator->generate_for_file($file);
+    } else {
+        # Try to find a message and get its file
+        my $mdef = $pool->find_message_by_name('test.TestMessage');
+        if ($mdef) {
+            foreach my $name ('test.TestMessage', 'test.NestedMessage') {
+                my $m = $pool->find_message_by_name($name);
+                Protobuf::ClassGenerator->generate_for_message($m) if $m;
+            }
+        }
+ else {
+            die "Could not find any descriptors in pool to generate classes";
+        }
+    }
 }
 
 1;

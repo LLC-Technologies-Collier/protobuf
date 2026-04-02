@@ -98,6 +98,17 @@ _xs_oneof(self, index)
     OUTPUT:
         RETVAL
 
+SV*
+_xs_find_oneof_by_name(self, name)
+    SV* self
+    const char* name
+    CODE:
+        const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
+        const upb_OneofDef* o = m ? upb_MessageDef_FindOneofByName(m, name) : NULL;
+        RETVAL = o ? PerlUpb_OneofDef_GetWrapper(aTHX_ o) : &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+
 
 int
 _xs_nested_message_count(self)

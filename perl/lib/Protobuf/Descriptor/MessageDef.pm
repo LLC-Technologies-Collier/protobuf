@@ -49,6 +49,11 @@ sub get_oneof {
     return _xs_oneof($self, $index);
 }
 
+sub find_oneof_by_name {
+    my ($self, $name) = @_;
+    return _xs_find_oneof_by_name($self, $name);
+}
+
 sub nested_message_count {
     my ($self) = @_;
     return _xs_nested_message_count($self);

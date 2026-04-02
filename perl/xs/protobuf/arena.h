@@ -12,6 +12,7 @@ typedef struct {
     upb_alloc base;
     size_t total_reserved;
     size_t total_blocks;
+    int numa_node; // -1 for none, or specific node index
     bool use_chaos;
 } PerlUpb_StatsAlloc;
 

@@ -219,3 +219,42 @@ _xs_parse(class_name, data)
         SvREFCNT_dec(arena_sv);
     OUTPUT:
         RETVAL
+
+SV*
+_xs_migrate_to_arena(self, arena_sv)
+    SV* self
+    SV* arena_sv
+    CODE:
+        const upb_Message* src_msg = PerlUpb_Message_GetMsg(aTHX_ self);
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+        
+        const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+        upb_Message* dst_msg = upb_Message_New(mt, arena);
+        
+        /*
+        if (!upb_Message_DeepCopy(dst_msg, src_msg, mt, arena)) {
+            croak("Failed to migrate message to shared arena");
+        }
+        */
+        croak("Message migration requires upb_Message_DeepCopy (not available in current upb)");
+        
+        RETVAL = PerlUpb_WrapMessage(aTHX_ dst_msg, mdef, arena_sv);
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_find_in_shared_arena(class_name, arena_sv)
+    const char* class_name
+    SV* arena_sv
+    CODE:
+        // Implementation detail: for this high-level handoff, 
+        // we'll assume the message is at a fixed offset (after canaries) 
+        // or we need a tracking header in the arena. 
+        // For the purpose of the goal, we'll try to find it.
+        // Actually, we can't "find" it without metadata.
+        // A better approach is to store the message pointer IV in a file next to the tmpfs.
+        // For now, this is a placeholder for the reification logic.
+        croak("find_in_shared_arena requires message metadata tracking (TODO)");
+    OUTPUT:
+        RETVAL

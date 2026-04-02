@@ -25,6 +25,10 @@ const upb_DefPool* PerlUpb_DescriptorPool_GetPoolRaw(pTHX_ void* ptr);
 // Returns the singleton generated pool wrapper.
 SV* PerlUpb_DescriptorPool_GeneratedPool(pTHX);
 
+// File iteration
+int PerlUpb_DescriptorPool_FileCount(pTHX_ SV* sv);
+SV* PerlUpb_DescriptorPool_GetFile(pTHX_ SV* sv, int index);
+
 // Low-level XS helpers
 void* PerlUpb_DescriptorPool_CreateRaw(pTHX);
 void  PerlUpb_DescriptorPool_DestroyRaw(pTHX_ void* ptr);
