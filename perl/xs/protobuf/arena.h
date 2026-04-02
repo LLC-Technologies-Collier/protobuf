@@ -12,6 +12,7 @@ typedef struct {
     upb_alloc base;
     size_t total_reserved;
     size_t total_blocks;
+    bool use_chaos;
 } PerlUpb_StatsAlloc;
 
 // Arena wrappers
@@ -52,6 +53,7 @@ void       PerlUpb_Arena_Release(pTHX_ upb_Arena* arena, PerlUpb_ArenaLifecycle 
 
 SV *PerlUpb_Arena_New(pTHX);
 SV *PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size);
+SV *PerlUpb_Arena_AttachTmpfs(pTHX_ const char* path, size_t size);
 upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv);
 void PerlUpb_Arena_Free(pTHX_ SV *sv);
 void PerlUpb_Arena_Destroy(pTHX_ SV *sv);

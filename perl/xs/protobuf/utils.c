@@ -22,6 +22,19 @@ const char* PerlUpb_VerifyStrData(pTHX_ SV *sv) {
     return SvPV(sv, len);
 }
 
+#include <immintrin.h>
+
+// Helper to check for dots or colons in 32-byte chunks
+__attribute__((target("avx2")))
+static inline uint32_t find_special_chars_avx2(const char* s) {
+    __m256i chunk = _mm256_loadu_si256((const __m256i*)s);
+    __m256i dots = _mm256_cmpeq_epi8(chunk, _mm256_set1_epi8('.'));
+    __m256i colons = _mm256_cmpeq_epi8(chunk, _mm256_set1_epi8(':'));
+    __m256i special = _mm256_or_si256(dots, colons);
+    return (uint32_t)_mm256_movemask_epi8(special);
+}
+
+__attribute__((target("avx2")))
 char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
     if (!class_name) return NULL;
     STRLEN len = strlen(class_name);
@@ -30,19 +43,32 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
     const char* s = class_name;
     STRLEN remaining = len;
 
-    // SSE4.1 Optimization for long strings without colons
+    // AVX2 Optimization for 32-byte chunks
+    while (remaining >= 32) {
+        uint32_t mask = find_special_chars_avx2(s);
+        if (mask == 0) {
+            _mm256_storeu_si256((__m256i*)d, _mm256_loadu_si256((const __m256i*)s));
+            d += 32;
+            s += 32;
+            remaining -= 32;
+        } else {
+            break;
+        }
+    }
+
+    // SSE4.1 Fallback for 16-byte chunks
     while (remaining >= 16) {
         __m128i chunk = _mm_loadu_si128((const __m128i*)s);
+        __m128i dots = _mm_cmpeq_epi8(chunk, _mm_set1_epi8('.'));
         __m128i colons = _mm_cmpeq_epi8(chunk, _mm_set1_epi8(':'));
-        uint32_t mask = (uint32_t)_mm_movemask_epi8(colons);
-        
+        uint32_t mask = (uint32_t)_mm_movemask_epi8(_mm_or_si128(dots, colons));
         if (mask == 0) {
             _mm_storeu_si128((__m128i*)d, chunk);
             d += 16;
             s += 16;
             remaining -= 16;
         } else {
-            break; 
+            break;
         }
     }
 
@@ -58,21 +84,38 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
     return full_name;
 }
 
+__attribute__((target("avx2")))
 char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name) {
     if (!full_name) return NULL;
     STRLEN len = strlen(full_name);
-    // Each '.' becomes '::' (1 extra byte per dot)
     int dots = 0;
     for (const char* p = full_name; *p; p++) if (*p == '.') dots++;
     
     char* class_name = (char*)safemalloc(len + dots + 1);
     char* d = class_name;
-    for (const char* s = full_name; *s; s++) {
+    const char* s = full_name;
+    STRLEN remaining = len;
+
+    // AVX2 Optimization for 32-byte chunks (no dots)
+    while (remaining >= 32) {
+        uint32_t mask = find_special_chars_avx2(s);
+        if (mask == 0) {
+            _mm256_storeu_si256((__m256i*)d, _mm256_loadu_si256((const __m256i*)s));
+            d += 32;
+            s += 32;
+            remaining -= 32;
+        } else {
+            break;
+        }
+    }
+
+    while (*s) {
         if (*s == '.') {
             *d++ = ':';
             *d++ = ':';
+            s++;
         } else {
-            *d++ = *s;
+            *d++ = *s++;
         }
     }
     *d = '\0';

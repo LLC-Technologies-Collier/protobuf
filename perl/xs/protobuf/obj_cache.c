@@ -68,25 +68,25 @@ static AV* get_lru_av(pTHX, PerlUpb_Registry* reg) {
     return reg->obj_lru;
 }
 
-static obj_cache_audit_log_t* get_audit_log(pTHX, PerlUpb_Registry* reg) {
+static obj_cache_audit_log_t* get_audit_log(pTHX_ PerlUpb_Registry* reg) {
     if (reg->audit_log) return reg->audit_log;
 
-    SV* audit_sv = get_sv("Protobuf::_obj_audit", GV_ADD);
-    if (!SvROK(audit_sv)) {
-        reg->audit_log = (obj_cache_audit_log_t*)safemalloc(sizeof(obj_cache_audit_log_t));
-        reg->audit_log->head = 0;
-        reg->audit_log->count = 0;
-        sv_setiv(newSVrv(audit_sv, "Protobuf::Internal::AuditLog"), (IV)reg->audit_log);
-    } else {
-        reg->audit_log = (obj_cache_audit_log_t*)SvIV(SvRV(audit_sv));
-    }
+    // Use safemalloc for the audit log to ensure it's owned by the interpreter
+    reg->audit_log = (obj_cache_audit_log_t*)safemalloc(sizeof(obj_cache_audit_log_t));
+    memset(reg->audit_log, 0, sizeof(obj_cache_audit_log_t));
+    reg->audit_log->head = 0;
+    reg->audit_log->count = 0;
+
     return reg->audit_log;
 }
 
-static void log_event(pTHX_ int type, const void* ptr) {
+
+void PerlUpb_ObjCache_LogEvent(pTHX_ int type, const void* ptr) {
     ensure_mutexes_init();
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    if (!reg) return; // Safety check
     obj_cache_audit_log_t* log = get_audit_log(aTHX, reg);
+    if (!log) return; // Should not happen but safety first
 
     PERL_PROTOBUF_MUTEX_LOCK(&audit_mutex);
     size_t idx = (log->head + log->count) % AUDIT_LOG_SIZE;
@@ -145,7 +145,7 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
     }
 
     PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[stripe]);
-    log_event(aTHX, OBJ_CACHE_EVENT_ADD, ptr);
+    PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_ADD, ptr);
 
     PERL_PROTOBUF_MUTEX_LOCK(&lru_mutex);
     AV* lru = get_lru_av(aTHX, reg);
@@ -161,7 +161,7 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
                 int evict_stripe = get_stripe(evict_ptr);
                 PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[evict_stripe]);
                 if (hv_delete(cache, oldest_key, len, G_DISCARD)) {
-                    log_event(aTHX, OBJ_CACHE_EVENT_EVICT, evict_ptr);
+                    PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_EVICT, evict_ptr);
                 }
                 PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[evict_stripe]);
             }
@@ -192,16 +192,16 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
             SV* obj = SvRV(rv);
             if (obj && obj != &PL_sv_undef) {
                 result = newRV_inc(obj);
-                log_event(aTHX, OBJ_CACHE_EVENT_HIT, ptr);
+                PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_HIT, ptr);
             }
         }
         
         if (!result) {
             hv_delete(cache, key, strlen(key), G_DISCARD);
-            log_event(aTHX, OBJ_CACHE_EVENT_MISS, ptr);
+            PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_MISS, ptr);
         }
     } else {
-        log_event(aTHX, OBJ_CACHE_EVENT_MISS, ptr);
+        PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_MISS, ptr);
     }
 
     PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[stripe]);
@@ -220,7 +220,7 @@ void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr) {
     char key[64];
     get_cache_key(ptr, key);
     if (hv_delete(cache, key, strlen(key), G_DISCARD)) {
-        log_event(aTHX, OBJ_CACHE_EVENT_DELETE, ptr);
+        PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_DELETE, ptr);
     }
 
     PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[stripe]);

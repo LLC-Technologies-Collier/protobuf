@@ -4,10 +4,18 @@
 #include "XSUB.h"
 #include "perl/xs/protobuf.h"
 #include "perl/xs/protobuf/utils.h"
+#include "perl/xs/protobuf/registry.h"
+#include "perl/xs/descriptor/message.h"
 
 MODULE = Protobuf::Internal  PACKAGE = Protobuf::Internal
 
 PROTOTYPES: ENABLE
+
+void
+init_registry()
+    CODE:
+        PerlUpb_Registry_Init(aTHX);
+        PerlUpb_ObjCache_Init(aTHX);
 
 SV*
 get_cache_audit_log()
@@ -55,5 +63,59 @@ full_name_to_class_name(full_name_str)
         class_name = PerlUpb_FullNameToClassName(aTHX_ full_name_str);
         RETVAL = newSVpv(class_name, 0);
         safefree(class_name);
+    OUTPUT:
+        RETVAL
+
+void
+set_chaos_enabled(enabled)
+    bool enabled
+    CODE:
+        PerlUpb_Registry_Get(aTHX)->chaos.enabled = enabled;
+
+void
+set_chaos_params(fail_prob, delay_prob, max_delay_ms, seed)
+    double fail_prob
+    double delay_prob
+    uint32_t max_delay_ms
+    unsigned int seed
+    CODE:
+        PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+        reg->chaos.fail_probability = fail_prob;
+        reg->chaos.delay_probability = delay_prob;
+        reg->chaos.max_delay_ms = max_delay_ms;
+        reg->chaos.seed = seed;
+
+uint64_t
+get_fingerprint(mdef_sv)
+    SV* mdef_sv
+    PREINIT:
+        const upb_MessageDef* m;
+    CODE:
+        m = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
+        RETVAL = PerlUpb_MessageDef_GetFingerprint(aTHX_ m);
+    OUTPUT:
+        RETVAL
+
+void
+register_fingerprint(mdef_sv)
+    SV* mdef_sv
+    PREINIT:
+        const upb_MessageDef* m;
+    CODE:
+        m = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
+        PerlUpb_MessageDef_RegisterFingerprint(aTHX_ m);
+
+SV*
+find_by_fingerprint(fingerprint)
+    uint64_t fingerprint
+    PREINIT:
+        const upb_MessageDef* m;
+    CODE:
+        m = PerlUpb_MessageDef_FindByFingerprint(aTHX_ fingerprint);
+        if (m) {
+            RETVAL = PerlUpb_MessageDef_GetWrapper(aTHX_ m);
+        } else {
+            RETVAL = &PL_sv_undef;
+        }
     OUTPUT:
         RETVAL

@@ -119,8 +119,6 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
                      
                      const upb_FieldDef *sub_f = upb_MessageDef_FindFieldByName(target_mdef, key);
                      if (!sub_f) {
-                         // Check for JSON-style camelCase if not found? 
-                         // For now, just skip or croak? Protos usually use snake_case.
                          croak("Field '%s' not found in message '%s'", key, upb_MessageDef_FullName(target_mdef));
                      }
                      
@@ -154,13 +152,64 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
             croak("Unknown upb field type: %d", type);
             return false;
     }
-    return false; // Should not reach here
+    return false;
 }
 
 
 bool PerlUpb_SvToUpb_Element(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val, upb_Arena *arena) {
     if (!f || !val || !arena) return false;
     return convert_singular_sv_to_upb(aTHX_ sv, f, val, arena);
+}
+
+// VPP-style Batch Conversion from SVs to raw C types
+void PerlUpb_SvToUpb_BatchRaw(pTHX_ SV **src, upb_FieldType type, void *dst, size_t count, const upb_FieldDef *f, upb_Arena *arena) {
+    size_t i = 0;
+    switch (type) {
+        case kUpb_FieldType_Bool: {
+            bool *d = (bool*)dst;
+            for (; i < count; i++) d[i] = SvTRUE(src[i]);
+            break;
+        }
+        case kUpb_FieldType_Int32:
+        case kUpb_FieldType_SInt32:
+        case kUpb_FieldType_SFixed32:
+        case kUpb_FieldType_Enum: {
+            int32_t *d = (int32_t*)dst;
+            for (; i < count; i++) d[i] = (int32_t)SvIV(src[i]);
+            break;
+        }
+        case kUpb_FieldType_UInt32:
+        case kUpb_FieldType_Fixed32: {
+            uint32_t *d = (uint32_t*)dst;
+            for (; i < count; i++) d[i] = (uint32_t)SvUV(src[i]);
+            break;
+        }
+        case kUpb_FieldType_Float: {
+            float *d = (float*)dst;
+            for (; i < count; i++) d[i] = (float)SvNV(src[i]);
+            break;
+        }
+        case kUpb_FieldType_Double: {
+            double *d = (double*)dst;
+            for (; i < count; i++) d[i] = (double)SvNV(src[i]);
+            break;
+        }
+        case kUpb_FieldType_Int64:
+        case kUpb_FieldType_SInt64:
+        case kUpb_FieldType_SFixed64: {
+            int64_t *d = (int64_t*)dst;
+            for (; i < count; i++) d[i] = PerlUpb_SVToI64(aTHX_ src[i]);
+            break;
+        }
+        case kUpb_FieldType_UInt64:
+        case kUpb_FieldType_Fixed64: {
+            uint64_t *d = (uint64_t*)dst;
+            for (; i < count; i++) d[i] = PerlUpb_SVToU64(aTHX_ src[i]);
+            break;
+        }
+        default:
+            croak("PerlUpb_SvToUpb_BatchRaw: Unsupported type %d for fast-path", type);
+    }
 }
 
 bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val, upb_Arena *arena) {
@@ -255,9 +304,8 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
         }
         AV *av = (AV*)SvRV(sv);
         SV* tied_obj = NULL;
-
-        // Check for our tied proxy object
         MAGIC* mg = mg_find((SV*)av, PERL_MAGIC_tied);
+
         if (mg) {
             tied_obj = SvTIED_obj((SV*)av, mg);
             if (tied_obj && sv_derived_from(tied_obj, "Protobuf::Internal::Repeated")) {
@@ -293,7 +341,6 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
             }
         }
 
-        // Fallback: iterate over the array elements
         I32 max_idx = av_len(av);
         size_t num_elements = max_idx + 1;
 
@@ -304,42 +351,42 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
             return false;
         }
 
-        for (I32 i = 0; i < (I32)num_elements; ++i) {
-            SV **elem_sv_ptr = av_fetch(av, i, 0);
-            SV *elem_sv = (elem_sv_ptr) ? *elem_sv_ptr : NULL;
-            
-            // If it's a tied array and av_fetch returned NULL or it's empty, we must use the tied interface
-            if (mg && (!elem_sv || !SvOK(elem_sv))) {
-                dSP;
-                ENTER;
-                SAVETMPS;
-                PUSHMARK(SP);
-                XPUSHs(tied_obj);
-                XPUSHs(sv_2mortal(newSViv(i)));
-                PUTBACK;
-                call_method("FETCH", G_SCALAR);
-                SPAGAIN;
-                elem_sv = POPs;
-                PUTBACK;
-            }
+        if (!upb_Array_Resize(arr, num_elements, arena)) {
+            croak("Failed to resize upb_Array for field '%s'", upb_FieldDef_Name(f));
+            return false;
+        }
 
-            if (!elem_sv) {
-                croak("Error fetching element %d from array for field '%s'", (int)i, upb_FieldDef_Name(f));
-                return false;
+        if (!mg && !upb_FieldDef_IsSubMessage(f) && upb_FieldDef_Type(f) != kUpb_FieldType_String && upb_FieldDef_Type(f) != kUpb_FieldType_Bytes) {
+            SV **src = (SV**)safemalloc(num_elements * sizeof(SV*));
+            for (size_t i = 0; i < num_elements; i++) {
+                SV **svp = av_fetch(av, (I32)i, 0);
+                src[i] = (svp) ? *svp : &PL_sv_undef;
             }
+            void *dst = upb_Array_MutableDataPtr(arr);
+            PerlUpb_SvToUpb_BatchRaw(aTHX_ src, upb_FieldDef_Type(f), dst, num_elements, f, arena);
+            safefree(src);
+        } else {
+            for (I32 i = 0; i < (I32)num_elements; ++i) {
+                SV **elem_sv_ptr = av_fetch(av, i, 0);
+                SV *elem_sv = (elem_sv_ptr) ? *elem_sv_ptr : NULL;
+                
+                if (mg && (!elem_sv || !SvOK(elem_sv))) {
+                    dSP; ENTER; SAVETMPS; PUSHMARK(SP);
+                    XPUSHs(tied_obj); XPUSHs(sv_2mortal(newSViv(i))); PUTBACK;
+                    call_method("FETCH", G_SCALAR);
+                    SPAGAIN; elem_sv = POPs; PUTBACK;
+                }
 
-            upb_MessageValue item_val;
-            if (!convert_singular_sv_to_upb(aTHX_ elem_sv, f, &item_val, arena)) {
-                return false; // Error already croaked
-            }
-            if (!upb_Array_Append(arr, item_val, arena)) {
-                croak("Failed to append to upb_Array for field '%s'", upb_FieldDef_Name(f));
-                return false;
-            }
-            
-            if (mg) {
-                FREETMPS;
-                LEAVE;
+                if (!elem_sv) {
+                    croak("Error fetching element %d from array for field '%s'", (int)i, upb_FieldDef_Name(f));
+                    return false;
+                }
+
+                upb_MessageValue item_val;
+                if (!convert_singular_sv_to_upb(aTHX_ elem_sv, f, &item_val, arena)) return false;
+                upb_Array_Set(arr, i, item_val);
+                
+                if (mg) { FREETMPS; LEAVE; }
             }
         }
         val->array_val = arr;

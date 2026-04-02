@@ -14,4 +14,9 @@ const upb_MessageDef* PerlUpb_MessageDef_GetMessage(pTHX_ SV *sv);
 // Returns the full name of the message as a Perl SV
 SV* PerlUpb_MessageDef_FullName(pTHX_ const upb_MessageDef *m);
 
+// Fingerprinting and ultra-fast lookup
+uint64_t PerlUpb_MessageDef_GetFingerprint(pTHX_ const upb_MessageDef *m);
+void     PerlUpb_MessageDef_RegisterFingerprint(pTHX_ const upb_MessageDef *m);
+const upb_MessageDef* PerlUpb_MessageDef_FindByFingerprint(pTHX_ uint64_t fingerprint);
+
 #endif // PERL_PROTOBUF_DESCRIPTOR_MESSAGE_H_

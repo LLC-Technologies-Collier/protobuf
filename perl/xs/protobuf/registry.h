@@ -9,11 +9,21 @@
 typedef struct obj_cache_audit_log_s obj_cache_audit_log_t;
 
 typedef struct {
+    double fail_probability;    // 0.0 to 1.0
+    double delay_probability;   // 0.0 to 1.0
+    uint32_t max_delay_ms;
+    unsigned int seed;
+    bool enabled;
+} PerlUpb_ChaosConfig;
+
+typedef struct {
     HV* obj_cache;
     AV* obj_lru;
+    HV* descriptor_fingerprints; // Fingerprint (uint64) -> MessageDef (cached wrapper)
     obj_cache_audit_log_t* audit_log;
     size_t max_cache_capacity;
     upb_Arena* cached_transient_arena;
+    PerlUpb_ChaosConfig chaos;
 } PerlUpb_Registry;
 
 // Registry Management

@@ -23,6 +23,12 @@ sub new_tmpfs {
     return _xs_create_tmpfs_raw($path, $size);
 }
 
+sub attach_tmpfs {
+    my ($class, $path, $size) = @_;
+    croak("Usage: $class->attach_tmpfs(path, size)") unless defined $path && defined $size;
+    return _xs_attach_tmpfs_raw($path, $size);
+}
+
 sub DEMOLISH {
     my $self = shift;
     $self->_xs_destroy();

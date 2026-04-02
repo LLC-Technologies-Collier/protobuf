@@ -5,20 +5,42 @@
 #include "perl/xs/protobuf/arena.h"
 #include "perl/xs/protobuf/registry.h"
 #include "upb/mem/arena.h"
+#include <unistd.h>
+#include <time.h>
 
 // -- Canary Logic --
 
 // (Now in arena.h as static inline)
 
-// -- Stats Tracking Allocator --
+// -- Stats Tracking & Chaos Allocator --
+
+#include "xs/protobuf/obj_cache.h"
 
 static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize,
                                      size_t size, size_t* actual_size) {
     PerlUpb_StatsAlloc* s = (PerlUpb_StatsAlloc*)alloc;
-    void* ret = NULL;
+    dTHX;
     
-    // For now, assume canaries are ALWAYS enabled for testing or if requested.
-    // We can pull a flag from the registry later.
+    // ... (chaos logic)
+    if (s->use_chaos && size > 0) {
+        PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+        if (reg->chaos.enabled) {
+            // 1. Fail probability
+            double r = (double)rand_r(&reg->chaos.seed) / (double)RAND_MAX;
+            if (r < reg->chaos.fail_probability) {
+                return NULL;
+            }
+
+            // 2. Delay probability
+            r = (double)rand_r(&reg->chaos.seed) / (double)RAND_MAX;
+            if (r < reg->chaos.delay_probability) {
+                uint32_t delay = rand_r(&reg->chaos.seed) % reg->chaos.max_delay_ms;
+                usleep(delay * 1000);
+            }
+        }
+    }
+
+    void* ret = NULL;
     
     if (size > 0) {
         // Allocate/Realloc
@@ -36,8 +58,10 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
             if (ptr == NULL) {
                 s->total_reserved += size;
                 s->total_blocks++;
+                PerlUpb_ObjCache_LogEvent(aTHX, ALLOC_EVENT_MALLOC, ret);
             } else {
                 s->total_reserved = (s->total_reserved - oldsize) + size;
+                PerlUpb_ObjCache_LogEvent(aTHX, ALLOC_EVENT_REALLOC, ret);
             }
         }
     } else if (ptr != NULL) {
@@ -47,6 +71,7 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
         upb_alloc_global.func(&upb_alloc_global, raw, oldsize + 2 * PERL_UPB_CANARY_SIZE, 0, NULL);
         s->total_reserved -= oldsize;
         s->total_blocks--;
+        PerlUpb_ObjCache_LogEvent(aTHX, ALLOC_EVENT_FREE, ptr);
     }
     
     if (actual_size && ret) *actual_size = size;
@@ -83,6 +108,7 @@ upb_Arena* PerlUpb_Arena_AcquireWithStats(pTHX_ PerlUpb_StatsAlloc* s) {
     s->base.func = PerlUpb_StatsAlloc_Func;
     s->total_reserved = 0;
     s->total_blocks = 0;
+    s->use_chaos = true;
     return upb_Arena_Init(NULL, 0, &s->base);
 }
 

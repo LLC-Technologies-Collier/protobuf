@@ -1,5 +1,6 @@
 # C types to Perl types
 uint32_t                  T_UV
+uint64_t                  T_UV
 upb_DefPool *             T_PTR
 const void *              T_PTR
 const upb_MessageDef *    T_PTR

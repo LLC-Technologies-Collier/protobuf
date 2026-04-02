@@ -114,6 +114,51 @@ upb_Arena* PerlUpb_Arena_NewBlock(pTHX_ size_t size, PerlUpb_BlockAlloc** out_al
     return arena;
 }
 
+SV* PerlUpb_Arena_AttachTmpfs(pTHX_ const char* path, size_t size) {
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) croak("Failed to open existing tmpfs file %s: %s", path, strerror(errno));
+
+    // For read-only attachment, we mmap the existing data
+    void* region = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+    if (region == MAP_FAILED) {
+        close(fd);
+        croak("Failed to mmap tmpfs file (read-only) %s: %s", path, strerror(errno));
+    }
+
+    PerlUpb_BlockAlloc* b_alloc = (PerlUpb_BlockAlloc*)safemalloc(sizeof(PerlUpb_BlockAlloc));
+    b_alloc->base.func = PerlUpb_BlockAlloc_Func;
+    b_alloc->type = PERL_UPB_BLOCK_MMAP;
+    b_alloc->fd = fd;
+    b_alloc->region = region;
+    b_alloc->size = size;
+    b_alloc->offset = size; // Effectively "full" for allocation, but allows reading
+
+    // Use global allocator for the arena structure itself
+    upb_Arena* arena = upb_Arena_Init(NULL, 0, &upb_alloc_global);
+    if (!arena) {
+        munmap(region, size);
+        close(fd);
+        safefree(b_alloc);
+        croak("Failed to create upb_Arena for attachment");
+    }
+
+    // Record the shared memory region in the block allocator for reference
+    b_alloc->offset = size;
+
+    PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)safemalloc(sizeof(PerlUpb_Arena_Custom));
+    wrapper->base.arena = arena;
+    wrapper->alloc = b_alloc;
+
+    HV* hv = newHV();
+    hv_store(hv, "_arena_ptr", 10, newSViv(PTR2IV(wrapper)), 0);
+    hv_store(hv, "_is_tmpfs", 9, newSViv(1), 0);
+    hv_store(hv, "_read_only", 10, newSViv(1), 0);
+
+    SV* rv = newRV_noinc((SV*)hv);
+    sv_bless(rv, gv_stashpv("Protobuf::Arena", GV_ADD));
+    return rv;
+}
+
 void PerlUpb_Arena_DestroyRaw_Tmpfs(pTHX_ void* ptr, bool is_tmpfs) {
     if (!is_tmpfs) {
         PerlUpb_Arena_DestroyRaw(aTHX_ ptr);

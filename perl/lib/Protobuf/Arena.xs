@@ -27,6 +27,15 @@ _xs_create_tmpfs_raw(path, size)
     OUTPUT:
         RETVAL
 
+SV*
+_xs_attach_tmpfs_raw(path, size)
+    const char* path
+    size_t size
+    CODE:
+        RETVAL = PerlUpb_Arena_AttachTmpfs(aTHX_ path, size);
+    OUTPUT:
+        RETVAL
+
 void
 _xs_destroy_raw(ptr_iv)
     IV ptr_iv

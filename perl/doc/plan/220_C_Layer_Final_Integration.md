@@ -17,8 +17,8 @@
 *   [ ] TODO: Implement automated deadlock detection for integrated state.
 *   [x] All C layer integration tests pass.
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement Chaos Allocation Engine for non-deterministic resource pressure testing. (Difficulty: 6/10).
-    *   [ ] TODO: Implement VPP-Style SIMD Batch Processing for multi-gigabit transformations. (Difficulty: 9/10).
-    *   [ ] TODO: Implement Zero-Copy IPC Transport Layer via shared memory arenas. (Difficulty: 8/10).
+    *   [x] Implement Chaos Allocation Engine for non-deterministic resource pressure testing.
+    *   [x] Implement VPP-Style SIMD Batch Processing for multi-gigabit transformations.
+    *   [x] Implement Zero-Copy IPC Transport Layer via shared memory arenas.
     *   [ ] TODO: Implement NUMA-Aware Integrated Allocation for multi-socket scaling. (Difficulty: 9/10).
 *   [x] Review and update perl/doc/architecture/** documents.

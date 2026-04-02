@@ -13,4 +13,7 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
 // Used for elements of repeated fields or maps.
 bool PerlUpb_SvToUpb_Element(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val, upb_Arena *arena);
 
+// Batch Conversion (VPP Style)
+void PerlUpb_SvToUpb_BatchRaw(pTHX_ SV **src, upb_FieldType type, void *dst, size_t count, const upb_FieldDef *f, upb_Arena *arena);
+
 #endif // PERL_PROTOBUF_SV_TO_UPB_H_

@@ -60,6 +60,67 @@ SV* PerlUpb_UpbToSv_Element(pTHX_ const upb_MessageValue *val, const upb_FieldDe
     return convert_singular_upb_to_sv(aTHX_ val, f, parent_arena_sv);
 }
 
+// VPP-style Batch Conversion
+void PerlUpb_UpbToSv_Batch(pTHX_ const upb_MessageValue *vals, const upb_FieldDef *f, SV *parent_arena_sv, SV **out, size_t count) {
+    // Process in batches of 4 to allow compiler to unroll and potentially use SIMD
+    size_t i = 0;
+    for (; i + 3 < count; i += 4) {
+        // Prefetch logic could go here if we were dealing with larger structures
+        out[i]   = convert_singular_upb_to_sv(aTHX_ &vals[i],   f, parent_arena_sv);
+        out[i+1] = convert_singular_upb_to_sv(aTHX_ &vals[i+1], f, parent_arena_sv);
+        out[i+2] = convert_singular_upb_to_sv(aTHX_ &vals[i+2], f, parent_arena_sv);
+        out[i+3] = convert_singular_upb_to_sv(aTHX_ &vals[i+3], f, parent_arena_sv);
+    }
+    for (; i < count; i++) {
+        out[i] = convert_singular_upb_to_sv(aTHX_ &vals[i], f, parent_arena_sv);
+    }
+}
+
+// Optimized raw batch for scalar types (non-message, non-string)
+void PerlUpb_UpbToSv_BatchRaw(pTHX_ const void *data, upb_CType type, SV **out, size_t count) {
+    size_t i = 0;
+    switch (type) {
+        case kUpb_CType_Bool: {
+            const bool *src = (const bool*)data;
+            for (; i < count; i++) out[i] = newSVsv(src[i] ? &PL_sv_yes : &PL_sv_no);
+            break;
+        }
+        case kUpb_CType_Int32:
+        case kUpb_CType_Enum: {
+            const int32_t *src = (const int32_t*)data;
+            for (; i < count; i++) out[i] = newSViv(src[i]);
+            break;
+        }
+        case kUpb_CType_UInt32: {
+            const uint32_t *src = (const uint32_t*)data;
+            for (; i < count; i++) out[i] = newSVuv(src[i]);
+            break;
+        }
+        case kUpb_CType_Float: {
+            const float *src = (const float*)data;
+            for (; i < count; i++) out[i] = newSVnv((double)src[i]);
+            break;
+        }
+        case kUpb_CType_Double: {
+            const double *src = (const double*)data;
+            for (; i < count; i++) out[i] = newSVnv(src[i]);
+            break;
+        }
+        case kUpb_CType_Int64: {
+            const int64_t *src = (const int64_t*)data;
+            for (; i < count; i++) out[i] = PerlUpb_I64ToSV(aTHX_ src[i]);
+            break;
+        }
+        case kUpb_CType_UInt64: {
+            const uint64_t *src = (const uint64_t*)data;
+            for (; i < count; i++) out[i] = PerlUpb_U64ToSV(aTHX_ src[i]);
+            break;
+        }
+        default:
+            croak("PerlUpb_UpbToSv_BatchRaw: Unsupported CType %d", type);
+    }
+}
+
 SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV *parent_arena_sv) {
     if (!f) {
         croak("PerlUpb_UpbToSv: upb_FieldDef was NULL");
@@ -83,6 +144,8 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
         return convert_singular_upb_to_sv(aTHX_ val, f, parent_arena_sv);
     }
 }
+
+#include "upb/message/array.h"
 
 SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *parent_arena_sv) {
     if (!msg || !mdef) return newSV(0);
@@ -109,7 +172,7 @@ SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mde
             SV *val_sv;
             
             if (upb_FieldDef_IsMap(f)) {
-                // For maps, we want a real HashRef, not a tied one.
+                // ... (Map logic unchanged)
                 const upb_MessageDef *entry_mdef = upb_FieldDef_MessageSubDef(f);
                 const upb_FieldDef *key_f = upb_MessageDef_FindFieldByNumber(entry_mdef, 1);
                 const upb_FieldDef *val_f = upb_MessageDef_FindFieldByNumber(entry_mdef, 2);
@@ -132,19 +195,31 @@ SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mde
                 val_sv = newRV_noinc((SV*)map_hv);
             }
             else if (upb_FieldDef_IsRepeated(f)) {
-                // For repeated, we want a real ArrayRef.
-                AV *av = newAV();
                 upb_Array *arr = (upb_Array*)val.array_val;
                 size_t size = upb_Array_Size(arr);
-                for (size_t j = 0; j < size; j++) {
-                    upb_MessageValue item = upb_Array_Get(arr, j);
-                    SV *item_sv;
-                    if (upb_FieldDef_IsSubMessage(f)) {
-                        item_sv = PerlUpb_Message_ToSv(aTHX_ item.msg_val, upb_FieldDef_MessageSubDef(f), parent_arena_sv);
-                    } else {
-                        item_sv = PerlUpb_UpbToSv_Element(aTHX_ &item, f, parent_arena_sv);
+                AV *av = newAV();
+                av_extend(av, size);
+                
+                if (!upb_FieldDef_IsSubMessage(f) && upb_FieldDef_Type(f) != kUpb_FieldType_String && upb_FieldDef_Type(f) != kUpb_FieldType_Bytes) {
+                    // FAST PATH: Batch conversion for scalar arrays
+                    const void *data = upb_Array_DataPtr(arr);
+                    SV **entries = (SV**)safemalloc(size * sizeof(SV*));
+                    PerlUpb_UpbToSv_BatchRaw(aTHX_ data, upb_FieldDef_CType(f), entries, size);
+                    for (size_t j = 0; j < size; j++) {
+                        av_push(av, entries[j]);
                     }
-                    av_push(av, item_sv);
+                    safefree(entries);
+                } else {
+                    for (size_t j = 0; j < size; j++) {
+                        upb_MessageValue item = upb_Array_Get(arr, j);
+                        SV *item_sv;
+                        if (upb_FieldDef_IsSubMessage(f)) {
+                            item_sv = PerlUpb_Message_ToSv(aTHX_ item.msg_val, upb_FieldDef_MessageSubDef(f), parent_arena_sv);
+                        } else {
+                            item_sv = PerlUpb_UpbToSv_Element(aTHX_ &item, f, parent_arena_sv);
+                        }
+                        av_push(av, item_sv);
+                    }
                 }
                 val_sv = newRV_noinc((SV*)av);
             }

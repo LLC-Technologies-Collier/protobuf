@@ -19,6 +19,14 @@ void PerlUpb_Registry_Init(pTHX) {
         // Default capacity
         reg->max_cache_capacity = 100000;
         reg->cached_transient_arena = NULL;
+        reg->descriptor_fingerprints = newHV();
+        
+        // Chaos defaults
+        reg->chaos.enabled = false;
+        reg->chaos.fail_probability = 0.0;
+        reg->chaos.delay_probability = 0.0;
+        reg->chaos.max_delay_ms = 0;
+        reg->chaos.seed = (unsigned int)time(NULL);
         
         sv_setiv(*svp, PTR2IV(reg));
     }
