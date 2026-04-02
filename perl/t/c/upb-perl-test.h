@@ -6,6 +6,7 @@
 #include "XSUB.h"
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 #include "upb/mem/arena.h"
 
 #include <inttypes.h>
@@ -44,17 +45,28 @@ extern int indent_level;
         ok(1, name); \
     } STMT_END
 
-#define LEAK_CHECK(block) \
+#define LEAK_CHECK(arena, block, name) \
     STMT_START { \
-        /* TODO: Implement upb_Arena based leak checking */ \
+        size_t _before = upb_Arena_SpaceAllocated(arena, NULL); \
         block; \
+        size_t _after = upb_Arena_SpaceAllocated(arena, NULL); \
+        ok(_after == _before, name); \
+        if (_after != _before) { \
+            fprintf(stderr, "%*s  # Leaked %zu bytes in [%s]\n", indent_level * 4, "", _after - _before, name); \
+        } \
     } STMT_END
 
 #define STRESS_THREADS(n, func, arg) \
     STMT_START { \
-        /* TODO: Implement actual pthread-based thread stress runner */ \
-        cdiag("STRESS_THREADS: Running %s with %d threads (STUB)", #func, (n)); \
-        func(arg); \
+        pthread_t* _threads = (pthread_t*)malloc(sizeof(pthread_t) * (n)); \
+        for (int _ti = 0; _ti < (n); _ti++) { \
+            pthread_create(&_threads[_ti], NULL, (void* (*)(void*))func, (void*)arg); \
+        } \
+        for (int _ti = 0; _ti < (n); _ti++) { \
+            pthread_join(_threads[_ti], NULL); \
+        } \
+        free(_threads); \
+        ok(1, sdiagnostic("STRESS_THREADS: Finished %d threads for %s", (n), #func)); \
     } STMT_END
 
 #define like(str, pattern, name) \
@@ -169,12 +181,18 @@ upb_Arena* test_arena_new(void);
 PerlInterpreter* test_perl_init(int argc, char** argv);
 void test_perl_destroy(PerlInterpreter *my_perl);
 
-#endif // PERLUPB_TEST_H
-
-// TODO: Implement SKIP functionality for C tests
 #define SKIP(reason, count) \
-    for(int _skip_i = 0; _skip_i < (count); _skip_i++) \
-        fprintf(stderr, "ok %d - # skip %s\n", ++test_num, (reason))
+    STMT_START { \
+        for(int _skip_i = 0; _skip_i < (count); _skip_i++) \
+            fprintf(stderr, "%*sok %d - # skip %s\n", indent_level * 4, "", ++test_num, (reason)); \
+    } STMT_END
+
+#define SKIP_BLOCK(condition, count, reason) \
+    if (condition) { \
+        SKIP(reason, count); \
+    } else
+
+#endif // PERLUPB_TEST_H
 
 // TODO: Implement world-class build and test capabilities
 // 1. Configurable sanitizer support (ASan, UBSan, MSan)

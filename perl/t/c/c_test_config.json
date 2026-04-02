@@ -17,6 +17,16 @@
       "t/c/upb-perl-test.h"
     ]
   },
+  "harness/skip": {
+    "deps": [
+      "t/c/upb-perl-test.h"
+    ]
+  },
+  "harness/leak_thread": {
+    "deps": [
+      "t/c/upb-perl-test.h"
+    ]
+  },
   "descriptor/base": {
     "deps": ["xs/protobuf.h", "xs/descriptor.h", "t/c/upb-perl-test.h", "t/c/convert/test_util.h"],
     "extra_src": ["t/c/convert/test_util.c"]
