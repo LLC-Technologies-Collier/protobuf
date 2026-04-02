@@ -5,6 +5,18 @@
       "t/c/upb-perl-test.h"
     ]
   },
+  "protobuf/obj_cache_coro": {
+    "deps": [
+      "xs/protobuf.h",
+      "t/c/upb-perl-test.h",
+      "libcoro/coro.h",
+      "t/c/coro_util.h"
+    ],
+    "extra_src": [
+      "xs/protobuf/obj_cache.c",
+      "libcoro/coro.c"
+    ]
+  },
   "protobuf/arena": {
     "deps": [
       "xs/protobuf.h",
