@@ -4,7 +4,7 @@
 #include "XSUB.h"
 #include "ppport.h"
 
-#include "xs/all_descriptors.h"
+#include "xs/protobuf/arena.h"
 
 // -- Arena --
 MODULE = Protobuf::Arena  PACKAGE = Protobuf::Arena
@@ -15,6 +15,15 @@ IV
 _xs_create_raw()
     CODE:
         RETVAL = PTR2IV(PerlUpb_Arena_CreateRaw(aTHX));
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_create_tmpfs_raw(path, size)
+    const char* path
+    size_t size
+    CODE:
+        RETVAL = PerlUpb_Arena_NewTmpfs(aTHX_ path, size);
     OUTPUT:
         RETVAL
 

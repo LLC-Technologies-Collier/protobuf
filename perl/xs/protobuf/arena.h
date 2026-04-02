@@ -11,6 +11,7 @@ typedef struct {
 } PerlUpb_Arena;
 
 SV *PerlUpb_Arena_New(pTHX);
+SV *PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size);
 upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv);
 void PerlUpb_Arena_Free(pTHX_ SV *sv);
 void PerlUpb_Arena_Destroy(pTHX_ SV *sv);
@@ -18,6 +19,7 @@ void PerlUpb_Arena_Destroy(pTHX_ SV *sv);
 // Low-level XS helpers
 void* PerlUpb_Arena_CreateRaw(pTHX);
 void  PerlUpb_Arena_DestroyRaw(pTHX_ void* ptr);
+void  PerlUpb_Arena_DestroyRaw_Tmpfs(pTHX_ void* ptr, bool is_tmpfs);
 upb_Arena* PerlUpb_Arena_GetRaw(pTHX_ void* ptr);
 
 // Returns memory usage in bytes

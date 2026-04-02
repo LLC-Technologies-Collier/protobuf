@@ -86,8 +86,14 @@ void PerlUpb_Arena_Destroy(pTHX_ SV *sv) {
     }
     SV *rv = SvRV(sv);
     void* raw_ptr = NULL;
+    bool is_tmpfs = false;
 
     if (SvTYPE(rv) == SVt_PVHV) {
+        SV** is_tmpfs_p = hv_fetch((HV*)rv, "_is_tmpfs", 9, 0);
+        if (is_tmpfs_p && SvTRUE(*is_tmpfs_p)) {
+            is_tmpfs = true;
+        }
+
         SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
         if (svp && SvIOK(*svp)) {
             raw_ptr = INT2PTR(void*, SvIV(*svp));
@@ -99,7 +105,7 @@ void PerlUpb_Arena_Destroy(pTHX_ SV *sv) {
     }
 
     if (raw_ptr) {
-        PerlUpb_Arena_DestroyRaw(aTHX_ raw_ptr);
+        PerlUpb_Arena_DestroyRaw_Tmpfs(aTHX_ raw_ptr, is_tmpfs);
     }
 }
 

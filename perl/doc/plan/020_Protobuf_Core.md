@@ -25,7 +25,7 @@
     *   [x] Create test file `perl/t/c/protobuf/arena.c`.
     *   [x] Tests in `perl/t/c/protobuf/arena.c` test all public functions in `perl/xs/protobuf/arena.h`.
     *   [x] TODO: Memory usage statistics (Allocated).
-    *   [ ] TODO: tmpfs-backed custom allocators for zero-copy IPC.
+    *   [x] TODO: tmpfs-backed custom allocators for zero-copy IPC.
     *   [ ] TODO: Implement thread-local arena caching for ultra-high-frequency small message allocations.
     *   [ ] TODO: Add memory corruption guards (canary bytes) around arena-allocated blocks to detect out-of-bounds writes in C.
     *   [x] Implement C functions in `perl/xs/protobuf/arena.c`.
