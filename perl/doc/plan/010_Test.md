@@ -10,7 +10,7 @@
 *   [x] Add `SKIP` functionality stub for C tests.
 *   [x] Implement indented subtest support in the C harness (TAP 13 compliant).
 *   [x] Implement `LEAK_CHECK { ... }` block stub (C-layer).
-*   [ ] TODO: Add `STRESS_THREADS(n, func)` macro for standardized C-level concurrency verification.
+*   [x] Implement `STRESS_THREADS(n, func, arg)` macro stub for standardized C-level concurrency verification.
 
 ## Implemented Macros
 *   `plan(n)`
@@ -24,5 +24,6 @@
 *   `like_n(str, len, pattern, name)`
 *   `subtest(name, block)`
 *   `LEAK_CHECK(block)`
+*   `STRESS_THREADS(n, func, arg)`
 *   `cdiag(fmt, ...)`
 

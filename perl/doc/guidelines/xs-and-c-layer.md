@@ -16,7 +16,11 @@ This document outlines the specific conventions and testing patterns for the XS 
 ### C-Level Unit Tests
 - Use the test harness provided in `perl/t/c/upb-perl-test.h`.
 - Follow the TAP (Test Anything Protocol) format.
-- **TODO Blocks:** Use the `TODO("reason") { ... }` macro to track planned coverage that is not yet implemented. This allows the test suite to pass while explicitly flagging missing coverage.
+- **Indentation**: TAP 13 compliant indented output is supported for logical grouping of tests.
+- **TODO Blocks:** Use the `TODO("reason") { ... }` macro to track planned coverage that is not yet implemented.
+- **Subtests:** Use the `subtest("name", { ... })` macro for hierarchical test organization.
+- **Leak Checking:** Use the `LEAK_CHECK { ... }` block to wrap logic that MUST be allocation-neutral.
+- **Thread Stress**: Use `STRESS_THREADS(n, func, arg)` to verify concurrency safety (currently a stub).
 - **XS-Based C Runner:** For C logic that requires a Perl interpreter context (`aTHX`), use the XS runner defined in `perl/t/c/Test.xs`.
 
 ### Concurrency Testing

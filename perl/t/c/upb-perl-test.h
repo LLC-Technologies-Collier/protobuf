@@ -50,6 +50,13 @@ extern int indent_level;
         block; \
     } STMT_END
 
+#define STRESS_THREADS(n, func, arg) \
+    STMT_START { \
+        /* TODO: Implement actual pthread-based thread stress runner */ \
+        cdiag("STRESS_THREADS: Running %s with %d threads (STUB)", #func, (n)); \
+        func(arg); \
+    } STMT_END
+
 #define like(str, pattern, name) \
     STMT_START { \
         bool _like_pass = false; \
