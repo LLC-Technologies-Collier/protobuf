@@ -16,6 +16,22 @@ subtest 'multiple arenas' => sub {
     isnt($a1->{_arena_ptr}, $a2->{_arena_ptr}, 'Different arenas have different pointers');
 };
 
+subtest 'stats method' => sub {
+    my $arena = Protobuf::Arena->new;
+    my $stats = $arena->stats();
+    ok($stats, 'Got stats');
+    is(ref($stats), 'HASH', 'Stats is a hash');
+    ok(exists $stats->{memory_used}, 'Has memory_used metric');
+};
+
+subtest 'cloning' => sub {
+    my $arena = Protobuf::Arena->new;
+    my $clone = $arena->Clone();
+    ok($clone, 'Cloned arena');
+    isa_ok($clone, 'Protobuf::Arena');
+    isnt($clone->{_arena_ptr}, $arena->{_arena_ptr}, 'Clone has its own arena pointer');
+};
+
 subtest 'destruction' => sub {
     {
         my $arena = Protobuf::Arena->new;
@@ -32,7 +48,7 @@ subtest 'explicit pointer access' => sub {
 ok(1, 'All basic tests passed');
 
 TODO: {
-    local $TODO = 'Implement Arena Fusion (Cloning)';
+    local $TODO = 'Implement Arena Fusion (Cloning) logic';
     ok(0, 'Arena fusion allows data transfer without deep copy');
 }
 

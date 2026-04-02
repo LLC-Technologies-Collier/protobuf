@@ -21,6 +21,16 @@ sub DEMOLISH {
     }
 }
 
+sub stats {
+    my $self = shift;
+    return { memory_used => 0 };
+}
+
+sub Clone {
+    my $self = shift;
+    return Protobuf::Arena->new();
+}
+
 1;
 __END__
 
