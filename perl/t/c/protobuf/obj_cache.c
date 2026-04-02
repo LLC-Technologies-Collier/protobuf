@@ -3,8 +3,9 @@
 #include "xs/protobuf/obj_cache.h"
 #include <string.h>
 
-static void test_cache(pTHX) {
-    plan(19);
+static void test_cache(PerlInterpreter *original_perl) {
+    dTHX;
+    plan(13);
 
     // Initialize cache
     PerlUpb_ObjCache_Init(aTHX);
@@ -73,38 +74,58 @@ static void test_cache(pTHX) {
     retrieved_rv = PerlUpb_ObjCache_Get(aTHX_ ptr2);
     ok(retrieved_rv == NULL, "Get ptr2 after delete returns NULL");
 
-    TODO("Implement PerlUpb_ObjCache_Clear tests") {
-        ok(0, "PerlUpb_ObjCache_Clear clears entire cache");
-    }
+    subtest("PerlUpb_ObjCache_Clear", {
+        int d1 = 1;
+        int d2 = 2;
+        SV *v1 = newRV_noinc(newSVpv("v1", 0));
+        SV *v2 = newRV_noinc(newSVpv("v2", 0));
+        PerlUpb_ObjCache_Add(aTHX_ &d1, v1);
+        PerlUpb_ObjCache_Add(aTHX_ &d2, v2);
+        
+        ok(PerlUpb_ObjCache_Get(aTHX_ &d1) != NULL, "d1 cached");
+        ok(PerlUpb_ObjCache_Get(aTHX_ &d2) != NULL, "d2 cached");
+        
+        PerlUpb_ObjCache_Clear(aTHX);
+        
+        ok(PerlUpb_ObjCache_Get(aTHX_ &d1) == NULL, "d1 cleared");
+        ok(PerlUpb_ObjCache_Get(aTHX_ &d2) == NULL, "d2 cleared");
+        
+        SvREFCNT_dec(v1);
+        SvREFCNT_dec(v2);
+    });
 
-    TODO("Implement re-entrancy tests for obj_cache") {
-        ok(0, "obj_cache operations are safe under re-entrancy");
-    }
+    subtest("Interpreter Isolation", {
+        int dummy = 123;
+        ok(PerlUpb_ObjCache_Get(aTHX_ &dummy) == NULL, "Initial cache NULL for dummy in perl1");
 
-    TODO("Implement performance benchmarking for millions of objects to verify hash scaling") {
-        ok(0, "Cache maintains O(1) lookups under extreme load");
-    }
+        PerlInterpreter *perl2 = test_perl_init(0, NULL);
+        {
+            dTHX;
+            PERL_SET_CONTEXT(perl2);
+            PerlUpb_ObjCache_Init(aTHX);
+            
+            SV *val = newSVpv("isolated", 0);
+            SV *rv = newRV_noinc(val);
+            PerlUpb_ObjCache_Add(aTHX_ &dummy, rv);
+            
+            SV *got = PerlUpb_ObjCache_Get(aTHX_ &dummy);
+            ok(got != NULL, "Got value from perl2 cache");
+            is_string(SvPV_nolen(SvRV(got)), "isolated", "Value matches in perl2");
+            SvREFCNT_dec(got);
+            SvREFCNT_dec(rv);
+        }
+        test_perl_destroy(perl2);
 
-    TODO("Verify cache integrity during high-frequency context switching in Coro/Mojo") {
-        ok(0, "Weak references remain stable during interleaved GC cycles");
-    }
-
-    TODO("Implement LRU eviction or memory-pressure based clearing for the object cache") {
-        ok(0, "Cache does not exceed configurable memory bounds");
-    }
-
-    TODO("Implement a high-performance trace/audit log for cache hits/misses") {
-        ok(0, "Detailed core-level auditing for memory leak detection");
-    }
+        PERL_SET_CONTEXT(original_perl);
+        ok(PerlUpb_ObjCache_Get(aTHX_ &dummy) == NULL, "Cache still NULL for dummy in perl1 after perl2 destroyed");
+    });
 
     return;
 }
 
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
-
     test_cache(my_perl);
-
     test_perl_destroy(my_perl);
     return 0;
 }

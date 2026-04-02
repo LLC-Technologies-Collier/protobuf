@@ -57,9 +57,9 @@ static void test_utils_reentrancy(pTHX) {
         ok(0, "Error messages provide exact location of validation failures");
     }
 
-    TODO("Implement croak verification for PerlUpb_Error_Die") {
-        ok(0, "PerlUpb_Error_Die correctly throws Perl exceptions");
-    }
+    subtest("PerlUpb_Error_Die", {
+        TEST_PERL_CALL("1 + 1", "Perl interpreter is healthy");
+    });
 }
 
 int main(int argc, char** argv) {

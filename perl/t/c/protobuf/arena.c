@@ -10,7 +10,7 @@ void xs_init(pTHX);
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(16);
+    plan(18);
 
     // Test PerlUpb_Arena_New
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
@@ -42,6 +42,17 @@ int main(int argc, char** argv) {
     SV *arena2_sv = PerlUpb_Arena_New(aTHX);
     uintptr_t initial_space = PerlUpb_Arena_SpaceAllocated(aTHX_ arena2_sv);
     ok(initial_space > 0, "Initial space allocated is > 0");
+
+    upb_Arena* a2 = PerlUpb_Arena_Get(aTHX_ arena2_sv);
+    LEAK_CHECK(a2, {
+        // no allocation
+    }, "Arena remains clean with no allocations");
+
+    LEAK_CHECK(a2, {
+        void* p = upb_Arena_Malloc(a2, 64);
+        (void)p;
+    }, "Arena correctly tracks allocations (Expected failure)");
+
     PerlUpb_Arena_Destroy(aTHX_ arena2_sv);
     SvREFCNT_dec(arena2_sv);
 

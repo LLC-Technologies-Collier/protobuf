@@ -10,7 +10,7 @@
     *   [ ] TODO: Performance benchmarking for large caches (O(1) lookups).
     *   [ ] TODO: Concurrency integrity during interleaved GC (Coro/Mojo).
     *   [ ] TODO: Implement **Lock-Free Cache Operations:** Ensure that object retrieval and caching are thread-safe without heavy global locks.
-    *   [ ] TODO: Implement **interpreter-isolation verification:** Verify that cache state is strictly isolated between multiple Perl interpreters (ithreads).
+    *   [x] TODO: Implement **interpreter-isolation verification:** Verify that cache state is strictly isolated between multiple Perl interpreters (ithreads).
     *   [ ] TODO: Implement LRU eviction or memory-pressure based clearing for the object cache.
     *   [ ] TODO: Implement a high-performance trace/audit log for cache hits/misses to aid in memory leak hunting.
     *   [x] Implement C functions in `perl/xs/protobuf/obj_cache.c`.
