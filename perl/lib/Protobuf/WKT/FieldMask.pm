@@ -14,4 +14,8 @@ sub from_string {
     return $self;
 }
 
+sub get_injected_methods {
+    return qw(to_string from_string);
+}
+
 1;

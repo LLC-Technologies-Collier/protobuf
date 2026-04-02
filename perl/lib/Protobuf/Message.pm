@@ -42,7 +42,7 @@ sub get {
     if (ref($val) eq 'Protobuf::Internal::Repeated') {
         my @arr;
         tie @arr, 'Protobuf::Internal::Repeated', $val;
-        return \@arr;
+        return bless \@arr, 'Protobuf::Internal::Repeated::Public';
     }
     if (ref($val) eq 'Protobuf::Internal::Map') {
         my %hash;

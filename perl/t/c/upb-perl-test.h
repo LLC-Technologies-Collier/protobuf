@@ -123,6 +123,33 @@ extern int indent_level;
 
 #define cdiag(fmt, ...) { fprintf(stderr, "%*s# " fmt, indent_level * 4, "", ##__VA_ARGS__); fprintf(stderr, "\n"); }
 
+// Enhanced Assertion Macros
+#define ASSERT_PROTO_MATCH(msg1, msg2, mdef, name) \
+    STMT_START { \
+        const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef); \
+        bool _match = upb_Message_IsEqual(msg1, msg2, mt); \
+        ok(_match, name); \
+        if (!_match) { \
+            fprintf(stderr, "%*s  # Messages do not match\n", indent_level * 4, ""); \
+        } \
+    } STMT_END
+
+#define ASSERT_ARENA_CLEAN(arena, name) \
+    STMT_START { \
+        /* For now, just check if it's non-NULL. Real leak check would need upb internals */ \
+        ok((arena) != NULL, name); \
+    } STMT_END
+
+#define TEST_PERL_CALL(code, name) \
+    STMT_START { \
+        dSP; \
+        SV* _res = eval_pv(code, TRUE); \
+        ok(!SvTRUE(ERRSV), name); \
+        if (SvTRUE(ERRSV)) { \
+            fprintf(stderr, "%*s  # Perl error: %s\n", indent_level * 4, "", SvPV_nolen(ERRSV)); \
+        } \
+    } STMT_END
+
 // Helper for formatted test names
 static char* sdiagnostic(const char *fmt, ...) {
     static char buffer[1024];

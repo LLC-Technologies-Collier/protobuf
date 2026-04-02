@@ -63,6 +63,8 @@ int main() {
     const upb_MiniTable *mini_table = upb_MessageDef_MiniTable(mdef);
     upb_Message *msg = upb_Message_New(mini_table, arena);
 
+    ASSERT_ARENA_CLEAN(arena, "Arena exists and is ready for benchmark");
+
     // Initial setup
     clock_t start = clock();
     for (int i = 0; i < ITERATIONS; i++) {
@@ -79,6 +81,8 @@ int main() {
     double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
     printf("Serialization Benchmark: %d iterations in %.4f seconds (%.2f ops/sec)\n",
            ITERATIONS, elapsed, ITERATIONS / elapsed);
+
+    ok(elapsed > 0, "Benchmark completed in positive time");
 
     upb_DefPool_Free(test_pool);
     upb_Arena_Free(arena);

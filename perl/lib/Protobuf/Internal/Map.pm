@@ -18,7 +18,8 @@ sub TIEHASH {
 {
     package Protobuf::Internal::Map::Tied; ## no critic (Modules::ProhibitMultiplePackages)
     use Tie::Hash;
-    our @ISA = qw(Tie::Hash);
+    use Protobuf::Internal::Proxy;
+    our @ISA = qw(Tie::Hash Protobuf::Internal::Proxy);
 
     sub FETCH {
         my ($self, $key) = @_;

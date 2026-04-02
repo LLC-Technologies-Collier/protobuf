@@ -42,48 +42,16 @@ sub _generate_for_message {
 
     my $perl_class = $normalized;
     $perl_class =~ s/\./::/g;
-    
-    # Special handling for Well-Known Types
-    my %wkt_map = (
-        'google.protobuf.Any' => 'Any',
-        'google.protobuf.Timestamp' => 'Timestamp',
-        'google.protobuf.Duration' => 'Duration',
-        'google.protobuf.Struct' => 'Struct',
-        'google.protobuf.Value' => 'Value',
-        'google.protobuf.ListValue' => 'ListValue',
-        'google.protobuf.FieldMask' => 'FieldMask',
-    );
 
+    # Special handling for Well-Known Types
+    require Protobuf::WKT;
     my $wkt_logic = '';
-    if (my $type = $wkt_map{$normalized} || ($normalized =~ /Struct$/ ? 'Struct' : undef)) {
-        $log->debug("MATCHED WKT $type for $normalized");
-        if ($type eq 'Any' && !$perl_class->can('pack')) {
-            require Protobuf::WKT::Any;
-            $wkt_logic = "sub pack { shift->Protobuf::WKT::Any::pack(\@_) } sub unpack { shift->Protobuf::WKT::Any::unpack(\@_) }\n";
-        }
-        elsif ($type eq 'Timestamp' && !$perl_class->can('to_time_piece')) {
-            require Protobuf::WKT::Timestamp;
-            $wkt_logic = "sub to_time_piece { shift->Protobuf::WKT::Timestamp::to_time_piece(\@_) } sub from_time_piece { shift->Protobuf::WKT::Timestamp::from_time_piece(\@_) } sub to_iso8601 { shift->Protobuf::WKT::Timestamp::to_iso8601(\@_) }\n";
-        }
-        elsif ($type eq 'Duration' && !$perl_class->can('to_seconds')) {
-            require Protobuf::WKT::Duration;
-            $wkt_logic = "sub to_seconds { shift->Protobuf::WKT::Duration::to_seconds(\@_) } sub from_seconds { shift->Protobuf::WKT::Duration::from_seconds(\@_) }\n";
-        }
-        elsif ($type eq 'Struct' && !$perl_class->can('to_perl')) {
-            require Protobuf::WKT::Struct;
-            $wkt_logic = "sub to_perl { shift->Protobuf::WKT::Struct::to_perl(\@_) } sub from_perl { shift->Protobuf::WKT::Struct::from_perl(\@_) } sub memory_profile { shift->Protobuf::WKT::Struct::memory_profile(\@_) } sub to_json { shift->Protobuf::WKT::Struct::to_json(\@_) }\n";
-        }
-        elsif ($type eq 'Value' && !$perl_class->can('to_perl')) {
-            require Protobuf::WKT::Struct;
-            $wkt_logic = "sub to_perl { shift->Protobuf::WKT::Value::to_perl(\@_) } sub from_perl { shift->Protobuf::WKT::Value::from_perl(\@_) }\n";
-        }
-        elsif ($type eq 'ListValue' && !$perl_class->can('to_perl')) {
-            require Protobuf::WKT::Struct;
-            $wkt_logic = "sub to_perl { shift->Protobuf::WKT::ListValue::to_perl(\@_) } sub from_perl { shift->Protobuf::WKT::ListValue::from_perl(\@_) }\n";
-        }
-        elsif ($type eq 'FieldMask' && !$perl_class->can('to_string')) {
-            require Protobuf::WKT::FieldMask;
-            $wkt_logic = "sub to_string { shift->Protobuf::WKT::FieldMask::to_string(\@_) } sub from_string { shift->Protobuf::WKT::FieldMask::from_string(\@_) }\n";
+    if (my $ext_class = Protobuf::WKT->get_extension_class($normalized)) {
+        eval "require $ext_class";
+        if (!$@ && $ext_class->can('get_injected_methods')) {
+            foreach my $method ($ext_class->get_injected_methods()) {
+                $wkt_logic .= "sub $method { shift->$ext_class\::$method(\@_) }\n";
+            }
         }
     }
 

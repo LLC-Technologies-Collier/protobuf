@@ -15,4 +15,19 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name);
 // Logs a message and dies with Perl context
 void PerlUpb_Error_Die(pTHX_ const char* fmt, ...);
 
+// Wraps a C pointer into a Perl object, optionally keeping another Perl object (the arena) alive.
+SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, const char* class_name);
+
+// Extracts the C pointer from a wrapped object, verifying the class name.
+const void* PerlUpb_GetArenaBoundObject(pTHX_ SV* sv, const char* class_name);
+
+// Retrieves the arena SV associated with the wrapped object.
+SV* PerlUpb_GetArenaFromObject(pTHX_ SV* sv);
+
+// 64-bit numeric conversion
+int64_t PerlUpb_SVToI64(pTHX_ SV* sv);
+uint64_t PerlUpb_SVToU64(pTHX_ SV* sv);
+SV* PerlUpb_I64ToSV(pTHX_ int64_t val);
+SV* PerlUpb_U64ToSV(pTHX_ uint64_t val);
+
 #endif // PERL_PROTOBUF_UTILS_H_

@@ -12,22 +12,21 @@ PROTOTYPES: ENABLE
 
 
 const char*
-_xs_full_name(self)
+_xs_name(self)
     SV* self
     CODE:
-        const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
-        RETVAL = m ? upb_MessageDef_FullName(m) : NULL;
+        XS_STR_ACCESSOR_BODY(upb_MessageDef, PerlUpb_MessageDef_GetMessage, upb_MessageDef_Name)
     OUTPUT:
         RETVAL
 
 const char*
-_xs_name(self)
+_xs_full_name(self)
     SV* self
     CODE:
-        const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
-        RETVAL = m ? upb_MessageDef_Name(m) : NULL;
+        XS_STR_ACCESSOR_BODY(upb_MessageDef, PerlUpb_MessageDef_GetMessage, upb_MessageDef_FullName)
     OUTPUT:
         RETVAL
+
 
 int
 _xs_field_count(self)

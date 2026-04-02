@@ -17,4 +17,8 @@ sub from_seconds {
     return $self;
 }
 
+sub get_injected_methods {
+    return qw(to_seconds from_seconds);
+}
+
 1;

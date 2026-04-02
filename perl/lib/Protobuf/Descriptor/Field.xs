@@ -15,8 +15,7 @@ const char*
 _xs_name(self)
     SV* self
     CODE:
-        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
-        RETVAL = f ? upb_FieldDef_Name(f) : NULL;
+        XS_STR_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Name)
     OUTPUT:
         RETVAL
 
@@ -24,8 +23,7 @@ const char*
 _xs_full_name(self)
     SV* self
     CODE:
-        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
-        RETVAL = f ? upb_FieldDef_FullName(f) : NULL;
+        XS_STR_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_FullName)
     OUTPUT:
         RETVAL
 
@@ -33,8 +31,7 @@ uint32_t
 _xs_number(self)
     SV* self
     CODE:
-        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
-        RETVAL = f ? upb_FieldDef_Number(f) : 0;
+        XS_INT_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Number, 0)
     OUTPUT:
         RETVAL
 
@@ -42,8 +39,7 @@ int
 _xs_type(self)
     SV* self
     CODE:
-        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
-        RETVAL = f ? upb_FieldDef_Type(f) : 0;
+        XS_INT_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Type, 0)
     OUTPUT:
         RETVAL
 
@@ -51,8 +47,7 @@ int
 _xs_label(self)
     SV* self
     CODE:
-        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
-        RETVAL = f ? upb_FieldDef_Label(f) : 0;
+        XS_INT_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Label, 0)
     OUTPUT:
         RETVAL
 
@@ -60,8 +55,7 @@ bool
 _xs_is_repeated(self)
     SV* self
     CODE:
-        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
-        RETVAL = f ? upb_FieldDef_IsRepeated(f) : false;
+        XS_BOOL_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_IsRepeated)
     OUTPUT:
         RETVAL
 
@@ -69,8 +63,7 @@ bool
 _xs_is_map(self)
     SV* self
     CODE:
-        const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
-        RETVAL = f ? upb_FieldDef_IsMap(f) : false;
+        XS_BOOL_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_IsMap)
     OUTPUT:
         RETVAL
 

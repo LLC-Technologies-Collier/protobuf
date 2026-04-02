@@ -2,13 +2,14 @@ package Protobuf::WKT::Struct;
 
 use strict;
 use warnings;
+use JSON::MaybeXS;
 
 sub to_perl {
     my ($self) = @_;
     my $fields = $self->fields;
     my %hash;
     foreach my $key (keys %$fields) {
-        $hash{$key} = $fields->{$key}->to_perl();
+        $hash{$key} = Protobuf::WKT::Value::to_perl($fields->{$key});
     }
     return \%hash;
 }
@@ -19,8 +20,8 @@ sub from_perl {
     my $fields = $self->fields;
     %$fields = ();
     foreach my $key (keys %$data) {
-        my $val = google::protobuf::Value->new();
-        $val->from_perl($data->{$key});
+        my $val = 'google::protobuf::Value'->new();
+        Protobuf::WKT::Value::from_perl($val, $data->{$key});
         $fields->{$key} = $val;
     }
     return $self;
@@ -38,6 +39,10 @@ sub to_json {
     return '{}';
 }
 
+sub get_injected_methods {
+    return qw(to_perl from_perl memory_profile to_json);
+}
+
 {
     package Protobuf::WKT::Value; ## no critic (Modules::ProhibitMultiplePackages)
     use strict;
@@ -51,8 +56,8 @@ sub to_json {
         if ($kind eq 'number_value') { return $self->number_value; }
         if ($kind eq 'string_value') { return $self->string_value; }
         if ($kind eq 'bool_value') { return $self->bool_value; }
-        if ($kind eq 'struct_value') { return $self->struct_value->to_perl(); }
-        if ($kind eq 'list_value') { return $self->list_value->to_perl(); }
+        if ($kind eq 'struct_value') { return Protobuf::WKT::Struct::to_perl($self->struct_value); }
+        if ($kind eq 'list_value') { return Protobuf::WKT::ListValue::to_perl($self->list_value); }
         return;
     }
 
@@ -60,21 +65,28 @@ sub to_json {
         my ($self, $val) = @_;
         if (!defined $val) { $self->set_null_value(0); }
         elsif (ref($val) eq 'HASH') {
-            my $s = google::protobuf::Struct->new();
-            $s->from_perl($val);
+            my $s = 'google::protobuf::Struct'->new();
+            Protobuf::WKT::Struct::from_perl($s, $val);
             $self->set_struct_value($s);
         }
         elsif (ref($val) eq 'ARRAY') {
-            my $l = google::protobuf::ListValue->new();
-            $l->from_perl($val);
+            my $l = 'google::protobuf::ListValue'->new();
+            Protobuf::WKT::ListValue::from_perl($l, $val);
             $self->set_list_value($l);
         }
+
         elsif (ref($val) eq '') {
-            # Check if it looks like a number
-            if ($val =~ /^-?\d+(\.\d+)?$/) { $self->set_number_value($val); }
+            if (JSON::MaybeXS::is_bool($val)) {
+                $self->set_bool_value($val ? 1 : 0);
+            }
+            elsif ($val =~ /^-?\d+(\.\d+)?$/) { $self->set_number_value($val); }
             else { $self->set_string_value($val); }
         }
         return $self;
+    }
+
+    sub get_injected_methods {
+        return qw(to_perl from_perl);
     }
 }
 
@@ -88,7 +100,7 @@ sub to_json {
         my $values = $self->values;
         my @list;
         foreach my $v (@$values) {
-            push @list, $v->to_perl();
+            push @list, Protobuf::WKT::Value::to_perl($v);
         }
         return \@list;
     }
@@ -99,11 +111,15 @@ sub to_json {
         my $values = $self->values;
         @$values = ();
         foreach my $v (@$data) {
-            my $val = google::protobuf::Value->new();
-            $val->from_perl($v);
+            my $val = 'google::protobuf::Value'->new();
+            Protobuf::WKT::Value::from_perl($val, $v);
             push @$values, $val;
         }
         return $self;
+    }
+
+    sub get_injected_methods {
+        return qw(to_perl from_perl);
     }
 }
 

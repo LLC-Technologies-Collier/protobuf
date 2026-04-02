@@ -15,8 +15,7 @@ const char*
 _xs_full_name(self)
     SV* self
     CODE:
-        const upb_EnumDef* e = PerlUpb_EnumDef_GetEnum(aTHX_ self);
-        RETVAL = e ? upb_EnumDef_FullName(e) : NULL;
+        XS_STR_ACCESSOR_BODY(upb_EnumDef, PerlUpb_EnumDef_GetEnum, upb_EnumDef_FullName)
     OUTPUT:
         RETVAL
 
@@ -24,8 +23,7 @@ const char*
 _xs_name(self)
     SV* self
     CODE:
-        const upb_EnumDef* e = PerlUpb_EnumDef_GetEnum(aTHX_ self);
-        RETVAL = e ? upb_EnumDef_Name(e) : NULL;
+        XS_STR_ACCESSOR_BODY(upb_EnumDef, PerlUpb_EnumDef_GetEnum, upb_EnumDef_Name)
     OUTPUT:
         RETVAL
 
@@ -33,8 +31,7 @@ int
 _xs_value_count(self)
     SV* self
     CODE:
-        const upb_EnumDef* e = PerlUpb_EnumDef_GetEnum(aTHX_ self);
-        RETVAL = e ? upb_EnumDef_ValueCount(e) : 0;
+        XS_INT_ACCESSOR_BODY(upb_EnumDef, PerlUpb_EnumDef_GetEnum, upb_EnumDef_ValueCount, 0)
     OUTPUT:
         RETVAL
 

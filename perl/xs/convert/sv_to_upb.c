@@ -1,6 +1,7 @@
 #include "xs/convert/sv_to_upb.h"
 #include "xs/protobuf.h"
 #include "xs/protobuf/message.h"
+#include "xs/protobuf/utils.h"
 #include "xs/repeated/repeated.h"
 #include "xs/map/map.h"
 #include "t/c/upb-perl-test.h" // Added for cdiag
@@ -70,20 +71,12 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
         case kUpb_FieldType_Int64:
         case kUpb_FieldType_SInt64:
         case kUpb_FieldType_SFixed64:
-            if (SvIOK(sv) || SvNOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
-                val->int64_val = (int64_t)SvIV(sv);
-                return true;
-            }
-            CROAK_WRONG_TYPE(sv, "an Integer", f);
-            return false;
+            val->int64_val = PerlUpb_SVToI64(aTHX_ sv);
+            return true;
         case kUpb_FieldType_UInt64:
         case kUpb_FieldType_Fixed64: {
-            if (SvUOK(sv) || SvIOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
-                val->uint64_val = (uint64_t)SvUV(sv);
-                return true;
-            }
-            CROAK_WRONG_TYPE(sv, "an Unsigned Integer", f);
-            return false;
+            val->uint64_val = PerlUpb_SVToU64(aTHX_ sv);
+            return true;
         }
         case kUpb_FieldType_Enum:
             if (SvIOK(sv)) {

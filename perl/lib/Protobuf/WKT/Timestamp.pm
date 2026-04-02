@@ -23,4 +23,8 @@ sub to_iso8601 {
     return $tp->datetime . 'Z';
 }
 
+sub get_injected_methods {
+    return qw(to_time_piece from_time_piece to_iso8601);
+}
+
 1;

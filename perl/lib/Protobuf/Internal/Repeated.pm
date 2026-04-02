@@ -3,7 +3,8 @@ package Protobuf::Internal::Repeated;
 use strict;
 use warnings;
 use Tie::Array;
-our @ISA = qw(Tie::Array);
+use Protobuf::Internal::Proxy;
+our @ISA = qw(Tie::Array Protobuf::Internal::Proxy);
 
 our $VERSION = '0.01';
 
@@ -103,6 +104,21 @@ sub slice {
     my ($self, $offset, $length) = @_;
     my $tied = tied @$self;
     return $tied->slice($offset, $length);
+}
+
+sub push {
+    my ($self, @values) = @_;
+    my $tied = tied @$self;
+    foreach my $val (@values) {
+        $tied->_xs_append($val);
+    }
+    return;
+}
+
+sub pop {
+    my ($self) = @_;
+    my $tied = tied @$self;
+    return $tied->POP();
 }
 
 1;

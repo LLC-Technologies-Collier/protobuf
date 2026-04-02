@@ -39,4 +39,8 @@ sub unpack { ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     return $class->parse($self->get('value'));
 }
 
+sub get_injected_methods {
+    return qw(pack unpack);
+}
+
 1;
