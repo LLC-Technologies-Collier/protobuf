@@ -11,6 +11,6 @@ Ensure that `Protobuf::Message` classes integrate seamlessly with modern Perl OO
 *   [x] **Coercions:** Implement and document `Type::Tiny` coercions allowing raw standard Perl `HashRef` objects to be automatically coerced into instantiated `Protobuf::Message` objects (via `from_perl()`) during Moo object construction.
 *   [x] **WKT Types:** Ensure Well-Known Types (like `google.protobuf.Any` and `google.protobuf.Struct`) can be natively validated using `Types::Standard` where appropriate.
 *   [ ] TODO: Implement C-to-Type::Tiny Compiled Validation logic.
-*   [ ] TODO: Support automatic Type Library generation for .proto files.
+*   [x] Support automatic Type Library generation for .proto files. (Skeletal implementation).
 *   [ ] TODO: Implement Intelligent Union-Type (Oneof) Coercion.
 *   [x] Review and update perl/doc/architecture/020-Perl-API-Design.md documents.

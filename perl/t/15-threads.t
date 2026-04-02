@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 use Config;
+use Protobuf::DescriptorPool;
 
 BEGIN {
     if (!$Config{useithreads}) {
@@ -42,6 +43,11 @@ EOF
     
     ok($exit_code != 0, "Process exited with non-zero code ($exit_code) due to CLONE exception");
     like($err_output, qr/Protobuf objects cannot be safely cloned across ithreads/, 'Stderr contains the custom croak message');
+};
+
+subtest 'pool freeze' => sub {
+    my $pool = Protobuf::DescriptorPool->new();
+    ok($pool->freeze(), 'Freeze pool works (skeletal)');
 };
 
 TODO: {

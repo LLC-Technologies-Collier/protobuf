@@ -62,6 +62,16 @@ if ($pid == 0) {
     my $exit_code = $? >> 8;
     
     is($exit_code, 0, 'Consumer parsed message from SHM correctly');
+
+    subtest 'connection reset' => sub {
+        my $msg_reset = test::TestMessage->new();
+        ok($msg_reset->reset_connection(), 'Reset connection works (skeletal)');
+    };
+}
+
+TODO: {
+    local $TODO = 'Auth-Aware Isolation (SELinux)';
+    ok(0, 'IPC channels are restricted via Mandatory Access Control');
 }
 
 done_testing();

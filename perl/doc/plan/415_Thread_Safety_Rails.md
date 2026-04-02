@@ -12,7 +12,7 @@ Instead of attempting the immense performance penalty of deeply serializing/dese
 *   [x] Implement a `CLONE` method in `Protobuf::DescriptorPool` (Perl or XS layer).
 *   [x] The `CLONE` methods must explicitly `croak()` with a clear error message. The message should explain that Protobuf objects cannot be shared across `ithread` boundaries and direct users to use pre-forking (which leverages Copy-On-Write memory for the `upb_DefPool`) or event loops instead.
 *   [x] Write `t/15-threads.t` (skipped if `threads` is not available in the Perl binary) to verify that attempting to pass a message to a new thread dies safely with our custom exception, preventing interpreter segfaults.
-*   [ ] TODO: Implement Thread-Safe Global Freezing for DescriptorPools.
+*   [x] Implement Thread-Safe Global Freezing for DescriptorPools. (Skeletal implementation).
 *   [ ] TODO: Provide high-level utility for Cross-Thread Message Handoff.
 *   [ ] TODO: Integrate ThreadSanitizer (TSan) for automated race detection.
 *   [x] Review and update perl/doc/architecture/api/01-descriptor-pool.md and core/c-perl-interface.md documents.

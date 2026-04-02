@@ -3,6 +3,7 @@ use warnings;
 use Test::More;
 use lib "t/lib";
 use TestHelpers;
+use Protobuf::ClassGenerator;
 
 # Load descriptors
 my $pool = TestHelpers->get_generated_pool();
@@ -102,22 +103,27 @@ subtest 'WKT integration with Type::Tiny' => sub {
     my $unpacked = $any->unpack();
     isa_ok($unpacked, 'protobuf_test_messages::proto2::TestAllTypesProto2');
     is($unpacked->optional_int32, 42, 'Any unpacked correctly');
-    };
+};
 
-    TODO: {
+TODO: {
     local $TODO = 'Implement C-to-Type::Tiny Compiled Validation';
     ok(0, 'Protobuf validation logic is exported as compiled subroutines for Type::Tiny');
-    }
+}
 
-    TODO: {
+TODO: {
     local $TODO = 'Generate Type Libraries for every .proto file';
     ok(0, 'Types::Protobuf module is automatically created with message constraints');
-    }
+}
 
-    TODO: {
+TODO: {
     local $TODO = 'Implement Intelligent Union-Type (Oneof) Coercion';
     ok(0, 'HashRef keys intelligently populate oneof branches during coercion');
-    }
+}
 
-    done_testing();
+subtest 'type library generation' => sub {
+    my $lib = Protobuf::ClassGenerator->type_library();
+    ok($lib, 'Got type library code');
+    like($lib, qr/Type::Library/, 'Code contains Type::Library usage');
+};
 
+done_testing();

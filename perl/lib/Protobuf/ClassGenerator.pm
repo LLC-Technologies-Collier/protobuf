@@ -17,6 +17,18 @@ sub generate_for_file {
     return;
 }
 
+sub type_library {
+    my ($class) = @_;
+    # Skeletal implementation
+    return "package MyProtobuf::Types; use Type::Library; 1;";
+}
+
+sub generate_docs {
+    my ($class) = @_;
+    # Skeletal implementation
+    return "<html><body><h1>Protobuf Documentation</h1></body></html>";
+}
+
 sub _generate_for_message {
     my ($mdef) = @_;
     

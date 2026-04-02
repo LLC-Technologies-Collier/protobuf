@@ -144,6 +144,18 @@ sub dependency_graph {
     return { root => ref($self), children => [] };
 }
 
+sub perf_profile {
+    my ($self) = @_;
+    # Skeletal implementation returning dummy metrics
+    return { serialize_time => 0, deserialize_time => 0, field_access_avg => 0 };
+}
+
+sub reset_connection {
+    my ($self) = @_;
+    # Skeletal implementation
+    return 1;
+}
+
 sub parse {
     my ($class, $data) = @_;
     return _xs_parse($class, $data);

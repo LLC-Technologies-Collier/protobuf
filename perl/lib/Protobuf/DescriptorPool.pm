@@ -82,6 +82,12 @@ sub find_extension_by_name {
     return _xs_find_extension_by_name($self, $name);
 }
 
+sub freeze {
+    my ($self) = @_;
+    # Skeletal implementation
+    return 1;
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;

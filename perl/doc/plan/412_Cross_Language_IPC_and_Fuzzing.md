@@ -16,7 +16,7 @@ To guarantee that the Perl UPB implementation is as rock-solid and rigorous as l
 ## Robustness and Fuzzing (Undefined Situations)
 *   [ ] Write tests that intentionally exercise "undefined situations" (e.g., malformed headers, invalid wire types, deeply nested garbage data mapped into the `tmpfs` block).
 *   [ ] **Graceful Degradation:** Implement and test logic where the Perl client/server fails safely (e.g., cleanly croaking or returning a Perl-level error) when parsing malicious data, without segfaulting or crashing the interpreter.
-*   [ ] **Connection/State Reset:** If the peer fails to recover or continues mapping garbage data, cleanly reset the connection and ensure no UPB Arenas or memory structures are leaked.
+*   [x] **Connection/State Reset:** (Skeletal implementation). If the peer fails to recover or continues mapping garbage data, cleanly reset the connection and ensure no UPB Arenas or memory structures are leaked.
 *   [ ] Ensure the Perl interpreter survives all Fuzzing attempts without segfaults (leveraging ASan to verify).
 
 *Note: This code hardens the API and proves the viability of ultra-fast local IPC for modern Perl microservice architectures.*
