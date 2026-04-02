@@ -36,4 +36,19 @@ subtest 'basic benchmarks' => sub {
     ok(1, 'Benchmarks completed');
 };
 
+TODO: {
+    local $TODO = 'Implement VPP-Style SIMD Batch Performance Verification';
+    ok(0, 'Multi-message batch transformations demonstrate SIMD-level scaling');
+}
+
+TODO: {
+    local $TODO = 'Implement Zero-Copy IPC Throughput Benchmarking';
+    ok(0, 'Shared-memory message passing significantly outperforms standard socket IPC');
+}
+
+TODO: {
+    local $TODO = 'Implement Automated Performance Regression Guard';
+    ok(0, 'Continuous Integration fails if performance drops below baseline targets');
+}
+
 done_testing();

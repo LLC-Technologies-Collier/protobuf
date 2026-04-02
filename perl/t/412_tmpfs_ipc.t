@@ -34,4 +34,24 @@ undef $arena;
 undef $arena2;
 ok(1, "Cleaned up both arenas");
 
+TODO: {
+    local $TODO = 'Implement Zero-Copy IPC Transport Layer';
+    ok(0, 'High-level message objects can be parsed directly from tmpfs memory');
+}
+
+TODO: {
+    local $TODO = 'Implement SELinux-Aware Shared Memory Isolation';
+    ok(0, 'Access to tmpfs blocks is restricted by SELinux security contexts');
+}
+
+TODO: {
+    local $TODO = 'Implement Chaos Allocation Engine (IPC Stress)';
+    ok(0, 'System remains stable under non-deterministic shared memory pressure');
+}
+
+TODO: {
+    local $TODO = 'Implement Cross-Language Fuzzing Suite';
+    ok(0, 'Perl implementation successfully handles malformed shared memory from peer runtimes');
+}
+
 done_testing();

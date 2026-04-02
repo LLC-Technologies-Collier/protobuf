@@ -120,6 +120,21 @@ TODO: {
     ok(0, 'HashRef keys intelligently populate oneof branches during coercion');
 }
 
+TODO: {
+    local $TODO = 'Implement Zero-Copy Type Coercion';
+    ok(0, 'Protobuf objects coerced to other Moo types without deep-copying shared memory');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Type Integrity background auditing';
+    ok(0, 'Integrated auditor detects and reports type mismatches in reified object trees');
+}
+
+TODO: {
+    local $TODO = 'Implement Automated Type-Library Optimization via AOT compilation';
+    ok(0, 'Type libraries for messages are pre-compiled to XS for maximum performance');
+}
+
 subtest 'type library generation' => sub {
     my $lib = Protobuf::ClassGenerator->type_library();
     ok($lib, 'Got type library code');

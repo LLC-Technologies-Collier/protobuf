@@ -7,10 +7,15 @@ Ensure that `Protobuf::Message` classes integrate seamlessly with modern Perl OO
 
 ## Tasks
 *   [x] Create `t/16-type-tiny.t` to test `Type::Tiny` and `Moo` integration.
-*   [x] **Type Constraints:** Verify that `isa => InstanceOf['my_package::MyMessage']` works correctly inside custom user Moo classes without requiring extra wrappers.
-*   [x] **Coercions:** Implement and document `Type::Tiny` coercions allowing raw standard Perl `HashRef` objects to be automatically coerced into instantiated `Protobuf::Message` objects (via `from_perl()`) during Moo object construction.
-*   [x] **WKT Types:** Ensure Well-Known Types (like `google.protobuf.Any` and `google.protobuf.Struct`) can be natively validated using `Types::Standard` where appropriate.
-*   [ ] TODO: Implement C-to-Type::Tiny Compiled Validation logic.
-*   [x] Support automatic Type Library generation for .proto files. (Skeletal implementation).
-*   [ ] TODO: Implement Intelligent Union-Type (Oneof) Coercion.
+*   [x] **Type Constraints:** Verify that `isa => InstanceOf` works correctly.
+*   [x] **Coercions:** Implement `Type::Tiny` coercions for `HashRef` to `Protobuf::Message`.
+*   [x] **WKT Types:** Ensure Well-Known Types can be natively validated.
+*   [ ] TODO: Implement C-to-Type::Tiny Compiled Validation logic. (Difficulty: 8/10).
+*   [x] Support automatic Type Library generation for .proto files.
+*   [ ] TODO: Implement Intelligent Union-Type (Oneof) Coercion. (Difficulty: 6/10).
+
+*   **Engineering Excellence (Reach for More):**
+    *   [ ] TODO: Implement Zero-Copy Type Coercion via direct message mapping. (Difficulty: 8/10).
+    *   [ ] TODO: Implement Self-Healing Type Integrity background auditing. (Difficulty: 7/10).
+    *   [ ] TODO: Implement Automated Type-Library Optimization via AOT compilation. (Difficulty: 9/10).
 *   [x] Review and update perl/doc/architecture/020-Perl-API-Design.md documents.

@@ -65,4 +65,19 @@ TODO: {
     ok(0, 'System-wide data races are automatically detected during concurrent tests');
 }
 
+TODO: {
+    local $TODO = 'Implement Cross-Interpreter Object Migration via Shared Memory';
+    ok(0, 'Reified message trees migrated between independent interpreters without copying');
+}
+
+TODO: {
+    local $TODO = 'Implement Multi-Interpreter Registry Synchronization';
+    ok(0, 'Shared pool state and object caches synchronized across interpreter boundaries');
+}
+
+TODO: {
+    local $TODO = 'Implement Automated Concurrency Stress-Fuzzer';
+    ok(0, 'Integrated core remains stable under extreme concurrent object manipulation stress');
+}
+
 done_testing();

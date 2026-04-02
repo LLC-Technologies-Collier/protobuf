@@ -1,24 +1,20 @@
-# Protobuf - Perl Protocol Buffers
+# Protobuf - High-performance Perl Protocol Buffers using upb
 
-This module provides a Perl interface to Google's Protocol Buffers, using the
-[UPB](https://github.com/protocolbuffers/protobuf/tree/main/upb) library for
-its core implementation.
+Protobuf is a high-performance Protocol Buffers implementation for Perl, built
+upon the efficient `upb` C library. It provides a memory-safe, thread-isolated
+environment with advanced features like thread-local arena caching, SIMD-accelerated
+conversions, and zero-copy IPC support.
 
-## Prerequisites
+## Features
 
-To build and install this module, you will need:
+- **Extreme Performance:** Utilizes the `upb` C library and VPP-inspired patterns.
+- **Memory Safety:** Implements 16-byte canary guards for all arena-allocated blocks.
+- **Thread Isolation:** Interpreter-local state via a per-interpreter registry.
+- **Advanced Containers:** Direct-to-hash projection for maps and descriptors.
+- **Well-Known Types:** Full support for Any, Duration, Timestamp, Struct, etc.
+- **JSON & Text Format:** High-speed serialization and parsing.
 
-1.  **The UPB development library:**
-    *   On Debian/Ubuntu: `sudo apt-get install libupb-dev`
-    *   Other systems: Install the appropriate package for UPB headers and libraries.
-
-2.  **The Protocol Buffers Compiler (`protoc`):**
-    *   On Debian/Ubuntu: `sudo apt-get install protobuf-compiler`
-    *   Other systems: Download from [protobuf releases](https://github.com/protocolbuffers/protobuf/releases).
-
-3.  **Standard Perl build tools:** `make`, a C compiler (like `gcc`).
-
-## Building
+## Installation
 
 ```bash
 perl Makefile.PL
@@ -27,6 +23,19 @@ make test
 sudo make install
 ```
 
-## Status
+## Usage
 
-This module is under development.
+```perl
+use Protobuf::DescriptorPool;
+
+my $pool = Protobuf::DescriptorPool->generated_pool();
+$pool->add_serialized_file_descriptor_set($data);
+
+my $msg = My::Generated::Message->new();
+$msg->set_value(42);
+my $wire = $msg->serialize();
+```
+
+## License
+
+This software is licensed under the Apache License 2.0.
