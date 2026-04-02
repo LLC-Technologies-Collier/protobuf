@@ -38,7 +38,7 @@ This document outlines the specific conventions and testing patterns for the XS 
 ## Vectorized Processing (VPP Style)
 - **Instruction Cache (I-cache) Optimization:** Prefer processing batches (vectors) of messages through a single C logic path before switching tasks. This minimizes I-cache thrashing, a key performance principle from the **Vector Packet Processor (VPP)**.
 - **Data Cache (D-cache) Warming:** Utilize thread-local "fast-path" arenas to ensure that the memory addresses used for high-frequency small messages remain warm in the L1/L2 data cache.
-- **SIMD-Accelerated Batching:** Implementation of bulk scanners or parsers should leverage the linear memory layout of vectorized batches to utilize SIMD (SSE4.2/AVX2) for tag searching and UTF-8 validation.
+- **SIMD-Accelerated Batching:** (Implemented) Core name conversion utilities utilize SSE4.1 instructions to process 16-byte chunks. Future implementation of bulk scanners or parsers will leverage the linear memory layout of vectorized batches to utilize SIMD (SSE4.2/AVX2) for tag searching and UTF-8 validation.
 - **Batch Parse API:** High-performance interfaces SHOULD support taking a vector (array) of binary blobs and returning a batch of reified objects to maximize throughput.
 
 ## Python Parity

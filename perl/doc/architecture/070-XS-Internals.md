@@ -42,6 +42,21 @@ To support high-performance allocation patterns (like zero-copy IPC and thread-l
 *   **Backends:** Supports `PERL_UPB_BLOCK_MMAP` (for file-backed shared memory) and `PERL_UPB_BLOCK_MALLOC` (for RAM-backed local memory).
 *   **Usage:** Used by the Arena Factory to acquire arenas with specific performance characteristics (e.g., `PerlUpb_Arena_NewBlock`).
 
+## Memory Canaries
+
+To detect memory corruption (buffer overflows/underflows) in performance-critical C paths, all custom allocators (`StatsAlloc` and `BlockAlloc`) implement canary guards.
+
+*   **Pattern:** `0xDEADBEEFCAFEBABEULL` (16 bytes at start and end).
+*   **Verification:** Performed automatically during `free`, `realloc`, and arena destruction.
+*   **Safety:** Errors trigger a Perl `croak` with a descriptive message (e.g., "MEMORY CORRUPTION DETECTED (Overflow)").
+
+## SIMD Acceleration (VPP Alignment)
+
+Aligning with the **Vector Packet Processor (VPP)** philosophy, hot paths utilize SIMD instructions where appropriate to maximize throughput.
+
+*   **Name Conversion:** `PerlUpb_ClassNameToFullName` utilizes SSE4.1 instructions (`_mm_loadu_si128`, `_mm_cmpeq_epi8`, `_mm_movemask_epi8`) to process class names in 16-byte chunks, accelerating the common case where no colons (`::`) are present.
+*   **Hardware Requirement:** Implementation assumes a minimum of SSE4.1 support for optimized paths, falling back to scalar logic as needed.
+
 ## Typemap Strategy
 
 *   **Location:** Typemap entries will be placed in the `perl/typemap` file.

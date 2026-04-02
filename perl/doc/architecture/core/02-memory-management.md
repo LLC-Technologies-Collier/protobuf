@@ -15,6 +15,7 @@ The Perl Protobuf implementation, like its Ruby and PHP counterparts, will heavi
     *   **MMAP Blocks:** Used for `tmpfs` zero-copy IPC. The memory is backed by a shared file.
     *   **MALLOC Blocks:** Used for RAM-backed linear arenas (e.g., for thread-local "fast-path" caching).
     *   **Abstraction:** The `PerlUpb_Arena_NewBlock` helper handles the creation of these specialized arenas, hiding the allocation details from the rest of the C layer.
+    *   **Memory Canaries:** Both `MMAP` and `MALLOC` blocks are protected by 16-byte canary patterns (`0xDEADBEEFCAFEBABEULL`) written at the boundaries of every allocation. Corruption is detected during reallocations or when the allocator's `free` function is called.
 6.  **Object Caching:** To ensure object identity and efficiency, the XS layer should maintain caches (e.g., hash tables) mapping UPB C pointers to their corresponding Perl wrapper SVs.
  This applies to:
     *   `upb_MessageDef*`, `upb_EnumDef*`, etc. -> `Protobuf::Descriptor` SVs (cached within the pool).
