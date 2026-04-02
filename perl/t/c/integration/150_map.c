@@ -33,7 +33,7 @@ static void test_map_as_hash(pTHX_ SV* map_sv) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(14);
+    plan(17);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
@@ -102,6 +102,18 @@ int main(int argc, char** argv) {
 
     TODO("Verify integrated map stability during concurrent field deletion") {
         ok(0, "Iterators and getters remain safe while map entries are removed");
+    }
+
+    TODO("Implement Lazy Map Entry Inflation for deferred wrapper creation") {
+        ok(0, "Perl wrappers for map elements only created on-demand");
+    }
+
+    TODO("Implement Cross-Arena Map Copy Stress verification") {
+        ok(0, "Deep-copy logic for maps between different arenas verified");
+    }
+
+    TODO("Implement SIMD-Accelerated Map Key Validation (SSE4.2)") {
+        ok(0, "Bulk validation of map keys achieves line-rate throughput");
     }
 
     // Cleanup

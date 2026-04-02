@@ -9,9 +9,14 @@
 *   [x] Add leak tests using Test::LeakTrace to `perl/t/02-descriptor_pool.t`. (Verified via ASan)
 *   [x] Add `ok_test_coverage('Protobuf::DescriptorPool')` to `perl/t/02-descriptor_pool.t`. (Verified manually)
 *   [x] Implement `Protobuf::DescriptorPool` module (`perl/lib/Protobuf/DescriptorPool.pm`).
-*   [ ] TODO: Implement Dynamic Descriptor Reloading support.
-*   [ ] TODO: Implement Perl-level reflection cache for definitions.
-*   [ ] TODO: Provide graph() method for DOT dependency visualization.
+*   [ ] TODO: Implement Dynamic Descriptor Reloading support. (Difficulty: 6/10).
+*   [ ] TODO: Implement Perl-level reflection cache for definitions. (Difficulty: 5/10).
+*   [ ] TODO: Provide graph() method for DOT dependency visualization. (Difficulty: 4/10).
+
+*   **Engineering Excellence (Reach for More):**
+    *   [ ] TODO: Implement Shared Memory Global Pool API for zero-copy cross-process schema sharing. (Difficulty: 8/10).
+    *   [ ] TODO: Implement On-Demand Descriptor JIT Loading from search paths. (Difficulty: 7/10).
+    *   [ ] TODO: Implement Self-Healing Pool Integrity background auditing. (Difficulty: 8/10).
 *   [x] Implement XS Bindings (`perl/lib/Protobuf/DescriptorPool.xs`).
 *   [x] Perl tests pass for Protobuf::DescriptorPool.
 *   [x] Refine C API for DescriptorPool (if any).

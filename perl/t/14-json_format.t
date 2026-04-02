@@ -54,4 +54,19 @@ TODO: {
     ok(0, 'JSON output remains consistent with JSON-schema during evolution');
 }
 
+TODO: {
+    local $TODO = 'Implement VPP-Style SIMD JSON Parsing';
+    ok(0, 'High-throughput JSON-to-object ingestion using hardware acceleration verified');
+}
+
+TODO: {
+    local $TODO = 'Implement Zero-Copy JSON Projections';
+    ok(0, 'Large JSON messages streamed from shared arenas without redundant allocations');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing JSON Consistency background auditing';
+    ok(0, 'System detects discrepancies between JSON and binary representations of reified objects');
+}
+
 done_testing();

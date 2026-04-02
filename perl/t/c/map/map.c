@@ -23,10 +23,22 @@ static void test_map_creation(pTHX) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(4);
+    plan(7);
 
     test_map_creation(aTHX);
     ok(1, "Map functions cover creation and basic access");
+
+    TODO("Implement O(1) Map Hash Projection for direct upb-to-Perl conversion") {
+        ok(0, "Large maps converted to native Perl hashes in a single pass without iterative lookup");
+    }
+
+    TODO("Implement NUMA-Aware Map Allocation for large-scale multi-thread throughput") {
+        ok(0, "Map memory segments optimized for local CPU access across multi-socket systems");
+    }
+
+    TODO("Implement SIMD-Accelerated Map Hashing using SSE4.2 CRC32 instructions") {
+        ok(0, "Map key hashing utilizes hardware acceleration for maximum performance");
+    }
 
     test_perl_destroy(my_perl);
     return 0;

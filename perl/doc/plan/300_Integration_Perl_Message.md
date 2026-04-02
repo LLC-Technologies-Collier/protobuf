@@ -13,5 +13,10 @@
 *   [ ] TODO: Verify Coro re-entrancy during massive message population.
 *   [ ] TODO: Implement lock-free message state tracking for Coro.
 *   [x] Create and implement `perl/xt/mojo/300_message.t` to test Mojo::IOLoop concurrency safety.
-*   [ ] Create and implement `xt/anyevent/300_message.t` to test AnyEvent concurrency safety. (TODO)
+*   [ ] Create and implement `xt/anyevent/300_message.t` to test AnyEvent concurrency safety. (Difficulty: 5/10).
+
+*   **Engineering Excellence (Reach for More):**
+    *   [ ] TODO: Implement Massive Concurrency Message Stress (10k coros) for full lifecycle. (Difficulty: 7/10).
+    *   [ ] TODO: Implement Cross-Interpreter Message Sync for reified trees. (Difficulty: 8/10).
+    *   [ ] TODO: Implement Self-Healing Integrated Consistency background auditing. (Difficulty: 9/10).
 *   [x] Review and update perl/doc/architecture/** documents.

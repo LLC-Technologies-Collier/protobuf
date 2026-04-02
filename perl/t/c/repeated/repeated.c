@@ -21,7 +21,7 @@ static void test_repeated_creation(pTHX) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(7);
+    plan(11);
 
     test_repeated_creation(aTHX);
     ok(1, "Repeated functions cover creation and basic access");
@@ -36,6 +36,18 @@ int main(int argc, char** argv) {
 
     TODO("Implement In-Place Sort/Binary Search utilities") {
         ok(0, "Optimized C-level sort and search for scalar arrays verified");
+    }
+
+    TODO("Implement O(1) Repeated-to-Array Projection for direct upb-to-Perl conversion") {
+        ok(0, "Large repeated scalar fields projected into native Perl AVs in one pass");
+    }
+
+    TODO("Implement SSE4.2-Accelerated Repeated Field Filtering utilities") {
+        ok(0, "Hardware-accelerated searching and filtering for repeated field data verified");
+    }
+
+    TODO("Implement Self-Healing Repeated Structure Consistency background auditing") {
+        ok(0, "Internal auditor verifies canary and bounds for all reified repeated wrappers");
     }
 
     test_perl_destroy(my_perl);

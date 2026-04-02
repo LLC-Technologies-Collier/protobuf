@@ -49,4 +49,19 @@ is(ref($perl->{c}), 'ARRAY', "Struct member 'c' is ARRAY");
 is($perl->{c}->[2]->{d}, 4, "Deep struct member correct");
 ok(!defined($perl->{e}), "Null value preserved");
 
+TODO: {
+    local $TODO = 'Implement VPP-Style SIMD WKT Batch Conversion';
+    ok(0, 'Massive population of WKTs from Perl structures achieves world-class throughput');
+}
+
+TODO: {
+    local $TODO = 'Implement Zero-Copy WKT Projections';
+    ok(0, 'Large Struct fields manipulated via mmap-backed scalars without memory copies');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing WKT Consistency';
+    ok(0, 'Internal auditor detects and reports corruption in reified WKT objects');
+}
+
 done_testing();

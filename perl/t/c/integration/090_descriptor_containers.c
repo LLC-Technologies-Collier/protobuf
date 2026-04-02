@@ -72,7 +72,7 @@ static void test_map_iterator(pTHX_ SV* map_sv) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(17);
+    plan(20);
 
     upb_Arena *arena = upb_Arena_New();
     if (!load_test_descriptors(aTHX_ arena)) {
@@ -122,6 +122,18 @@ int main(int argc, char** argv) {
 
         TODO("Implement integrated ByNumberMap tests for EnumValue definitions") {
             ok(0, "Enum values correctly integrated with ByNumberMap container logic");
+        }
+
+        TODO("Implement Direct C-to-Perl Projection for Descriptor Sequence (GenericSequence_AsArray)") {
+            ok(0, "Entire descriptor sequence projected into native Perl AV in one pass");
+        }
+
+        TODO("Implement Cross-Interpreter Container Isolation Stress verification") {
+            ok(0, "Containers remain stable under concurrent access from independent interpreters");
+        }
+
+        TODO("Implement Self-Healing Iterator State using weak-ref monitoring for stale parents") {
+            ok(0, "Iterators safely detect and report when their source container is invalid");
         }
 
         extern void PerlUpb_ByNameMap_Free(pTHX_ SV* sv);

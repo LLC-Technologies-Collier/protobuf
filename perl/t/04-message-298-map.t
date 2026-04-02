@@ -98,4 +98,19 @@ TODO: {
     ok(0, 'Map collision statistics are reportable via XS interface');
 }
 
+TODO: {
+    local $TODO = 'Implement O(1) Map-to-Hash Projection';
+    ok(0, 'Zero-copy access to entire maps from Perl verified');
+}
+
+TODO: {
+    local $TODO = 'Implement SSE4.2-Accelerated Map Key Validation';
+    ok(0, 'Hardware-accelerated key validation for bulk ingestion verified');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Map Structure Consistency';
+    ok(0, 'Internal auditor detects and reports corruption in reified map objects');
+}
+
 done_testing();

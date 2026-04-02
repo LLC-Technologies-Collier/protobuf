@@ -35,7 +35,7 @@ static void test_deterministic_serialization(pTHX_ SV* msg_sv) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(18);
+    plan(22);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -127,6 +127,22 @@ int main(int argc, char** argv) {
 
     TODO("Verify integrated Oneof state transitions") {
         ok(0, "Setting oneof members correctly invalidates others in integrated C context");
+    }
+
+    TODO("Implement high-performance parse_from (Merge) logic") {
+        ok(0, "Deep message merge using shared arenas verified");
+    }
+
+    TODO("Implement SIMD-Accelerated Message Comparison (AVX2)") {
+        ok(0, "Two message trees compared at memory speeds using hardware acceleration");
+    }
+
+    TODO("Implement Predictive JIT Message Warming for L1 cache optimization") {
+        ok(0, "Arena blocks pre-allocated and warmed for hot message paths");
+    }
+
+    TODO("Implement Self-Healing Message Integrity background auditing") {
+        ok(0, "Internal auditor verifies structure and canary consistency for all reified messages");
     }
 
     test_perl_destroy(my_perl);

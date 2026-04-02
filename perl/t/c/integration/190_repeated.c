@@ -21,7 +21,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(13);
+    plan(17);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -109,6 +109,18 @@ int main(int argc, char** argv) {
 
     TODO("Implement deterministic unique-set merging for repeated fields") {
         ok(0, "C-level array merging with deduplication support verified");
+    }
+
+    TODO("Implement Lazy Repeated Entry Inflation for deferred wrapper creation") {
+        ok(0, "Perl wrappers for repeated elements (sub-messages) only created on access");
+    }
+
+    TODO("Implement SSE4.2-Accelerated Repeated Field Aggregation utilities") {
+        ok(0, "Hardware-accelerated sum/min/max for numeric arrays verified at line-rate");
+    }
+
+    TODO("Implement Self-Healing Repeated Array Consistency background auditing") {
+        ok(0, "Internal auditor verifies structure and bounds for all reified message arrays");
     }
 
     PerlUpb_Arena_Destroy(aTHX_ PerlUpb_Message_GetArena(aTHX_ msg_sv));

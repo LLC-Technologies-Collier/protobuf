@@ -21,5 +21,20 @@ TODO: {
     ok(0, 'Adding definitions to a pool from one Coroutine does not destabilize others');
 }
 
+TODO: {
+    local $TODO = 'Implement Massive Concurrency Descriptor Stress (10k coros)';
+    ok(0, 'Lock-free registry and pool lookups scale to extreme levels');
+}
+
+TODO: {
+    local $TODO = 'Implement Cross-Interpreter Descriptor Sync for shared memory pools';
+    ok(0, 'Notifications of schema updates propagate correctly between interpreters');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Descriptor Migration across heterogeneous interpreters';
+    ok(0, 'Descriptor objects migrated safely between interpreters with different pool states');
+}
+
 
 done_testing();

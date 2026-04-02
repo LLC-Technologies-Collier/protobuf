@@ -16,4 +16,9 @@
 *   [ ] TODO: Verify integrated core stability under extreme concurrency chaos.
 *   [ ] TODO: Implement automated deadlock detection for integrated state.
 *   [x] All C layer integration tests pass.
+*   **Engineering Excellence (Reach for More):**
+    *   [ ] TODO: Implement Chaos Allocation Engine for non-deterministic resource pressure testing. (Difficulty: 6/10).
+    *   [ ] TODO: Implement VPP-Style SIMD Batch Processing for multi-gigabit transformations. (Difficulty: 9/10).
+    *   [ ] TODO: Implement Zero-Copy IPC Transport Layer via shared memory arenas. (Difficulty: 8/10).
+    *   [ ] TODO: Implement NUMA-Aware Integrated Allocation for multi-socket scaling. (Difficulty: 9/10).
 *   [x] Review and update perl/doc/architecture/** documents.

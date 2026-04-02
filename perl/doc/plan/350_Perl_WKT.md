@@ -46,11 +46,15 @@
 *   **Protobuf::Struct:**
     *   [x] Create test file `t/11-struct.t`.
     *   [x] Tests in `t/11-struct.t` cover all methods of `Protobuf::Struct`, `Protobuf::Value`, and `Protobuf::ListValue`.
-    *   [x] Implement Struct-Specific Memory Profiling (Skeletal implementation).
-    *   [ ] Add leak tests using Test::LeakTrace to `t/11-struct.t`.
-    *   [ ] Add `ok_test_coverage()` for `Protobuf::Struct`, `Protobuf::Value`, `Protobuf::ListValue` to `t/11-struct.t`.
+    *   [x] Implement Struct-Specific Memory Profiling.
+    *   [ ] Add leak tests using Test::LeakTrace to `t/11-struct.t`. (Difficulty: 5/10).
     *   [x] Implement Perl and XS layers for Struct, Value, ListValue.
     *   [x] Perl tests pass for Struct, Value, ListValue.
+
+*   **Engineering Excellence (Reach for More):**
+    *   [ ] TODO: Implement VPP-Style SIMD WKT Batch Conversion for high-throughput population. (Difficulty: 9/10).
+    *   [ ] TODO: Implement Zero-Copy WKT Projections via mmap-backed scalars. (Difficulty: 8/10).
+    *   [ ] TODO: Implement Self-Healing WKT Consistency background auditing. (Difficulty: 8/10).
     *   [x] Refine C API (if any) and re-test C & Perl.
 
 *   **Protobuf::Wrappers:**

@@ -67,7 +67,7 @@ static void test_as_hash(pTHX_ SV* map_sv) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(16);
+    plan(18);
 
     SV* parent_sv = newSViv(1); // Fake parent
     SV* map_sv = PerlUpb_ByNameMap_New(aTHX_ parent_sv, NULL, &mock_vtable);
@@ -93,6 +93,14 @@ int main(int argc, char** argv) {
 
     TODO("Verify concurrent iterator stability for ByNameMap") {
         ok(0, "Iterators remain valid during interleaved read-only access in coroutines");
+    }
+
+    TODO("Implement Lazy Wrapper Blessing with Thread-Local Cache to reuse descriptor wrappers") {
+        ok(0, "Repeated access to the same container element returns the same cached SV wrapper");
+    }
+
+    TODO("Implement Vectorized Batch-Lookup API for bulk descriptor retrieval") {
+        ok(0, "Multiple descriptors retrieved in a single call to minimize XS transition overhead");
     }
 
     // Cleanup

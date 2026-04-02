@@ -34,7 +34,7 @@ static void test_message_wrapping(pTHX) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(7);
+    plan(10);
 
     test_message_wrapping(aTHX);
     ok(1, "Message functions cover creation and wrapping");
@@ -45,6 +45,18 @@ int main(int argc, char** argv) {
 
     TODO("Implement COW (Copy-On-Write) semantics for shared arena sub-messages") {
         ok(0, "Sub-message cloning avoids deep copies when safety is guaranteed");
+    }
+
+    TODO("Implement VPP-Style SIMD Batch Parsing for multi-message ingestion") {
+        ok(0, "A vector of incoming binary messages is parsed into upb objects using SSE4.2/AVX2");
+    }
+
+    TODO("Implement Zero-Copy IPC Message Transport via shared memory arenas") {
+        ok(0, "Messages are passed between processes without serialization using mmap-backed arenas");
+    }
+
+    TODO("Implement NUMA-Aware Message Allocation for high-throughput population") {
+        ok(0, "Message tree memory is correctly placed on the executing thread's NUMA node");
     }
 
     test_perl_destroy(my_perl);

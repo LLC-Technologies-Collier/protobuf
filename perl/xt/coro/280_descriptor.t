@@ -57,4 +57,19 @@ TODO: {
     ok(0, 'System handles coroutine context switches during descriptor set loading safely');
 }
 
+TODO: {
+    local $TODO = 'Implement Massive Concurrency Descriptor Stress (10k coros)';
+    ok(0, 'Lock-free registry and object cache scale to extreme levels');
+}
+
+TODO: {
+    local $TODO = 'Implement Cross-Interpreter Descriptor Sync (Integrated)';
+    ok(0, 'Wrapper cache synchronized when shared memory pool is updated');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Descriptor Migration (Integrated)';
+    ok(0, 'Integrated descriptor objects migrated safely between heterogeneous interpreters');
+}
+
 done_testing();

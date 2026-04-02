@@ -60,4 +60,19 @@ TODO: {
     ok(0, 'Message types support fine-grained validation vs movement profiling');
 }
 
+TODO: {
+    local $TODO = 'Implement VPP-Style SIMD Batch Conversion';
+    ok(0, 'Massive batch population of messages achieves world-class throughput');
+}
+
+TODO: {
+    local $TODO = 'Implement Zero-Copy ByteBuffer Projections';
+    ok(0, 'Large fields manipulated via mmap-backed scalars without memory copies');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Message Integrity background auditing';
+    ok(0, 'Internal auditor detects and reports corruption in reified message objects');
+}
+
 done_testing();

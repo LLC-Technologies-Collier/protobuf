@@ -17,7 +17,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(14);
+    plan(17);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
@@ -92,6 +92,18 @@ int main(int argc, char** argv) {
 
     TODO("Verify ExtensionDict stability during re-parsing of parent message") {
         ok(0, "Wrappers remain valid or are safely invalidated when parent message is re-parsed");
+    }
+
+    TODO("Implement Predictive Extension Pre-fetching during parsing") {
+        ok(0, "Extension descriptors are resolved and cached during the main parse pass");
+    }
+
+    TODO("Implement Self-Healing Extension Consistency background auditing") {
+        ok(0, "System detects and reports when reified extensions are incompatible with new pool versions");
+    }
+
+    TODO("Implement Vectorized Bulk Extension Access for high-throughput projection") {
+        ok(0, "Retrieve all reified extensions in a single XS call to minimize conversion overhead");
     }
 
     // Cleanup

@@ -31,7 +31,7 @@ static void test_manual_add_unknown(pTHX_ SV* set_sv) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(12);
+    plan(15);
 
     extern void PerlUpb_ObjCache_Init(pTHX);
     PerlUpb_ObjCache_Init(aTHX);
@@ -88,6 +88,18 @@ int main(int argc, char** argv) {
 
     TODO("Verify integrated Unknown-to-Message reflection safety") {
         ok(0, "Using cached MessageDefs to reify unknown blobs verified");
+    }
+
+    TODO("Implement Selective Unknown Field Scrubbing by tag list") {
+        ok(0, "Bulk removal of multiple unknown tags verified for high-performance scrubbing");
+    }
+
+    TODO("Implement Unknown-to-Message Reflection Safety verification") {
+        ok(0, "Safe promotion of unknown blobs to structured messages verified during runtime pool updates");
+    }
+
+    TODO("Implement Vectorized Unknown Field Analysis for bulk tree scanning") {
+        ok(0, "High-speed SIMD scanning of message trees for unknown tags verified");
     }
 
     // Cleanup

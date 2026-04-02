@@ -70,4 +70,19 @@ TODO: {
     ok(0, 'High-frequency concurrent message access does not bottle-neck on global state');
 }
 
+TODO: {
+    local $TODO = 'Implement Massive Concurrency Message Stress (10k coros)';
+    ok(0, 'Integrated core scales to extreme levels of concurrent object manipulation');
+}
+
+TODO: {
+    local $TODO = 'Implement Cross-Interpreter Message Sync (Integrated)';
+    ok(0, 'Reified message trees synchronized across interpreters using shared memory');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Integrated Consistency background auditing';
+    ok(0, 'Integrated auditor detects and reports corruption across all reified object types');
+}
+
 done_testing();

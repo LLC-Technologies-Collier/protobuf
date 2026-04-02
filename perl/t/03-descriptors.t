@@ -43,8 +43,18 @@ TODO: {
 }
 
 TODO: {
-    local $TODO = 'Implement Proto3-to-Proto2 Compatibility Layer';
-    ok(0, 'Descriptors support cross-version compatibility mappings');
+    local $TODO = 'Implement SIMD-Accelerated Descriptor Name Hashing';
+    ok(0, 'High-speed hardware-accelerated name resolution verified');
+}
+
+TODO: {
+    local $TODO = 'Implement Zero-Copy Descriptor Metadata Access';
+    ok(0, 'Metadata retrieved from descriptors without redundant allocations');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Descriptor Identity';
+    ok(0, 'Stable object identity maintained across repeated pool lookups');
 }
 
 done_testing();

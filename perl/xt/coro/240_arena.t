@@ -22,5 +22,15 @@ TODO: {
     ok(0, 'Arena created in Coro is safely usable in Mojo callback');
 }
 
+TODO: {
+    local $TODO = 'Implement Massive Concurrency Arena Stress (10k coroutines)';
+    ok(0, 'Lock-free registry scales to extremely high concurrency levels');
+}
+
+TODO: {
+    local $TODO = 'Implement Cross-Event-Loop Arena Migration Safety verification';
+    ok(0, 'Arena-based objects migrated safely between different event loops');
+}
+
 
 done_testing();

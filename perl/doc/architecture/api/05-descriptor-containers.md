@@ -48,8 +48,11 @@ To ensure idiomatic Perl behavior, descriptor containers follow these rules:
 
 ## High-Performance Operations
 
-1.  **Direct-to-Hash Projection**: (Planned) To support high-frequency bulk access patterns, the architecture includes C-level projection of `ByNameMap` containers directly into standard Perl `HV` structures. This bypasses the overhead of individual lazy wrapper inflation.
-2.  **Reverse Lookup Optimization**: (Planned) `ByNumberMap` containers support O(1) reverse lookup (Value to Key) through internal indexing, ensuring that identifying fields or enum values by their numeric tags remains efficient in large definitions.
+1.  **Direct-to-Hash Projection**: (Implemented) To support high-frequency bulk access patterns, `ByNameMap_AsHash` provides C-level projection of containers directly into standard Perl `HV` structures. This bypasses the overhead of individual lazy wrapper inflation.
+2.  **Engineering Excellence (Reach for More):**
+    -   **Lazy Wrapper Blessing with Thread-Local Cache:** Utilize a per-interpreter cache to reuse descriptor wrapper objects, minimizing the cost of `sv_bless` during container traversal.
+    -   **O(1) Reverse-Index for Enum Value Lookup:** Speed up enum value-to-name resolution in `ByNumberMap` using an internal C-level hash table.
+    -   **Vectorized Batch-Lookup API:** Support bulk retrieval of descriptors in a single call to minimize Perl-to-XS transition overhead for complex schema inspections.
 
 ## Benefits
 

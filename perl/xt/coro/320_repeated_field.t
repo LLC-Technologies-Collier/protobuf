@@ -21,5 +21,20 @@ TODO: {
     ok(0, 'Zero-copy slices remain valid during coroutine context switches');
 }
 
+TODO: {
+    local $TODO = 'Implement Massive Concurrency Repeated Stress (10k coros)';
+    ok(0, 'Integrated core scales to extreme levels of concurrent array manipulation');
+}
+
+TODO: {
+    local $TODO = 'Implement SSE4.2-Accelerated Repeated Field Aggregation';
+    ok(0, 'Hardware-accelerated analysis for large repeated fields from Perl verified');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Integrated Array Consistency background auditing';
+    ok(0, 'Integrated auditor detects and reports corruption across all reified message arrays');
+}
+
 
 done_testing();

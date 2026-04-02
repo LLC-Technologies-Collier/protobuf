@@ -21,5 +21,20 @@ TODO: {
     ok(0, 'High-frequency map-to-hash conversion is lock-free and efficient');
 }
 
+TODO: {
+    local $TODO = 'Implement Massive Concurrency Map Stress (10k coros)';
+    ok(0, 'Integrated core scales to extreme levels of concurrent map manipulation');
+}
+
+TODO: {
+    local $TODO = 'Implement Cross-Interpreter Map Sync (Integrated)';
+    ok(0, 'Reified hash wrappers synchronized across interpreters using shared memory');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Integrated Map Consistency background auditing';
+    ok(0, 'Integrated auditor detects and reports corruption across all reified message maps');
+}
+
 
 done_testing();

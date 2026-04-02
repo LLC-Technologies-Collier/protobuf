@@ -42,4 +42,9 @@
     *   [ ] Tests cover all public functions in `xs/message/wkt.h`.
     *   [ ] Implement C functions.
     *   [ ] C tests pass.
+
+*   **Engineering Excellence (Reach for More):**
+    *   [ ] TODO: Implement VPP-Style SIMD Batch Parsing for multi-message ingestion. (Difficulty: 9/10).
+    *   [ ] TODO: Implement Zero-Copy IPC Message Transport via shared memory arenas. (Difficulty: 8/10).
+    *   [ ] TODO: Implement NUMA-Aware Message Allocation for high-throughput population. (Difficulty: 8/10).
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

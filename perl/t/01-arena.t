@@ -53,8 +53,18 @@ subtest 'explicit pointer access' => sub {
 ok(1, 'All basic tests passed');
 
 TODO: {
-    local $TODO = 'Implement Arena Fusion (Cloning) logic';
+    local $TODO = 'Implement Arena Fusion (Deep Cloning) logic';
     ok(0, 'Arena fusion allows data transfer without deep copy');
+}
+
+TODO: {
+    local $TODO = 'Implement Thread-Local Arena Cache Integration';
+    ok(0, 'High-frequency allocation utilizes cached arenas from Perl');
+}
+
+TODO: {
+    local $TODO = 'Implement NUMA-Aware Arena Allocation API';
+    ok(0, 'Perl users can specify CPU/Node affinity for arena placement');
 }
 
 # The following are now implemented

@@ -41,8 +41,18 @@ TODO: {
 }
 
 TODO: {
-    local $TODO = 'Implement Descriptor-Level Reflection Cache';
-    ok(0, 'Frequently accessed definitions are cached at the Perl level');
+    local $TODO = 'Implement Shared Memory Global Pool API';
+    ok(0, 'Zero-copy schema sharing across multiple Perl processes verified');
+}
+
+TODO: {
+    local $TODO = 'Implement On-Demand Descriptor JIT Loading';
+    ok(0, 'Descriptors automatically loaded from search paths when requested');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Pool Integrity background auditing';
+    ok(0, 'Internal auditor detects and reports corruption in large descriptor pools');
 }
 
 TODO: {

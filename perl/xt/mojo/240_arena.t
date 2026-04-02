@@ -22,5 +22,10 @@ TODO: {
     ok(0, 'System remains stable during 10,000 arena creations in IOLoop callbacks');
 }
 
+TODO: {
+    local $TODO = 'Implement JIT Arena Pre-fetching integrated with event loop idle cycles';
+    ok(0, 'Memory blocks pre-allocated during idle time to minimize latency for active requests');
+}
+
 
 done_testing();

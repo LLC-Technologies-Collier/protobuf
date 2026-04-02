@@ -68,4 +68,24 @@ TODO: {
     ok(0, 'System meets world-class latency/throughput targets for complex scenarios');
 }
 
+TODO: {
+    local $TODO = 'Implement Chaos Allocation Engine (Perl API)';
+    ok(0, 'Integrated system remains stable under non-deterministic resource pressure');
+}
+
+TODO: {
+    local $TODO = 'Implement VPP-Style SIMD Batch Processing API';
+    ok(0, 'Multi-gigabit throughput achieved for bulk message transformations from Perl');
+}
+
+TODO: {
+    local $TODO = 'Implement Zero-Copy IPC Transport Layer via shared memory';
+    ok(0, 'Reified message trees migrated between processes without redundant copies');
+}
+
+TODO: {
+    local $TODO = 'Implement NUMA-Aware Integrated Allocation';
+    ok(0, 'Complete integrated object tree correctly placed on optimal NUMA nodes');
+}
+
 done_testing();

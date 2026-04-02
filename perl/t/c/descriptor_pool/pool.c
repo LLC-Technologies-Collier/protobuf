@@ -15,7 +15,7 @@ static void test_generated_pool(pTHX) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(6);
+    plan(10);
 
     // 1. Creation
     SV* pool_sv = PerlUpb_DescriptorPool_New(aTHX);
@@ -28,6 +28,22 @@ int main(int argc, char** argv) {
 
     // 3. Generated Pool
     test_generated_pool(aTHX);
+
+    TODO("Implement Thread-Safe Global Pool sharing across interpreters") {
+        ok(0, "Read-only global pool accessible from multiple PerlInterpreter instances");
+    }
+
+    TODO("Implement Shared Memory Global Pool for cross-interpreter schema sharing") {
+        ok(0, "Multiple interpreters share a single optimized memory segment for descriptors");
+    }
+
+    TODO("Implement On-Demand Lazy File Parsing for massive schemas") {
+        ok(0, "Descriptor startup time is proportional to used definitions, not total schema size");
+    }
+
+    TODO("Implement Conflict Resolution Traceback with precise source mapping") {
+        ok(0, "Diagnostic errors identify the exact source location of descriptor naming conflicts");
+    }
 
     // Cleanup
     SvREFCNT_dec(pool_sv);

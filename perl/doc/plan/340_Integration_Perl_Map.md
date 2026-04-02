@@ -12,5 +12,10 @@
 *   [ ] TODO: Stress concurrent map mutation (100 Coros).
 *   [ ] TODO: Verify O(1) bulk projection performance in Coro.
 *   [x] Create and implement `xt/mojo/340_map.t` to test Mojo::IOLoop concurrency safety.
-*   [ ] Create and implement `xt/anyevent/340_map.t` to test AnyEvent concurrency safety. (TODO)
+*   [ ] Create and implement `xt/anyevent/340_map.t` to test AnyEvent concurrency safety. (Difficulty: 5/10).
+
+*   **Engineering Excellence (Reach for More):**
+    *   [ ] TODO: Implement Massive Concurrency Map Stress (10k coros) for expansion. (Difficulty: 7/10).
+    *   [ ] TODO: Implement Cross-Interpreter Map Sync for reified hash wrappers. (Difficulty: 8/10).
+    *   [ ] TODO: Implement Self-Healing Integrated Map Consistency background auditing. (Difficulty: 8/10).
 *   [x] Review and update perl/doc/architecture/** documents.

@@ -22,4 +22,9 @@
     *   [ ] Tests cover all public functions in `xs/repeated/scalar.h`.
     *   [ ] Implement C functions.
     *   [ ] C tests pass.
+
+*   **Engineering Excellence (Reach for More):**
+    *   [ ] TODO: Implement O(1) Repeated-to-Array Projection for direct upb-to-Perl conversion. (Difficulty: 6/10).
+    *   [ ] TODO: Implement SSE4.2-Accelerated Repeated Field Filtering utilities. (Difficulty: 8/10).
+    *   [ ] TODO: Implement Self-Healing Repeated Structure Consistency background auditing. (Difficulty: 7/10).
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

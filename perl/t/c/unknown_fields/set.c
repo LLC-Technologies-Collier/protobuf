@@ -39,13 +39,25 @@ static void test_set_creation(pTHX) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(7);
+    plan(10);
 
     test_set_creation(aTHX);
     ok(1, "UnknownField functions cover creation and access");
 
     TODO("Implement Direct Unknown-to-Message conversion") {
         ok(0, "Parsing unknown blobs into specific MessageDefs verified");
+    }
+
+    TODO("Implement Lazy Unknown Field Parsing for deferred structure reification") {
+        ok(0, "Unknown field set reified only when accessed, minimizing parse overhead");
+    }
+
+    TODO("Implement O(1) Unknown Field Number Index for ultra-fast tag lookups") {
+        ok(0, "Integrated hash-table for unknown fields achieves O(1) retrieval");
+    }
+
+    TODO("Implement Self-Healing Unknown Blob Consistency via CRC32 auditing") {
+        ok(0, "Internal auditor verifies raw unknown field buffer integrity");
     }
 
     test_perl_destroy(my_perl);

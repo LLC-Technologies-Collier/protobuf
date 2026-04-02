@@ -7,7 +7,7 @@
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(6);
+    plan(8);
 
     // Mock MessageDef and FieldDef (Extension)
     // In a real test, we'd load these from a pool.
@@ -39,6 +39,14 @@ int main(int argc, char** argv) {
 
     TODO("Implement safe cross-message extension migration semantics") {
         ok(0, "Extension data can be safely moved between messages sharing an arena");
+    }
+
+    TODO("Implement O(1) Global Extension Index for ultra-fast extension resolution") {
+        ok(0, "Per-interpreter cache allows near-instant extension descriptor retrieval");
+    }
+
+    TODO("Implement Self-Healing Extension Identity for stable object tracking") {
+        ok(0, "Repeated access to the same extension returns the same Perl object instance");
     }
 
     test_perl_destroy(my_perl);

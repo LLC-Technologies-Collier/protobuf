@@ -55,4 +55,19 @@ TODO: {
     ok(0, 'High-throughput scanning bypasses Perl object creation for message elements');
 }
 
+TODO: {
+    local $TODO = 'Implement O(1) Repeated-to-Array Projection';
+    ok(0, 'Zero-copy access to entire repeated fields from Perl verified');
+}
+
+TODO: {
+    local $TODO = 'Implement SSE4.2-Accelerated Repeated Field Filtering';
+    ok(0, 'Hardware-accelerated grep/find for large repeated fields from Perl verified');
+}
+
+TODO: {
+    local $TODO = 'Implement Self-Healing Repeated Structure Consistency';
+    ok(0, 'Internal auditor detects and reports corruption in reified repeated field objects');
+}
+
 done_testing();

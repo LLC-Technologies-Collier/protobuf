@@ -26,7 +26,7 @@ unsigned char test_proto_with_msg[] = {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(12);
+    plan(15);
 
     // 1. Create Pool
     SV* pool_sv = PerlUpb_DescriptorPool_New(aTHX);
@@ -82,6 +82,18 @@ int main(int argc, char** argv) {
 
         TODO("Implement detailed Cross-Pool Conflict Resolution reporting") {
             ok(0, "Conflict errors provide precise file/line/type information for resolution");
+        }
+
+        TODO("Implement Cross-Pool Definition Migration safety verification") {
+            ok(0, "Message trees remain valid when moved between interpreters with compatible pools");
+        }
+
+        TODO("Implement Schema Evolution Safety Guard for incompatible updates") {
+            ok(0, "System correctly identifies and reports binary-incompatible schema changes");
+        }
+
+        TODO("Implement Global Schema Versioning for consistent object re-parsing") {
+            ok(0, "Descriptors and reified objects track their originating schema version");
         }
 
         SvREFCNT_dec(msg_sv);
