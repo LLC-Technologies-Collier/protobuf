@@ -29,4 +29,11 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
         }
     }
     return full_name;
-}
+    }
+
+    void PerlUpb_Error_Die(pTHX_ const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vcroak(fmt, &args);
+    va_end(args);
+    }

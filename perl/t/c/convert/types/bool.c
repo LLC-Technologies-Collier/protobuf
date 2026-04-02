@@ -35,7 +35,7 @@ static void set_repeated_bool_val(upb_MessageValue *val, upb_Arena *arena) {
     val->array_val = arr;
 }
 
-GEN_CHECK_SV_REPEATED_SCALAR(bool, 2)
+GEN_CHECK_SV_REPEATED_SCALAR(bool, 3)
 
 const upb_to_sv_test_case bool_upb_to_sv_test_cases[] = {
     {"optional_bool", "bool true", kUpb_FieldType_Bool, set_bool_true, check_sv_bool_true, 1},

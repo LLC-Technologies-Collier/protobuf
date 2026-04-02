@@ -56,12 +56,16 @@ static void test_utils_reentrancy(pTHX) {
     TODO("Enhance croak verification with field-path context for better debugging") {
         ok(0, "Error messages provide exact location of validation failures");
     }
+
+    TODO("Implement croak verification for PerlUpb_Error_Die") {
+        ok(0, "PerlUpb_Error_Die correctly throws Perl exceptions");
+    }
 }
 
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(10);
+    plan(11);
 
     test_get_str_data(aTHX);
     test_verify_str_data(aTHX);

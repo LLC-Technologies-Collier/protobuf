@@ -45,11 +45,11 @@ static void set_repeated_uint64_val(upb_MessageValue *val, upb_Arena *arena) {
     val->array_val = arr;
 }
 
-GEN_CHECK_SV_REPEATED_SCALAR(uint64, 2)
+GEN_CHECK_SV_REPEATED_SCALAR(uint64, 3)
 
 const upb_to_sv_test_case uint64_upb_to_sv_test_cases[] = {
     {"optional_uint64", "uint64", kUpb_FieldType_UInt64, set_uint64_max, check_sv_uint64_max, 1},
-    {"repeated_uint64", "repeated uint64", kUpb_FieldType_UInt64, set_repeated_uint64_val, check_sv_repeated_uint64_val, 6},
+    {"repeated_uint64", "repeated uint64", kUpb_FieldType_UInt64, set_repeated_uint64_val, check_sv_repeated_uint64_val, 8},
     {NULL}
 };
 

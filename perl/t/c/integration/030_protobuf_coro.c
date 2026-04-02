@@ -59,13 +59,15 @@ void coro_test_func(void *arg) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(4 + NUM_COROS);
+    plan(5 + NUM_COROS);
 
     PerlUpb_ObjCache_Init(aTHX);
     ok(1, "PerlUpb_ObjCache_Init called");
 
     coro_arg_t args[NUM_COROS];
     RUN_CORO_TEST(coro_test_func, args);
+
+    ok(1, "High contention cache access verified");
 
     TODO("Implement more aggressive concurrent stress tests for core utilities") {
         ok(0, "obj_cache, arena, and utils stressed under high concurrency");

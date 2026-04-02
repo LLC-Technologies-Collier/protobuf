@@ -12,4 +12,7 @@ const char* PerlUpb_VerifyStrData(pTHX_ SV *sv);
 // Caller is responsible for Safefree()ing the returned string.
 char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name);
 
+// Logs a message and dies with Perl context
+void PerlUpb_Error_Die(pTHX_ const char* fmt, ...);
+
 #endif // PERL_PROTOBUF_UTILS_H_

@@ -10,7 +10,7 @@
 #include "XSUB.h"
 
 static void test_arena_cache_interaction(pTHX) {
-    plan(9);
+    plan(12);
 
     PerlUpb_ObjCache_Init(aTHX);
     ok(1, "Cache initialized");
@@ -35,6 +35,17 @@ static void test_arena_cache_interaction(pTHX) {
 
     PerlUpb_Arena_Destroy(aTHX_ arena_sv); // This frees the arena and the wrapper
     ok(1, "Arena freed");
+
+    // Basic arena-sharing integrity check
+    arena_sv = PerlUpb_Arena_New(aTHX);
+    arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+    void *ptr1 = upb_Arena_Malloc(arena, 10);
+    void *ptr2 = upb_Arena_Malloc(arena, 10);
+    ok(ptr1 != NULL && ptr2 != NULL, "Multiple allocations from same arena");
+    ok(ptr1 != ptr2, "Allocations are distinct");
+    PerlUpb_Arena_Destroy(aTHX_ arena_sv);
+    SvREFCNT_dec(arena_sv);
+    ok(1, "Shared arena cleanup complete");
 
     TODO("Verify arena-sharing integrity across multiple messages") {
         ok(0, "ObjCache correctly tracks message-to-arena lifetime relationships");

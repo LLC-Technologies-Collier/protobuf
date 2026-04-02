@@ -102,3 +102,8 @@ void PerlUpb_Arena_Destroy(pTHX_ SV *sv) {
         PerlUpb_Arena_DestroyRaw(aTHX_ raw_ptr);
     }
 }
+
+uintptr_t PerlUpb_Arena_SpaceAllocated(pTHX_ SV *sv) {
+    upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ sv);
+    return upb_Arena_SpaceAllocated(arena, NULL);
+}

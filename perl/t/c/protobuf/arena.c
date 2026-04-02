@@ -10,7 +10,7 @@ void xs_init(pTHX);
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(15);
+    plan(16);
 
     // Test PerlUpb_Arena_New
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
@@ -37,6 +37,13 @@ int main(int argc, char** argv) {
     // Check that the wrapper pointer is cleared in the hash
     SV** svp = hv_fetch((HV*)SvRV(arena_sv), "_arena_ptr", 10, 0);
     ok(svp && SvIOK(*svp) && SvIV(*svp) == 0, "Wrapper pointer cleared after Destroy");
+
+    // Test SpaceAllocated
+    SV *arena2_sv = PerlUpb_Arena_New(aTHX);
+    uintptr_t initial_space = PerlUpb_Arena_SpaceAllocated(aTHX_ arena2_sv);
+    ok(initial_space > 0, "Initial space allocated is > 0");
+    PerlUpb_Arena_Destroy(aTHX_ arena2_sv);
+    SvREFCNT_dec(arena2_sv);
 
     TODO("Implement PerlUpb_Arena_Free tests") {
         ok(0, "PerlUpb_Arena_Free works as expected");

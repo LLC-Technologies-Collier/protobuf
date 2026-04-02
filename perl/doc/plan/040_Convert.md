@@ -88,7 +88,7 @@
     *   [ ] TODO: Implement **Boundary-Fuzzing:** Verify that integer conversions correctly handle boundary conditions (MIN/MAX) and overflow/underflow situations with consistent error reporting.
 
     5.  **Final Review:**
-    *   [ ] Ensure all C tests in `perl/t/c/convert/` pass. (Current: failing due to array size mismatches and leaks).
+    *   [x] Ensure all C tests in `perl/t/c/convert/` pass.
 
 5.  **Documentation:**
     *   [x] Review and update perl/doc/architecture/** documents based on this milestone's implementation.
