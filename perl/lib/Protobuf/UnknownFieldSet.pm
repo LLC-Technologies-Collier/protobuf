@@ -23,4 +23,9 @@ sub clear {
     return $self->_xs_clear();
 }
 
+sub delete_tag {
+    my ($self, $tag) = @_;
+    return $self->_xs_delete_tag($tag);
+}
+
 1;

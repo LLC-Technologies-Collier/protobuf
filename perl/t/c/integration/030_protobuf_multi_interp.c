@@ -7,7 +7,7 @@ static void test_multi_interp(void) {
 
     char *my_argv[] = { "", "-e", "0", NULL };
 
-    printf("# Initializing test_perl1\n");
+    cdiag("Initializing test_perl1");
     PerlInterpreter *test_perl1 = perl_alloc();
     perl_construct(test_perl1);
     perl_parse(test_perl1, NULL, 3, my_argv, NULL);
@@ -23,7 +23,7 @@ static void test_multi_interp(void) {
         PerlUpb_ObjCache_Add(aTHX, dummy_ptr, obj1);
         SvREFCNT_dec(obj1);
 
-        printf("# Initializing test_perl2\n");
+        cdiag("Initializing test_perl2");
         PerlInterpreter *test_perl2 = perl_alloc();
         perl_construct(test_perl2);
         perl_parse(test_perl2, NULL, 3, my_argv, NULL);
@@ -41,7 +41,7 @@ static void test_multi_interp(void) {
             ok(cached == NULL, "Cache is isolated: perl2 cannot see perl1 entries");
         }
 
-        printf("# Switching back to test_perl1\n");
+        cdiag("Switching back to test_perl1");
         PERL_SET_CONTEXT(test_perl1);
         {
             dTHX;
@@ -49,11 +49,11 @@ static void test_multi_interp(void) {
             ok(cached != NULL, "Cache persist in perl1");
         }
 
-        printf("# Cleaning up test_perl2\n");
+        cdiag("Cleaning up test_perl2");
         perl_destruct(test_perl2);
         perl_free(test_perl2);
 
-        printf("# Final check on test_perl1\n");
+        cdiag("Final check on test_perl1");
         PERL_SET_CONTEXT(test_perl1);
         {
             dTHX;

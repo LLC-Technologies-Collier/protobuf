@@ -4,6 +4,24 @@ use strict;
 use warnings;
 use Protobuf::DescriptorPool;
 use Protobuf::ClassGenerator;
+use Test::More;
+use Exporter 'import';
+
+our @EXPORT = qw(vdiag vnote);
+
+sub vdiag {
+    my (@args) = @_;
+    if ($ENV{VERBOSE_TESTS}) {
+        diag(@args);
+    }
+}
+
+sub vnote {
+    my (@args) = @_;
+    if ($ENV{VERBOSE_TESTS}) {
+        note(@args);
+    }
+}
 
 =head1 NAME
 

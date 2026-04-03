@@ -14,7 +14,7 @@ subtest 'AOT validator generation' => sub {
     ok($mdef, "Found TestMessage descriptor");
     
     my $xs = Protobuf::ClassGenerator->generate_validator_xs($mdef);
-    diag("Generated XS Validator:\n$xs");
+    vdiag("Generated XS Validator:\n$xs");
     
     like($xs, qr/bool validate_test_TestMessage\(pTHX_ SV\* sv\)/, "Generated correct function signature");
     like($xs, qr/sv_derived_from\(sv, "test::TestMessage"\)/, "Includes class check");

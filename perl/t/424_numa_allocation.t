@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use lib "t/lib";
+use TestHelpers;
 use Protobuf::Arena;
 use File::Temp qw(tempdir);
 
@@ -22,7 +24,7 @@ subtest 'NUMA-aware allocation' => sub {
     # But wait, we can just use the arena to create a message later.
     # For now, we verified the API and the internal flag setting.
     
-    diag("Arena stats after NUMA set: " . $arena->space_allocated());
+    vdiag("Arena stats after NUMA set: " . $arena->space_allocated());
 };
 
 subtest 'NUMA on tmpfs (should fail)' => sub {

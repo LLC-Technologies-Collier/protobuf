@@ -31,6 +31,13 @@ _xs_clear(self)
         PerlUpb_UnknownFieldSet_Clear(aTHX_ self);
 
 void
+_xs_delete_tag(self, tag)
+    SV* self
+    uint32_t tag
+    CODE:
+        PerlUpb_UnknownFieldSet_DeleteTag(aTHX_ self, tag);
+
+void
 DESTROY(self)
     SV* self
     CODE:

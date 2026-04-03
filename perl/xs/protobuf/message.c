@@ -6,6 +6,17 @@
 #include "xs/protobuf/arena.h"
 #include "xs/protobuf/utils.h"
 
+static int descriptor_cleanup(pTHX_ SV* sv, MAGIC* mg) {
+    // No explicit cleanup needed for the descriptor IV,
+    // but having the magic ensures we don't trigger the "unreferenced scalar"
+    // warnings during global destruction by explicitly managing it.
+    return 0;
+}
+
+static MGVTBL descriptor_vtbl = {
+    NULL, NULL, NULL, NULL, descriptor_cleanup
+};
+
 SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv) {
     if (!msg) {
         return newSV(0); // Undef
@@ -39,7 +50,8 @@ SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef
     SV *self = PerlUpb_WrapArenaBoundObject(aTHX_ msg, arena_sv, class_name);
     safefree(class_name);
 
-    // Store the descriptor C pointer in the HV
+    // Store the descriptor C pointer in the HV.
+    // We don't use magic here anymore to reduce "unreferenced scalar" noise.
     HV* hv = (HV*)SvRV(self);
     hv_store(hv, "_descriptor", 11, newSViv(PTR2IV(mdef)), 0);
 
@@ -52,12 +64,16 @@ SV* PerlUpb_MaybeGetMessage(pTHX_ const upb_Message *msg) {
 }
 
 void PerlUpb_Message_Free(pTHX_ SV *message_sv) {
-    const upb_Message *msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
-    if (msg) {
-        PerlUpb_ObjCache_Delete(aTHX_ msg);
-        // The upb_Message is freed when the arena is freed.
-        // We just clear the internal pointers.
-        HV* hv = (HV*)SvRV(message_sv);
+    if (PL_dirty) return; // Let Perl handle cleanup during global destruction
+
+    // We don't call PerlUpb_ObjCache_Delete here because it's handled
+    // by the magic wrapper_cleanup in utils.c. Calling it here causes
+    // double-deletion and "unreferenced scalar" warnings during eval cleanup.
+    
+    // The upb_Message is freed when the arena is freed.
+    // We just clear the internal pointers in the Perl object.
+    HV* hv = (HV*)SvRV(message_sv);
+    if (hv_exists(hv, "_upb_ptr", 8)) {
         hv_delete(hv, "_upb_ptr", 8, G_DISCARD);
     }
 }

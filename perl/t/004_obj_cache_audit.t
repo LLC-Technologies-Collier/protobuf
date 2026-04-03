@@ -13,11 +13,11 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 sub dump_log {
     my $msg = shift;
     my $log = Protobuf::Internal::get_cache_audit_log();
-    diag("--- Audit Log Dump ($msg) ---");
+    vdiag("--- Audit Log Dump ($msg) ---");
     foreach my $e (@$log) {
-        diag(sprintf("Type: %d | Ptr: %s | TS: %d", $e->{type}, $e->{ptr}, $e->{timestamp}));
+        vdiag(sprintf("Type: %d | Ptr: %s | TS: %d", $e->{type}, $e->{ptr}, $e->{timestamp}));
     }
-    diag("--- End Dump ---");
+    vdiag("--- End Dump ---");
 }
 
 # Clear existing log and cache
@@ -43,7 +43,6 @@ ok(scalar @misses > 0, 'Log contains MISS event for pool') or dump_log("After ge
 
 # 4. DELETE event
 subtest 'DELETE event' => sub {
-    local $TODO = "Investigate pointer stringification mismatch in manual delete_cache_ptr";
     Protobuf::Internal::clear_cache();
     my $m = $pool->find_message_by_name('test.TestMessage');
     ok($m, "Loaded descriptor");
@@ -52,22 +51,32 @@ subtest 'DELETE event' => sub {
     # Find the ADD event
     my ($add_event) = grep { $_->{type} == 1 } @$log_before;
     if (!$add_event) {
-        diag("No ADD event found in log before delete");
+        vdiag("No ADD event found in log before delete");
         return;
     }
     
     my $ptr = $add_event->{ptr};
-    diag("Attempting to delete pointer from log: $ptr");
+    vnote("Attempting to delete pointer from log: $ptr");
     Protobuf::Internal::delete_cache_ptr($ptr);
     
     my $log_after = Protobuf::Internal::get_cache_audit_log();
-    my @deletes = grep { $_->{type} == 4 && $_->{ptr} eq $ptr } @$log_after;
+    # Normalize pointer strings for comparison (remove leading 0x if necessary, etc)
+    my $norm_ptr = lc($ptr);
+    $norm_ptr =~ s/^0x//;
+
+    my @deletes = grep { 
+        $_->{type} == 4 && do {
+            my $p = lc($_->{ptr});
+            $p =~ s/^0x//;
+            $p eq $norm_ptr;
+        }
+    } @$log_after;
     
     if (!scalar @deletes) {
-        diag("DELETE event not found for $ptr");
-        diag("Log after delete attempt:");
+        vdiag("DELETE event not found for $ptr");
+        vdiag("Log after delete attempt:");
         foreach my $e (@$log_after) {
-            diag("  Type: $e->{type} | Ptr: $e->{ptr}");
+            vdiag("  Type: $e->{type} | Ptr: $e->{ptr}");
         }
     }
     

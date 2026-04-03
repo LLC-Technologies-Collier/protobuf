@@ -23,7 +23,7 @@ subtest 'concurrency stress fuzzer (Coro)' => sub {
     Protobuf::Internal::set_chaos_params(0.05, 0.05, 10, 1234);
     Protobuf::Internal::set_chaos_enabled(1);
     
-    diag("Spawning $num_coros coroutines, each performing $ops_per_coro random operations...");
+    vdiag("Spawning $num_coros coroutines, each performing $ops_per_coro random operations...");
 
     my $failed_ops = 0;
     my $total_ops = 0;
@@ -69,7 +69,7 @@ subtest 'concurrency stress fuzzer (Coro)' => sub {
                 if ($@) {
                     # If it's a chaos failure, that's fine. 
                     if ($@ !~ /Failed to (?:acquire upb_Arena|allocate upb_Message|resize upb_Array)/) {
-                        diag("Unexpected failure in coro: $@");
+                        vdiag("Unexpected failure in coro: $@");
                         $failed_ops++;
                     }
                 }
@@ -84,14 +84,14 @@ subtest 'concurrency stress fuzzer (Coro)' => sub {
     
     Protobuf::Internal::set_chaos_enabled(0);
     
-    diag("Fuzzing complete: $total_ops operations attempted, $failed_ops unexpected failures");
+    vdiag("Fuzzing complete: $total_ops operations attempted, $failed_ops unexpected failures");
     ok($failed_ops == 0, "All operations completed without unexpected errors");
     
     # 3. Check memory stability via audit log
     my $log = Protobuf::Internal::get_cache_audit_log();
     my $mallocs = grep { $_->{type} == 10 } @$log;
     my $frees   = grep { $_->{type} == 11 } @$log;
-    diag("Memory Audit - MALLOCs: $mallocs, FREEs: $frees");
+    vdiag("Memory Audit - MALLOCs: $mallocs, FREEs: $frees");
     
     # Since some arenas might be long-lived or still in scope (in Registry cache), 
     # we don't expect a perfect balance here, but we check for sanity.

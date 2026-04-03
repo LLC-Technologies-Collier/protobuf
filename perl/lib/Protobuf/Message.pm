@@ -27,7 +27,9 @@ sub new {
 
 sub DESTROY {
     my ($self) = @_;
-    _xs_free($self);
+    # Explicit _xs_free is only needed if not in global destruction.
+    # The magic cleanup in XS will handle the cache detachment safely.
+    _xs_free($self) unless ${^GLOBAL_PHASE} eq 'DESTRUCT';
     return;
 }
 

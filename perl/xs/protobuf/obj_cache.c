@@ -129,6 +129,7 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
     if (!ptr || !obj || !SvROK(obj)) return;
     ensure_mutexes_init();
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    if (!reg) return;
 
     int stripe = get_stripe(ptr);
     PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[stripe]);
@@ -168,7 +169,7 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
                 PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[evict_stripe]);
             }
         }
-        if (oldest_key_sv) SvREFCNT_dec(oldest_key_sv);
+        if (oldest_key_sv && !PL_dirty) SvREFCNT_dec(oldest_key_sv);
     }
     PERL_PROTOBUF_MUTEX_UNLOCK(&lru_mutex);
 }
@@ -177,6 +178,7 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
     if (!ptr) return NULL;
     ensure_mutexes_init();
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    if (!reg) return NULL;
 
     int stripe = get_stripe(ptr);
     PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[stripe]);
@@ -223,6 +225,7 @@ void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_str) {
     if (!key_str) return;
     ensure_mutexes_init();
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    if (!reg) return;
 
     void* target_ptr;
     if (sscanf(key_str, "%p", &target_ptr) != 1) return;
@@ -236,17 +239,19 @@ void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_str) {
     int expected_stripe = get_stripe(target_ptr);
     PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[expected_stripe]);
     HV* cache = get_cache_hv(aTHX, reg);
-    if (hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD)) {
+    if (hv_exists(cache, normalized_key, strlen(normalized_key))) {
+        hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD);
         deleted = true;
     }
     PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[expected_stripe]);
 
     if (!deleted) {
-        // Fallback: Check ALL stripes (some pointers might hash differently if get_stripe uses a different logic than storage)
+        // Fallback: Check ALL stripes
         for (int i = 0; i < NUM_CACHE_STRIPES; i++) {
             if (i == expected_stripe) continue;
             PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[i]);
-            if (hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD)) {
+            if (hv_exists(cache, normalized_key, strlen(normalized_key))) {
+                hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD);
                 deleted = true;
                 PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[i]);
                 break;
@@ -270,12 +275,14 @@ void PerlUpb_ObjCache_Clear(pTHX) {
     PERL_PROTOBUF_MUTEX_LOCK(&lru_mutex);
     PERL_PROTOBUF_MUTEX_LOCK(&audit_mutex);
 
-    if (reg->obj_cache) {
-        hv_clear(reg->obj_cache);
-    }
+    if (!PL_dirty) {
+        if (reg->obj_cache) {
+            hv_clear(reg->obj_cache);
+        }
 
-    if (reg->obj_lru) {
-        av_clear(reg->obj_lru);
+        if (reg->obj_lru) {
+            av_clear(reg->obj_lru);
+        }
     }
 
     if (reg->audit_log) {

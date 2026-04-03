@@ -130,6 +130,19 @@ void PerlUpb_Error_Die(pTHX_ const char* fmt, ...) {
     va_end(args);
 }
 
+static int wrapper_cleanup(pTHX_ SV* sv, MAGIC* mg) {
+    if (PL_dirty) return 0;
+    void* ptr = (void*)mg->mg_ptr;
+    if (ptr) {
+        PerlUpb_ObjCache_Delete(aTHX_ ptr);
+    }
+    return 0;
+}
+
+static MGVTBL wrapper_vtbl = {
+    NULL, NULL, NULL, NULL, wrapper_cleanup
+};
+
 SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, const char* class_name) {
     if (!ptr) return &PL_sv_undef;
 
@@ -137,13 +150,20 @@ SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, const char
     if (cached) return cached;
 
     HV* hv = newHV();
-    hv_store(hv, "_upb_ptr", 8, newSViv(PTR2IV(ptr)), 0);
+    
+    SV* ptr_sv = newSViv(PTR2IV(ptr));
+    hv_store(hv, "_upb_ptr", 8, ptr_sv, 0);
     if (arena_sv && SvOK(arena_sv)) {
         hv_store(hv, "_arena_sv", 9, newSVsv(arena_sv), 0);
     }
 
     SV* self = newRV_noinc((SV*)hv);
     sv_bless(self, gv_stashpv(class_name, GV_ADD));
+
+    // Add magic for cache cleanup. We don't use MGf_COPY because
+    // we only want the primary owner to handle detachment.
+    sv_magicext((SV*)hv, NULL, PERL_MAGIC_ext, &wrapper_vtbl, (const char*)ptr, 0);
+
     PerlUpb_ObjCache_Add(aTHX_ ptr, self);
     return self;
 }

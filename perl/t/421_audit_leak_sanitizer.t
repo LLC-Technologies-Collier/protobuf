@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use lib "t/lib";
+use TestHelpers;
 use Protobuf::Internal;
 use Protobuf::Arena;
 
@@ -16,12 +18,12 @@ subtest 'audit log: allocation tracking' => sub {
     # Arena is now destroyed, should have logged a free
     
     my $log = Protobuf::Internal::get_cache_audit_log();
-    diag("Audit log size: " . scalar(@$log));
+    vdiag("Audit log size: " . scalar(@$log));
     
     my $mallocs = grep { $_->{type} == 10 } @$log;
     my $frees   = grep { $_->{type} == 11 } @$log;
     
-    diag("MALLOCs: $mallocs, FREEs: $frees");
+    vdiag("MALLOCs: $mallocs, FREEs: $frees");
     
     ok($mallocs > 0, "Recorded at least one MALLOC");
     ok($frees > 0, "Recorded at least one FREE");

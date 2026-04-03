@@ -4,8 +4,8 @@
 
 *   [x] Create test file `perl/t/c/integration/210_unknown_fields.c`.
 *   [x] Tests cover unknown fields interactions with messages. (Verified parsing, retrieval, reserialization, and manual addition).
-*   [ ] Add field scrubbing infrastructure to UnknownFieldSet. (Difficulty: 3/10).
-*   [ ] Implement single-tag selective removal. (Difficulty: 3/10).
+*   [x] Add field scrubbing infrastructure to UnknownFieldSet.
+*   [x] Implement single-tag selective removal.
 *   [ ] Add upb_MessageDef verification to Unknown promotion. (Difficulty: 3/10).
 *   [ ] Implement safety checks for reifying Unknown blobs. (Difficulty: 3/10).
 *   [ ] Add test for unknown field preservation in nested merges. (Difficulty: 2/10).

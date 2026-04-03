@@ -228,6 +228,7 @@ void PerlUpb_Arena_Free(pTHX_ SV *sv) {
 
 // Called from Protobuf::Arena::DEMOLISH or DESTROY
 void PerlUpb_Arena_Destroy(pTHX_ SV *sv) {
+    if (PL_dirty) return; // Let Perl handle cleanup during global destruction
     if (!sv || !SvROK(sv) || !sv_isa(sv, "Protobuf::Arena")) {
         return;
     }

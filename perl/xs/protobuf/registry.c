@@ -6,6 +6,23 @@
 
 #define REGISTRY_KEY "Protobuf::Registry"
 
+static int registry_cleanup(pTHX_ SV* sv, MAGIC* mg) {
+    if (PL_dirty) return 0; // Let Perl handle it
+    PerlUpb_Registry* reg = INT2PTR(PerlUpb_Registry*, SvIV(sv));
+    if (reg) {
+        // We don't SvREFCNT_dec these here because global destruction
+        // is already handling it, and we might trigger double-frees.
+        // We just need to free the struct itself.
+        safefree(reg);
+        sv_setiv(sv, 0);
+    }
+    return 0;
+}
+
+static MGVTBL registry_vtbl = {
+    NULL, NULL, NULL, NULL, registry_cleanup
+};
+
 void PerlUpb_Registry_Init(pTHX) {
     SV** svp = hv_fetch(PL_modglobal, REGISTRY_KEY, strlen(REGISTRY_KEY), 1);
     if (!svp) {
@@ -29,10 +46,15 @@ void PerlUpb_Registry_Init(pTHX) {
         reg->chaos.seed = (unsigned int)time(NULL);
         
         sv_setiv(*svp, PTR2IV(reg));
+
+        // Add magic for automated cleanup during global destruction
+        sv_magicext(*svp, NULL, PERL_MAGIC_ext, &registry_vtbl, (const char*)NULL, 0);
     }
 }
 
 PerlUpb_Registry* PerlUpb_Registry_Get(pTHX) {
+    if (PL_dirty) return NULL;
+
     SV** svp = hv_fetch(PL_modglobal, REGISTRY_KEY, strlen(REGISTRY_KEY), 0);
     if (svp && SvIOK(*svp)) {
         return INT2PTR(PerlUpb_Registry*, SvIV(*svp));

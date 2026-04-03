@@ -17,6 +17,9 @@ void PerlUpb_UnknownFieldSet_Add(pTHX_ SV* self, SV* data_sv);
 // Clears the unknown fields.
 void PerlUpb_UnknownFieldSet_Clear(pTHX_ SV* self);
 
+// Selectively deletes a tag from the unknown fields.
+void PerlUpb_UnknownFieldSet_DeleteTag(pTHX_ SV* self, uint32_t tag);
+
 // Frees the wrapper.
 void PerlUpb_UnknownFieldSet_Free(pTHX_ SV* sv);
 

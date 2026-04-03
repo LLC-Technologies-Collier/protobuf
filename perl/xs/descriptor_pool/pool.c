@@ -24,6 +24,7 @@ void* PerlUpb_DescriptorPool_CreateRaw(pTHX) {
 }
 
 void PerlUpb_DescriptorPool_DestroyRaw(pTHX_ void* ptr) {
+    if (PL_dirty) return;
     PerlUpb_DescriptorPool* p = (PerlUpb_DescriptorPool*)ptr;
     if (p) {
         if (p->pool && p->pool != generated_pool_ptr) {
@@ -147,6 +148,9 @@ SV* PerlUpb_DescriptorPool_GeneratedPool(pTHX) {
         } else {
             generated_pool_ptr = upb_DefPool_New();
             sv_setiv(global_pool_sv, PTR2IV(generated_pool_ptr));
+            // Add magic to the global SV to ensure it's not tampered with
+            // and we can potentially hook its destruction.
+            sv_magicext(global_pool_sv, NULL, PERL_MAGIC_ext, NULL, (const char*)NULL, 0);
         }
     }
     return PerlUpb_DescriptorPool_GetWrapper(aTHX_ generated_pool_ptr);

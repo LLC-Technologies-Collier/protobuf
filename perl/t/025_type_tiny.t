@@ -138,7 +138,7 @@ TODO: {
 subtest 'type library generation' => sub {
     my $file = $pool->find_file_by_name('perl/t/c/test.proto') || $pool->find_file_by_name('test.proto');
     my $lib_code = Protobuf::ClassGenerator->generate_type_library($file);
-    diag("Generated Type Library:\n$lib_code");
+    vdiag("Generated Type Library:\n$lib_code");
     
     ok($lib_code, 'Got type library code');
     like($lib_code, qr/package Protobuf::Types::test;/, 'Correct package name');

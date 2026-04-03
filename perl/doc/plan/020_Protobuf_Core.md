@@ -12,12 +12,12 @@
     *   [x] Implement **Lock-Free Cache Operations:** Ensure that object retrieval and caching are thread-safe using striped mutexes.
     *   [x] Implement **interpreter-isolation verification:** Verify that cache state is strictly isolated between multiple Perl interpreters (ithreads).
     *   [x] Implement LRU eviction for the object cache.
-    *   [ ] TODO: Implement a high-performance trace/audit log for cache hits/misses to aid in memory leak hunting.
+    *   [x] Implement a high-performance trace/audit log for cache hits/misses to aid in memory leak hunting.
         *   [x] Implement per-interpreter circular ring buffer in C (`obj_cache.c`).
         *   [x] Export `get_cache_audit_log` and `clear_cache` to `Protobuf::Internal`.
         *   [x] Verify `ADD`, `HIT`, and `MISS` event logging.
-        *   [ ] TODO: Investigate why `DELETE` events are not reliably triggered for `DescriptorPool` in audit tests (Test 5 in `t/03-obj-cache-audit.t`).
-        *   [ ] TODO: Implement reliable eviction triggering to verify `EVICT` event logging (Test 6 in `t/03-obj-cache-audit.t`).
+        *   [x] Investigate why `DELETE` events are not reliably triggered for `DescriptorPool` in audit tests (Verified: fixed `hv_delete` flag logic).
+        *   [x] Implement reliable eviction triggering to verify `EVICT` event logging.
     *   [x] Implement C functions in `perl/xs/protobuf/obj_cache.c`.
     *   [x] C tests pass for `perl/t/c/protobuf/obj_cache.c`.
 

@@ -136,7 +136,14 @@ extern int indent_level;
         ok(_like_pass, name); \
     } STMT_END
 
-#define cdiag(fmt, ...) { fprintf(stderr, "%*s# " fmt, indent_level * 4, "", ##__VA_ARGS__); fprintf(stderr, "\n"); }
+#define cdiag(fmt, ...) \
+    STMT_START { \
+        const char* verbose = getenv("VERBOSE_TESTS"); \
+        if (verbose && strcmp(verbose, "1") == 0) { \
+            fprintf(stderr, "%*s# " fmt, indent_level * 4, "", ##__VA_ARGS__); \
+            fprintf(stderr, "\n"); \
+        } \
+    } STMT_END
 
 // Enhanced Assertion Macros
 #define ASSERT_PROTO_MATCH(msg1, msg2, mdef, name) \
