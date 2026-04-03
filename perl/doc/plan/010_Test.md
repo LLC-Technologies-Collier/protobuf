@@ -14,8 +14,8 @@
 *   [x] Add failure probability configuration to StatsAlloc.
 *   [x] Implement chaos recovery tests for arena blocks.
 *   [x] Verify branch coverage for specific SIMD kernels. (Verified in `t/416_utils_names.t`).
-*   [ ] Add assembly-level instrumentation for AVX2 paths. (Difficulty: 3/10).
-*   [ ] TODO: Implement Binary-Diff Serialization verification for canonical output stability. (Difficulty: 4/10).
+*   [x] Add assembly-level instrumentation for AVX2 paths. (Implemented in `utils.c` with `AVX2_INSTRUMENT`).
+*   [x] Implement Binary-Diff Serialization verification for canonical output stability. (Implemented in `PerlUpb_VerifyBinaryDiff`).
 
 ## Implemented Macros
 *   `plan(n)`

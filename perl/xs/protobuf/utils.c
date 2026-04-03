@@ -7,6 +7,13 @@
 #include "upb/reflection/def.h"
 #include <immintrin.h>
 
+#define AVX2_INSTRUMENT(path_name) \
+    do { \
+        if (getenv("PROTOBUF_PERL_INSTRUMENT_AVX2")) { \
+            fprintf(stderr, "[AVX2] Hitting path: %s\n", path_name); \
+        } \
+    } while (0)
+
 const char* PerlUpb_GetStrData(pTHX_ SV *sv) {
     if (!sv || !SvPOK(sv)) {
         return NULL;
@@ -28,6 +35,7 @@ const char* PerlUpb_VerifyStrData(pTHX_ SV *sv) {
 // Helper to check for dots or colons in 32-byte chunks
 __attribute__((target("avx2")))
 static inline uint32_t find_special_chars_avx2(const char* s) {
+    AVX2_INSTRUMENT("find_special_chars_avx2");
     __m256i chunk = _mm256_loadu_si256((const __m256i*)s);
     __m256i dots = _mm256_cmpeq_epi8(chunk, _mm256_set1_epi8('.'));
     __m256i colons = _mm256_cmpeq_epi8(chunk, _mm256_set1_epi8(':'));
@@ -277,10 +285,26 @@ bool PerlUpb_ValidateIntRange_SSE41(const int32_t* vals, size_t count, int32_t m
 
 __attribute__((target("avx2")))
 bool PerlUpb_ValidateStrings_AVX2(const char** strings, const size_t* lens, size_t count) {
+    AVX2_INSTRUMENT("PerlUpb_ValidateStrings_AVX2");
     for (size_t i = 0; i < count; i++) {
         if (!strings[i] || lens[i] == 0) return false;
     }
     return true;
+}
+
+void PerlUpb_VerifyBinaryDiff(pTHX_ const char* a, size_t a_len, const char* b, size_t b_len, const char* name) {
+    if (a_len == b_len && memcmp(a, b, a_len) == 0) {
+        return;
+    }
+
+    fprintf(stderr, "Binary diff failure: %s\n", name);
+    fprintf(stderr, "A (len %zu): ", a_len);
+    for (size_t i = 0; i < a_len; i++) fprintf(stderr, "%02x", (unsigned char)a[i]);
+    fprintf(stderr, "\nB (len %zu): ", b_len);
+    for (size_t i = 0; i < b_len; i++) fprintf(stderr, "%02x", (unsigned char)b[i]);
+    fprintf(stderr, "\n");
+    
+    croak("Binary diff verification failed: %s", name);
 }
 
 PerlUpb_FieldVector* PerlUpb_FieldVector_New(pTHX_ size_t capacity) {

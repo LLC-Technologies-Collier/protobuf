@@ -142,3 +142,16 @@ get_cpu_features()
         RETVAL = (UV)PerlUpb_GetCpuFeatures();
     OUTPUT:
         RETVAL
+
+void
+verify_binary_diff(a_sv, b_sv, name)
+    SV* a_sv
+    SV* b_sv
+    const char* name
+    PREINIT:
+        STRLEN a_len, b_len;
+        const char *a, *b;
+    CODE:
+        a = SvPV(a_sv, a_len);
+        b = SvPV(b_sv, b_len);
+        PerlUpb_VerifyBinaryDiff(aTHX_ a, a_len, b, b_len, name);

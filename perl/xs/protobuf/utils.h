@@ -68,4 +68,7 @@ uint32_t PerlUpb_GetCpuFeatures(void);
 bool PerlUpb_ValidateIntRange_SSE41(const int32_t* vals, size_t count, int32_t min, int32_t max);
 bool PerlUpb_ValidateStrings_AVX2(const char** strings, const size_t* lens, size_t count);
 
+// Instrumentation & Verification
+void PerlUpb_VerifyBinaryDiff(pTHX_ const char* a, size_t a_len, const char* b, size_t b_len, const char* name);
+
 #endif // PERL_PROTOBUF_UTILS_H_
