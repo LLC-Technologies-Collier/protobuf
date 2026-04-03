@@ -25,13 +25,13 @@
 *   **Engineering Excellence (Reach for More):**
     *   **Guard Page Support:**
         *   [x] Design guard page strategy for BlockAlloc. (Difficulty: 3/10)
-        *   [ ] Implement mmap/mprotect logic for guard pages. (Difficulty: 3/10)
+        *   [x] Implement mmap/mprotect logic for guard pages. (Difficulty: 3/10)
         *   [ ] Add tests for guard page functionality. (Difficulty: 2/10)
     *   **Fuzzing:**
         *   [ ] Integrate libFuzzer for wire format parsing. (Difficulty: 5/10)
         *   [ ] Add CI infrastructure for daily fuzzing runs. (Difficulty: 4/10)
     *   **Cross-Platform CI:**
-        *   [ ] Research GitHub Actions for macOS builds. (Difficulty: 2/10)
-        *   [ ] Research GitHub Actions for Windows builds (Strawberry Perl). (Difficulty: 3/10)
+        *   [x] Research GitHub Actions for macOS builds. (Difficulty: 2/10)
+        *   [ ] Research GitHub Actions for Windows builds (Strawberry Perl). (Difficulty: 3/10) // Deferred pending local CI setup
         *   [ ] Implement basic macOS CI workflow. (Difficulty: 3/10)
         *   [ ] Implement basic Windows CI workflow. (Difficulty: 3/10)

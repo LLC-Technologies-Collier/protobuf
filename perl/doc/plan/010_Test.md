@@ -19,8 +19,19 @@
 
 ## Engineering Excellence (Reach for More)
     *   [ ] Implement Test::Deep style data structure comparison macros. (Difficulty: 4/10)
-    *   [ ] Add Property-Based Testing hooks to the C test harness. (Difficulty: 6/10)
-    *   [ ] Auto-generate TODOs from C benchmark results. (Difficulty: 7/10)
+    *   **Add Property-Based Testing hooks to the C test harness:**
+        *   [ ] Design API for property-based test macros in C. (Difficulty: 3/10)
+        *   [ ] Implement basic generator for integers. (Difficulty: 2/10)
+        *   [ ] Implement shrinker for integers. (Difficulty: 2/10)
+        *   [ ] Integrate with C test harness. (Difficulty: 2/10)
+    *   **Auto-generate TODOs from C benchmark results:**
+        *   [x] Design format for benchmark output to be parsable. (Difficulty: 2/10) - See `perl/doc/architecture/080-C-Benchmark-Format.md`
+        *   [ ] Implement parser for benchmark results. (Difficulty: 3/10)
+        *   [ ] Implement logic to compare results against thresholds. (Difficulty: 3/10)
+        *   [ ] Implement generator for TODO stubs in test files. (Difficulty: 3/10)
+    *   [ ] Fuzz Test Harness Macros to ensure robustness. (Difficulty: 5/10)
+    *   [ ] Add TAP Protocol Conformance Tests for the C harness. (Difficulty: 4/10)
+    *   [ ] Create Unit Tests for each C Test Macro. (Difficulty: 3/10)
 
 ## Implemented Macros
 *   `plan(n)`
@@ -36,6 +47,11 @@
 *   `like_n(str, len, pattern, name)`
 *   `subtest(name, block)`
 *   `LEAK_CHECK(arena, block, name)`
+*   `STRESS_THREADS(n, func, arg)`
+*   `cdiag(fmt, ...)`
+*   `SKIP(reason, count)`
+
+, block, name)`
 *   `STRESS_THREADS(n, func, arg)`
 *   `cdiag(fmt, ...)`
 *   `SKIP(reason, count)`
