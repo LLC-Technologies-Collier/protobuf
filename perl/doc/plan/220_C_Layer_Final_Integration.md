@@ -20,5 +20,8 @@
     *   [x] Implement Chaos Allocation Engine for non-deterministic resource pressure testing.
     *   [x] Implement VPP-Style SIMD Batch Processing for multi-gigabit transformations.
     *   [x] Implement Zero-Copy IPC Transport Layer via shared memory arenas.
-    *   [ ] TODO: Implement NUMA-Aware Integrated Allocation for multi-socket scaling. (Difficulty: 9/10).
+    *   [ ] TODO: Implement libnuma discovery and node topology mapping. (Difficulty: 2/10).
+    *   [ ] TODO: Implement arena-to-node affinity pinning API. (Difficulty: 2/10).
+    *   [ ] TODO: Implement interleaved allocation strategy for shared-arena load balancing. (Difficulty: 3/10).
+    *   [ ] TODO: Implement NUMA-aware benchmark suite for multi-socket throughput verification. (Difficulty: 3/10).
 *   [x] Review and update perl/doc/architecture/** documents.

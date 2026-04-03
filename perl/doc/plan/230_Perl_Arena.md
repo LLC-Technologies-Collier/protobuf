@@ -16,9 +16,18 @@
 *   [x] Perl tests pass for Protobuf::Arena.
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement Arena Fusion (Deep Cloning) logic for efficient data transfer. (Difficulty: 7/10).
-    *   [ ] TODO: Implement Thread-Local Arena Cache Integration for high-frequency allocations. (Difficulty: 6/10).
-    *   [ ] TODO: Implement NUMA-Aware Arena Allocation API for multi-socket systems. (Difficulty: 8/10).
+    *   [ ] TODO: Implement Arena Fusion (Deep Cloning) logic for efficient data transfer:
+        *   [ ] TODO: Implement C-level `upb_Arena_Fuse` wrapper for merging two arenas. (Difficulty: 2/10)
+        *   [ ] TODO: Create Perl-level `fuse($other_arena)` method. (Difficulty: 2/10)
+        *   [ ] TODO: Implement safety checks for fusion of arenas with incompatible allocators. (Difficulty: 3/10)
+    *   [ ] TODO: Implement Thread-Local Arena Cache Integration for high-frequency allocations:
+        *   [ ] TODO: Implement XS-level thread-local storage (TLS) for arena pooling. (Difficulty: 3/10)
+        *   [ ] TODO: Create `get_cached_arena()` and `release_to_cache()` internals. (Difficulty: 2/10)
+        *   [ ] TODO: Benchmark cached vs. fresh arena allocation performance. (Difficulty: 2/10)
+    *   [ ] TODO: Implement NUMA-Aware Arena Allocation API for multi-socket systems:
+        *   [ ] TODO: Integrate `libnuma` or equivalent for node-aware memory allocation. (Difficulty: 3/10)
+        *   [ ] TODO: Implement C-level `upb_alloc_on_node` custom allocator. (Difficulty: 3/10)
+        *   [ ] TODO: Create Perl API for specifying NUMA node in `Protobuf::Arena->new()`. (Difficulty: 2/10)
 *   [x] Refine C API for `Protobuf::Arena` (if any).
 *   [x] C layer tests for Arena still pass.
 *   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

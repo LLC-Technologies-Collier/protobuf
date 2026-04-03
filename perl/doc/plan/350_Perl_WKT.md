@@ -52,9 +52,18 @@
     *   [x] Perl tests pass for Struct, Value, ListValue.
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement VPP-Style SIMD WKT Batch Conversion for high-throughput population. (Difficulty: 9/10).
-    *   [ ] TODO: Implement Zero-Copy WKT Projections via mmap-backed scalars. (Difficulty: 8/10).
-    *   [ ] TODO: Implement Self-Healing WKT Consistency background auditing. (Difficulty: 8/10).
+    *   [ ] TODO: Implement VPP-Style SIMD WKT Batch Conversion for high-throughput population:
+        *   [ ] TODO: Implement SIMD kernels for `Timestamp` and `Duration` to `struct timespec` conversion. (Difficulty: 3/10)
+        *   [ ] TODO: Create vectorized batch API for `Any` type packing. (Difficulty: 3/10)
+        *   [ ] TODO: Implement AVX2/NEON optimized `FieldMask` string splitting. (Difficulty: 3/10)
+    *   [ ] TODO: Implement Zero-Copy WKT Projections via mmap-backed scalars:
+        *   [ ] TODO: Implement `mmap` projection for `Any` message payloads. (Difficulty: 3/10)
+        *   [ ] TODO: Create XS-level `upb_StringView` to Perl scalar mapping with `O_DIRECT` support. (Difficulty: 3/10)
+        *   [ ] TODO: Implement safety guards for projected WKT lifecycle management. (Difficulty: 2/10)
+    *   [ ] TODO: Implement Self-Healing WKT Consistency background auditing:
+        *   [ ] TODO: Implement background consistency checks for `Timestamp` normalization (nanos < 1s). (Difficulty: 3/10)
+        *   [ ] TODO: Create `Struct` cycle detection auditor. (Difficulty: 3/10)
+        *   [ ] TODO: Implement automated repair for malformed WKT fields. (Difficulty: 2/10)
     *   [x] Refine C API (if any) and re-test C & Perl.
 
 *   **Protobuf::Wrappers:**

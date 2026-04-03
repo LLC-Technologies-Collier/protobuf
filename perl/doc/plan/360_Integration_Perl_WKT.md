@@ -16,6 +16,15 @@
 
 *   **Engineering Excellence (Reach for More):**
     *   [ ] TODO: Implement Massive Concurrency WKT Stress (10k coros) for Any unpacking. (Difficulty: 7/10).
+        *   [ ] TODO: Implement Coro-based stress test for 1k Any unpacking operations. (Difficulty: 3/10).
+        *   [ ] TODO: Scale Coro stress test to 10k and monitor memory usage. (Difficulty: 3/10).
+        *   [ ] TODO: Verify stability and correctness of Any unpacking under maximum Coro density. (Difficulty: 3/10).
     *   [ ] TODO: Implement Cross-Interpreter WKT Sync for reified WKT wrappers. (Difficulty: 8/10).
+        *   [ ] TODO: Implement registry for WKT wrappers shared across Perl interpreters. (Difficulty: 3/10).
+        *   [ ] TODO: Implement synchronization logic to ensure WKT consistency between interpreters. (Difficulty: 3/10).
+        *   [ ] TODO: Verify that WKT reification in one interpreter is reflected in others. (Difficulty: 3/10).
     *   [ ] TODO: Implement Self-Healing Integrated WKT Consistency background auditing. (Difficulty: 8/10).
+        *   [ ] TODO: Implement background consistency checker for WKT objects. (Difficulty: 3/10).
+        *   [ ] TODO: Implement logic to automatically reify or fix corrupted WKT wrappers. (Difficulty: 3/10).
+        *   [ ] TODO: Verify auditor stability and its impact on temporal conversion throughput. (Difficulty: 3/10).
 *   [x] Review and update perl/doc/architecture/** documents.

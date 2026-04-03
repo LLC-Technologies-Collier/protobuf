@@ -11,8 +11,14 @@ Ensure that `Protobuf::Message` classes integrate seamlessly with modern Perl OO
 *   [x] **Coercions:** Implement `Type::Tiny` coercions for `HashRef` to `Protobuf::Message`.
 *   [x] **WKT Types:** Ensure Well-Known Types can be natively validated.
 *   [ ] TODO: Implement C-to-Type::Tiny Compiled Validation logic. (Difficulty: 8/10).
+    *   [ ] TODO: Research Type::Tiny::Compiler and its interaction with XS. (Difficulty: 3/10).
+    *   [ ] TODO: Implement XS-based type validators that can be called from Type::Tiny. (Difficulty: 3/10).
+    *   [ ] TODO: Implement AOT compilation of Type::Tiny constraints into C/XS code. (Difficulty: 3/10).
 *   [x] Support automatic Type Library generation for .proto files.
 *   [ ] TODO: Implement Intelligent Union-Type (Oneof) Coercion. (Difficulty: 6/10).
+    *   [ ] TODO: Implement coercion logic that identifies which Oneof field matches a given HashRef key. (Difficulty: 3/10).
+    *   [ ] TODO: Handle ambiguous coercions in Oneofs with proper error reporting. (Difficulty: 3/10).
+    *   [ ] TODO: Verify that Oneof coercions correctly set the active case in the underlying message. (Difficulty: 3/10).
 
 *   **Engineering Excellence (Reach for More):**
     *   [x] Implement Zero-Copy Type Coercion via direct message mapping.

@@ -24,7 +24,16 @@
     *   [ ] C tests pass.
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement O(1) Repeated-to-Array Projection for direct upb-to-Perl conversion. (Difficulty: 6/10).
-    *   [ ] TODO: Implement SSE4.2-Accelerated Repeated Field Filtering utilities. (Difficulty: 8/10).
-    *   [ ] TODO: Implement Self-Healing Repeated Structure Consistency background auditing. (Difficulty: 7/10).
+    *   [ ] TODO: Implement O(1) Repeated-to-Array Projection for direct upb-to-Perl conversion:
+        *   [ ] TODO: Implement XS-level `AV` (Perl Array) wrapping for `upb_Array`. (Difficulty: 3/10)
+        *   [ ] TODO: Create magic-based `FETCH`/`STORE` for projected Perl arrays. (Difficulty: 3/10)
+        *   [ ] TODO: Implement direct pointer mapping for scalar repeated fields. (Difficulty: 2/10)
+    *   [ ] TODO: Implement SSE4.2-Accelerated Repeated Field Filtering utilities:
+        *   [ ] TODO: Implement SSE4.2 string/integer comparison kernels for `grep`-like filtering. (Difficulty: 3/10)
+        *   [ ] TODO: Create vectorized "find" utility for `upb_Array`. (Difficulty: 3/10)
+        *   [ ] TODO: Implement dispatcher for CPU-specific optimization paths. (Difficulty: 2/10)
+    *   [ ] TODO: Implement Self-Healing Repeated Structure Consistency background auditing:
+        *   [ ] TODO: Implement background auditor for `upb_Array` capacity vs. size consistency. (Difficulty: 3/10)
+        *   [ ] TODO: Create sub-message identity validator for repeated message fields. (Difficulty: 2/10)
+        *   [ ] TODO: Implement automated repair for "ghost" entries in repeated fields. (Difficulty: 2/10)
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
