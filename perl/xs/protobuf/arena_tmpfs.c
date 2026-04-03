@@ -14,6 +14,24 @@
 #include <unistd.h>
 #include <errno.h>
 
+static bool _use_guard_pages() {
+    static int val = -1;
+    if (val == -1) {
+        const char* env = getenv("PROTOBUF_PERL_USE_GUARD_PAGES");
+        val = (env && *env != '0') ? 1 : 0;
+    }
+    return val == 1;
+}
+
+static size_t _page_size() {
+    static size_t size = 0;
+    if (size == 0) {
+        size = (size_t)sysconf(_SC_PAGESIZE);
+        if (size <= 0) size = 4096; // Fallback
+    }
+    return size;
+}
+
 // Generalized Linear allocator
 static void* PerlUpb_BlockAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize,
                                      size_t size, size_t* actual_size) {
@@ -21,34 +39,85 @@ static void* PerlUpb_BlockAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
 
     if (b->poisoned) return NULL;
 
-    if (size == 0) {
-        if (ptr != NULL) PerlUpb_VerifyCanaries(ptr, oldsize, "BlockAlloc free", &b->poisoned);
+    bool use_guard_pages = _use_guard_pages() && b->type == PERL_UPB_BLOCK_MALLOC;
+    size_t page_size = _page_size();
+
+    if (size == 0) { // FREE
+        if (ptr != NULL) {
+            if (use_guard_pages) {
+                void* block_start = (char*)ptr - page_size;
+                if (mprotect(block_start, b->mmap_size, PROT_READ | PROT_WRITE) != 0) {
+                    // This is bad, but continuing munmap is probably the best course.
+                    warn("mprotect failed during guard page free: %s", strerror(errno));
+                }
+                munmap(block_start, b->mmap_size);
+            } else {
+                PerlUpb_VerifyCanaries(ptr, oldsize, "BlockAlloc free", &b->poisoned);
+                // For non-guard-page PERL_UPB_BLOCK_MALLOC, memory is part of b->region, freed with arena.
+                // For PERL_UPB_BLOCK_MMAP, the whole region is unmapped in DestroyRaw_Tmpfs.
+            }
+        }
         return NULL;
     }
 
-    if (ptr != NULL) {
-        // Realloc
+    if (ptr != NULL) { // REALLOC
+        // Realloc is complex with guard pages, as the size changes.
+        // For now, realloc with guard pages is not supported.
+        if (use_guard_pages) {
+            croak("Realloc not supported with guard pages in BlockAllocator");
+        }
         PerlUpb_VerifyCanaries(ptr, oldsize, "BlockAlloc realloc", &b->poisoned);
         void* new_ptr = PerlUpb_BlockAlloc_Func(alloc, NULL, 0, size, actual_size);
         if (new_ptr && oldsize > 0) {
-            memcpy(new_ptr, ptr, oldsize);
+            memcpy(new_ptr, ptr, oldsize < size ? oldsize : size);
+            // Free the old block - for BLOCK_MALLOC, this is a no-op as it's part of the single region
         }
         return new_ptr;
     }
 
-    // Alignment (16 bytes for canaries)
-    size_t requested_size = size + 2 * PERL_UPB_CANARY_SIZE;
-    size_t aligned_size = (requested_size + 15) & ~15;
-    if (b->offset + aligned_size > b->size) return NULL;
+    // ALLOC
+    if (use_guard_pages) {
+        size_t data_size = size;
+        size_t total_alloc = page_size * 2 + data_size;
+        b->mmap_size = total_alloc;
 
-    void* raw = (char*)b->region + b->offset;
-    PerlUpb_WriteCanaries(raw, size);
-    void* ret = (char*)raw + PERL_UPB_CANARY_SIZE;
-    
-    b->offset += aligned_size;
-    
-    if (actual_size) *actual_size = size;
-    return ret;
+        void* mem = mmap(NULL, total_alloc, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (mem == MAP_FAILED) {
+            warn("mmap failed for guard page alloc: %s", strerror(errno));
+            return NULL;
+        }
+
+        if (mprotect(mem, page_size, PROT_NONE) != 0) {
+            warn("mprotect failed for start guard page: %s", strerror(errno));
+            munmap(mem, total_alloc);
+            return NULL;
+        }
+        if (mprotect((char*)mem + page_size + data_size, page_size, PROT_NONE) != 0) {
+            warn("mprotect failed for end guard page: %s", strerror(errno));
+            munmap(mem, total_alloc);
+            return NULL;
+        }
+
+        void* ret = (char*)mem + page_size;
+        if (actual_size) *actual_size = data_size;
+        b->region = mem; // Store the base mmap address
+        b->size = data_size; // Store the usable size
+        return ret;
+    } else {
+        // Original canary-based logic
+        size_t requested_size = size + 2 * PERL_UPB_CANARY_SIZE;
+        size_t aligned_size = (requested_size + 15) & ~15;
+        if (b->offset + aligned_size > b->size) return NULL;
+
+        void* raw = (char*)b->region + b->offset;
+        PerlUpb_WriteCanaries(raw, size);
+        void* ret = (char*)raw + PERL_UPB_CANARY_SIZE;
+
+        b->offset += aligned_size;
+
+        if (actual_size) *actual_size = size;
+        return ret;
+    }
 }
 
 SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
@@ -75,6 +144,7 @@ SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
     b_alloc->size = size;
     b_alloc->offset = 0;
     b_alloc->poisoned = false;
+    b_alloc->mmap_size = size; // For tmpfs, mmap_size is the file size
 
     upb_Arena* arena = upb_Arena_Init(NULL, 0, &b_alloc->base);
     if (!arena) {
@@ -100,21 +170,30 @@ SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
 
 // Internal helper for RAM-backed linear arenas
 upb_Arena* PerlUpb_Arena_NewBlock(pTHX_ size_t size, PerlUpb_BlockAlloc** out_alloc) {
-    void* region = safemalloc(size);
-    
     PerlUpb_BlockAlloc* b_alloc = (PerlUpb_BlockAlloc*)safemalloc(sizeof(PerlUpb_BlockAlloc));
     b_alloc->base.func = PerlUpb_BlockAlloc_Func;
     b_alloc->type = PERL_UPB_BLOCK_MALLOC;
     b_alloc->fd = -1;
     b_alloc->path = NULL;
-    b_alloc->region = region;
-    b_alloc->size = size;
-    b_alloc->offset = 0;
     b_alloc->poisoned = false;
+
+    if (_use_guard_pages()) {
+        // Defer allocation to the first BlockAlloc_Func call
+        b_alloc->region = NULL;
+        b_alloc->size = 0;
+        b_alloc->offset = 0;
+        b_alloc->mmap_size = 0;
+    } else {
+        void* region = safemalloc(size);
+        b_alloc->region = region;
+        b_alloc->size = size;
+        b_alloc->offset = 0;
+        b_alloc->mmap_size = size;
+    }
 
     upb_Arena* arena = upb_Arena_Init(NULL, 0, &b_alloc->base);
     if (!arena) {
-        safefree(region);
+        if (b_alloc->region) safefree(b_alloc->region);
         safefree(b_alloc);
         return NULL;
     }
@@ -127,7 +206,6 @@ SV* PerlUpb_Arena_AttachTmpfs(pTHX_ const char* path, size_t size) {
     int fd = open(path, O_RDONLY);
     if (fd < 0) croak("Failed to open existing tmpfs file %s: %s", path, strerror(errno));
 
-    // For read-only attachment, we mmap the existing data
     void* region = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
     if (region == MAP_FAILED) {
         close(fd);
@@ -141,10 +219,10 @@ SV* PerlUpb_Arena_AttachTmpfs(pTHX_ const char* path, size_t size) {
     b_alloc->path = savepv(path);
     b_alloc->region = region;
     b_alloc->size = size;
-    b_alloc->offset = size; // Effectively "full" for allocation, but allows reading
+    b_alloc->offset = size;
     b_alloc->poisoned = false;
+    b_alloc->mmap_size = size;
 
-    // Use global allocator for the arena structure itself
     upb_Arena* arena = upb_Arena_Init(NULL, 0, &upb_alloc_global);
     if (!arena) {
         munmap(region, size);
@@ -182,8 +260,12 @@ void PerlUpb_Arena_DestroyRaw_Tmpfs(pTHX_ void* ptr, bool is_tmpfs) {
                 munmap(wrapper->alloc->region, wrapper->alloc->size);
                 close(wrapper->alloc->fd);
                 if (wrapper->alloc->path) safefree(wrapper->alloc->path);
-            } else {
-                safefree(wrapper->alloc->region);
+            } else { // PERL_UPB_BLOCK_MALLOC
+                if (_use_guard_pages()) {
+                    // All allocations are separate mmaps, already freed by BlockAlloc_Func
+                } else {
+                    if (wrapper->alloc->region) safefree(wrapper->alloc->region);
+                }
             }
             safefree(wrapper->alloc);
         }
@@ -209,7 +291,7 @@ const char* PerlUpb_Arena_GetPath(pTHX_ SV* arena_sv) {
 
 bool PerlUpb_Arena_VerifySELinux(pTHX_ SV* arena_sv) {
     const char* path = PerlUpb_Arena_GetPath(aTHX_ arena_sv);
-    if (!path) return true; 
+    if (!path) return true;
     struct stat st;
     if (stat(path, &st) != 0) return false;
     return S_ISREG(st.st_mode);

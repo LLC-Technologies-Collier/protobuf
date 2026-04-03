@@ -40,6 +40,7 @@ typedef struct {
     size_t size;
     size_t offset;
     bool poisoned;  // Set if corruption detected
+    size_t mmap_size; // Total size of mmaped region for guard pages
 } PerlUpb_BlockAlloc;
 
 // Special wrapper for Custom Allocator Arenas (Tmpfs / Block)
