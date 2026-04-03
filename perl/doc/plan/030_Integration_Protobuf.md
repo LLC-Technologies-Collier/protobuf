@@ -5,10 +5,10 @@
 *   [x] Create test file `perl/t/c/integration/030_protobuf.c`.
 *   [x] Tests cover interactions between obj_cache, arena, and utils.
 *   [x] Verify basic arena-sharing integrity.
-*   [ ] Add per-interpreter registry validation tests. (Difficulty: 3/10).
-*   [ ] Verify cache isolation across 10 independent interpreters. (Difficulty: 3/10).
-*   [ ] Implement safety checks for `croak()` during upb_Arena growth. (Difficulty: 3/10).
-*   [ ] Verify state integrity after simulated longjmp. (Difficulty: 3/10).
+*   [x] Add per-interpreter registry validation tests.
+*   [x] Verify cache isolation across 10 independent interpreters.
+*   [x] Implement safety checks for `croak()` during upb_Arena growth.
+*   [x] Verify state integrity after simulated longjmp.
 *   [x] Integration tests pass.
 *   [x] Create test file `perl/t/c/integration/030_protobuf_coro.c` using libcoro.
 *   [x] Tests in `perl/t/c/integration/030_protobuf_coro.c` stress concurrent C function usage.

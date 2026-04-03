@@ -8,7 +8,7 @@
 *   [ ] Add state transition metadata for Oneof fields. (Difficulty: 3/10).
 *   [ ] Verify Oneof invalidation in concurrent contexts. (Difficulty: 3/10).
 *   [ ] Implement bulk field copy utility for parse_from. (Difficulty: 3/10).
-*   [ ] Add performance benchmark for deep message merging. (Difficulty: 2/10).
+*   [x] Add performance benchmark for deep message merging.
 *   [x] Integration tests pass.
 *   [x] Create test file `perl/t/c/integration/170_message_coro.c`
 *   [ ] Tests in `perl/t/c/integration/170_message_coro.c` use libcoro to stress concurrent C function usage for message. (Partially implemented).

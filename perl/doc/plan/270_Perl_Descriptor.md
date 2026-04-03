@@ -20,7 +20,7 @@
     *   [ ] Implement O(1) name lookup in shared memory. (Difficulty: 3/10).
     *   [ ] Add mmap support for raw descriptor buffers. (Difficulty: 3/10).
     *   [ ] Implement zero-copy metadata extraction in XS. (Difficulty: 3/10).
-    *   [ ] Add background audit of descriptor stable identity. (Difficulty: 2/10).
+    *   [x] Add background audit of descriptor stable identity.
     *   [ ] Implement `audit_descriptors()` diagnostic utility. (Difficulty: 3/10).
 
 *   [x] Implement XS Bindings for each subclass in `perl/lib/Protobuf/Descriptor/`.

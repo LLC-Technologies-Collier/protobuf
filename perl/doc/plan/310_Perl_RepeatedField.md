@@ -20,7 +20,7 @@
     *   [ ] Implement SSE4.2 find() for numeric arrays. (Difficulty: 3/10).
     *   [ ] Add vectorized grep() for fixed-length strings. (Difficulty: 3/10).
     *   [ ] Implement audit_consistency() for repeated fields. (Difficulty: 3/10).
-    *   [ ] Add background audit of array bounds and canaries. (Difficulty: 3/10).
+    *   [x] Add background audit of array bounds and canaries.
 
 *   [x] Implement XS Bindings (`lib/Protobuf/RepeatedField.xs`).
 *   [ ] Implement typemap for `upb_Array *` in `perl/typemap`.

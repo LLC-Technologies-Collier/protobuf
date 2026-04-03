@@ -332,6 +332,14 @@
       "xs/protobuf/utils.h"
     ]
   },
+  "integration/030_protobuf_multi_interp": {
+    "deps": [
+      "xs/protobuf.h",
+      "xs/protobuf/registry.h",
+      "xs/protobuf/obj_cache.h",
+      "t/c/upb-perl-test.h"
+    ]
+  },
   "integration/035_croak_test": {
     "deps": [
       "xs/protobuf.h",

@@ -57,6 +57,31 @@ sub __test_block_canary {
     return;
 }
 
+sub stats {
+    my $self = shift;
+    return $self->_xs_stats();
+}
+
+sub __chaos_fail_probability {
+    my ($self, $p) = @_;
+    $self->_xs_set_chaos_fail_probability($p);
+}
+
+sub __chaos_delay_probability {
+    my ($self, $p) = @_;
+    $self->_xs_set_chaos_delay_probability($p);
+}
+
+sub space_allocated {
+    my $self = shift;
+    return $self->_xs_space_allocated();
+}
+
+sub space_reserved {
+    my $self = shift;
+    return $self->_xs_space_reserved();
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;

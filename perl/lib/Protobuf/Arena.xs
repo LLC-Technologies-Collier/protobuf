@@ -49,7 +49,7 @@ _xs_destroy(self)
         PerlUpb_Arena_Destroy(aTHX_ self);
 
 UV
-space_allocated(self)
+_xs_space_allocated(self)
     SV* self
     CODE:
         RETVAL = (UV)PerlUpb_Arena_SpaceAllocated(aTHX_ self);
@@ -57,7 +57,7 @@ space_allocated(self)
         RETVAL
 
 UV
-space_reserved(self)
+_xs_space_reserved(self)
     SV* self
     CODE:
         RETVAL = (UV)PerlUpb_Arena_SpaceReserved(aTHX_ self);
@@ -65,7 +65,7 @@ space_reserved(self)
         RETVAL
 
 SV*
-stats(self)
+_xs_stats(self)
     SV* self
     PREINIT:
         PerlUpb_ArenaStats stats;
@@ -128,4 +128,30 @@ _xs_set_numa_node(self, node)
         }
         PerlUpb_Arena* a = INT2PTR(PerlUpb_Arena*, SvIV(*svp));
         a->stats_alloc.numa_node = node;
+
+void
+_xs_set_chaos_fail_probability(self, p)
+    SV* self
+    double p
+    CODE:
+        if (!sv_derived_from(self, "Protobuf::Arena")) croak("Not a Protobuf::Arena");
+        SV* rv = SvRV(self);
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (svp && SvIOK(*svp)) {
+            PerlUpb_Arena* a = INT2PTR(PerlUpb_Arena*, SvIV(*svp));
+            a->stats_alloc.fail_probability = p;
+        }
+
+void
+_xs_set_chaos_delay_probability(self, p)
+    SV* self
+    double p
+    CODE:
+        if (!sv_derived_from(self, "Protobuf::Arena")) croak("Not a Protobuf::Arena");
+        SV* rv = SvRV(self);
+        SV** svp = hv_fetch((HV*)rv, "_arena_ptr", 10, 0);
+        if (svp && SvIOK(*svp)) {
+            PerlUpb_Arena* a = INT2PTR(PerlUpb_Arena*, SvIV(*svp));
+            a->stats_alloc.delay_probability = p;
+        }
 

@@ -19,4 +19,7 @@ void PerlUpb_ExtensionDict_SetItem(pTHX_ SV* self, SV* field_sv, SV* value_sv);
 // Internal helper to get the parent message SV
 SV* PerlUpb_ExtensionDict_GetMessageSV(pTHX_ SV* self);
 
+// Audit identity connection between dict and parent message
+void PerlUpb_ExtensionDict_AuditIdentity(pTHX_ SV* self);
+
 #endif // PERL_PROTOBUF_EXTENSION_DICT_DICT_H_

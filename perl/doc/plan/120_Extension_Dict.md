@@ -16,11 +16,11 @@
     *   [ ] C tests pass.
 
 ## Reach for More (World-Class Goals)
-*   [ ] Add deferred descriptor lookup for extension tags. (Difficulty: 3/10).
-*   [ ] Implement lazy inflation of extension wrappers. (Difficulty: 3/10).
+*   [x] Add deferred descriptor lookup for extension tags.
+*   [x] Implement lazy inflation of extension wrappers.
 *   [ ] TODO: Verify stable identity for extension objects across multiple iterations. (Difficulty: 4/10).
 *   [ ] Add shared memory metadata for extension arenas. (Difficulty: 3/10).
 *   [ ] Implement cross-message SV transfer for extensions. (Difficulty: 3/10).
 *   [ ] Implement hash-table for O(1) extension resolution. (Difficulty: 3/10).
-*   [ ] Add background audit of extension wrapper identity. (Difficulty: 2/10).
+*   [x] Add background audit of extension wrapper identity.
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

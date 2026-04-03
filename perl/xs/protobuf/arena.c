@@ -36,15 +36,17 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
     if (s->use_chaos && size > 0) {
         PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
         if (reg->chaos.enabled) {
-            // 1. Fail probability
+            // 1. Fail probability (prefers StatsAlloc override, fallbacks to Registry)
+            double fail_p = (s->fail_probability > 0) ? s->fail_probability : reg->chaos.fail_probability;
             double r = (double)rand_r(&reg->chaos.seed) / (double)RAND_MAX;
-            if (r < reg->chaos.fail_probability) {
+            if (r < fail_p) {
                 return NULL;
             }
 
             // 2. Delay probability
+            double delay_p = (s->delay_probability > 0) ? s->delay_probability : reg->chaos.delay_probability;
             r = (double)rand_r(&reg->chaos.seed) / (double)RAND_MAX;
-            if (r < reg->chaos.delay_probability) {
+            if (r < delay_p) {
                 uint32_t delay = rand_r(&reg->chaos.seed) % reg->chaos.max_delay_ms;
                 usleep(delay * 1000);
             }
@@ -145,6 +147,8 @@ upb_Arena* PerlUpb_Arena_AcquireWithStats(pTHX_ PerlUpb_StatsAlloc* s) {
     s->total_blocks = 0;
     s->numa_node = -1;
     s->use_chaos = true;
+    s->fail_probability = 0;
+    s->delay_probability = 0;
     return upb_Arena_Init(NULL, 0, &s->base);
 }
 

@@ -50,7 +50,7 @@
     *   [x] Create test file `perl/t/c/protobuf/utils.c`.
     *   [x] Tests in `perl/t/c/protobuf/utils.c` test all public functions in `perl/xs/protobuf/utils.h`.
     *   [x] Implement SIMD acceleration for name conversion using SSE4.1.
-    *   [x] TODO: Context-aware croak messages (field path resolution).
+    *   [x] Context-aware croak messages (field path resolution).
     *   [x] Implement C functions in `perl/xs/protobuf/utils.c`.
     *   [x] C tests pass for `perl/t/c/protobuf/utils.c`.
 
