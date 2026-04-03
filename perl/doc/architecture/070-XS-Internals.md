@@ -93,6 +93,14 @@ To detect memory corruption (buffer overflows/underflows) in performance-critica
 
 To provide stronger guarantees against memory corruption, custom block allocators can use `mmap` and `mprotect` to place read-only guard pages before and after allocated blocks. Any attempt to write outside the bounds will result in an immediate `SIGSEGV`.
 
+### Guard Page Implementation Strategy
+
+1.  **Allocator Modification:** Modify `PerlUpb_BlockAlloc_Func`. When a new block is allocated via `mmap`, allocate two additional pages, one before and one after the requested size.
+2.  **Protection:** Use `mprotect` with `PROT_NONE` on these two extra pages, making them inaccessible.
+3.  **Alignment:** Ensure the requested block within the three pages is properly aligned. The total `mmap` size will be `page_size + requested_size + page_size`. The returned pointer will be offset by `page_size`.
+4.  **Tear Down:** When freeing, `mprotect` the guard pages back to `PROT_READ | PROT_WRITE` before calling `munmap` on the entire region.
+5.  **Environment Flag:** Control this feature with an environment variable like `PROTOBUF_PERL_USE_GUARD_PAGES`.
+
 ## Fuzzing Harness Integration (Planned)
 
 To proactively discover edge cases and security vulnerabilities, key components will be integrated with fuzzing engines:

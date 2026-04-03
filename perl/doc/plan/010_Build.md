@@ -24,7 +24,7 @@
 
 *   **Engineering Excellence (Reach for More):**
     *   **Guard Page Support:**
-        *   [ ] Design guard page strategy for BlockAlloc. (Difficulty: 3/10)
+        *   [x] Design guard page strategy for BlockAlloc. (Difficulty: 3/10)
         *   [ ] Implement mmap/mprotect logic for guard pages. (Difficulty: 3/10)
         *   [ ] Add tests for guard page functionality. (Difficulty: 2/10)
     *   **Fuzzing:**
