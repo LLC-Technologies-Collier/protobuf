@@ -44,7 +44,10 @@
     *   [ ] C tests pass.
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement VPP-Style SIMD Batch Parsing for multi-message ingestion. (Difficulty: 9/10).
-    *   [ ] TODO: Implement Zero-Copy IPC Message Transport via shared memory arenas. (Difficulty: 8/10).
-    *   [ ] TODO: Implement NUMA-Aware Message Allocation for high-throughput population. (Difficulty: 8/10).
+    *   [ ] Implement multi-message parsing orchestration in C. (Difficulty: 3/10).
+    *   [ ] Add vectorized dispatch for incoming binary buffers. (Difficulty: 3/10).
+    *   [ ] Add support for arena-relative pointers in message structures. (Difficulty: 3/10).
+    *   [ ] Implement shared memory metadata tracking for IPC arenas. (Difficulty: 3/10).
+    *   [ ] Integrate NUMA node identification in `upb_alloc` overrides. (Difficulty: 3/10).
+    *   [ ] Verify message tree placement on target memory nodes. (Difficulty: 3/10).
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

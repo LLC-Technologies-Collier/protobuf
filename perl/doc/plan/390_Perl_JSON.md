@@ -9,14 +9,19 @@
 *   [ ] Add leak tests using Test::LeakTrace to `t/14-json_format.t`.
 *   [ ] Add `ok_test_coverage('Protobuf::JSON')` to `t/14-json_format.t`.
 *   [x] Implement Protobuf::JSON. (Implemented directly on `Protobuf::Message` as `to_json` and `from_json`)
-*   [ ] TODO: Implement Direct JSON-to-Wire Conversion. (Difficulty: 7/10).
-*   [x] Implement Streaming JSON Serialization.
-*   [ ] TODO: Verify JSON Schema Mapping consistency. (Difficulty: 5/10).
+*   [ ] Add direct wire-format encoder to JSON bridge. (Difficulty: 3/10).
+*   [ ] Verify roundtrip consistency for binary JSON fields. (Difficulty: 2/10).
+*   [ ] Add schema-mapping validation tests. (Difficulty: 2/10).
+*   [ ] Verify JSON-to-Proto field name mapping consistency. (Difficulty: 3/10).
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement VPP-Style SIMD JSON Parsing for high-throughput ingestion. (Difficulty: 9/10).
-    *   [ ] TODO: Implement Zero-Copy JSON Projections from shared memory arenas. (Difficulty: 8/10).
-    *   [ ] TODO: Implement Self-Healing JSON Consistency background auditing. (Difficulty: 7/10).
+    *   [ ] Implement VPP-style dispatch for JSON tokenization. (Difficulty: 3/10).
+    *   [ ] Add SSE4.2/AVX2 kernels for string-to-number conversion. (Difficulty: 3/10).
+    *   [ ] Implement mmap attachment for JSON input buffers. (Difficulty: 3/10).
+    *   [ ] Add metadata for zero-copy JSON projection. (Difficulty: 3/10).
+    *   [ ] Implement audit_json() consistency checks. (Difficulty: 3/10).
+    *   [ ] Add background audit of reified JSON objects. (Difficulty: 2/10).
+
 *   [x] Perl tests pass.
 *   [x] Refine C API (if any) and re-test.
 *   [x] Review and update perl/doc/architecture/** documents.

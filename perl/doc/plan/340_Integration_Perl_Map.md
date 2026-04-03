@@ -15,7 +15,10 @@
 *   [ ] Create and implement `xt/anyevent/340_map.t` to test AnyEvent concurrency safety. (Difficulty: 5/10).
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement Massive Concurrency Map Stress (10k coros) for expansion. (Difficulty: 7/10).
-    *   [ ] TODO: Implement Cross-Interpreter Map Sync for reified hash wrappers. (Difficulty: 8/10).
-    *   [ ] TODO: Implement Self-Healing Integrated Map Consistency background auditing. (Difficulty: 8/10).
+    *   [ ] Implement 10k coro stress for map expansion. (Difficulty: 3/10).
+    *   [ ] Profile map lock contention under concurrent load. (Difficulty: 3/10).
+    *   [ ] Add shared memory metadata for map arenas. (Difficulty: 3/10).
+    *   [ ] Implement cross-interpreter cache entry migration for maps. (Difficulty: 3/10).
+    *   [ ] Add background audit for map SV reification. (Difficulty: 3/10).
+    *   [ ] Implement Map consistency checks using arena canaries. (Difficulty: 3/10).
 *   [x] Review and update perl/doc/architecture/** documents.

@@ -11,8 +11,10 @@
 *   [x] Implement indented subtest support in the C harness (TAP 13 compliant).
 *   [x] Implement LEAK_CHECK(arena, block, name) block (C-layer).
 *   [x] Implement STRESS_THREADS(n, func, arg) macro for standardized C-level concurrency verification.
-*   [ ] TODO: Implement Chaos Allocation Engine to verify robust error recovery on `malloc` failure. (Difficulty: 6/10).
-*   [ ] TODO: Implement SIMD-aware instruction-level coverage reporting for vectorized paths. (Difficulty: 9/10).
+*   [ ] Add failure probability configuration to StatsAlloc. (Difficulty: 2/10).
+*   [ ] Implement chaos recovery tests for arena blocks. (Difficulty: 3/10).
+*   [ ] Add assembly-level instrumentation for AVX2 paths. (Difficulty: 3/10).
+*   [ ] Verify branch coverage for specific SIMD kernels. (Difficulty: 3/10).
 *   [ ] TODO: Implement Binary-Diff Serialization verification for canonical output stability. (Difficulty: 4/10).
 
 ## Implemented Macros

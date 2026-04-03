@@ -8,11 +8,15 @@
 *   [ ] TODO: Verify arena migration from Coro to Mojo.
 *   [x] Create and implement `perl/xt/mojo/240_arena.t` to test Mojo::IOLoop concurrency safety.
 *   [x] Integrate Arena stats with Mojo::Log.
-*   [ ] TODO: Stress Mojo IOLoop with high-frequency arena allocation. (Difficulty: 6/10).
+*   [ ] Add Mojo::IOLoop timer for periodic arena allocation. (Difficulty: 2/10).
+*   [ ] Verify arena registry stability under Mojo context switches. (Difficulty: 3/10).
 *   [ ] Create and implement `perl/xt/anyevent/240_arena.t` to test AnyEvent concurrency safety. (Difficulty: 5/10).
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement Massive Concurrency Arena Stress (10k coroutines) to verify registry scaling. (Difficulty: 7/10).
-    *   [ ] TODO: Implement Cross-Event-Loop Arena Migration Safety verification. (Difficulty: 8/10).
-    *   [ ] TODO: Implement JIT Arena Pre-fetching integrated with event loop idle cycles. (Difficulty: 9/10).
+    *   [ ] Implement 10k coro stress for arena registry. (Difficulty: 3/10).
+    *   [ ] Profile registry lock contention under high concurrency. (Difficulty: 3/10).
+    *   [ ] Add shared memory metadata for arena migration. (Difficulty: 3/10).
+    *   [ ] Implement cross-event-loop cache entry transfer. (Difficulty: 3/10).
+    *   [ ] Implement idle-time arena pre-allocation hook. (Difficulty: 3/10).
+    *   [ ] Add predictive allocator based on historical usage. (Difficulty: 3/10).
 *   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

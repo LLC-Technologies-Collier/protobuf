@@ -16,7 +16,10 @@
 *   [ ] Create and implement `xt/anyevent/300_message.t` to test AnyEvent concurrency safety. (Difficulty: 5/10).
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement Massive Concurrency Message Stress (10k coros) for full lifecycle. (Difficulty: 7/10).
-    *   [ ] TODO: Implement Cross-Interpreter Message Sync for reified trees. (Difficulty: 8/10).
-    *   [ ] TODO: Implement Self-Healing Integrated Consistency background auditing. (Difficulty: 9/10).
+    *   [ ] Implement 10k coro stress for message lifecycle. (Difficulty: 3/10).
+    *   [ ] Profile message lock contention in C layer. (Difficulty: 3/10).
+    *   [ ] Add shared memory metadata for message arenas. (Difficulty: 3/10).
+    *   [ ] Implement cross-interpreter tree migration. (Difficulty: 3/10).
+    *   [ ] Implement audit_integrity() for message tree. (Difficulty: 3/10).
+    *   [ ] Add background audit of SV identity for sub-messages. (Difficulty: 3/10).
 *   [x] Review and update perl/doc/architecture/** documents.

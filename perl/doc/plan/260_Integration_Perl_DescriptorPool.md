@@ -13,7 +13,10 @@
 *   [ ] Create and implement `perl/xt/anyevent/260_descriptor_pool.t` to test AnyEvent concurrency safety. (Difficulty: 5/10).
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement Massive Concurrency Descriptor Stress (10k coros) to verify lock-free scaling. (Difficulty: 7/10).
-    *   [ ] TODO: Implement Cross-Interpreter Descriptor Sync for shared memory pools. (Difficulty: 8/10).
-    *   [ ] TODO: Implement Self-Healing Descriptor Migration across heterogeneous interpreters. (Difficulty: 9/10).
+    *   [ ] Optimize pool mutex for lock contention profiling. (Difficulty: 3/10).
+    *   [ ] Implement 10k coro stress test for pool lookups. (Difficulty: 3/10).
+    *   [ ] Implement pool-level shared memory attachment. (Difficulty: 3/10).
+    *   [ ] Add cross-process fingerprint validation for schemas. (Difficulty: 3/10).
+    *   [ ] Add weak-ref tracking to descriptor wrappers. (Difficulty: 3/10).
+    *   [ ] Implement background audit of wrapper identity. (Difficulty: 3/10).
 *   [x] Review and update perl/doc/architecture/** documents.

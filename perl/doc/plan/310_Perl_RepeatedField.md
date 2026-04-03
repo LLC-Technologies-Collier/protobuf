@@ -9,14 +9,19 @@
 *   [ ] Add leak tests using Test::LeakTrace to `t/05-repeated.t`.
 *   [ ] Add `ok_test_coverage('Protobuf::RepeatedField')` to `t/05-repeated.t`.
 *   [x] Implement `Protobuf::RepeatedField` module (`lib/Protobuf/RepeatedField.pm`). (Implemented as Protobuf::Internal::Repeated)
-*   [ ] TODO: Implement SIMD-Accelerated Bulk Append for Perl arrays. (Difficulty: 7/10).
-*   [x] Implement Native XS grep/map for tied arrays. (Skeletal sort implemented).
-*   [ ] TODO: Provide Lazy-Wrapper Deferral for high-throughput scanning. (Difficulty: 6/10).
+*   [ ] Add bulk-append method to RepeatedField XS. (Difficulty: 3/10).
+*   [ ] Implement AVX2 kernel for copying Perl scalars to UPB arrays. (Difficulty: 3/10).
+*   [ ] Implement deferred wrapper inflation in FETCH. (Difficulty: 3/10).
+*   [ ] Add fast-path scanning that bypasses SV creation. (Difficulty: 3/10).
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement O(1) Repeated-to-Array Projection for zero-copy Perl access. (Difficulty: 6/10).
-    *   [ ] TODO: Implement SSE4.2-Accelerated Repeated Field Filtering (grep/find). (Difficulty: 8/10).
-    *   [ ] TODO: Implement Self-Healing Repeated Structure Consistency background auditing. (Difficulty: 7/10).
+    *   [ ] Implement array-to-AV projection for specific scalar types. (Difficulty: 3/10).
+    *   [ ] Add metadata for zero-copy array sharing. (Difficulty: 3/10).
+    *   [ ] Implement SSE4.2 find() for numeric arrays. (Difficulty: 3/10).
+    *   [ ] Add vectorized grep() for fixed-length strings. (Difficulty: 3/10).
+    *   [ ] Implement audit_consistency() for repeated fields. (Difficulty: 3/10).
+    *   [ ] Add background audit of array bounds and canaries. (Difficulty: 3/10).
+
 *   [x] Implement XS Bindings (`lib/Protobuf/RepeatedField.xs`).
 *   [ ] Implement typemap for `upb_Array *` in `perl/typemap`.
 *   [x] Perl tests pass for Protobuf::RepeatedField.

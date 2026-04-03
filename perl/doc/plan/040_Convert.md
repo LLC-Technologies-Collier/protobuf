@@ -82,11 +82,17 @@
 
         4.  **Reach for More (World-Class Goals):**
         *   [x] Implement transparent Math::BigInt support for 64-bit integer overflows.
-        *   [ ] TODO: Implement zero-copy ByteBuffer conversions for large String/Bytes fields using mmap-backed scalars. (Difficulty: 8/10).
-        *   [ ] TODO: Implement SIMD-accelerated UTF-8 validation for bulk string conversion. (Difficulty: 7/10).
-        *   [ ] TODO: Implement O(1) Map Identity Projection for high-throughput hash conversion. (Difficulty: 6/10).
-        *   [ ] TODO: Implement range-validated strict type checking for narrowing conversions. (Difficulty: 5/10).
-        *   [ ] TODO: Implement **Type-Fuzzing:** Verify that conversion logic fails safely (croaks) when passed incompatible Perl SV types (e.g., CodeRefs, Globs) without memory corruption. (Difficulty: 6/10).
+        *   [ ] Add mmap support for String/Bytes scalar wrappers. (Difficulty: 3/10).
+        *   [ ] Implement direct buffer mapping for large UPB fields. (Difficulty: 3/10).
+        *   [ ] Add SSE4.1 kernel for UTF-8 sequence validation. (Difficulty: 3/10).
+        *   [ ] Verify UTF-8 validation performance for multi-megabyte strings. (Difficulty: 3/10).
+        *   [ ] Implement direct upb_Map to Perl HV projection. (Difficulty: 3/10).
+        *   [ ] Add metadata for zero-copy map identity tracking. (Difficulty: 3/10).
+        *   [ ] Add range-checks to specific narrow-integer conversions. (Difficulty: 2/10).
+        *   [ ] Implement `verify_limits()` utility for numeric SvToUpb. (Difficulty: 3/10).
+        *   [ ] Add test cases for CodeRef and Glob conversion failures. (Difficulty: 2/10).
+        *   [ ] Verify croak safety during incompatible SV conversion. (Difficulty: 3/10).
+
         *   [ ] TODO: Implement **Boundary-Fuzzing:** Verify that integer conversions correctly handle boundary conditions (MIN/MAX) and overflow/underflow situations with consistent error reporting. (Difficulty: 4/10).
 
 

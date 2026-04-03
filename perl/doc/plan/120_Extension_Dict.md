@@ -16,9 +16,11 @@
     *   [ ] C tests pass.
 
 ## Reach for More (World-Class Goals)
-*   [ ] TODO: Implement Lazy Extension Resolution (deferred descriptor inflation). (Difficulty: 6/10).
+*   [ ] Add deferred descriptor lookup for extension tags. (Difficulty: 3/10).
+*   [ ] Implement lazy inflation of extension wrappers. (Difficulty: 3/10).
 *   [ ] TODO: Verify stable identity for extension objects across multiple iterations. (Difficulty: 4/10).
-*   [ ] TODO: Implement safe cross-message extension migration semantics for shared arenas. (Difficulty: 8/10).
-*   [ ] TODO: Implement O(1) Global Extension Index for ultra-fast extension resolution. (Difficulty: 7/10).
-*   [ ] TODO: Implement Self-Healing Extension Identity for stable object tracking. (Difficulty: 5/10).
+*   [ ] Add shared memory metadata for extension arenas. (Difficulty: 3/10).
+*   [ ] Implement cross-message SV transfer for extensions. (Difficulty: 3/10).
+*   [ ] Implement hash-table for O(1) extension resolution. (Difficulty: 3/10).
+*   [ ] Add background audit of extension wrapper identity. (Difficulty: 2/10).
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

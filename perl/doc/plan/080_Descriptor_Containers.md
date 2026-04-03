@@ -8,20 +8,24 @@
     *   [x] Create test file `perl/t/c/descriptor_containers/by_name_map.c`.
     *   [x] Tests cover all public functions in the corresponding .h file, including checks for re-entrancy and safe state management.
     *   [x] Implement Direct-to-Hash Projection for high-frequency bulk access.
-    *   [ ] TODO: Verify concurrent iterator stability during interleaved read-only access. (Difficulty: 5/10).
+    *   [ ] Add libcoro stress for interleaved container iteration. (Difficulty: 3/10).
+    *   [ ] Implement read-only locks for container iteration. (Difficulty: 2/10).
     *   [x] Implement C functions.
     *   [x] C tests pass.
 *   **perl/xs/descriptor_containers/by_number_map.c:**
     *   [x] Create test file `perl/t/c/descriptor_containers/by_number_map.c`.
     *   [x] Tests cover all public functions in the corresponding .h file, including checks for re-entrancy and safe state management.
-    *   [ ] TODO: Implement O(1) reverse lookup (Value-to-Key) optimization. (Difficulty: 6/10).
+    *   [ ] Add reverse-mapping metadata to NumberMap. (Difficulty: 2/10).
+    *   [ ] Implement Value-to-Key lookup using linear search fallback. (Difficulty: 3/10).
     *   [x] Implement C functions.
     *   [x] C tests pass.
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement Lazy Wrapper Blessing with Thread-Local Cache to reuse descriptor wrappers. (Difficulty: 7/10).
-    *   [ ] TODO: Implement O(1) Reverse-Index for Enum Value-to-Name lookups. (Difficulty: 6/10).
-    *   [ ] TODO: Implement Vectorized Batch-Lookup API for bulk descriptor retrieval. (Difficulty: 8/10).
+    *   [ ] Implement lazy blessing for descriptor wrappers. (Difficulty: 3/10).
+    *   [ ] Add thread-local cache for common descriptor wrappers. (Difficulty: 3/10).
+    *   [ ] Implement hash-table for mapping enum values to names. (Difficulty: 3/10).
+    *   [ ] Add batch retrieval method to DescriptorContainer XS. (Difficulty: 3/10).
+    *   [ ] Implement vectorized descriptor name matching. (Difficulty: 3/10).
 *   **perl/xs/descriptor_containers/generic_sequence.c:**
     *   [x] Create test file `perl/t/c/descriptor_containers/generic_sequence.c`.
     *   [x] Tests cover all public functions in the corresponding .h file, including checks for re-entrancy and safe state management.

@@ -12,15 +12,19 @@
 *   **perl/xs/unknown_fields/set.c:**
     *   [x] Create test file `perl/t/c/unknown_fields/set.c`.
     *   [x] Tests cover all public functions in `xs/unknown_fields/set.h`. (Verified wrapper creation and initial state).
-    *   [ ] TODO: Implement Direct Unknown-to-Message conversion. (Difficulty: 6/10).
+    *   [ ] Add tag-to-mdef lookup infrastructure. (Difficulty: 3/10).
+    *   [ ] Implement conversion from raw Unknown buffer to C struct. (Difficulty: 3/10).
 
-    *   [ ] TODO: Implement high-performance Unknown Field Indexing. (Difficulty: 7/10).
-    *   [ ] TODO: Implement Trace/Audit for unknown blobs. (Difficulty: 5/10).
+    *   [ ] Implement hash-table for O(1) tag lookup. (Difficulty: 3/10).
+    *   [ ] Add circular ring buffer for Unknown field events. (Difficulty: 2/10).
+    *   [ ] Implement audit_unknown() trace utility. (Difficulty: 3/10).
     *   [x] Implement C functions.
     *   [x] C tests pass.
 
 *   **Engineering Excellence (Reach for More):**
-    *   [ ] TODO: Implement Lazy Unknown Field Parsing for deferred structure reification. (Difficulty: 7/10).
-    *   [ ] TODO: Implement O(1) Unknown Field Number Index for ultra-fast tag lookups. (Difficulty: 7/10).
-    *   [ ] TODO: Implement Self-Healing Unknown Blob Consistency via CRC32 auditing. (Difficulty: 8/10).
+    *   [ ] Implement deferred tag resolution logic. (Difficulty: 3/10).
+    *   [ ] Add structure validation for reified Unknown fields. (Difficulty: 3/10).
+    *   [ ] Implement bitset-based tag indexing. (Difficulty: 3/10).
+    *   [ ] Add CRC32 verification kernel for raw buffers. (Difficulty: 3/10).
+    *   [ ] Implement background audit of Unknown blob consistency. (Difficulty: 3/10).
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
