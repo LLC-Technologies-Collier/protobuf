@@ -265,6 +265,15 @@ uint32_t PerlUpb_GetCpuFeatures(void) {
     return cpu_features;
 }
 
+void PerlUpb_DetectCpuFeatures(void) {
+    // TODO: Implement actual CPU feature detection logic here
+    // For now, set to 0
+    cpu_features = 0;
+    if (getenv("PROTOBUF_PERL_DUMP_CPU_FEATURES")) {
+      fprintf(stderr, "[CPUID] Detected features: 0x%x\n", cpu_features);
+    }
+}
+
 __attribute__((target("sse4.1")))
 bool PerlUpb_ValidateIntRange_SSE41(const int32_t* vals, size_t count, int32_t min, int32_t max) {
     __m128i vmin = _mm_set1_epi32(min);

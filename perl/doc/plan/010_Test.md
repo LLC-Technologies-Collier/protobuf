@@ -17,6 +17,11 @@
 *   [x] Add assembly-level instrumentation for AVX2 paths. (Implemented in `utils.c` with `AVX2_INSTRUMENT`).
 *   [x] Implement Binary-Diff Serialization verification for canonical output stability. (Implemented in `PerlUpb_VerifyBinaryDiff`).
 
+## Engineering Excellence (Reach for More)
+    *   [ ] Implement Test::Deep style data structure comparison macros. (Difficulty: 4/10)
+    *   [ ] Add Property-Based Testing hooks to the C test harness. (Difficulty: 6/10)
+    *   [ ] Auto-generate TODOs from C benchmark results. (Difficulty: 7/10)
+
 ## Implemented Macros
 *   `plan(n)`
 *   `ok(val, name)`

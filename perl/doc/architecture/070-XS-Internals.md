@@ -89,6 +89,18 @@ To detect memory corruption (buffer overflows/underflows) in performance-critica
 *   **Safety:** Errors trigger a Perl `croak` with a descriptive message (e.g., "MEMORY CORRUPTION DETECTED (Overflow)").
 *   **Recovery:** Upon detecting corruption, the allocator instance is marked as `poisoned`. Subsequent allocation requests through the poisoned allocator will return `NULL`, preventing further damage. This is tested in `t/c/integration/030_protobuf.c`.
 
+## Memory Protection (Guard Pages) (Planned)
+
+To provide stronger guarantees against memory corruption, custom block allocators can use `mmap` and `mprotect` to place read-only guard pages before and after allocated blocks. Any attempt to write outside the bounds will result in an immediate `SIGSEGV`.
+
+## Fuzzing Harness Integration (Planned)
+
+To proactively discover edge cases and security vulnerabilities, key components will be integrated with fuzzing engines:
+
+*   **Targets:** Wire format parser, TextFormat parser, JSON parser, IPC message handling.
+*   **Engines:** libFuzzer (LLVM) and AFL++.
+*   **CI:** Fuzzing will be part of the continuous integration pipeline.
+
 ## SIMD-Accelerated Integrity Scanning (Planned)
 
 Aligning with the **Vector Packet Processor (VPP)** philosophy, hot paths utilize SIMD instructions where appropriate to maximize throughput.

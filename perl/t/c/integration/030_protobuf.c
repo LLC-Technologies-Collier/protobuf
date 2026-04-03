@@ -126,6 +126,10 @@ static void test_arena_cache_interaction(pTHX) {
     TODO("SIMD-Accelerated Integrity Scanning") {
         ok(0, "Scan large arenas for canary corruption in parallel using AVX-512");
     }
+
+    TODO("Add CPU feature detection for dynamic dispatch") {
+        ok(PerlUpb_GetCpuFeatures() != (uint32_t)-1, "CPU features detected");
+    }
 }
 
 int main(int argc, char** argv) {

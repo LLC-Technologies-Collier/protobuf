@@ -9,4 +9,5 @@ MODULE = Protobuf  PACKAGE = Protobuf
 PROTOTYPES: ENABLE
 
 BOOT:
+    PerlUpb_DetectCpuFeatures();
     PerlUpb_Protobuf_InitModule(aTHX);

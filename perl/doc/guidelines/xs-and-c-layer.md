@@ -22,6 +22,9 @@ This document outlines the specific conventions and testing patterns for the XS 
 - **Leak Checking:** Use the `LEAK_CHECK { ... }` block to wrap logic that MUST be allocation-neutral.
 - **Thread Stress**: Use `STRESS_THREADS(n, func, arg)` to verify concurrency safety (currently a stub).
 - **XS-Based C Runner:** For C logic that requires a Perl interpreter context (`aTHX`), use the XS runner defined in `perl/t/c/Test.xs`.
+- **Deep Structure Comparison:** (Planned) Implement C macros for deep comparison of complex data structures within tests.
+- **Property-Based Testing:** (Planned) Explore integrating property-based testing hooks into the C test harness.
+- **Benchmark-Driven TODOs:** (Planned) Develop tooling to automatically generate TODOs in tests based on benchmark results.
 
 ### Concurrency and Thread Safety
 - **Striped Mutexes:** For high-contention resources (like caches), utilize the striped mutex implementation in `obj_cache.c`.
@@ -89,7 +92,9 @@ This document outlines the specific conventions and testing patterns for the XS 
 - Employ advanced memory management techniques like NUMA awareness, Copy-On-Write, and SIMD optimization where performance-critical.
 
 
-## Memory Safety and Debugging
+## Memory Safety, Fuzzing, and Debugging
 - All tests MUST pass under **AddressSanitizer (ASan)**.
 - Use `detect_leaks=1` in `ASAN_OPTIONS` during local development to catch memory leaks early.
 - Weak references in the object cache MUST be rigorously validated to prevent stale pointer usage.
+guard pages in custom allocators where feasible to catch buffer overflows/underflows.
+- Integrate key components with fuzzing harnesses (libFuzzer, AFL) to find edge cases.

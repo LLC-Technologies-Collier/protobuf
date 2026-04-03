@@ -21,3 +21,9 @@
 *   [x] Implement SSE4.1 SIMD kernel for narrow integer range-checking. (Difficulty: 3/10).
 *   [x] Implement AVX2 SIMD kernel for bulk string validation. (Difficulty: 3/10).
 *   [x] Implement dynamic VPP dispatcher based on CPUID. (Difficulty: 3/10).
+
+*   **Engineering Excellence (Reach for More):**
+    *   [ ] Implement Guard Page support in custom block allocators. (Difficulty: 6/10)
+    *   [ ] Integrate libFuzzer for wire format parsing. (Difficulty: 5/10)
+    *   [ ] Add CI infrastructure for daily fuzzing runs. (Difficulty: 4/10)
+    *   [ ] Establish cross-platform build and test CI (Linux, macOS, Windows). (Difficulty: 7/10)
