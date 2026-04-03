@@ -55,6 +55,22 @@ The project includes integrated support for ThreadSanitizer (TSAN) to detect dat
 *   **Usage:** Run `make test_tsan` to rebuild the library with `-fsanitize=thread` and execute the full test suite.
 *   **Scope:** Validates thread-safety of the per-interpreter registry, object cache stripes, and shared memory arena accesses.
 
+## NUMA-Aware Allocation Balance (Planned)
+
+To maximize memory bandwidth on multi-socket systems, the allocator will aim to distribute arena blocks across NUMA nodes.
+
+*   **Topology Detection:** Utilize `libnuma` to detect NUMA nodes and CPU affinity.
+*   **Policy:** Implement policies to allocate memory on the NUMA node local to the calling thread, or round-robin if affinity is not clear.
+*   **Tuning:** Expose tunables via `Protobuf::Internal` to control NUMA awareness.
+
+## COW-Optimized Shared Object Cache (Planned)
+
+For scenarios with many read-heavy worker processes, a Copy-On-Write shared object cache can significantly reduce memory footprint.
+
+*   **Mechanism:** Use file-backed `mmap` with `MAP_PRIVATE`. A master process populates the cache file. Workers map this file; writes trigger page copies.
+*   **Cache Structure:** Design the on-disk cache format for efficient mmap access.
+*   **Invalidation:** Address how updates would be propagated (e.g., versioning, new file).
+
 ## Generalized Block Allocators
 
 To support high-performance allocation patterns (like zero-copy IPC and thread-local caching), we utilize a generalized block allocator (`PerlUpb_BlockAlloc`).

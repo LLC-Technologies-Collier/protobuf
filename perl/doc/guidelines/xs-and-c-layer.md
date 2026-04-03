@@ -86,6 +86,8 @@ This document outlines the specific conventions and testing patterns for the XS 
 - **Automated Quality Gates**: (Planned) Every release MUST pass automated quality gates including ASan leak detection, TSan race detection, and fuzzer verification.
 - **Embedded Performance Verification**: (Planned) The distribution SHOULD include tools for users to verify library performance and correctness in their local environment.
 - C-layer utilities should be designed to support the eventual high-level Python-like APIs in Perl.
+- Employ advanced memory management techniques like NUMA awareness, Copy-On-Write, and SIMD optimization where performance-critical.
+
 
 ## Memory Safety and Debugging
 - All tests MUST pass under **AddressSanitizer (ASan)**.

@@ -17,6 +17,16 @@
 *   [x] Review and update perl/doc/architecture/** documents.
 
 *   **Engineering Excellence (Reach for More):**
+    *   **NUMA Awareness:**
+        *   [ ] Integrate libnuma for topology detection. (Difficulty: 3/10)
+        *   [ ] Implement NUMA node affinity for arena allocation. (Difficulty: 5/10)
+        *   [ ] Design per-node memory pools for arenas. (Difficulty: 6/10)
+        *   [ ] Benchmark NUMA-aware vs. standard allocation. (Difficulty: 4/10)
+    *   **SIMD Integrity Scanning:**
+        *   [ ] Research platform-specific SIMD intrinsics for canary checks. (Difficulty: 4/10)
+        *   [ ] Implement SIMD-optimized canary checking function. (Difficulty: 6/10)
+        *   [ ] Add CPU feature detection for dynamic dispatch. (Difficulty: 3/10)
+        *   [ ] Benchmark SIMD vs. scalar integrity checks. (Difficulty: 4/10)
     *   [x] Implement shared memory cache attachment logic. (Difficulty: 3/10).
     *   [x] Add cross-process fingerprinting for object identity. (Difficulty: 3/10).
     *   [x] Implement idle-time arena pre-allocation hook. (Difficulty: 3/10).
