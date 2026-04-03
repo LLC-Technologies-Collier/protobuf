@@ -63,55 +63,27 @@ for my $i (0 .. $#COMMON_C_FILES) {
     push @COMMON_FILES_PAIRS, { c => $COMMON_C_FILES[$i], o => $COMMON_O_FILES[$i] };
 }
 
-# Subroutines to override MakeMaker behavior must be defined before WriteMakefile
+use lib 'inc';
+use MyMakeHelper;
 
-# Rules to build the static library and its object files
+# Subroutines to override MakeMaker behavior must be defined before WriteMakefile
 sub MY::postamble {
     my $self = shift;
+    my $helper = inc::MyMakeHelper->new();
+    my $conf = {
+        COMMON_LIB => $COMMON_LIB,
+        COMMON_O_STRING => $COMMON_O_STRING,
+        COMMON_FILES_PAIRS => \@COMMON_FILES_PAIRS,
+        CONFIG => \%Config,
+    };
+    my $make_frag = $helper->generate_common_lib_rules($conf);
+
+    # TODO: Move the rest of the postamble logic to MyMakeHelper
     use Config;
     use File::Spec;
-    use JSON::MaybeXS; 
-
-    # Common library build rules
-    my $common_o_string = $COMMON_O_STRING;
-    my $common_lib = $COMMON_LIB;
-    my $file_pairs = \@COMMON_FILES_PAIRS;
-
-    my $make_frag = "COMMON_LIB = $common_lib\n\n";
-
-    my %done_o;
-    my @obj_rules;
-    # .... OBJECT FILE RULES for libprotobufperl.a ....
-    foreach my $pair (@$file_pairs) {
-        my $c_file = $pair->{c};
-        my $o_file = $pair->{o};
-        next if $done_o{$o_file}++;
-        my $compiler = '$(CC)';
-        my $bazel_gen_include = File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto");
-        my $base_flags = "-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I$bazel_gen_include";
-        my $cflags = "";
-        if ($c_file =~ /\.cc$/) {
-            $compiler = '$(CXX)';
-            $cflags = "-Wno-error=attributes -I../third_party/abseil-cpp";
-        } else {
-            $cflags = "-D_GNU_SOURCE -Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes -mssse3 -msse4.1";
-        }
-        push @obj_rules, "$o_file: $c_file\n" . 
-                         "\t".'@mkdir -p $(@D)'."\n" .
-                         "\t${compiler} ".'$(CCFLAGS) $(INC)'." ${cflags} ${base_flags} -c $c_file -o $o_file\n";
-    }
-    $make_frag .= join("", @obj_rules) . "\n";
-
-    $make_frag .= <<"EOM";
-# Make sure the static lib is built before the default 'all' target
-all :: ${common_lib}
-
-# Rule to build the static library
-${common_lib}: ${common_o_string} libprotobufperl.map
-	\$(RM_F) ${common_lib}
-	\$(CC) -shared -Wl,--version-script=libprotobufperl.map -o ${common_lib} ${common_o_string} \$(LDFLAGS)
-
-EOM
+    use JSON::MaybeXS;
+    use Path::Tiny;
+    use ExtUtils::Embed;
 
     # Rule for upb-perl-test.o
     $make_frag .= <<'EOM';
@@ -122,9 +94,6 @@ t/c/upb-perl-test.o: t/c/upb-perl-test.c t/c/upb-perl-test.h
 EOM
 
     # Custom C test rules
-    use ExtUtils::Embed;
-    use File::Find;
-    use Path::Tiny;
     my $archlibexp = $Config{archlibexp};
     my $embed_cflags = ExtUtils::Embed::ccopts(); # CC flags for embedding
     my $embed_ldflags = ExtUtils::Embed::ldopts(); # LD flags for embedding
@@ -148,6 +117,7 @@ EOM
     my $c_test_rules = "# c test rules\n";
     my $test_inc = '$(INC)'; # Inherit INC from WriteMakefile
 
+    my %done_o;
     foreach my $test_key ( sort keys %$c_test_config ){
         next if $test_key =~ /eval_croak_test/;
 
@@ -290,7 +260,6 @@ EOM
             $make_frag .= "\t" . $run_command . "\n";
         }
     }
-
 
     return $make_frag;
 }

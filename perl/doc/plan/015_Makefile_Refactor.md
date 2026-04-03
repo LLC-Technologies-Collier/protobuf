@@ -12,7 +12,7 @@ Refactor the `perl/Makefile.PL` to improve readability and maintainability by mo
 *   [x] Create `inc/MyMakeHelper.pm` directory and module structure. (Difficulty: 1/10)
 *   [ ] Move C test rule generation logic from `MY::postamble` to `inc/MyMakeHelper.pm`. (Difficulty: 3/10)
 *   [ ] Move C benchmark rule generation logic to `inc/MyMakeHelper.pm`. (Difficulty: 3/10)
-*   [ ] Move rule generation for `libprotobufperl.$(DLEXT)` to `inc/MyMakeHelper.pm`. (Difficulty: 2/10)
+*   [x] Move rule generation for `libprotobufperl.$(DLEXT)` to `inc/MyMakeHelper.pm`. (Difficulty: 2/10)
 *   [ ] Add logic to `inc/MyMakeHelper.pm` to build test-only XS modules in `t/lib`. (Difficulty: 4/10)
 *   [ ] Update `Makefile.PL` to `use inc::MyMakeHelper` and call its functions. (Difficulty: 2/10)
 *   [ ] Verify that `perl Makefile.PL && make && make test` works identically after refactoring. (Difficulty: 2/10)
