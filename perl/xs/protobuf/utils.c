@@ -238,6 +238,79 @@ SV* PerlUpb_I64ToSV(pTHX_ int64_t val) {
     return bigint_sv;
 }
 
+#include <immintrin.h>
+#include <cpuid.h>
+
+static uint32_t cpu_features = 0;
+
+void PerlUpb_InitCpuFeatures(void) {
+    uint32_t eax, ebx, ecx, edx;
+    if (__get_cpuid(1, &eax, &ebx, &ecx, &edx)) {
+        if (ecx & (1 << 19)) cpu_features |= PERL_UPB_HAS_SSE41;
+    }
+    if (__get_cpuid_count(7, 0, &eax, &ebx, &ecx, &edx)) {
+        if (ebx & (1 << 5)) cpu_features |= PERL_UPB_HAS_AVX2;
+    }
+}
+
+uint32_t PerlUpb_GetCpuFeatures(void) {
+    return cpu_features;
+}
+
+__attribute__((target("sse4.1")))
+bool PerlUpb_ValidateIntRange_SSE41(const int32_t* vals, size_t count, int32_t min, int32_t max) {
+    __m128i vmin = _mm_set1_epi32(min);
+    __m128i vmax = _mm_set1_epi32(max);
+    size_t i = 0;
+    for (; i + 4 <= count; i += 4) {
+        __m128i v = _mm_loadu_si128((const __m128i*)&vals[i]);
+        // v < min  =>  min > v
+        // v > max
+        __m128i mask = _mm_or_si128(_mm_cmpgt_epi32(vmin, v), _mm_cmpgt_epi32(v, vmax));
+        if (_mm_movemask_epi8(mask) != 0) return false;
+    }
+    for (; i < count; i++) {
+        if (vals[i] < min || vals[i] > max) return false;
+    }
+    return true;
+}
+
+__attribute__((target("avx2")))
+bool PerlUpb_ValidateStrings_AVX2(const char** strings, const size_t* lens, size_t count) {
+    for (size_t i = 0; i < count; i++) {
+        if (!strings[i] || lens[i] == 0) return false;
+    }
+    return true;
+}
+
+PerlUpb_FieldVector* PerlUpb_FieldVector_New(pTHX_ size_t capacity) {
+    PerlUpb_FieldVector* v = (PerlUpb_FieldVector*)safemalloc(sizeof(PerlUpb_FieldVector));
+    v->count = 0;
+    v->capacity = capacity;
+    v->fields = (const upb_FieldDef**)safemalloc(sizeof(upb_FieldDef*) * capacity);
+    v->values = (SV**)safemalloc(sizeof(SV*) * capacity);
+    return v;
+}
+
+void PerlUpb_FieldVector_Add(pTHX_ PerlUpb_FieldVector* v, const upb_FieldDef* f, SV* val) {
+    if (v->count >= v->capacity) {
+        v->capacity *= 2;
+        v->fields = (const upb_FieldDef**)saferealloc((void*)v->fields, sizeof(upb_FieldDef*) * v->capacity);
+        v->values = (SV**)saferealloc((void*)v->values, sizeof(SV*) * v->capacity);
+    }
+    v->fields[v->count] = f;
+    v->values[v->count] = val; // We don't SvREFCNT_inc here, caller owns life
+    v->count++;
+}
+
+void PerlUpb_FieldVector_Free(pTHX_ PerlUpb_FieldVector* v) {
+    if (v) {
+        safefree((void*)v->fields);
+        safefree((void*)v->values);
+        safefree(v);
+    }
+}
+
 void PerlUpb_CroakWithContext(pTHX_ const char* msg, const upb_MessageDef* mdef,
                              const upb_FieldDef* fdef) {
     if (!mdef) {

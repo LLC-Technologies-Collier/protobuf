@@ -5,6 +5,8 @@
 #include "perl/xs/protobuf.h"
 #include "perl/xs/protobuf/registry.h"
 
+#include "perl/xs/protobuf/utils.h"
+
 XS(XS_Protobuf_Internal_get_cache_audit_log) {
     dXSARGS;
     if (items != 0) {
@@ -49,6 +51,7 @@ XS(XS_Protobuf_Internal_clear_cache) {
 void PerlUpb_Protobuf_InitModule(pTHX) {
     PerlUpb_Registry_Init(aTHX);
     PerlUpb_ObjCache_Init(aTHX);
+    PerlUpb_InitCpuFeatures();
     newXS("Protobuf::Internal::get_cache_audit_log", XS_Protobuf_Internal_get_cache_audit_log, __FILE__);
     newXS("Protobuf::Internal::set_cache_capacity", XS_Protobuf_Internal_set_cache_capacity, __FILE__);
     newXS("Protobuf::Internal::get_cache_capacity", XS_Protobuf_Internal_get_cache_capacity, __FILE__);

@@ -43,4 +43,29 @@ SV* PerlUpb_U64ToSV(pTHX_ uint64_t val);
 void PerlUpb_CroakWithContext(pTHX_ const char* msg, const upb_MessageDef* mdef,
                              const upb_FieldDef* fdef);
 
+// Batch Validation API (Field Vectors)
+typedef struct {
+    const upb_FieldDef** fields;
+    SV** values;
+    size_t count;
+    size_t capacity;
+} PerlUpb_FieldVector;
+
+PerlUpb_FieldVector* PerlUpb_FieldVector_New(pTHX_ size_t capacity);
+void PerlUpb_FieldVector_Add(pTHX_ PerlUpb_FieldVector* v, const upb_FieldDef* f, SV* val);
+void PerlUpb_FieldVector_Free(pTHX_ PerlUpb_FieldVector* v);
+
+// CPUID & SIMD Kernels
+typedef enum {
+    PERL_UPB_HAS_SSE41 = 1 << 0,
+    PERL_UPB_HAS_AVX2  = 1 << 1
+} PerlUpb_CpuFeatures;
+
+void PerlUpb_InitCpuFeatures(void);
+uint32_t PerlUpb_GetCpuFeatures(void);
+
+// SIMD Kernels (Internal)
+bool PerlUpb_ValidateIntRange_SSE41(const int32_t* vals, size_t count, int32_t min, int32_t max);
+bool PerlUpb_ValidateStrings_AVX2(const char** strings, const size_t* lens, size_t count);
+
 #endif // PERL_PROTOBUF_UTILS_H_

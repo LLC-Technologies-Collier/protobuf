@@ -13,11 +13,11 @@
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
 *   [x] Implement a global audit trail and trace-level debugging for arena and object lifecycles. (Implemented in `obj_cache.c`).
 *   [x] Implement C-layer infrastructure for tmpfs-backed arenas (mmap/ftruncate). (Implemented in `arena_tmpfs.c`).
-*   [ ] Implement XS helper to wrap existing messages within attached arenas (reification). (Difficulty: 3/10).
-*   [ ] Implement cross-process message handle serialization (path+offset). (Difficulty: 2/10).
-*   [ ] Implement SELinux security context verification for shared blocks. (Difficulty: 2/10).
-*   [ ] Create verified IPC handshake integration test (`t/412_tmpfs_ipc.t` expansion). (Difficulty: 3/10).
-*   [ ] Implement Batch Validation API for collecting field vectors. (Difficulty: 2/10).
-*   [ ] Implement SSE4.1 SIMD kernel for narrow integer range-checking. (Difficulty: 3/10).
-*   [ ] Implement AVX2 SIMD kernel for bulk string validation. (Difficulty: 3/10).
-*   [ ] Implement dynamic VPP dispatcher based on CPUID. (Difficulty: 3/10).
+*   [x] Implement XS helper to wrap existing messages within attached arenas (reification). (Difficulty: 3/10).
+*   [x] Implement cross-process message handle serialization (path+offset). (Difficulty: 2/10).
+*   [x] Implement SELinux security context verification for shared blocks. (Difficulty: 2/10).
+*   [x] Create verified IPC handshake integration test (`t/413_tmpfs_ipc_attach.t`). (Difficulty: 3/10).
+*   [x] Implement Batch Validation API for collecting field vectors. (Difficulty: 2/10).
+*   [x] Implement SSE4.1 SIMD kernel for narrow integer range-checking. (Difficulty: 3/10).
+*   [x] Implement AVX2 SIMD kernel for bulk string validation. (Difficulty: 3/10).
+*   [x] Implement dynamic VPP dispatcher based on CPUID. (Difficulty: 3/10).

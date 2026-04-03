@@ -34,6 +34,24 @@ _xs_new_from_def(mdef_sv)
     OUTPUT:
         RETVAL
 
+SV*
+_xs_new_from_def_in_arena(mdef_sv, arena_sv)
+    SV* mdef_sv
+    SV* arena_sv
+    CODE:
+        const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
+        if (!mdef) croak("Invalid MessageDef provided");
+        
+        upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+        const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+        upb_Message* msg = upb_Message_New(mt, arena);
+        
+        if (!msg) croak("Failed to allocate upb_Message in provided arena");
+        
+        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+    OUTPUT:
+        RETVAL
+
 void
 _xs_free(self)
     SV* self

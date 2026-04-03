@@ -14,13 +14,17 @@ use Protobuf::Internal::Repeated;
 use Protobuf::Internal::Map;
 
 sub new {
-    my ($class) = @_;
+    my ($class, %args) = @_;
     
     croak("Protobuf::Message->new cannot be called directly. Use a generated subclass.")
         if $class eq 'Protobuf::Message';
 
     my $mdef = $class->descriptor;
     croak("Class $class does not have a descriptor") unless $mdef;
+
+    if ($args{arena}) {
+        return _xs_new_from_def_in_arena($mdef, $args{arena});
+    }
 
     return _xs_new_from_def($mdef);
 }

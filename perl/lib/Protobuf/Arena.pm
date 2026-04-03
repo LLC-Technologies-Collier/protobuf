@@ -82,6 +82,31 @@ sub space_reserved {
     return $self->_xs_space_reserved();
 }
 
+sub is_tmpfs {
+    my $self = shift;
+    return $self->_xs_is_tmpfs();
+}
+
+sub get_path {
+    my $self = shift;
+    return $self->_xs_get_path();
+}
+
+sub verify_selinux {
+    my $self = shift;
+    return $self->_xs_verify_selinux();
+}
+
+sub get_offset {
+    my ($self, $ptr_iv) = @_;
+    return $self->_xs_get_offset($ptr_iv);
+}
+
+sub attach_message {
+    my ($self, $name, $offset) = @_;
+    return $self->_xs_attach_message($name, $offset);
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;

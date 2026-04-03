@@ -135,3 +135,10 @@ find_by_fingerprint(fingerprint)
         }
     OUTPUT:
         RETVAL
+
+UV
+get_cpu_features()
+    CODE:
+        RETVAL = (UV)PerlUpb_GetCpuFeatures();
+    OUTPUT:
+        RETVAL

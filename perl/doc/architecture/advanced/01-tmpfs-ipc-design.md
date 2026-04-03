@@ -51,7 +51,9 @@ The harness will include a "Chaos Mode" where it writes garbage into the shared 
 
 To achieve world-class IPC performance and safety, the implementation includes (or is planned to include) the following:
 
--   **Zero-Copy Deserialization**: (Planned) Implement a specialized `upb_Decode` path that can parse messages directly from the `mmap()`'ed `tmpfs` block without copying the data into a Perl SV.
+-   **Zero-Copy Deserialization**: Implement `Protobuf::Arena->attach_message(name, offset)` which reifies a message directly from the shared memory block without copying data into intermediate Perl SVs.
+-   **Security Verification**: Use `Protobuf::Arena->verify_selinux()` to ensure the shared memory segment complies with security policies before access.
+-   **Handle Serialization**: Use `Protobuf::Arena->get_path()` and `Protobuf::Arena->get_offset(ptr)` to exchange message locations between processes.
 -   **Integrated Fuzzer Verification**: (Planned) Every IPC release MUST be verified against a continuous fuzzing harness that simulates malicious shared memory state.
 -   **Multi-Language Handshake**: (Planned) Define a standard "shared memory handshake" protocol to allow the Perl implementation to discover and negotiate capabilities with official Python and C++ runtimes sharing the same pool.
 

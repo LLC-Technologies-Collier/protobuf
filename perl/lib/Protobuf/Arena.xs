@@ -155,3 +155,47 @@ _xs_set_chaos_delay_probability(self, p)
             a->stats_alloc.delay_probability = p;
         }
 
+bool
+_xs_is_tmpfs(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Arena_IsTmpfs(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_get_path(self)
+    SV* self
+    CODE:
+        const char* path = PerlUpb_Arena_GetPath(aTHX_ self);
+        RETVAL = path ? newSVpv(path, 0) : &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+
+bool
+_xs_verify_selinux(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Arena_VerifySELinux(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+size_t
+_xs_get_offset(self, ptr_iv)
+    SV* self
+    IV ptr_iv
+    CODE:
+        RETVAL = PerlUpb_Arena_GetOffset(aTHX_ self, INT2PTR(void*, ptr_iv));
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_attach_message(self, name, offset)
+    SV* self
+    const char* name
+    size_t offset
+    CODE:
+        RETVAL = PerlUpb_Arena_AttachMessage(aTHX_ self, name, offset);
+    OUTPUT:
+        RETVAL
+

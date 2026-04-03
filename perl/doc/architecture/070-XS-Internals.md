@@ -54,8 +54,10 @@ To detect memory corruption (buffer overflows/underflows) in performance-critica
 
 Aligning with the **Vector Packet Processor (VPP)** philosophy, hot paths utilize SIMD instructions where appropriate to maximize throughput.
 
-*   **Name Conversion:** `PerlUpb_ClassNameToFullName` utilizes SSE4.1 instructions (`_mm_loadu_si128`, `_mm_cmpeq_epi8`, `_mm_movemask_epi8`) to process class names in 16-byte chunks, accelerating the common case where no colons (`::`) are present.
-*   **Hardware Requirement:** Implementation assumes a minimum of SSE4.1 support for optimized paths, falling back to scalar logic as needed.
+*   **CPUID Dispatcher:** `PerlUpb_InitCpuFeatures()` detects hardware capabilities at runtime. Optimized kernels are selected dynamically based on available instruction sets (SSE4.1, AVX2).
+*   **Name Conversion:** `PerlUpb_ClassNameToFullName` utilizes AVX2/SSE4.1 instructions to process class names in bulk, accelerating the common case where no special characters are present.
+*   **Batch Validation:** `PerlUpb_FieldVector` provides a C-level API for collecting field descriptors and values into contiguous vectors, enabling vectorized validation kernels (e.g., `PerlUpb_ValidateIntRange_SSE41`).
+*   **Hardware Requirement:** Implementation includes scalar fallbacks for all optimized paths to ensure portability across heterogeneous environments.
 
 ## Typemap Strategy
 

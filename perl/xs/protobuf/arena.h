@@ -33,6 +33,7 @@ typedef struct {
     upb_alloc base;
     PerlUpb_BlockType type;
     int fd;         // Used if MMAP
+    char* path;     // Path for serialization (MMAP)
     void* region;
     size_t size;
     size_t offset;
@@ -60,6 +61,13 @@ SV *PerlUpb_Arena_AttachTmpfs(pTHX_ const char* path, size_t size);
 upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv);
 void PerlUpb_Arena_Free(pTHX_ SV *sv);
 void PerlUpb_Arena_Destroy(pTHX_ SV *sv);
+
+// Tmpfs IPC & Reification Helpers
+bool PerlUpb_Arena_IsTmpfs(pTHX_ SV* arena_sv);
+const char* PerlUpb_Arena_GetPath(pTHX_ SV* arena_sv);
+bool PerlUpb_Arena_VerifySELinux(pTHX_ SV* arena_sv);
+size_t PerlUpb_Arena_GetOffset(pTHX_ SV* arena_sv, void* ptr);
+SV* PerlUpb_Arena_AttachMessage(pTHX_ SV* arena_sv, const char* name, size_t offset);
 
 // Low-level XS helpers
 void* PerlUpb_Arena_CreateRaw(pTHX);

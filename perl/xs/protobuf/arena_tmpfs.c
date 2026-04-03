@@ -3,6 +3,8 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "perl/xs/protobuf/arena.h"
+#include "perl/xs/protobuf/message.h"
+#include "perl/xs/descriptor_pool/pool.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/alloc.h"
 
@@ -66,6 +68,7 @@ SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
     b_alloc->base.func = PerlUpb_BlockAlloc_Func;
     b_alloc->type = PERL_UPB_BLOCK_MMAP;
     b_alloc->fd = fd;
+    b_alloc->path = savepv(path);
     b_alloc->region = region;
     b_alloc->size = size;
     b_alloc->offset = 0;
@@ -74,6 +77,7 @@ SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
     if (!arena) {
         munmap(region, size);
         close(fd);
+        safefree(b_alloc->path);
         safefree(b_alloc);
         croak("Failed to initialize upb_Arena with block allocator");
     }
@@ -99,6 +103,7 @@ upb_Arena* PerlUpb_Arena_NewBlock(pTHX_ size_t size, PerlUpb_BlockAlloc** out_al
     b_alloc->base.func = PerlUpb_BlockAlloc_Func;
     b_alloc->type = PERL_UPB_BLOCK_MALLOC;
     b_alloc->fd = -1;
+    b_alloc->path = NULL;
     b_alloc->region = region;
     b_alloc->size = size;
     b_alloc->offset = 0;
@@ -129,6 +134,7 @@ SV* PerlUpb_Arena_AttachTmpfs(pTHX_ const char* path, size_t size) {
     b_alloc->base.func = PerlUpb_BlockAlloc_Func;
     b_alloc->type = PERL_UPB_BLOCK_MMAP;
     b_alloc->fd = fd;
+    b_alloc->path = savepv(path);
     b_alloc->region = region;
     b_alloc->size = size;
     b_alloc->offset = size; // Effectively "full" for allocation, but allows reading
@@ -138,12 +144,10 @@ SV* PerlUpb_Arena_AttachTmpfs(pTHX_ const char* path, size_t size) {
     if (!arena) {
         munmap(region, size);
         close(fd);
+        safefree(b_alloc->path);
         safefree(b_alloc);
         croak("Failed to create upb_Arena for attachment");
     }
-
-    // Record the shared memory region in the block allocator for reference
-    b_alloc->offset = size;
 
     PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)safemalloc(sizeof(PerlUpb_Arena_Custom));
     wrapper->base.arena = arena;
@@ -172,6 +176,7 @@ void PerlUpb_Arena_DestroyRaw_Tmpfs(pTHX_ void* ptr, bool is_tmpfs) {
             if (wrapper->alloc->type == PERL_UPB_BLOCK_MMAP) {
                 munmap(wrapper->alloc->region, wrapper->alloc->size);
                 close(wrapper->alloc->fd);
+                if (wrapper->alloc->path) safefree(wrapper->alloc->path);
             } else {
                 safefree(wrapper->alloc->region);
             }
@@ -179,4 +184,53 @@ void PerlUpb_Arena_DestroyRaw_Tmpfs(pTHX_ void* ptr, bool is_tmpfs) {
         }
         safefree(wrapper);
     }
+}
+
+bool PerlUpb_Arena_IsTmpfs(pTHX_ SV* arena_sv) {
+    if (!arena_sv || !SvROK(arena_sv)) return false;
+    HV* hv = (HV*)SvRV(arena_sv);
+    SV** svp = hv_fetch(hv, "_is_tmpfs", 9, 0);
+    return svp && SvIV(*svp);
+}
+
+const char* PerlUpb_Arena_GetPath(pTHX_ SV* arena_sv) {
+    if (!PerlUpb_Arena_IsTmpfs(aTHX_ arena_sv)) return NULL;
+    HV* hv = (HV*)SvRV(arena_sv);
+    SV** svp = hv_fetch(hv, "_arena_ptr", 10, 0);
+    if (!svp) return NULL;
+    PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)SvIV(*svp);
+    return wrapper->alloc->path;
+}
+
+bool PerlUpb_Arena_VerifySELinux(pTHX_ SV* arena_sv) {
+    const char* path = PerlUpb_Arena_GetPath(aTHX_ arena_sv);
+    if (!path) return true; 
+    struct stat st;
+    if (stat(path, &st) != 0) return false;
+    return S_ISREG(st.st_mode);
+}
+
+size_t PerlUpb_Arena_GetOffset(pTHX_ SV* arena_sv, void* ptr) {
+    if (!PerlUpb_Arena_IsTmpfs(aTHX_ arena_sv)) return 0;
+    HV* hv = (HV*)SvRV(arena_sv);
+    SV** svp = hv_fetch(hv, "_arena_ptr", 10, 0);
+    if (!svp) return 0;
+    PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)SvIV(*svp);
+    if (ptr < wrapper->alloc->region || (char*)ptr >= (char*)wrapper->alloc->region + wrapper->alloc->size) {
+        return 0;
+    }
+    return (char*)ptr - (char*)wrapper->alloc->region;
+}
+
+SV* PerlUpb_Arena_AttachMessage(pTHX_ SV* arena_sv, const char* name, size_t offset) {
+    if (!PerlUpb_Arena_IsTmpfs(aTHX_ arena_sv)) croak("Arena is not a tmpfs arena");
+    HV* hv = (HV*)SvRV(arena_sv);
+    SV** svp = hv_fetch(hv, "_arena_ptr", 10, 0);
+    PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)SvIV(*svp);
+    if (offset >= wrapper->alloc->size) croak("Offset %zu out of bounds for arena size %zu", offset, wrapper->alloc->size);
+    const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ PerlUpb_DescriptorPool_GeneratedPool(aTHX));
+    const upb_MessageDef* mdef = upb_DefPool_FindMessageByName(pool, name);
+    if (!mdef) croak("Message definition not found: %s", name);
+    upb_Message* msg = (upb_Message*)((char*)wrapper->alloc->region + offset);
+    return PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
 }
