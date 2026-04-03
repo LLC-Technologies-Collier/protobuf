@@ -18,6 +18,14 @@
 #define CROAK_WRONG_TYPE(sv, expected, field) \
     croak("Expected %s for field '%s', but got %s", expected, upb_FieldDef_Name(field), sv_reftype(sv, TRUE))
 
+static void verify_limits(pTHX_ SV* sv, const upb_FieldDef* f, double min, double max) {
+    double val = SvNV(sv);
+    if (val < min || val > max) {
+        croak("Value %f out of range for field '%s' (type %d, limits %f to %f)", 
+              val, upb_FieldDef_Name(f), (int)upb_FieldDef_Type(f), min, max);
+    }
+}
+
 static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val, upb_Arena *arena) {
     upb_FieldType type = upb_FieldDef_Type(f);
     switch (type) {
@@ -25,6 +33,7 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
         case kUpb_FieldType_SInt32:
         case kUpb_FieldType_SFixed32:
             if (SvIOK(sv) || SvNOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                verify_limits(aTHX_ sv, f, INT32_MIN, INT32_MAX);
                 val->int32_val = (int32_t)SvIV(sv);
                 return true;
             }
@@ -60,7 +69,8 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
             return false;
         case kUpb_FieldType_UInt32:
         case kUpb_FieldType_Fixed32: {
-            if (SvUOK(sv) || SvIOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+            if (SvUOK(sv) || SvIOK(sv) || SvNOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                verify_limits(aTHX_ sv, f, 0, UINT32_MAX);
                 UV uv = SvUV(sv);
                 val->uint32_val = (uint32_t)uv;
                 return true;

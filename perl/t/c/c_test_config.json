@@ -359,7 +359,8 @@
     "deps": [
       "xs/protobuf.h",
       "t/c/upb-perl-test.h",
-      "xs/convert.h",
+      "xs/convert/sv_to_upb.h",
+      "xs/convert/upb_to_sv.h",
       "t/c/convert/test_util.h",
       "libcoro/coro.h"
     ],

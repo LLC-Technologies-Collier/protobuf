@@ -33,6 +33,8 @@ static void test_croak_recovery(void) {
 }
 
 int main(int argc, char **argv, char **env) {
+    PERL_SYS_INIT3(&argc, &argv, &env);
     test_croak_recovery();
+    PERL_SYS_TERM();
     return 0;
 }

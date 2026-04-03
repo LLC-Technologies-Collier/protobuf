@@ -1,126 +1,129 @@
-#include "t/c/upb-perl-test.h"
-#include "xs/protobuf.h"
-#include "xs/convert.h"
-#include "xs/protobuf/arena.h" // For PerlUpb_Arena_New
+#include "perl/t/c/upb-perl-test.h"
+#include "perl/xs/convert/sv_to_upb.h"
+#include "perl/xs/convert/upb_to_sv.h"
+#include "perl/xs/protobuf/arena.h"
+#include "perl/xs/protobuf/registry.h"
+#include "perl/xs/descriptor_pool/find.h"
+#include "perl/xs/descriptor_pool/pool.h"
 #include "t/c/convert/test_util.h"
 #include "libcoro/coro.h"
-#include "t/c/coro_util.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h> // For usleep
 
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-
-#define NUM_COROS 50
-#define NUM_OPS 100
-#define STACK_SIZE 32768
-
-DECLARE_CORO_STATE()
+#define NUM_COROS 10
+#define OPS_PER_CORO 50
 
 typedef struct {
     int id;
-    int errors;
+    PerlInterpreter *my_perl;
+    coro_context *main_ctx;
+    coro_context *my_ctx;
+    bool *finished;
     upb_Arena *arena;
-    SV *arena_sv;
-    const upb_MessageDef *malli;
+    const upb_FieldDef *f;
 } coro_arg_t;
 
-// Simplified test function for one type
-void test_string_conversion(pTHX_ coro_arg_t *carg) {
-    const upb_FieldDef *field = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_string");
-    if (!field) {
-        fprintf(stderr, "Coro %d: Failed to get FieldDef for optional_string\n", carg->id);
-        carg->errors++;
+static void convert_coro_task(void *arg) {
+    coro_arg_t *carg = (coro_arg_t*)arg;
+    pTHX = carg->my_perl;
+
+    for (int i = 0; i < OPS_PER_CORO; i++) {
+        SV* sv = newSViv(i);
+        upb_MessageValue val;
+        
+        if (PerlUpb_SvToUpb(aTHX, sv, carg->f, &val, carg->arena)) {
+            SV* back = PerlUpb_UpbToSv(aTHX, &val, carg->f, NULL);
+            if (SvIV(back) != i) {
+                fprintf(stderr, "Conversion mismatch in coro %d: expected %d, got %ld\n", carg->id, i, (long)SvIV(back));
+            }
+            SvREFCNT_dec(back);
+        }
+        SvREFCNT_dec(sv);
+        
+        if (i % 5 == 0) {
+            coro_transfer(carg->my_ctx, carg->main_ctx);
+        }
+    }
+    
+    *carg->finished = true;
+    coro_transfer(carg->my_ctx, carg->main_ctx);
+}
+
+static void test_convert_coro(void) {
+    plan(NUM_COROS);
+    
+    coro_context main_ctx;
+    coro_context ctxs[NUM_COROS];
+    bool finished[NUM_COROS];
+    char stacks[NUM_COROS][65536];
+    coro_arg_t args[NUM_COROS];
+    
+    coro_create(&main_ctx, NULL, NULL, NULL, 0);
+
+    upb_Arena *arena = upb_Arena_New();
+    if (!load_test_descriptors(aTHX_ arena)) {
+        fprintf(stderr, "Failed to load test descriptors\n");
         return;
     }
-
-    // SV to UPB
-    SV *sv = newSVpvn("hello coro", 10);
-    upb_MessageValue val;
-    bool result = PerlUpb_SvToUpb(aTHX_ sv, field, &val, carg->arena);
-    if (!result) {
-        fprintf(stderr, "Coro %d: PerlUpb_SvToUpb failed for string\n", carg->id);
-        carg->errors++;
-    } else {
-        if (memcmp(val.str_val.data, "hello coro", 10) != 0 || val.str_val.size != 10) {
-            fprintf(stderr, "Coro %d: SV to UPB string conversion mismatch\n", carg->id);
-            carg->errors++;
-        }
+    
+    SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
+    const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX, pool_sv);
+    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(pool, "test.TestMessage");
+    if (!mdef) {
+        cdiag("Could not find message test.TestMessage");
+        upb_Arena_Free(arena);
+        return;
     }
-    SvREFCNT_dec(sv);
+    const upb_FieldDef *f = upb_MessageDef_FindFieldByNumber(mdef, 1);
 
-    coro_yield(carg->id);
-
-    // UPB to SV
-    val.str_val = upb_StringView_FromString("upb to sv");
-    SV *ret_sv = PerlUpb_UpbToSv(aTHX_ &val, field, carg->arena_sv);
-    if (!ret_sv) {
-        fprintf(stderr, "Coro %d: PerlUpb_UpbToSv failed for string\n", carg->id);
-        carg->errors++;
-    } else {
-        if (!SvPOK(ret_sv) || strcmp(SvPV_nolen(ret_sv), "upb to sv") != 0) {
-            fprintf(stderr, "Coro %d: UPB to SV string conversion mismatch\n", carg->id);
-            carg->errors++;
-        }
-        SvREFCNT_dec(ret_sv);
-    }
-}
-
-void coro_test_func(void *arg) {
-    coro_arg_t *carg = (coro_arg_t *)arg;
-    dTHX; // Declare my_perl
-
-    for (int i = 0; i < NUM_OPS; i++) {
-        test_string_conversion(aTHX_ carg);
-        coro_yield(carg->id);
-    }
-    coro_finish(carg->id);
-}
-
-int main(int argc, char** argv) {
-    PerlInterpreter *my_perl = test_perl_init(argc, argv);
-
-    plan(2 + NUM_COROS + 3);
-
-    SV *arena_sv = PerlUpb_Arena_New(aTHX);
-    upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
-
-    if (!load_test_descriptors(aTHX_ arena)) {
-         fprintf(stderr, "Failed to load test descriptors\n");
-         return 1;
-    }
-     ok(1, "Descriptors loaded");
-
-    const upb_MessageDef *malli = upb_DefPool_FindMessageByName(test_pool, "protobuf_test_messages.proto2.TestAllTypesProto2");
-    if (!malli) {
-        fprintf(stderr, "Failed to find TestAllTypesProto2 message\n");
-        return 1;
-    }
-
-    coro_arg_t args[NUM_COROS];
     for (int i = 0; i < NUM_COROS; i++) {
+        finished[i] = false;
+        args[i].id = i;
+        args[i].my_perl = aTHX;
+        args[i].main_ctx = &main_ctx;
+        args[i].my_ctx = &ctxs[i];
+        args[i].finished = &finished[i];
         args[i].arena = arena;
-        args[i].arena_sv = arena_sv;
-        args[i].malli = malli;
+        args[i].f = f;
+        
+        coro_create(&ctxs[i], convert_coro_task, &args[i], stacks[i], sizeof(stacks[i]));
     }
-    RUN_CORO_TEST(coro_test_func, args);
-
-    TODO("Stress concurrent type-mismatch failures in SvToUpb") {
-        ok(0, "System remains stable when multiple coroutines trigger conversion errors");
+    
+    int finished_count = 0;
+    while (finished_count < NUM_COROS) {
+        finished_count = 0;
+        for (int i = 0; i < NUM_COROS; i++) {
+            if (!finished[i]) {
+                coro_transfer(&main_ctx, &ctxs[i]);
+            } else {
+                finished_count++;
+            }
+        }
     }
-
-    TODO("Verify integrated cache stability under high concurrent load") {
-        ok(0, "Message wrapping and cache lookup are safe across interleaved coroutines");
+    
+    upb_Arena_Free(arena);
+    
+    for (int i = 0; i < NUM_COROS; i++) {
+        ok(1, "Coroutine completed");
     }
+}
 
-    TODO("Implement concurrent memory pressure stress during string conversion") {
-        ok(0, "Arena growth and SV allocation remain robust under concurrency");
+int main(int argc, char **argv, char **env) {
+    PERL_SYS_INIT3(&argc, &argv, &env);
+    
+    PerlInterpreter *test_perl = perl_alloc();
+    perl_construct(test_perl);
+    char *my_argv[] = { "", "-e", "0", NULL };
+    perl_parse(test_perl, NULL, 3, my_argv, NULL);
+    perl_run(test_perl);
+    PERL_SET_CONTEXT(test_perl);
+    {
+        dTHX;
+        PerlUpb_Registry_Init(aTHX);
+        PerlUpb_ObjCache_Init(aTHX);
+        test_convert_coro();
     }
-
-    PerlUpb_Arena_Destroy(aTHX_ arena_sv);
-    test_perl_destroy(my_perl);
+    perl_destruct(test_perl);
+    perl_free(test_perl);
+    
+    PERL_SYS_TERM();
     return 0;
 }

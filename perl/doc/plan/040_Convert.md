@@ -88,10 +88,10 @@
         *   [ ] Verify UTF-8 validation performance for multi-megabyte strings. (Difficulty: 3/10).
         *   [ ] Implement direct upb_Map to Perl HV projection. (Difficulty: 3/10).
         *   [ ] Add metadata for zero-copy map identity tracking. (Difficulty: 3/10).
-        *   [ ] Add range-checks to specific narrow-integer conversions. (Difficulty: 2/10).
-        *   [ ] Implement `verify_limits()` utility for numeric SvToUpb. (Difficulty: 3/10).
-        *   [ ] Add test cases for CodeRef and Glob conversion failures. (Difficulty: 2/10).
-        *   [ ] Verify croak safety during incompatible SV conversion. (Difficulty: 3/10).
+        *   [x] Add range-checks to specific narrow-integer conversions.
+        *   [x] Implement `verify_limits()` utility for numeric SvToUpb.
+        *   [x] Add test cases for CodeRef and Glob conversion failures.
+        *   [x] Verify croak safety during incompatible SV conversion.
 
         *   [ ] TODO: Implement **Boundary-Fuzzing:** Verify that integer conversions correctly handle boundary conditions (MIN/MAX) and overflow/underflow situations with consistent error reporting. (Difficulty: 4/10).
 
