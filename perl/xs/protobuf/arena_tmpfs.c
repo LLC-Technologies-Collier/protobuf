@@ -19,14 +19,16 @@ static void* PerlUpb_BlockAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
                                      size_t size, size_t* actual_size) {
     PerlUpb_BlockAlloc* b = (PerlUpb_BlockAlloc*)alloc;
 
+    if (b->poisoned) return NULL;
+
     if (size == 0) {
-        if (ptr != NULL) PerlUpb_VerifyCanaries(ptr, oldsize, "BlockAlloc free");
+        if (ptr != NULL) PerlUpb_VerifyCanaries(ptr, oldsize, "BlockAlloc free", &b->poisoned);
         return NULL;
     }
 
     if (ptr != NULL) {
         // Realloc
-        PerlUpb_VerifyCanaries(ptr, oldsize, "BlockAlloc realloc");
+        PerlUpb_VerifyCanaries(ptr, oldsize, "BlockAlloc realloc", &b->poisoned);
         void* new_ptr = PerlUpb_BlockAlloc_Func(alloc, NULL, 0, size, actual_size);
         if (new_ptr && oldsize > 0) {
             memcpy(new_ptr, ptr, oldsize);

@@ -60,7 +60,9 @@ This document outlines the specific conventions and testing patterns for the XS 
 - **Lock-Free Descriptor Retrieval**: Descriptor search logic MUST be optimized for high-frequency concurrent access (e.g., in Coro/Mojo) to avoid serialization bottlenecks.
 - **Dynamic Reloading Safety**: (Planned) Implementations of `DescriptorPool` that support reloading MUST ensure that old definitions remain valid as long as any `upb_Message` instance references them.
 - **Fast-Path Descriptor Access**: Internal C-layer tasks requiring descriptor information SHOULD utilize direct access to `upb_Def` structures to avoid the overhead of Perl object construction in performance-critical paths.
-- **Stable Schema Fingerprinting**: Descriptor definitions SHOULD support deterministic hashing to facilitate efficient schema-registry lookups across different environments.
+-   **Stable Schema Fingerprinting**: Descriptor definitions SHOULD support deterministic hashing to facilitate efficient schema-registry lookups across different environments.
+-   **Object Identity Fingerprinting**: (Implemented) Messages support cross-process object identity via `$message->get_fingerprint()`, enabling zero-copy verification in shared memory.
+
 - **Zero-Copy Field Access**: (Planned) Implementations for large string and bytes fields SHOULD provide a zero-copy path that exposes the underlying `upb` memory directly to Perl.
 - **Moo Dispatch Bypass**: (Planned) High-frequency field accessors SHOULD be optimized to bypass the Perl-level method dispatch mechanism and call the underlying C implementation directly.
 - **SIMD Bulk Transfer (Perl-to-C)**: (Planned) XS bindings for container types MUST optimize bulk data transfer from Perl arrays/hashes to `upb` structures using SIMD-accelerated C functions.
@@ -75,9 +77,11 @@ This document outlines the specific conventions and testing patterns for the XS 
 - **Streaming JSON Serialization**: (Planned) JSON generation for large messages SHOULD support streaming directly to C-level streams or file descriptors.
 - **IPC Safety (tmpfs)**: (Planned) High-performance IPC implementations using shared memory MUST utilize kernel-level isolation (POSIX/SELinux) and verify message integrity against malicious peers.
 - **Fuzzer-Driven Development**: (Planned) Security-critical C-layer components (Parsers, Converters, IPC) SHOULD be integrated with a continuous fuzzing harness to identify edge-case vulnerabilities.
-- **ithread Safety (CLONE)**: Every Perl class wrapping a C pointer MUST implement a `CLONE` method that explicitly prevents unsafe shallow-copying across `ithread` boundaries until a safe global-sharing mechanism is implemented.
-- **TSan-Driven Development**: (Planned) Multi-interpreter integration tests MUST be executed under ThreadSanitizer (TSan) to identify and eliminate data races in global or shared C state.
-- **protoc Plugin Alignment**: (Planned) The `protoc` code generator SHOULD utilize the same C-layer descriptor logic as the runtime library to ensure absolute consistency in generated code.
+-   **ithread Safety (CLONE)**: Every Perl class wrapping a C pointer MUST implement a `CLONE` method that explicitly prevents unsafe shallow-copying across `ithread` boundaries until a safe global-sharing mechanism is implemented.
+-   **TSan-Driven Development**: (Implemented) Multi-interpreter integration tests MUST be executed under ThreadSanitizer (TSan) using `make test_tsan` to identify and eliminate data races in global or shared C state.
+-   **Lock Contention Profiling**: (Implemented) High-contention resources (like the striped object cache) MUST include built-in contention profiling exposed via `get_contention_stats()` for performance auditing.
+-   **protoc Plugin Alignment**: (Planned) The `protoc` code generator SHOULD utilize the same C-layer descriptor logic as the runtime library to ensure absolute consistency in generated code.
+
 - **Automated Async Services**: (Planned) Service definitions in Protobuf SHOULD result in automated generation of asynchronous stubs for supported Perl event loops (Mojo, Coro).
 - **Automated Quality Gates**: (Planned) Every release MUST pass automated quality gates including ASan leak detection, TSan race detection, and fuzzer verification.
 - **Embedded Performance Verification**: (Planned) The distribution SHOULD include tools for users to verify library performance and correctness in their local environment.

@@ -15,6 +15,7 @@ typedef struct {
     size_t historical_max_size;
     int numa_node; // -1 for none, or specific node index
     bool use_chaos;
+    bool poisoned; // Set if corruption detected
     double fail_probability;
     double delay_probability;
 } PerlUpb_StatsAlloc;
@@ -38,6 +39,7 @@ typedef struct {
     void* region;
     size_t size;
     size_t offset;
+    bool poisoned;  // Set if corruption detected
 } PerlUpb_BlockAlloc;
 
 // Special wrapper for Custom Allocator Arenas (Tmpfs / Block)
@@ -104,13 +106,15 @@ static inline void PerlUpb_WriteCanaries(void* ptr, size_t size) {
     end[1] = PERL_UPB_CANARY_PATTERN;
 }
 
-static inline void PerlUpb_VerifyCanaries(void* ptr, size_t size, const char* msg) {
+static inline void PerlUpb_VerifyCanaries(void* ptr, size_t size, const char* msg, bool* poisoned_flag) {
     uint64_t* start = (uint64_t*)((char*)ptr - PERL_UPB_CANARY_SIZE);
     uint64_t* end = (uint64_t*)((char*)ptr + size);
     if (start[0] != PERL_UPB_CANARY_PATTERN || start[1] != PERL_UPB_CANARY_PATTERN) {
+        if (poisoned_flag) *poisoned_flag = true;
         croak("MEMORY CORRUPTION DETECTED (Underflow): %s", msg);
     }
     if (end[0] != PERL_UPB_CANARY_PATTERN || end[1] != PERL_UPB_CANARY_PATTERN) {
+        if (poisoned_flag) *poisoned_flag = true;
         croak("MEMORY CORRUPTION DETECTED (Overflow): %s", msg);
     }
 }

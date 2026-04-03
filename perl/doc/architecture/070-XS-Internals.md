@@ -33,6 +33,28 @@ To avoid expensive global Perl SV lookups (`get_sv`) in performance-critical C p
 *   **State Managed:** Object Cache (`HV*`), LRU List (`AV*`), Audit Log (`void*`), and global configuration (e.g., `max_cache_capacity`).
 *   **Access:** XS functions SHOULD use `PerlUpb_Registry_Get(aTHX)` to retrieve the current interpreter's state. This pattern de-risks future feature implementation (like thread-local arena caching) by providing a single, type-safe C hook for all global state.
 
+## Lock Contention Profiling
+
+To ensure scalability in multi-threaded environments, the striped object cache mutexes include built-in contention profiling.
+
+*   **Implementation:** `LOCK_AND_PROFILE` macro utilizes `pthread_mutex_trylock` to detect immediate availability.
+*   **Metrics:** Tracks `acquisitions` and `contentions` per stripe, as well as for global `lru` and `audit` locks.
+*   **Visibility:** Stats are exposed to Perl via `Protobuf::Internal::get_contention_stats()`.
+
+## Predictive Allocator
+
+To minimize expensive reallocations for recurring message patterns, the `StatsAlloc` engine tracks peak memory usage.
+
+*   **Mechanism:** Maintains a `historical_max_size` per `StatsAlloc` instance.
+*   **Optimization:** When acquiring a new arena through the Registry, the `historical_max_size` is used as a hint for `upb_Arena_Init` (capped at 1MB), pre-allocating a single block large enough for the expected workload.
+
+## Automated Race Detection (TSAN)
+
+The project includes integrated support for ThreadSanitizer (TSAN) to detect data races in the XS core and concurrent C integration tests.
+
+*   **Usage:** Run `make test_tsan` to rebuild the library with `-fsanitize=thread` and execute the full test suite.
+*   **Scope:** Validates thread-safety of the per-interpreter registry, object cache stripes, and shared memory arena accesses.
+
 ## Generalized Block Allocators
 
 To support high-performance allocation patterns (like zero-copy IPC and thread-local caching), we utilize a generalized block allocator (`PerlUpb_BlockAlloc`).

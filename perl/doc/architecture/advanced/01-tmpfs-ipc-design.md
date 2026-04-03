@@ -54,8 +54,15 @@ To achieve world-class IPC performance and safety, the implementation includes (
 -   **Zero-Copy Deserialization**: Implement `Protobuf::Arena->attach_message(name, offset)` which reifies a message directly from the shared memory block without copying data into intermediate Perl SVs.
 -   **Security Verification**: Use `Protobuf::Arena->verify_selinux()` to ensure the shared memory segment complies with security policies before access.
 -   **Handle Serialization**: Use `Protobuf::Arena->get_path()` and `Protobuf::Arena->get_offset(ptr)` to exchange message locations between processes.
+-   **Cross-Process Identity**: Use `$message->get_fingerprint()` to obtain a unique `path:offset` identifier, allowing disparate processes to confirm they are looking at the same memory instance without expensive deep-equality checks.
 -   **Integrated Fuzzer Verification**: (Planned) Every IPC release MUST be verified against a continuous fuzzing harness that simulates malicious shared memory state.
 -   **Multi-Language Handshake**: (Planned) Define a standard "shared memory handshake" protocol to allow the Perl implementation to discover and negotiate capabilities with official Python and C++ runtimes sharing the same pool.
+
+## Future Evolution (Reach for More)
+
+-   **NUMA-Aware Allocation Balance**: (Planned) Distribute arena blocks across NUMA nodes based on load to maximize memory bandwidth in high-core systems.
+-   **COW-Optimized Shared Cache**: (Planned) Utilize Copy-On-Write (COW) memory mapping for the shared object cache, enabling massive read scaling with near-zero memory footprint for replicated workers.
+-   **SIMD-Accelerated Integrity Scanning**: (Planned) Utilize AVX-512 instructions to scan large shared arenas for canary corruption in parallel, minimizing the latency of frequent integrity audits.
 
 ## Conclusion
 This design provides a blueprint for a production-ready, secure, and extremely fast IPC mechanism that bypasses the limitations of the Perl interpreter's threading model.

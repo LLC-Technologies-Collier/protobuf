@@ -2,9 +2,6 @@
 
 [TOC]
 
-*   [x] Create test file `perl/t/c/integration/030_protobuf.c`.
-*   [x] Tests cover interactions between obj_cache, arena, and utils.
-*   [x] Verify basic arena-sharing integrity.
 *   [x] Add per-interpreter registry validation tests.
 *   [x] Verify cache isolation across 10 independent interpreters.
 *   [x] Implement safety checks for `croak()` during upb_Arena growth.
@@ -26,4 +23,6 @@
     *   [x] Add predictive allocator based on historical usage. (Difficulty: 3/10).
     *   [x] Implement canary-based block verification in `upb_alloc` overrides. (Difficulty: 3/10).
     *   [ ] Add automated recovery logic for corrupted arena blocks. (Difficulty: 3/10).
-
+    *   [ ] NUMA-Aware Allocation Balance. (Difficulty: 5/10).
+    *   [ ] COW-Optimized Shared Cache. (Difficulty: 7/10).
+    *   [ ] SIMD-Accelerated Integrity Scanning. (Difficulty: 6/10).

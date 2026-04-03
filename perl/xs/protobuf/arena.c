@@ -27,8 +27,12 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
                                      size_t size, size_t* actual_size) {
     if (!alloc) return upb_alloc_global.func(&upb_alloc_global, ptr, oldsize, size, actual_size);
     PerlUpb_StatsAlloc* s = (PerlUpb_StatsAlloc*)alloc;
+
+    if (s->poisoned) {
+        return NULL;
+    }
+
     dTHX;
-    
     if (!aTHX) return upb_alloc_global.func(&upb_alloc_global, ptr, oldsize, size, actual_size);
 
     // ... (chaos logic)
@@ -60,7 +64,7 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
         size_t old_requested_size = ptr ? (oldsize + 2 * PERL_UPB_CANARY_SIZE) : 0;
         void* old_ptr = ptr ? (char*)ptr - PERL_UPB_CANARY_SIZE : NULL;
         
-        if (ptr) PerlUpb_VerifyCanaries(ptr, oldsize, "Before realloc");
+        if (ptr) PerlUpb_VerifyCanaries(ptr, oldsize, "Before realloc", &s->poisoned);
 
         void* raw;
         if (s->numa_node != -1) {
@@ -100,10 +104,11 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
                 }
                 PerlUpb_ObjCache_LogEvent(aTHX, ALLOC_EVENT_REALLOC, ret);
             }
+            if (actual_size) *actual_size = size;
         }
     } else if (ptr != NULL) {
         // Free
-        PerlUpb_VerifyCanaries(ptr, oldsize, "Before free");
+        PerlUpb_VerifyCanaries(ptr, oldsize, "Before free", &s->poisoned);
         void* raw = (char*)ptr - PERL_UPB_CANARY_SIZE;
         if (s->numa_node != -1) {
             munmap(raw, oldsize + 2 * PERL_UPB_CANARY_SIZE);
@@ -115,7 +120,6 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
         PerlUpb_ObjCache_LogEvent(aTHX, ALLOC_EVENT_FREE, ptr);
     }
     
-    if (actual_size && ret) *actual_size = size;
     return ret;
 }
 
@@ -137,13 +141,14 @@ upb_Arena* PerlUpb_Arena_AcquireWithStats(pTHX_ PerlUpb_StatsAlloc* s) {
     s->total_blocks = 0;
     s->numa_node = -1;
     s->use_chaos = true;
+    s->poisoned = false;
     s->fail_probability = 0;
     s->delay_probability = 0;
 
-    size_t hint = s->historical_max_size > 0 ? s->historical_max_size : 1;
+    size_t hint = s->historical_max_size > 0 ? s->historical_max_size : 0;
     if (hint > 1024 * 1024) hint = 1024 * 1024; // Cap at 1MB
 
-    // CRITICAL: use upb_Arena_Init with hint to force initial block from custom allocator
+    // CRITICAL: use upb_Arena_Init with hint
     upb_Arena* arena = upb_Arena_Init(NULL, hint, &s->base);
     if (!arena) {
         croak("Failed to acquire upb_Arena (StatsAlloc)");
