@@ -32,7 +32,7 @@
     *   [x] Implement idle-time arena pre-allocation hook. (Difficulty: 3/10).
     *   [x] Add predictive allocator based on historical usage. (Difficulty: 3/10).
     *   [x] Implement canary-based block verification in `upb_alloc` overrides. (Difficulty: 3/10).
-    *   [ ] Add automated recovery logic for corrupted arena blocks. (Difficulty: 3/10).
+    *   [x] Add automated recovery logic for corrupted arena blocks. (Difficulty: 3/10).
     *   [ ] NUMA-Aware Allocation Balance. (Difficulty: 5/10).
     *   [ ] COW-Optimized Shared Cache. (Difficulty: 7/10).
     *   [ ] SIMD-Accelerated Integrity Scanning. (Difficulty: 6/10).

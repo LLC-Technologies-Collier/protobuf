@@ -74,6 +74,7 @@ SV* PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size) {
     b_alloc->region = region;
     b_alloc->size = size;
     b_alloc->offset = 0;
+    b_alloc->poisoned = false;
 
     upb_Arena* arena = upb_Arena_Init(NULL, 0, &b_alloc->base);
     if (!arena) {
@@ -109,6 +110,7 @@ upb_Arena* PerlUpb_Arena_NewBlock(pTHX_ size_t size, PerlUpb_BlockAlloc** out_al
     b_alloc->region = region;
     b_alloc->size = size;
     b_alloc->offset = 0;
+    b_alloc->poisoned = false;
 
     upb_Arena* arena = upb_Arena_Init(NULL, 0, &b_alloc->base);
     if (!arena) {
@@ -140,6 +142,7 @@ SV* PerlUpb_Arena_AttachTmpfs(pTHX_ const char* path, size_t size) {
     b_alloc->region = region;
     b_alloc->size = size;
     b_alloc->offset = size; // Effectively "full" for allocation, but allows reading
+    b_alloc->poisoned = false;
 
     // Use global allocator for the arena structure itself
     upb_Arena* arena = upb_Arena_Init(NULL, 0, &upb_alloc_global);

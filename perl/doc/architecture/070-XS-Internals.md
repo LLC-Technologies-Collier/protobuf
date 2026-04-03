@@ -85,10 +85,11 @@ To support high-performance allocation patterns (like zero-copy IPC and thread-l
 To detect memory corruption (buffer overflows/underflows) in performance-critical C paths, all custom allocators (`StatsAlloc` and `BlockAlloc`) implement canary guards.
 
 *   **Pattern:** `0xDEADBEEFCAFEBABEULL` (16 bytes at start and end).
-*   **Verification:** Performed automatically during `free`, `realloc`, and arena destruction.
+*   **Verification:** Performed automatically during `free`, `realloc`, and arena destruction by `PerlUpb_VerifyCanaries`.
 *   **Safety:** Errors trigger a Perl `croak` with a descriptive message (e.g., "MEMORY CORRUPTION DETECTED (Overflow)").
+*   **Recovery:** Upon detecting corruption, the allocator instance is marked as `poisoned`. Subsequent allocation requests through the poisoned allocator will return `NULL`, preventing further damage. This is tested in `t/c/integration/030_protobuf.c`.
 
-## SIMD Acceleration (VPP Alignment)
+## SIMD-Accelerated Integrity Scanning (Planned)
 
 Aligning with the **Vector Packet Processor (VPP)** philosophy, hot paths utilize SIMD instructions where appropriate to maximize throughput.
 
