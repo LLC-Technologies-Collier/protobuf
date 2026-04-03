@@ -97,3 +97,23 @@ SV* PerlUpb_Message_GetArena(pTHX_ SV* message_sv) {
     return PerlUpb_GetArenaFromObject(aTHX_ message_sv);
 }
 
+SV* PerlUpb_Message_GetFingerprint(pTHX_ SV* message_sv) {
+    SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ message_sv);
+    const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    
+    if (!msg) return &PL_sv_undef;
+
+    if (arena_sv && PerlUpb_Arena_IsTmpfs(aTHX_ arena_sv)) {
+        const char* path = PerlUpb_Arena_GetPath(aTHX_ arena_sv);
+        size_t offset = PerlUpb_Arena_GetOffset(aTHX_ arena_sv, (void*)msg);
+        char buf[256];
+        snprintf(buf, sizeof(buf), "%s:%zu", path ? path : "anon", offset);
+        return newSVpv(buf, 0);
+    } else {
+        // Fallback for standard arenas: just use memory address as local fingerprint
+        char buf[32];
+        snprintf(buf, sizeof(buf), "mem:%p", msg);
+        return newSVpv(buf, 0);
+    }
+}
+

@@ -110,6 +110,11 @@ sub audit_integrity {
     return _xs_audit_integrity($self);
 }
 
+sub get_fingerprint {
+    my ($self) = @_;
+    return _xs_get_fingerprint($self);
+}
+
 sub validate {
     my ($self) = @_;
     return _xs_validate($self);

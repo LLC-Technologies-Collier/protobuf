@@ -302,3 +302,11 @@ _xs_coerce_to(self, target_class_name)
         sv_bless(RETVAL, gv_stashpv(target_class_name, GV_ADD));
     OUTPUT:
         RETVAL
+
+SV*
+_xs_get_fingerprint(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_GetFingerprint(aTHX_ self);
+    OUTPUT:
+        RETVAL

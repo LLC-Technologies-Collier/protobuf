@@ -19,9 +19,14 @@ static void test_multi_interp(void) {
         PerlUpb_ObjCache_Init(aTHX);
         PerlUpb_Registry* reg1 = PerlUpb_Registry_Get(aTHX);
         void* dummy_ptr = (void*)0x1234;
+        
+        // We need to keep a strong reference to the object so it stays in cache
         SV* obj1 = newSViv(42);
-        PerlUpb_ObjCache_Add(aTHX, dummy_ptr, obj1);
-        SvREFCNT_dec(obj1);
+        SV* strong_rv = newRV_inc(obj1);
+        // Store it in a global scalar so it doesn't get collected
+        sv_setsv(get_sv("main::keepalive", GV_ADD), strong_rv);
+
+        PerlUpb_ObjCache_Add(aTHX, dummy_ptr, strong_rv);
 
         cdiag("Initializing test_perl2");
         PerlInterpreter *test_perl2 = perl_alloc();
@@ -47,6 +52,7 @@ static void test_multi_interp(void) {
             dTHX;
             SV* cached = PerlUpb_ObjCache_Get(aTHX, dummy_ptr);
             ok(cached != NULL, "Cache persist in perl1");
+            if (cached) SvREFCNT_dec(cached);
         }
 
         cdiag("Cleaning up test_perl2");
@@ -59,7 +65,11 @@ static void test_multi_interp(void) {
             dTHX;
             SV* cached = PerlUpb_ObjCache_Get(aTHX, dummy_ptr);
             ok(cached != NULL, "Cache still persist in perl1 after perl2 death");
+            if (cached) SvREFCNT_dec(cached);
         }
+        
+        SvREFCNT_dec(strong_rv);
+        SvREFCNT_dec(obj1);
     }
 
     perl_destruct(test_perl1);

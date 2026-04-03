@@ -12,6 +12,7 @@ typedef struct {
     upb_alloc base;
     size_t total_reserved;
     size_t total_blocks;
+    size_t historical_max_size;
     int numa_node; // -1 for none, or specific node index
     bool use_chaos;
     double fail_probability;
@@ -86,6 +87,9 @@ typedef struct {
 } PerlUpb_ArenaStats;
 
 void PerlUpb_Arena_GetStats(pTHX_ SV *sv, PerlUpb_ArenaStats *stats);
+
+// Verify all blocks in the arena for corruption (Canaries)
+void PerlUpb_Arena_VerifyCanaries(pTHX_ SV *sv, const char* msg);
 
 // -- Canary Logic --
 #define PERL_UPB_CANARY_SIZE 16

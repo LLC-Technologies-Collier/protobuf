@@ -27,6 +27,27 @@ static PERL_PROTOBUF_MUTEX_T lru_mutex;
 static PERL_PROTOBUF_MUTEX_T audit_mutex;
 static int cache_mutexes_init = 0;
 
+typedef struct {
+    uint64_t acquisitions;
+    uint64_t contentions;
+} contention_stat_t;
+
+static struct {
+    contention_stat_t stripes[NUM_CACHE_STRIPES];
+    contention_stat_t lru;
+    contention_stat_t audit;
+} contention_stats;
+
+static void LOCK_AND_PROFILE(PERL_PROTOBUF_MUTEX_T* m, contention_stat_t* s) {
+    if (PERL_PROTOBUF_MUTEX_TRYLOCK(m)) {
+        s->acquisitions++;
+    } else {
+        s->contentions++;
+        s->acquisitions++;
+        PERL_PROTOBUF_MUTEX_LOCK(m);
+    }
+}
+
 static void ensure_mutexes_init(void) {
     if (cache_mutexes_init) return;
     for (int i = 0; i < NUM_CACHE_STRIPES; i++) {
@@ -34,6 +55,7 @@ static void ensure_mutexes_init(void) {
     }
     PERL_PROTOBUF_MUTEX_INIT(&lru_mutex);
     PERL_PROTOBUF_MUTEX_INIT(&audit_mutex);
+    memset(&contention_stats, 0, sizeof(contention_stats));
     cache_mutexes_init = 1;
 }
 
@@ -88,7 +110,7 @@ void PerlUpb_ObjCache_LogEvent(pTHX_ int type, const void* ptr) {
     obj_cache_audit_log_t* log = get_audit_log(aTHX, reg);
     if (!log) return; // Should not happen but safety first
 
-    PERL_PROTOBUF_MUTEX_LOCK(&audit_mutex);
+    LOCK_AND_PROFILE(&audit_mutex, &contention_stats.audit);
     size_t idx = (log->head + log->count) % AUDIT_LOG_SIZE;
     if (log->count == AUDIT_LOG_SIZE) {
         log->head = (log->head + 1) % AUDIT_LOG_SIZE;
@@ -116,7 +138,7 @@ static void get_cache_key(const void* ptr, char* buf) {
 void PerlUpb_ObjCache_SetCapacity(pTHX_ size_t capacity) {
     ensure_mutexes_init();
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
-    PERL_PROTOBUF_MUTEX_LOCK(&lru_mutex);
+    LOCK_AND_PROFILE(&lru_mutex, &contention_stats.lru);
     reg->max_cache_capacity = capacity;
     PERL_PROTOBUF_MUTEX_UNLOCK(&lru_mutex);
 }
@@ -132,7 +154,7 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
     if (!reg) return;
 
     int stripe = get_stripe(ptr);
-    PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[stripe]);
+    LOCK_AND_PROFILE(&cache_mutexes[stripe], &contention_stats.stripes[stripe]);
 
     HV* cache = get_cache_hv(aTHX, reg);
     char key[64];
@@ -151,7 +173,7 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
     PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[stripe]);
     PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_ADD, ptr);
 
-    PERL_PROTOBUF_MUTEX_LOCK(&lru_mutex);
+    LOCK_AND_PROFILE(&lru_mutex, &contention_stats.lru);
     AV* lru = get_lru_av(aTHX, reg);
     av_push(lru, newSVpv(key, 0));
 
@@ -163,7 +185,7 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
             void* evict_ptr;
             if (sscanf(oldest_key, "%p", &evict_ptr) == 1) {
                 int evict_stripe = get_stripe(evict_ptr);
-                PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[evict_stripe]);
+                LOCK_AND_PROFILE(&cache_mutexes[evict_stripe], &contention_stats.stripes[evict_stripe]);
                 hv_delete(cache, oldest_key, len, G_DISCARD);
                 PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_EVICT, evict_ptr);
                 PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[evict_stripe]);
@@ -181,7 +203,7 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
     if (!reg) return NULL;
 
     int stripe = get_stripe(ptr);
-    PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[stripe]);
+    LOCK_AND_PROFILE(&cache_mutexes[stripe], &contention_stats.stripes[stripe]);
 
     HV* cache = get_cache_hv(aTHX, reg);
     char key[64];
@@ -237,7 +259,7 @@ void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_str) {
     
     // First try the expected stripe
     int expected_stripe = get_stripe(target_ptr);
-    PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[expected_stripe]);
+    LOCK_AND_PROFILE(&cache_mutexes[expected_stripe], &contention_stats.stripes[expected_stripe]);
     HV* cache = get_cache_hv(aTHX, reg);
     if (hv_exists(cache, normalized_key, strlen(normalized_key))) {
         hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD);
@@ -249,7 +271,7 @@ void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_str) {
         // Fallback: Check ALL stripes
         for (int i = 0; i < NUM_CACHE_STRIPES; i++) {
             if (i == expected_stripe) continue;
-            PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[i]);
+            LOCK_AND_PROFILE(&cache_mutexes[i], &contention_stats.stripes[i]);
             if (hv_exists(cache, normalized_key, strlen(normalized_key))) {
                 hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD);
                 deleted = true;
@@ -270,10 +292,10 @@ void PerlUpb_ObjCache_Clear(pTHX) {
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
 
     for (int i = 0; i < NUM_CACHE_STRIPES; i++) {
-        PERL_PROTOBUF_MUTEX_LOCK(&cache_mutexes[i]);
+        LOCK_AND_PROFILE(&cache_mutexes[i], &contention_stats.stripes[i]);
     }
-    PERL_PROTOBUF_MUTEX_LOCK(&lru_mutex);
-    PERL_PROTOBUF_MUTEX_LOCK(&audit_mutex);
+    LOCK_AND_PROFILE(&lru_mutex, &contention_stats.lru);
+    LOCK_AND_PROFILE(&audit_mutex, &contention_stats.audit);
 
     if (!PL_dirty) {
         if (reg->obj_cache) {
@@ -302,7 +324,7 @@ SV* PerlUpb_ObjCache_GetAuditLog(pTHX) {
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
     obj_cache_audit_log_t* log = get_audit_log(aTHX, reg);
 
-    PERL_PROTOBUF_MUTEX_LOCK(&audit_mutex);
+    LOCK_AND_PROFILE(&audit_mutex, &contention_stats.audit);
     AV* av = newAV();
     for (size_t i = 0; i < log->count; i++) {
         size_t idx = (log->head + i) % AUDIT_LOG_SIZE;
@@ -316,4 +338,30 @@ SV* PerlUpb_ObjCache_GetAuditLog(pTHX) {
     }
     PERL_PROTOBUF_MUTEX_UNLOCK(&audit_mutex);
     return newRV_noinc((SV*)av);
+}
+
+SV* PerlUpb_ObjCache_GetContentionStats(pTHX) {
+    ensure_mutexes_init();
+    HV* hv = newHV();
+
+    AV* stripes_av = newAV();
+    for (int i = 0; i < NUM_CACHE_STRIPES; i++) {
+        HV* s_hv = newHV();
+        hv_store(s_hv, "acquisitions", 12, newSVuv(contention_stats.stripes[i].acquisitions), 0);
+        hv_store(s_hv, "contentions", 11, newSVuv(contention_stats.stripes[i].contentions), 0);
+        av_push(stripes_av, newRV_noinc((SV*)s_hv));
+    }
+    hv_store(hv, "stripes", 7, newRV_noinc((SV*)stripes_av), 0);
+
+    HV* lru_hv = newHV();
+    hv_store(lru_hv, "acquisitions", 12, newSVuv(contention_stats.lru.acquisitions), 0);
+    hv_store(lru_hv, "contentions", 11, newSVuv(contention_stats.lru.contentions), 0);
+    hv_store(hv, "lru", 3, newRV_noinc((SV*)lru_hv), 0);
+
+    HV* audit_hv = newHV();
+    hv_store(audit_hv, "acquisitions", 12, newSVuv(contention_stats.audit.acquisitions), 0);
+    hv_store(audit_hv, "contentions", 11, newSVuv(contention_stats.audit.contentions), 0);
+    hv_store(hv, "audit", 5, newRV_noinc((SV*)audit_hv), 0);
+
+    return newRV_noinc((SV*)hv);
 }

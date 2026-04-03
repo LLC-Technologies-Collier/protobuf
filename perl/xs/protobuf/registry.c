@@ -53,7 +53,7 @@ void PerlUpb_Registry_Init(pTHX) {
 }
 
 PerlUpb_Registry* PerlUpb_Registry_Get(pTHX) {
-    if (PL_dirty) return NULL;
+    if (!aTHX || PL_dirty) return NULL;
 
     SV** svp = hv_fetch(PL_modglobal, REGISTRY_KEY, strlen(REGISTRY_KEY), 0);
     if (svp && SvIOK(*svp)) {
@@ -64,4 +64,18 @@ PerlUpb_Registry* PerlUpb_Registry_Get(pTHX) {
     PerlUpb_Registry_Init(aTHX);
     svp = hv_fetch(PL_modglobal, REGISTRY_KEY, strlen(REGISTRY_KEY), 0);
     return INT2PTR(PerlUpb_Registry*, SvIV(*svp));
+}
+
+void PerlUpb_Registry_PreallocateArena(pTHX) {
+    if (PL_dirty) return;
+    PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    if (!reg) return;
+
+    if (reg->idle_time_arena_hook) {
+        reg->idle_time_arena_hook(aTHX);
+    }
+
+    if (!reg->cached_transient_arena) {
+        reg->cached_transient_arena = upb_Arena_New();
+    }
 }

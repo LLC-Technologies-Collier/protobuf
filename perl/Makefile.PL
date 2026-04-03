@@ -10,7 +10,8 @@ use JSON::MaybeXS;
 my $asan_flags = $ENV{USE_ASAN} ? "-fsanitize=address" : "";
 my $ubsan_flags = $ENV{USE_UBSAN} ? "-fsanitize=undefined" : "";
 my $msan_flags = $ENV{USE_MSAN} ? "-fsanitize=memory" : "";
-my $sanitizer_flags = join(" ", grep { $_ } $asan_flags, $ubsan_flags, $msan_flags);
+my $tsan_flags = $ENV{USE_TSAN} ? "-fsanitize=thread" : "";
+my $sanitizer_flags = join(" ", grep { $_ } $asan_flags, $ubsan_flags, $msan_flags, $tsan_flags);
 
 # Attempt to generate ppport.h
 eval { require Devel::PPPort; };
@@ -337,6 +338,14 @@ all :: $(COMMON_LIB)
 test :: all build_c_tests test_c
 	$(NOECHO) $(ECHO) "Running Perl tests"
 	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8 ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -j$$(nproc) t/*.t t/integration/*.t
+
+test_tsan :
+	make clean
+	USE_TSAN=1 perl Makefile.PL
+	USE_TSAN=1 make
+	USE_TSAN=1 make build_c_tests
+	$(NOECHO) $(ECHO) "Running ThreadSanitizer tests"
+	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" TSAN_OPTIONS="second_deadlock_stack=1" prove -b t/*.t t/integration/*.t
 EOM
 }
 

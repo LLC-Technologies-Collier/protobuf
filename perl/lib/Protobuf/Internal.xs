@@ -155,3 +155,15 @@ verify_binary_diff(a_sv, b_sv, name)
         a = SvPV(a_sv, a_len);
         b = SvPV(b_sv, b_len);
         PerlUpb_VerifyBinaryDiff(aTHX_ a, a_len, b, b_len, name);
+
+SV*
+get_contention_stats()
+    CODE:
+        RETVAL = PerlUpb_ObjCache_GetContentionStats(aTHX);
+    OUTPUT:
+        RETVAL
+
+void
+preallocate_arena()
+    CODE:
+        PerlUpb_Registry_PreallocateArena(aTHX);

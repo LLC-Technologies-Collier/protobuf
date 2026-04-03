@@ -8,10 +8,6 @@
 #include <unistd.h>
 #include <time.h>
 
-// -- Canary Logic --
-
-// (Now in arena.h as static inline)
-
 // -- Stats Tracking & Chaos Allocator --
 
 #include "xs/protobuf/obj_cache.h"
@@ -29,13 +25,16 @@ static long my_mbind(void *start, unsigned long len, int mode,
 
 static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize,
                                      size_t size, size_t* actual_size) {
+    if (!alloc) return upb_alloc_global.func(&upb_alloc_global, ptr, oldsize, size, actual_size);
     PerlUpb_StatsAlloc* s = (PerlUpb_StatsAlloc*)alloc;
     dTHX;
     
+    if (!aTHX) return upb_alloc_global.func(&upb_alloc_global, ptr, oldsize, size, actual_size);
+
     // ... (chaos logic)
     if (s->use_chaos && size > 0) {
         PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
-        if (reg->chaos.enabled) {
+        if (reg && reg->chaos.enabled) {
             // 1. Fail probability (prefers StatsAlloc override, fallbacks to Registry)
             double fail_p = (s->fail_probability > 0) ? s->fail_probability : reg->chaos.fail_probability;
             double r = (double)rand_r(&reg->chaos.seed) / (double)RAND_MAX;
@@ -71,7 +70,6 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
                 unsigned long mask = (1UL << s->numa_node);
                 if (my_mbind(raw, requested_size, MPOL_BIND, &mask, sizeof(mask) * 8, 0) != 0) {
                     // Mbind failed, we still have the memory but policy isn't set.
-                    // (Might happen if node is offline)
                 }
                 if (old_ptr) {
                     memcpy(raw, old_ptr, old_requested_size < requested_size ? old_requested_size : requested_size);
@@ -91,9 +89,15 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
             if (ptr == NULL) {
                 s->total_reserved += size;
                 s->total_blocks++;
+                if (s->total_reserved > s->historical_max_size) {
+                    s->historical_max_size = s->total_reserved;
+                }
                 PerlUpb_ObjCache_LogEvent(aTHX, ALLOC_EVENT_MALLOC, ret);
             } else {
                 s->total_reserved = (s->total_reserved - oldsize) + size;
+                if (s->total_reserved > s->historical_max_size) {
+                    s->historical_max_size = s->total_reserved;
+                }
                 PerlUpb_ObjCache_LogEvent(aTHX, ALLOC_EVENT_REALLOC, ret);
             }
         }
@@ -117,21 +121,6 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
 
 // -- Arena Factory Implementation --
 
-upb_Arena* PerlUpb_Arena_Acquire(pTHX_ PerlUpb_ArenaLifecycle lifecycle) {
-    if (lifecycle == PERL_UPB_LIFECYCLE_TRANSIENT) {
-        PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
-        if (reg->cached_transient_arena) {
-            // Check for excessive growth (e.g. > 1MB) to prevent leakage
-            // but for now we just free and recreate since Reset is missing.
-            // In a future version of upb, we'll use a real reset.
-            PerlUpb_Arena_Release(aTHX_ reg->cached_transient_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
-        }
-        reg->cached_transient_arena = upb_Arena_New();
-        return reg->cached_transient_arena;
-    }
-    return upb_Arena_New();
-}
-
 void PerlUpb_Arena_Release(pTHX_ upb_Arena* arena, PerlUpb_ArenaLifecycle lifecycle) {
     if (lifecycle == PERL_UPB_LIFECYCLE_TRANSIENT) {
         // Cached arenas are kept alive until interpreter destruction
@@ -142,6 +131,7 @@ void PerlUpb_Arena_Release(pTHX_ upb_Arena* arena, PerlUpb_ArenaLifecycle lifecy
 
 // Specialized Acquire for Stats Tracking
 upb_Arena* PerlUpb_Arena_AcquireWithStats(pTHX_ PerlUpb_StatsAlloc* s) {
+    if (!s) return upb_Arena_New();
     s->base.func = PerlUpb_StatsAlloc_Func;
     s->total_reserved = 0;
     s->total_blocks = 0;
@@ -149,7 +139,33 @@ upb_Arena* PerlUpb_Arena_AcquireWithStats(pTHX_ PerlUpb_StatsAlloc* s) {
     s->use_chaos = true;
     s->fail_probability = 0;
     s->delay_probability = 0;
-    return upb_Arena_Init(NULL, 0, &s->base);
+
+    size_t hint = s->historical_max_size > 0 ? s->historical_max_size : 1;
+    if (hint > 1024 * 1024) hint = 1024 * 1024; // Cap at 1MB
+
+    // CRITICAL: use upb_Arena_Init with hint to force initial block from custom allocator
+    upb_Arena* arena = upb_Arena_Init(NULL, hint, &s->base);
+    if (!arena) {
+        croak("Failed to acquire upb_Arena (StatsAlloc)");
+    }
+    return arena;
+}
+
+upb_Arena* PerlUpb_Arena_Acquire(pTHX_ PerlUpb_ArenaLifecycle lifecycle) {
+    PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    if (!reg) {
+        upb_Arena* arena = upb_Arena_New();
+        if (!arena) croak("Failed to acquire upb_Arena (Default)");
+        return arena;
+    }
+    if (lifecycle == PERL_UPB_LIFECYCLE_TRANSIENT) {
+        if (reg->cached_transient_arena) {
+            PerlUpb_Arena_Release(aTHX_ reg->cached_transient_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
+        }
+        reg->cached_transient_arena = PerlUpb_Arena_AcquireWithStats(aTHX_ &reg->stats_alloc);
+        return reg->cached_transient_arena;
+    }
+    return PerlUpb_Arena_AcquireWithStats(aTHX_ &reg->stats_alloc);
 }
 
 // -- Arena Wrapper Functions --
@@ -159,6 +175,7 @@ void* PerlUpb_Arena_CreateRaw(pTHX) {
     if (!arena_wrapper) {
         croak("Failed to allocate PerlUpb_Arena");
     }
+    // For raw wrapper creation, we use its own local stats_alloc
     arena_wrapper->arena = PerlUpb_Arena_AcquireWithStats(aTHX_ &arena_wrapper->stats_alloc);
     if (!arena_wrapper->arena) {
         safefree(arena_wrapper);
@@ -171,7 +188,8 @@ void PerlUpb_Arena_DestroyRaw(pTHX_ void* ptr) {
     PerlUpb_Arena *arena_wrapper = (PerlUpb_Arena *)ptr;
     if (arena_wrapper) {
         if (arena_wrapper->arena) {
-            PerlUpb_Arena_Release(aTHX_ arena_wrapper->arena, PERL_UPB_LIFECYCLE_PERMANENT);
+            // We don't use Arena_Release here because we WANT it freed
+            upb_Arena_Free(arena_wrapper->arena);
         }
         safefree(arena_wrapper);
     }

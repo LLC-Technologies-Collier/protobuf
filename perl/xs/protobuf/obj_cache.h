@@ -47,5 +47,8 @@ void PerlUpb_ObjCache_LogEvent(pTHX_ int type, const void* ptr);
 // Returns the audit log as a Perl array reference.
 SV* PerlUpb_ObjCache_GetAuditLog(pTHX);
 
+// Returns lock contention statistics as a Perl hash reference.
+SV* PerlUpb_ObjCache_GetContentionStats(pTHX);
+
 #endif // PERL_PROTOBUF_OBJ_CACHE_H_
 

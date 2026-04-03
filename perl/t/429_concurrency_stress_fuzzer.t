@@ -19,8 +19,8 @@ subtest 'concurrency stress fuzzer (Coro)' => sub {
     my $ops_per_coro = 50;
     my @coros;
     
-    # 1. Enable Chaos Engine for extra stress
-    Protobuf::Internal::set_chaos_params(0.05, 0.05, 10, 1234);
+    # 1. Enable Chaos Engine
+    Protobuf::Internal::set_chaos_params(0.1, 0.1, 10, 1234);
     Protobuf::Internal::set_chaos_enabled(1);
     
     vdiag("Spawning $num_coros coroutines, each performing $ops_per_coro random operations...");

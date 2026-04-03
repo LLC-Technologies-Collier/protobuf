@@ -321,7 +321,7 @@
       "t/c/upb-perl-test.h",
       "libcoro/coro.h"
     ],
-    "extra_src": "libcoro/coro.c"
+    "extra_src": ["libcoro/coro.c", "xs/protobuf/obj_cache.c", "xs/protobuf/arena.c"]
   },
   "integration/030_protobuf": {
     "deps": [
@@ -330,7 +330,8 @@
       "xs/protobuf/obj_cache.h",
       "xs/protobuf/arena.h",
       "xs/protobuf/utils.h"
-    ]
+    ],
+    "extra_src": ["xs/protobuf/obj_cache.c", "xs/protobuf/arena.c"]
   },
   "integration/030_protobuf_multi_interp": {
     "deps": [
@@ -338,7 +339,8 @@
       "xs/protobuf/registry.h",
       "xs/protobuf/obj_cache.h",
       "t/c/upb-perl-test.h"
-    ]
+    ],
+    "extra_src": ["xs/protobuf/obj_cache.c", "xs/protobuf/arena.c"]
   },
   "integration/035_croak_test": {
     "deps": [

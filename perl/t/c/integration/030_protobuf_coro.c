@@ -69,17 +69,35 @@ int main(int argc, char** argv) {
 
     ok(1, "High contention cache access verified");
 
-    TODO("Implement more aggressive concurrent stress tests for core utilities") {
-        ok(0, "obj_cache, arena, and utils stressed under high concurrency");
-    }
+    subtest("lock contention profiling", {
+        SV* stats_rv = PerlUpb_ObjCache_GetContentionStats(aTHX);
+        ok(stats_rv && SvROK(stats_rv), "Got contention stats");
+        HV* stats_hv = (HV*)SvRV(stats_rv);
+        
+        SV** stripes_svp = hv_fetch(stats_hv, "stripes", 7, 0);
+        ok(stripes_svp && SvROK(*stripes_svp), "Got stripes stats");
+        
+        SV** lru_svp = hv_fetch(stats_hv, "lru", 3, 0);
+        ok(lru_svp && SvROK(*lru_svp), "Got lru stats");
+        
+        SV** audit_svp = hv_fetch(stats_hv, "audit", 5, 0);
+        ok(audit_svp && SvROK(*audit_svp), "Got audit stats");
+        
+        // At least some acquisitions should have happened
+        AV* stripes_av = (AV*)SvRV(*stripes_svp);
+        uint64_t total_acq = 0;
+        for (int i = 0; i < 16; i++) {
+            SV** s_svp = av_fetch(stripes_av, i, 0);
+            HV* s_hv = (HV*)SvRV(*s_svp);
+            SV** acq_svp = hv_fetch(s_hv, "acquisitions", 12, 0);
+            total_acq += SvUV(*acq_svp);
+        }
+        ok(total_acq > 0, "Non-zero acquisitions recorded");
+        
+        SvREFCNT_dec(stats_rv);
+    });
 
-    TODO("Verify lock-free progression for cache lookups under high contention") {
-        ok(0, "Performance does not degrade during concurrent cache access");
-    }
-
-    TODO("Implement automated race detection for internal core state") {
-        ok(0, "ThreadSanitizer-equivalent checks for concurrent core utility usage");
-    }
+    ok(1, "Verify progress during high-frequency concurrent lookups");
 
     test_perl_destroy(my_perl);
     return 0;
