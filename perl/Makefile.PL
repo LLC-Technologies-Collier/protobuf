@@ -15,11 +15,15 @@ use Sideload::Build::FileLists qw(
     get_xs_helper_c_files
 );
 
-my $asan_flags = $ENV{USE_ASAN} ? "-fsanitize=address" : "";
-my $ubsan_flags = $ENV{USE_UBSAN} ? "-fsanitize=undefined" : "";
-my $msan_flags = $ENV{USE_MSAN} ? "-fsanitize=memory" : "";
-my $tsan_flags = $ENV{USE_TSAN} ? "-fsanitize=thread" : "";
-my $sanitizer_flags = join(" ", grep { $_ } $asan_flags, $ubsan_flags, $msan_flags, $tsan_flags);
+sub _get_sanitizer_flags {
+    my $asan_flags = $ENV{USE_ASAN} ? "-fsanitize=address" : "";
+    my $ubsan_flags = $ENV{USE_UBSAN} ? "-fsanitize=undefined" : "";
+    my $msan_flags = $ENV{USE_MSAN} ? "-fsanitize=memory" : "";
+    my $tsan_flags = $ENV{USE_TSAN} ? "-fsanitize=thread" : "";
+    return join(" ", grep { $_ } $asan_flags, $ubsan_flags, $msan_flags, $tsan_flags);
+}
+
+my $sanitizer_flags = _get_sanitizer_flags();
 
 # Attempt to generate ppport.h
 eval { require Devel::PPPort; };
