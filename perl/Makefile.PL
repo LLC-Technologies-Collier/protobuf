@@ -286,26 +286,14 @@ EOM
     });
     $make_frag .= "\n";
 
-    # Rule to run all C tests
-    if (@c_test_targets) {
-        $make_frag .= 'test_c: build_c_tests $(COMMON_LIB)' . "\n";
-        foreach my $target (sort @c_test_targets) {
-            $make_frag .= "\t" . sprintf('@echo "Running test: %s"', $target) . "\n";
-            my $run_command = 'LD_LIBRARY_PATH="' . $Config{archlibexp} . ':$$LD_LIBRARY_PATH" ASAN_OPTIONS=detect_leaks=0:abort_on_error=1:detect_odr_violation=0 ' . $target;
-            $make_frag .= "\t" . $run_command . "\n";
-        }
-    }
-
-    # Rule to run all C benchmarks
-    if (@c_bench_targets) {
-        $make_frag .= 'bench: build_bench $(COMMON_LIB)' . "\n";
-        foreach my $target (sort @c_bench_targets) {
-            $make_frag .= "\t" . sprintf('@echo "Running benchmark: %s"', $target) . "\n";
-            # For benchmarks, we might want to disable ASan for accurate results if it's on
-            my $run_command = 'LD_LIBRARY_PATH="' . $Config{archlibexp} . ':$$LD_LIBRARY_PATH" ' . $target;
-            $make_frag .= "\t" . $run_command . "\n";
-        }
-    }
+    # Rules to run all C tests and benchmarks
+    $make_frag .= main::_render_tt('run_targets.mk.tt', {
+        c_test_targets  => \@c_test_targets,
+        c_bench_targets => \@c_bench_targets,
+        archlibexp      => $Config{archlibexp},
+        COMMON_LIB => $common_lib,
+    });
+    $make_frag .= "\n";
 
 
     return $make_frag;
