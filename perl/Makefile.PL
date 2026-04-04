@@ -126,7 +126,7 @@ sub MY::postamble {
             base_flags => $base_flags,
         });
     }
-    $make_frag .= join("\n", @obj_rules) . "\n";
+    $make_frag .= join("", @obj_rules) . "\n";
 
     $make_frag .= <<"EOM";
 # Make sure the static lib is built before the default 'all' target
