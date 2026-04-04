@@ -218,10 +218,17 @@ EOM
             my $o = $s;
             $o =~ s/\.cc?$/.o/;
             next if $done_o{$o}++;
-            $c_test_rules .= "$o: $s $deps t/c/upb-perl-test.h\n";
-            $c_test_rules .= "\t".'@mkdir -p $(@D)'."\n";
             my $compiler = ($s =~ /\.cc$/) ? '$(CXX)' : '$(CC)';
-            $c_test_rules .= "\t$compiler \$(CCFLAGS) $embed_cflags $test_inc $extra_ccflags -c $s -o $o\n\n";
+            $c_test_rules .= main::_render_tt('c_test_one_compile.mk.tt', {
+                s => $s,
+                o => $o,
+                deps => $deps,
+                compiler => $compiler,
+                embed_cflags => $embed_cflags,
+                test_inc => $test_inc,
+                extra_ccflags => $extra_ccflags,
+                space => ' ',
+            });
         }
 
         # Rule to link the object files into an executable
