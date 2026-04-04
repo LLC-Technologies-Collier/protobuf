@@ -128,10 +128,9 @@ sub MY::postamble {
     }
     $make_frag .= join("", @obj_rules) . "\n";
 
-    $make_frag .= <<"EOM";
-# Make sure the static lib is built before the default 'all' target
-all :: ${common_lib}
+    $make_frag .= main::_render_tt('all_common_lib_dep.mk.tt', { COMMON_LIB => $common_lib });
 
+    $make_frag .= <<"EOM";
 # Rule to build the static library
 ${common_lib}: ${common_o_string} libprotobufperl.map
 	\$(RM_F) ${common_lib}
