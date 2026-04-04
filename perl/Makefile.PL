@@ -267,7 +267,10 @@ EOM
     $make_frag .= $c_bench_rules;
 
     # Add all C test and benchmark targets to .PHONY
-    $make_frag .= ".PHONY: " . join(" ", @c_test_targets, @c_bench_targets) . " test_c build_c_tests bench build_bench\n";
+    $make_frag .= main::_render_tt('phony.mk.tt', {
+        c_test_targets => \@c_test_targets,
+        c_bench_targets => \@c_bench_targets,
+    });
 
     # Rule to generate test_descriptor.bin
     $make_frag .= main::_render_tt('test_descriptor_bin.mk.tt', {});

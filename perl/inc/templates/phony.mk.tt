@@ -1,0 +1,1 @@
+.PHONY: [% c_test_targets.join(" ") %] [% c_bench_targets.join(" ") %] test_c build_c_tests bench build_bench
