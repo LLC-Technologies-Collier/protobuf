@@ -67,17 +67,20 @@ for my $i (0 .. $#COMMON_C_FILES) {
 # Subroutines to override MakeMaker behavior must be defined before WriteMakefile
 
 # Template Toolkit helper function
+my $tt;
 sub _render_tt {
     my ($template_file, $vars) = @_;
-    my $template = Template->new({
-        INCLUDE_PATH => [ 'inc/templates' ],
-        PRE_CHOMP    => 1,
-        POST_CHOMP   => 1,
-        TRIM         => 0,
-    });
+    if (!$tt) {
+        $tt = Template->new({
+            INCLUDE_PATH => [ 'inc/templates' ],
+            PRE_CHOMP    => 1,
+            POST_CHOMP   => 1,
+            TRIM         => 0,
+        });
+    }
     my $output = '';
-    if (!$template->process($template_file, $vars, \$output)) {
-        die "Template processing failed for $template_file: " . $template->error();
+    if (!$tt->process($template_file, $vars, \$output)) {
+        die "Template processing failed for $template_file: " . $tt->error();
     }
     return $output;
 }
