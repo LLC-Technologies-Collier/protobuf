@@ -244,7 +244,7 @@ EOM
             link_line => $link_line,
         });
     }
-    $c_test_rules .= "# end c test rules\n";
+    $c_test_rules .= main::_render_tt('c_test_rules_footer.mk.tt', {});
     $make_frag .= $c_test_rules;
 
     # C Benchmarks rules
