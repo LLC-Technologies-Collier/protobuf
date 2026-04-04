@@ -1,0 +1,4 @@
+t/data/test_descriptor.bin: t/c/test.proto
+	@echo "Generating t/data/test_descriptor.bin from t/c/test.proto"
+	@mkdir -p t/data
+	protoc --descriptor_set_out=t/data/test_descriptor.bin --include_imports --proto_path=t/c --proto_path=.. t/c/test.proto

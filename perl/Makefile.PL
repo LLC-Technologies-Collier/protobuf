@@ -270,13 +270,7 @@ EOM
     $make_frag .= ".PHONY: " . join(" ", @c_test_targets, @c_bench_targets) . " test_c build_c_tests bench build_bench\n";
 
     # Rule to generate test_descriptor.bin
-    $make_frag .= <<'EOM';
-
-t/data/test_descriptor.bin: t/c/test.proto
-	@echo "Generating t/data/test_descriptor.bin from t/c/test.proto"
-	@mkdir -p t/data
-	protoc --descriptor_set_out=t/data/test_descriptor.bin --include_imports --proto_path=t/c --proto_path=.. t/c/test.proto
-EOM
+    $make_frag .= main::_render_tt('test_descriptor_bin.mk.tt', {});
 
     # Target to build all C tests
     if (@c_test_targets) {
