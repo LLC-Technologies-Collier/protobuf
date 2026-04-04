@@ -34,53 +34,53 @@ The core idea is to embed Makefile fragments as strings within `Makefile.PL` and
 
 ## Tasks
 
-*   [ ] REFRESH: Review all documents in @perl/doc/guidelines/**
-*   [ ] REFRESH: Review Template Toolkit and ExtUtils::MakeMaker documentation.
+*   [x] REFRESH: Review all documents in @perl/doc/guidelines/**
+*   [x] REFRESH: Review Template Toolkit and ExtUtils::MakeMaker documentation.
 
-1.  **[ ] Initial Setup:**
-    *   [ ] Add `Template` to `PREREQ_PM` in `perl/Makefile.PL`.
-    *   [ ] Add `use Template;` at the top of `perl/Makefile.PL`.
-    *   [ ] VERIFY: Build and Test Pass.
+1.  **[x] Initial Setup:**
+    *   [x] Add `Template` to `PREREQ_PM` in `perl/Makefile.PL`.
+    *   [x] Add `use Template;` at the top of `perl/Makefile.PL`.
+    *   [x] VERIFY: Build and Test Pass.
 
-2.  **[ ] Template Rendering Helper:**
-    *   [ ] Create a small helper function `_render_tt( $tt_string, $vars )` within `perl/Makefile.PL` (outside any package). This function will create a new `Template` object configured with `PRE_CHOMP => 1, POST_CHOMP => 1, TRIM => 0` and process the given string.
-    *   [ ] VERIFY: Build and Test Pass.
+2.  **[x] Template Rendering Helper:**
+    *   [x] Create a small helper function `_render_tt( $tt_string, $vars )` within `perl/Makefile.PL` (outside any package). This function will create a new `Template` object configured with `PRE_CHOMP => 1, POST_CHOMP => 1, TRIM => 0` and process the given string.
+    *   [x] VERIFY: Build and Test Pass.
 
-3.  **[ ] Migrate `COMMON_LIB` Definition:**
-    *   [ ] Convert the `COMMON_LIB = $common_lib` line in `MY::postamble` to a TT template string.
-    *   [ ] Use `_render_tt` to render this template.
-    *   [ ] VERIFY: Build and Test Pass.
+3.  **[x] Migrate `COMMON_LIB` Definition:**
+    *   [x] Convert the `COMMON_LIB = $common_lib` line in `MY::postamble` to a TT template string.
+    *   [x] Use `_render_tt` to render this template.
+    *   [x] VERIFY: Build and Test Pass.
 
-4.  **[ ] Migrate Common Object File Rules:**
-    *   [ ] Convert the `foreach my $pair (@$file_pairs)` loop in `MY::postamble` to a TT template string.
-    *   [ ] Pass `$file_pairs` to `_render_tt`.
-    *   [ ] VERIFY: Build and Test Pass.
+4.  **[x] Migrate Common Object File Rules:**
+    *   [x] Convert the `foreach my $pair (@$file_pairs)` loop in `MY::postamble` to a TT template string.
+    *   [x] Pass `$file_pairs` to `_render_tt`.
+    *   [x] VERIFY: Build and Test Pass.
 
-5.  **[ ] Migrate `libprotobufperl` Link Rule:**
-    *   [ ] Convert the EOM block for linking `$(COMMON_LIB)` to a TT template string.
-    *   [ ] Use `_render_tt`.
-    *   [ ] VERIFY: Build and Test Pass.
+5.  **[x] Migrate `libprotobufperl` Link Rule:**
+    *   [x] Convert the EOM block for linking `$(COMMON_LIB)` to a TT template string.
+    *   [x] Use `_render_tt`.
+    *   [x] VERIFY: Build and Test Pass.
 
-6.  **[ ] Migrate `upb-perl-test.o` Rule:**
-    *   [ ] Convert the EOM block for `t/c/upb-perl-test.o` to a TT template string.
-    *   [ ] Use `_render_tt`.
-    *   [ ] VERIFY: Build and Test Pass.
+6.  **[x] Migrate `upb-perl-test.o` Rule:**
+    *   [x] Convert the EOM block for `t/c/upb-perl-test.o` to a TT template string.
+    *   [x] Use `_render_tt`.
+    *   [x] VERIFY: Build and Test Pass.
 
-7.  **[ ] Migrate C Test Rules:**
-    *   [ ] Convert the C test rules generation loop to a TT template string.
-    *   [ ] This involves passing `c_test_config`, paths, and flags to the template.
-    *   [ ] Use `_render_tt`.
-    *   [ ] VERIFY: Build and Test Pass.
+7.  **[x] Migrate C Test Rules:**
+    *   [x] Convert the C test rules generation loop to a TT template string.
+    *   [x] This involves passing `c_test_config`, paths, and flags to the template.
+    *   [x] Use `_render_tt`.
+    *   [x] VERIFY: Build and Test Pass.
 
-8.  **[ ] Migrate C Benchmark Rules:**
-    *   [ ] Convert the C benchmark rules generation loop to a TT template string.
-    *   [ ] Use `_render_tt`.
-    *   [ ] VERIFY: Build and Test Pass.
+8.  **[x] Migrate C Benchmark Rules:**
+    *   [x] Convert the C benchmark rules generation loop to a TT template string.
+    *   [x] Use `_render_tt`.
+    *   [x] VERIFY: Build and Test Pass.
 
-9.  **[ ] Migrate PHONY, test_descriptor.bin, build_c_tests, build_c_bench:**
-    *   [ ] Convert the remaining static and conditional blocks in `MY::postamble` into one or more TT template strings.
-    *   [ ] Use `_render_tt`.
-    *   [ ] VERIFY: Build and Test Pass.
+9.  **[x] Migrate PHONY, test_descriptor.bin, build_c_tests, build_c_bench:**
+    *   [x] Convert the remaining static and conditional blocks in `MY::postamble` into one or more TT template strings.
+    *   [x] Use `_render_tt`.
+    *   [x] VERIFY: Build and Test Pass.
 
 10. **[ ] Migrate Test XS Rules (in MY::test):**
     *   This is more complex as it affects `MY::test`. The logic for finding `t/lib/Protobuf/Internal/Test/*.xs` needs to be done *before* `WriteMakefile`.
@@ -92,15 +92,20 @@ The core idea is to embed Makefile fragments as strings within `Makefile.PL` and
     *   **Sub-Step 10.5:** Update `MY::test` to depend on the Test XS .so targets.
     *   [ ] VERIFY: Build and Test Pass after each sub-step.
 
-11. **[ ] Optional: Move Templates to Files:**
-    *   [ ] Create `perl/inc/templates/` directory.
-    *   [ ] Move each template string into its own `.mk.tt` file (e.g., `common_lib.mk.tt`, `c_test.mk.tt`, etc.).
-    *   [ ] Update `_render_tt` to accept a file name and configure `Template` with `INCLUDE_PATH => ['inc/templates']`.
-    *   [ ] VERIFY: Build and Test Pass.
+11. **[x] Optional: Move Templates to Files:**
+    *   [x] Create `perl/inc/templates/` directory.
+    *   [x] Move each template string into its own `.mk.tt` file (e.g., `common_lib.mk.tt`, `c_test.mk.tt`, etc.).
+    *   [x] Update `_render_tt` to accept a file name and configure `Template` with `INCLUDE_PATH => ['inc/templates']`.
+    *   [x] VERIFY: Build and Test Pass.
 
 12. **[ ] Documentation:**
     *   [ ] Update `perl/doc/architecture/build_system.md`.
     *   [ ] Mark this document (015_Makefile_Refactor.md) as complete.
+
+## Engineering Excellence (Reach for More)
+    *   [ ] Use more conditional logic within templates to reduce Perl-side complexity. (Difficulty: 3/10)
+    *   [ ] Add a `VERBOSE` option to `perl Makefile.PL` to inject debug comments into the Makefile. (Difficulty: 4/10)
+    *   [ ] Create a test suite to validate generated Makefile syntax using `make -n`. (Difficulty: 6/10)
 
 ## Lessons Learned & Pitfalls Encountered
 
