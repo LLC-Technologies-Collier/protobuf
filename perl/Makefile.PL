@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use lib 'local/lib';
 use ExtUtils::MakeMaker;
 use Config;
 use File::Spec;
@@ -7,6 +8,12 @@ use File::Find;
 use ExtUtils::Embed;
 use JSON::MaybeXS;
 use Template;
+use Sideload::Build::FileLists qw(
+    get_upb_c_files
+    get_utf8_c_files
+    get_generated_c_files
+    get_xs_helper_c_files
+);
 
 my $asan_flags = $ENV{USE_ASAN} ? "-fsanitize=address" : "";
 my $ubsan_flags = $ENV{USE_UBSAN} ? "-fsanitize=undefined" : "";
@@ -26,21 +33,10 @@ if (!$@) {
 }
 
 # Define your common C source files relative to perl/
-my @UPB_C_FILES;
-find(sub {
-    #push @UPB_C_FILES, $File::Find::name if $File::Find::name =~ /\.c$/ || ( $File::Find::name !~ m{/conformance/} && $File::Find::name !~ m{/reflection/stage0/} && $File::Find::name !~ m{/cmake/} );
-    push @UPB_C_FILES, $File::Find::name if /\.c$/ && $File::Find::name !~ m{/conformance/} && $File::Find::name !~ m{/reflection/stage0/} && $File::Find::name !~ m{/cmake/};
-
-}, File::Spec->catfile("..", "upb"));
-
-my @UTF8_C_FILES = grep { !m{/(lemire|range)-/} } glob(File::Spec->catfile("..", "third_party", "utf8_range", "*.c"));
-my @GENERATED_C_FILES = (
-    File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto", "google", "protobuf", "descriptor.upb.c"),
-    File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto", "google", "protobuf", "descriptor.upb_minitable.c"),
-);
-
-# Add our XS helper C files
-my @XS_HELPER_C_FILES = glob("xs/*.c xs/*/*.c");
+my @UPB_C_FILES = get_upb_c_files();
+my @UTF8_C_FILES = get_utf8_c_files();
+my @GENERATED_C_FILES = get_generated_c_files();
+my @XS_HELPER_C_FILES = get_xs_helper_c_files();
 
 my @COMMON_C_FILES = (@UPB_C_FILES, @UTF8_C_FILES, @GENERATED_C_FILES, @XS_HELPER_C_FILES);
 
