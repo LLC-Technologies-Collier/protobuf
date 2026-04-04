@@ -243,7 +243,7 @@ sub MY::postamble {
             link_line => $link_line,
         });
     }
-    $c_test_rules .= main::_render_tt('c_test_rules_footer.mk.tt', {});
+    $c_test_rules .= "# end c test rules\n";
     $make_frag .= $c_test_rules;
 
     # C Benchmarks rules
@@ -288,6 +288,9 @@ sub MY::postamble {
     });
     $make_frag .= "\n";
 
+    # Rule for TSAN test
+    $make_frag .= main::_render_tt('tsan_test.mk.tt', {});
+    $make_frag .= "\n";
 
     return $make_frag;
 }
