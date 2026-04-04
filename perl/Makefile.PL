@@ -133,12 +133,8 @@ ${common_lib}: ${common_o_string} libprotobufperl.map
 EOM
 
     # Rule for upb-perl-test.o
-    $make_frag .= <<'EOM';
-t/c/upb-perl-test.o: t/c/upb-perl-test.c t/c/upb-perl-test.h
-	@mkdir -p t/c
-	$(CC) $(CCFLAGS) $(INC) -I. -c t/c/upb-perl-test.c -o t/c/upb-perl-test.o
-
-EOM
+    $make_frag .= main::_render_tt('upb_perl_test_o.mk.tt', {});
+    $make_frag .= "\n";
 
     # Custom C test rules
     use ExtUtils::Embed;

@@ -1,0 +1,3 @@
+t/c/upb-perl-test.o: t/c/upb-perl-test.c t/c/upb-perl-test.h
+	@mkdir -p t/c
+	$(CC) $(CCFLAGS) $(INC) -I. -c t/c/upb-perl-test.c -o t/c/upb-perl-test.o
