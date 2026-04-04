@@ -74,7 +74,7 @@ sub _render_tt {
         $tt = Template->new({
             INCLUDE_PATH => [ 'inc/templates' ],
             PRE_CHOMP    => 1,
-            POST_CHOMP   => 1,
+            POST_CHOMP   => 0,
             TRIM         => 0,
         });
     }
