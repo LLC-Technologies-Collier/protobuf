@@ -6,7 +6,7 @@
 *   [x] Tests cover interactions between convert functions and core utilities (arena, cache). (Verified: int32, string, uint32, bool).
 *   [ ] TODO: Implement exhaustive primitive roundtrip tests for all 18 UPB types. (Difficulty: 4/10).
 *   [x] Verify integrated Object Cache identity for message conversions.
-*   [x] Verify Math::BigInt roundtrip support in integrated context.
+*   [ ] TODO: Verify Math::BigInt roundtrip support in this integrated context. (Difficulty: 2/10)
 *   [x] Create test file `perl/t/c/integration/050_convert_coro.c`
 *   [x] Tests in `perl/t/c/integration/050_convert_coro.c` use libcoro to stress concurrent C function usage for convert. (Fully implemented).
 *   [x] Add libcoro stress for SvToUpb type conversion.
@@ -17,7 +17,7 @@
 *   [ ] Implement fallback to slow-path during memory pressure. (Difficulty: 3/10).
 *   [x] libcoro integration tests pass.
 *   [x] Integration tests pass.
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.
 
 *   **Engineering Excellence (Reach for More):**
     *   [ ] Add shared memory metadata for cross-interpreter objects. (Difficulty: 3/10).
@@ -26,3 +26,6 @@
     *   [ ] Add metadata for accessor hot-path optimization. (Difficulty: 3/10).
     *   [ ] Implement VPP-style dispatch for bulk scalar conversion. (Difficulty: 3/10).
     *   [ ] Add AVX2 kernels for specific primitive type vectors. (Difficulty: 3/10).
+    *   [ ] Golden Master Conversion Tests. (Difficulty: 6/10)
+    *   [ ] Cross-Version Conversion Safety Tests. (Difficulty: 8/10)
+    *   [ ] Micro-benchmarks for Conversion Paths. (Difficulty: 5/10)

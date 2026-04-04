@@ -21,7 +21,7 @@
 *   [ ] TODO: Implement stress test for rapid pool creation and destruction. (Difficulty: 2/10).
 *   [x] libcoro integration tests pass.
 *   [x] Integration tests pass.
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.
 
 *   **Engineering Excellence (Reach for More):**
     *   [ ] TODO: Research upb's support for reloading descriptors in an existing pool. (Difficulty: 3/10).
@@ -35,3 +35,6 @@
     *   [ ] TODO: Implement background audit task to verify these constraints. (Difficulty: 3/10).
     *   [ ] TODO: Logic to detect and log (or fix) any integrity violations. (Difficulty: 3/10).
     *   [ ] TODO: Test the auditor under various failure scenarios. (Difficulty: 2/10).
+    *   [ ] **Snapshotting:** Implement Read-Only DescriptorPool Snapshots. (Difficulty: 8/10)
+    *   [ ] **Lazy Loading:** Implement Lazy Loading of FileDescriptorProtos. (Difficulty: 7/10)
+    *   [ ] **Visualization:** Add function to dump DescriptorPool to Graphviz DOT. (Difficulty: 5/10)

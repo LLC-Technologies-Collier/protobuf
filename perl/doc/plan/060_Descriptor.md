@@ -26,7 +26,6 @@
     *   [ ] TODO: Ensure data layout compatibility between old and new descriptors. (Difficulty: 3/10).
     *   [ ] TODO: Implement re-dispatch logic to use the new schema for existing objects. (Difficulty: 3/10).
     *   [ ] TODO: Test hot-patching with active objects in a multi-threaded environment. (Difficulty: 3/10).
-    *   [x] Implement O(1) Descriptor lookup by fingerprinted hash for ultra-fast dispatch.
 *   **perl/xs/descriptor/message.c:**
     *   [x] Create test file `perl/t/c/descriptor/message.c`.
     *   [x] Tests cover all public functions in the corresponding .h file. (Verified basic property access).
@@ -68,3 +67,4 @@
     *   [x] Implement C functions.
     *   [ ] C tests pass.
 *   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

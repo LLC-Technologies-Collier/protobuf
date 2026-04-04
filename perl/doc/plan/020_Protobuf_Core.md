@@ -55,10 +55,13 @@
     *   [x] C tests pass for `perl/t/c/protobuf/utils.c`.
 
 *   **Engineering Excellence (Reach for More):**
-    *   [x] Implement O(1) Descriptor lookup by fingerprinted hash for ultra-fast dispatch.
+    *   [ ] Implement O(1) Descriptor lookup by fingerprinted hash for ultra-fast dispatch. (Difficulty: 7/10) - *Moved to DescriptorPool milestone*
     *   [x] Implement NUMA-aware arena allocation to optimize multi-socket memory placement.
     *   [x] Implement Chaos Allocation Engine for non-deterministic resource pressure testing.
     *   [x] Implement Audit-log driven leak sanitizer for sub-arena allocation tracking.
-    *   [x] Implement AOT-compiled XS validator generation (C level).
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+    *   [ ] Implement AOT-compiled XS validator generation (C level). (Difficulty: 9/10)
+    *   [ ] **Obj Cache:** Implement Predictive Cache Pre-Warming. (Difficulty: 7/10)
+    *   [ ] **Registry:** Expose Dynamic Tunables to Perl space. (Difficulty: 5/10)
+    *   [ ] **Arena:** Implement Slab Allocator for small internal objects. (Difficulty: 8/10)
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
 

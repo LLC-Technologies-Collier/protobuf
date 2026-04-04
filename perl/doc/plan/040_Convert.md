@@ -69,35 +69,30 @@
     *   [x] **SInt32**
         *   [x] Implement & Test UPB -> SV
         *   [x] Implement & Test SV -> UPB
-    *   [x] **Int64**
-        *   [ ] Implement & Test UPB -> SV (TODO: Handle BigInt).
+    *   [x] **SInt64**
+        *   [x] Implement & Test UPB -> SV (Handles BigInt)
         *   [x] Implement & Test SV -> UPB
-    *   [x] **UInt64**
-        *   [x] **Int64**
-            *   [x] Implement & Test UPB -> SV (Handles BigInt).
-            *   [x] Implement & Test SV -> UPB
-        *   [x] **UInt64**
-            *   [x] Implement & Test UPB -> SV (Handles BigInt).
-            *   [x] Implement & Test SV -> UPB
 
-        4.  **Reach for More (World-Class Goals):**
-        *   [x] Implement transparent Math::BigInt support for 64-bit integer overflows.
-        *   [ ] Add mmap support for String/Bytes scalar wrappers. (Difficulty: 3/10).
-        *   [ ] Implement direct buffer mapping for large UPB fields. (Difficulty: 3/10).
-        *   [ ] Add SSE4.1 kernel for UTF-8 sequence validation. (Difficulty: 3/10).
-        *   [ ] Verify UTF-8 validation performance for multi-megabyte strings. (Difficulty: 3/10).
-        *   [ ] Implement direct upb_Map to Perl HV projection. (Difficulty: 3/10).
-        *   [ ] Add metadata for zero-copy map identity tracking. (Difficulty: 3/10).
-        *   [x] Add range-checks to specific narrow-integer conversions.
-        *   [x] Implement `verify_limits()` utility for numeric SvToUpb.
-        *   [x] Add test cases for CodeRef and Glob conversion failures.
-        *   [x] Verify croak safety during incompatible SV conversion.
+4.  **Reach for More (World-Class Goals):**
+    *   [x] Implement transparent Math::BigInt support for 64-bit integer overflows.
+    *   [ ] Add mmap support for String/Bytes scalar wrappers. (Difficulty: 3/10).
+    *   [ ] Implement direct buffer mapping for large UPB fields. (Difficulty: 3/10).
+    *   [ ] Add SSE4.1 kernel for UTF-8 sequence validation. (Difficulty: 3/10).
+    *   [ ] Verify UTF-8 validation performance for multi-megabyte strings. (Difficulty: 3/10).
+    *   [ ] Implement direct upb_Map to Perl HV projection. (Difficulty: 3/10).
+    *   [ ] Add metadata for zero-copy map identity tracking. (Difficulty: 3/10).
+    *   [x] Add range-checks to specific narrow-integer conversions.
+    *   [x] Implement `verify_limits()` utility for numeric SvToUpb.
+    *   [x] Add test cases for CodeRef and Glob conversion failures.
+    *   [x] Verify croak safety during incompatible SV conversion.
 
-        *   [ ] TODO: Implement **Boundary-Fuzzing:** Verify that integer conversions correctly handle boundary conditions (MIN/MAX) and overflow/underflow situations with consistent error reporting. (Difficulty: 4/10).
+    *   [ ] TODO: Implement **Boundary-Fuzzing:** Verify that integer conversions correctly handle boundary conditions (MIN/MAX) and overflow/underflow situations with consistent error reporting. (Difficulty: 4/10).
+    *   [ ] **Arena Hints:** Allow type-specific size hints for sv_to_upb. (Difficulty: 6/10)
+    *   [ ] **Batch Conversion:** Implement SIMD-accelerated array conversions. (Difficulty: 8/10)
+    *   [ ] **Benchmarks:** Detailed benchmarks for all type conversions. (Difficulty: 4/10)
 
-
-    5.  **Final Review:**
+5.  **Final Review:**
     *   [x] Ensure all C tests in `perl/t/c/convert/` pass.
 
-5.  **Documentation:**
-    *   [x] Review and update perl/doc/architecture/** documents based on this milestone's implementation.
+6.  **Documentation:**
+    *   [ ] Review and update perl/doc/architecture/** documents based on this milestone's implementation.

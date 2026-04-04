@@ -36,3 +36,6 @@
     *   [ ] NUMA-Aware Allocation Balance. (Difficulty: 5/10).
     *   [ ] COW-Optimized Shared Cache. (Difficulty: 7/10).
     *   [ ] SIMD-Accelerated Integrity Scanning. (Difficulty: 6/10).
+    *   [ ] Cross-Interpreter Memory Safety Fuzzing. (Difficulty: 9/10)
+    *   [ ] Formal Verification Hooks for C functions. (Difficulty: 10/10)
+    *   [ ] Self-Healing Memory for Arenas. (Difficulty: 9/10)
