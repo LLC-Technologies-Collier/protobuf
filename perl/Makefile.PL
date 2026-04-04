@@ -350,21 +350,7 @@ package MY;
 # Modify the MY::test subroutine
 sub test {
     my $self = shift;
-    return <<'EOM';
-all :: $(COMMON_LIB)
-
-test :: all build_c_tests test_c
-	$(NOECHO) $(ECHO) "Running Perl tests"
-	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8 ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -j$$(nproc) t/*.t t/integration/*.t
-
-test_tsan :
-	make clean
-	USE_TSAN=1 perl Makefile.PL
-	USE_TSAN=1 make
-	USE_TSAN=1 make build_c_tests
-	$(NOECHO) $(ECHO) "Running ThreadSanitizer tests"
-	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" TSAN_OPTIONS="second_deadlock_stack=1" prove -b t/*.t t/integration/*.t
-EOM
+    return main::_render_tt('my_test.mk.tt', {});
 }
 
 package main;
