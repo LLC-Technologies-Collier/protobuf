@@ -243,11 +243,11 @@ EOM
             $embed_cflags, $embed_ldflags, $ldflags, "-lpcre2-8 $sanitizer_flags"
         );
 
-        $c_test_rules .= sprintf(
-            '%s: %s'. "\n\t" . '%s' . "\n\n",
-            $target, $test_deps,
-            $link_line
-        );
+        $c_test_rules .= main::_render_tt('c_test_one_link.mk.tt', {
+            target => $target,
+            test_deps => $test_deps,
+            link_line => $link_line,
+        });
     }
     $c_test_rules .= "# end c test rules\n";
     $make_frag .= $c_test_rules;
