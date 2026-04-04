@@ -125,14 +125,13 @@ sub MY::postamble {
     $make_frag .= join("", @obj_rules) . "\n";
 
     $make_frag .= main::_render_tt('all_common_lib_dep.mk.tt', { COMMON_LIB => $common_lib });
+    $make_frag .= "\n";
 
-    $make_frag .= <<"EOM";
-# Rule to build the static library
-${common_lib}: ${common_o_string} libprotobufperl.map
-	\$(RM_F) ${common_lib}
-	\$(CC) -shared -Wl,--version-script=libprotobufperl.map -o ${common_lib} ${common_o_string} \$(LDFLAGS)
-
-EOM
+    $make_frag .= main::_render_tt('common_lib_link_rule.mk.tt', {
+        COMMON_LIB => $common_lib,
+        COMMON_O_STRING => $common_o_string,
+    });
+    $make_frag .= "\n";
 
     # Rule for upb-perl-test.o
     $make_frag .= main::_render_tt('upb_perl_test_o.mk.tt', {});

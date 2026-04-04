@@ -1,0 +1,4 @@
+# Rule to build the static library
+[% COMMON_LIB %]: [% COMMON_O_STRING %] libprotobufperl.map
+	$(RM_F) [% COMMON_LIB %]
+	$(CC) -shared -Wl,--version-script=libprotobufperl.map -o [% COMMON_LIB %] [% COMMON_O_STRING %] $(LDFLAGS)
