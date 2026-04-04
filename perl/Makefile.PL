@@ -246,29 +246,22 @@ EOM
     $make_frag .= $c_test_rules;
 
     # C Benchmarks rules
-    my @c_bench_targets;
-    my $c_bench_rules = "# c benchmark rules\n";
     my @bench_sources = glob("t/c/benchmark/*.c");
-    foreach my $source (@bench_sources) {
-        my $target = $source;
+    my @c_bench_targets;
+    my @benchmark_params = map {
+        my $target = $_;
         $target =~ s/\.c$//;
-        my $object = "$target.o";
         push @c_bench_targets, $target;
+        { source => $_, target => $target, object => "$target.o" }
+    } @bench_sources;
 
-        $c_bench_rules .= "$object: $source t/c/upb-perl-test.h\n" .
-                         "\t".'@mkdir -p $(@D)'."\n" .
-                         "\t".'$(CC) $(CCFLAGS) $(INC)'." -c $source -o $object\n\n";
-
-        my $link_line = join " ", (
-            '$(CC)', '$(CCFLAGS)', '-o', $target, $object,
-            't/c/upb-perl-test.o', '-L$(CURDIR)', '-lprotobufperl',
-            $embed_cflags, $embed_ldflags, $sanitizer_flags
-        );
-
-        $c_bench_rules .= "$target: $object \$(COMMON_LIB) t/c/upb-perl-test.o\n\t$link_line\n\n";
-    }
-    $c_bench_rules .= "# end c benchmark rules\n";
-    $make_frag .= $c_bench_rules;
+    $make_frag .= main::_render_tt('c_benchmark_rules.mk.tt', {
+        benchmarks => \@benchmark_params,
+        embed_cflags => $embed_cflags,
+        embed_ldflags => $embed_ldflags,
+        sanitizer_flags => $sanitizer_flags,
+    });
+    $make_frag .= "\n";
 
     # Add all C test and benchmark targets to .PHONY
     $make_frag .= main::_render_tt('phony.mk.tt', {
@@ -284,6 +277,7 @@ EOM
         c_test_targets  => \@c_test_targets,
         c_bench_targets => \@c_bench_targets,
     });
+    $make_frag .= "\n";
 
     # Rule to run all C tests
     if (@c_test_targets) {
