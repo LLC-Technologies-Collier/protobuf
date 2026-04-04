@@ -275,15 +275,11 @@ EOM
     # Rule to generate test_descriptor.bin
     $make_frag .= main::_render_tt('test_descriptor_bin.mk.tt', {});
 
-    # Target to build all C tests
-    if (@c_test_targets) {
-        $make_frag .= 'build_c_tests: ' . join(' ', @c_test_targets) . "\n";
-    }
-
-    # Target to build all C benchmarks
-    if (@c_bench_targets) {
-        $make_frag .= 'build_bench: ' . join(' ', @c_bench_targets) . "\n";
-    }
+    # Target to build all C tests & benchmarks
+    $make_frag .= main::_render_tt('build_aggregator_targets.mk.tt', {
+        c_test_targets  => \@c_test_targets,
+        c_bench_targets => \@c_bench_targets,
+    });
 
     # Rule to run all C tests
     if (@c_test_targets) {
