@@ -6,6 +6,7 @@ use File::Spec;
 use File::Find;
 use ExtUtils::Embed;
 use JSON::MaybeXS;
+use Template;
 
 my $asan_flags = $ENV{USE_ASAN} ? "-fsanitize=address" : "";
 my $ubsan_flags = $ENV{USE_UBSAN} ? "-fsanitize=undefined" : "";
@@ -65,6 +66,23 @@ for my $i (0 .. $#COMMON_C_FILES) {
 
 # Subroutines to override MakeMaker behavior must be defined before WriteMakefile
 
+# Template Toolkit helper function
+sub _render_tt {
+    my ($template_file, $vars) = @_;
+    my $template = Template->new({
+        INCLUDE_PATH => [ 'inc/templates' ],
+        PRE_CHOMP    => 1,
+        POST_CHOMP   => 1,
+        TRIM         => 0,
+    });
+    my $output = '';
+    if (!$template->process($template_file, $vars, \$output)) {
+        die "Template processing failed for $template_file: " . $template->error();
+    }
+    return $output;
+}
+
+
 # Rules to build the static library and its object files
 sub MY::postamble {
     my $self = shift;
@@ -77,7 +95,8 @@ sub MY::postamble {
     my $common_lib = $COMMON_LIB;
     my $file_pairs = \@COMMON_FILES_PAIRS;
 
-    my $make_frag = "COMMON_LIB = $common_lib\n\n";
+    my $make_frag = main::_render_tt('common_lib_def.mk.tt', { COMMON_LIB => $common_lib });
+    $make_frag .= "\n";
 
     my %done_o;
     my @obj_rules;
