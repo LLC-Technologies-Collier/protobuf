@@ -268,7 +268,6 @@ EOM
         embed_ldflags => $embed_ldflags,
         sanitizer_flags => $sanitizer_flags,
     });
-    $make_frag .= "\n";
 
     # Add all C test and benchmark targets to .PHONY
     $make_frag .= main::_render_tt('phony.mk.tt', {
