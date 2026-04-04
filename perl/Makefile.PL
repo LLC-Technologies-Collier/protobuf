@@ -73,7 +73,7 @@ sub _render_tt {
     if (!$tt) {
         $tt = Template->new({
             INCLUDE_PATH => [ 'inc/templates' ],
-            PRE_CHOMP    => 1,
+            PRE_CHOMP    => 0,
             POST_CHOMP   => 0,
             TRIM         => 0,
         });
@@ -118,11 +118,15 @@ sub MY::postamble {
         } else {
             $cflags = "-D_GNU_SOURCE -Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes -mssse3 -msse4.1";
         }
-        push @obj_rules, "$o_file: $c_file\n" . 
-                         "\t".'@mkdir -p $(@D)'."\n" .
-                         "\t${compiler} ".'$(CCFLAGS) $(INC)'." ${cflags} ${base_flags} -c $c_file -o $o_file\n";
+        push @obj_rules, main::_render_tt('common_obj_rule.mk.tt', {
+            c => $c_file,
+            o => $o_file,
+            compiler => $compiler,
+            cflags => $cflags,
+            base_flags => $base_flags,
+        });
     }
-    $make_frag .= join("", @obj_rules) . "\n";
+    $make_frag .= join("\n", @obj_rules) . "\n";
 
     $make_frag .= <<"EOM";
 # Make sure the static lib is built before the default 'all' target
