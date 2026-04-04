@@ -22,11 +22,7 @@ if (!$@) {
         warn "Failed to generate ppport.h: $!";
     }
 } else {
-    warn "######################################################################\n";
-    warn "# Devel::PPPort not found. It is recommended to install it to ensure  #\n";
-    warn "# maximum portability of this module.                                #\n";
-    warn "# > cpan Devel::PPPort                                               #\n";
-    warn "######################################################################\n";
+    warn main::_render_tt('devel_ppport_warning.mk.tt', {});
 }
 
 # Define your common C source files relative to perl/

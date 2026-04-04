@@ -1,0 +1,6 @@
+
+######################################################################
+# Devel::PPPort not found. It is recommended to install it to ensure #
+# maximum portability of this module.                                #
+# > cpan Devel::PPPort                                               #
+######################################################################
