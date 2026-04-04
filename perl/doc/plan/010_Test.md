@@ -32,6 +32,9 @@
     *   [ ] Fuzz Test Harness Macros to ensure robustness. (Difficulty: 5/10)
     *   [ ] Add TAP Protocol Conformance Tests for the C harness. (Difficulty: 4/10)
     *   [ ] Create Unit Tests for each C Test Macro. (Difficulty: 3/10)
+    *   [ ] Implement Hyper-fast Procedural Test-Data Generation. (Difficulty: 7/10)
+    *   [ ] Implement C-level Mocking Framework. (Difficulty: 6/10)
+    *   [ ] Implement Automatic Test Case Generation from Schema. (Difficulty: 8/10)
 
 ## Implemented Macros
 *   `plan(n)`
