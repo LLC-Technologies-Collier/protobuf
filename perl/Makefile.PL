@@ -81,6 +81,27 @@ sub _render_tt {
     return $output;
 }
 
+sub _get_adjusted_embed_flags {
+    use ExtUtils::Embed;
+    use File::Spec;
+    use Config;
+
+    my $embed_cflags = ExtUtils::Embed::ccopts(); # CC flags for embedding
+    my $embed_ldflags = ExtUtils::Embed::ldopts(); # LD flags for embedding
+
+    # Remove potential newlines
+    chomp $embed_cflags;
+    chomp $embed_ldflags;
+
+    # Replace -lperl with the actual path to libperl
+    my $archlib = $Config{archlib};
+    my $libperl = $Config{libperl};
+    my ($lib_base) = $archlib =~ m{^(.+)/perl/};
+    my $perl_lib_path = File::Spec->catfile($lib_base, $libperl);
+    $embed_ldflags =~ s{-lperl}{$perl_lib_path}g;
+
+    return ($embed_cflags, $embed_ldflags);
+}
 
 # Rules to build the static library and its object files
 sub MY::postamble {
@@ -88,6 +109,7 @@ sub MY::postamble {
     use Config;
     use File::Spec;
     use JSON::MaybeXS; 
+    use Path::Tiny;
 
     # Common library build rules
     my $common_o_string = $COMMON_O_STRING;
@@ -138,23 +160,8 @@ sub MY::postamble {
     $make_frag .= "\n";
 
     # Custom C test rules
-    use ExtUtils::Embed;
-    use File::Find;
-    use Path::Tiny;
+    my ($embed_cflags, $embed_ldflags) = main::_get_adjusted_embed_flags();
     my $archlibexp = $Config{archlibexp};
-    my $embed_cflags = ExtUtils::Embed::ccopts(); # CC flags for embedding
-    my $embed_ldflags = ExtUtils::Embed::ldopts(); # LD flags for embedding
-
-    # Remove potential newlines
-    chomp $embed_cflags;
-    chomp $embed_ldflags;
-
-    # Replace -lperl with the actual path to libperl
-    my $archlib = $Config{archlib};
-    my $libperl = $Config{libperl};
-    my ($lib_base) = $archlib =~ m{^(.+)/perl/};
-    my $perl_lib_path = File::Spec->catfile($lib_base, $libperl);
-    $embed_ldflags =~ s{-lperl}{$perl_lib_path}g;
 
     my $config_file = File::Spec->catfile('t', 'c', 'c_test_config.json');
     my $json_text = path($config_file)->slurp_utf8;
