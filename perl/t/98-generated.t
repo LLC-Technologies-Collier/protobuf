@@ -6,4 +6,9 @@ use Test::More;
 
 ok(1, 'Placeholder test');
 
+# Engineering Excellence TODOs
+ok(0, "TODO: Test precomputed field name hashes");
+ok(0, "TODO: Test embedded source code info");
+ok(0, "TODO: Test generated Type::Tiny constraints");
+
 done_testing();

@@ -6,7 +6,7 @@
 
 *   [x] Design and implement `protoc-gen-perl-pb`.
     *   [x] **Core Logic (C/C++):**
-        *   [x] Implement main plugin entry point to interact with `protoc` via stdin/stdout using `CodeGeneratorRequest` and `CodeGeneratorResponse`. (Placeholder in `perl/xs/protoc/protoc-gen-perl-pb.c`)
+        *   [x] Implement main plugin entry point to interact with `protoc` via stdin/stdout using `CodeGeneratorRequest` and `CodeGeneratorResponse`. (Placeholder in `perl/protoc/protoc-gen-perl-pb.c`)
         *   [ ] TODO: Use `upb_DefPool` to load and process the `FileDescriptorProto`s provided by `protoc`.
         *   [ ] TODO: Traverse the descriptors (Messages, Enums, Services, Fields, Extensions).
     *   [ ] **Template Engine:**
@@ -48,4 +48,7 @@
     *   [ ] Add hot-path detection to the code generator. (Difficulty: 3/10).
     *   [ ] Implement shared memory service stubs. (Difficulty: 3/10).
     *   [ ] Add zero-copy IPC transport templates. (Difficulty: 3/10).
+    *   [ ] Performance: Precompute hashes for field names in generated code. (Difficulty: 4/10).
+    *   [ ] Observability: Embed source code info (proto file/line) in generated PMs. (Difficulty: 3/10).
+    *   [ ] Safety: Generate Type::Tiny constraints for messages. (Difficulty: 6/10).
 *   [ ] Review and update perl/doc/architecture/** documents.
