@@ -362,7 +362,7 @@ WriteMakefile(
     LDFLAGS           => "$Config{ldflags} $sanitizer_flags",
     
     # Clean the generated object files and the static library
-    clean             => { FILES => join(' ', @COMMON_O_FILES, $COMMON_LIB, 'blib', 'protoc/protoc-gen-perl-pb.o', 'protoc-gen-perl-pb') },
+    clean             => { FILES => join(' ', 'blib', 'protoc/protoc-gen-perl-pb.o', 'protoc-gen-perl-pb', 'ppport.h') },
 
 
 );

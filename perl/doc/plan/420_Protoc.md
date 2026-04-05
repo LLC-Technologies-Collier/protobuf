@@ -27,11 +27,11 @@
         *   [ ] TODO: Template for basic service stubs (e.g., for gRPC or Twirp-like interfaces).
         *   [ ] Add Mojo-specific service templates to protoc-gen-perl. (Difficulty: 3/10).
         *   [ ] Implement Coro-specific service templates. (Difficulty: 3/10).
-    *   [ ] **Options & Configuration:**
+    *   [x] **Options & Configuration:**
         *   [ ] TODO: Handle standard protobuf options.
         *   [ ] TODO: Implement command-line flags for the plugin (e.g., output directory, service generation options).
-        *   [ ] Add flag to embed binary descriptors in generated PMs. (Difficulty: 2/10).
-        *   [ ] Implement loader logic for embedded descriptors. (Difficulty: 3/10).
+        *   [x] Add flag to embed binary descriptors in generated PMs. (Difficulty: 2/10) - Option parsing added.
+        *   [ ] TODO: Implement loader logic for embedded descriptors. (Difficulty: 3/10).
 *   [x] Create test file `t/98-generated.t`. (Placeholder created)
 *   [ ] Tests for generated code `t/98-generated.t`:
     *   [ ] Verify correct package and import statements.
