@@ -15,7 +15,7 @@ static void test_generated_pool(pTHX) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(10);
+    plan(10 + 2);
 
     // 1. Creation
     SV* pool_sv = PerlUpb_DescriptorPool_New(aTHX);
@@ -44,6 +44,9 @@ int main(int argc, char** argv) {
     TODO("Implement Conflict Resolution Traceback with precise source mapping") {
         ok(0, "Diagnostic errors identify the exact source location of descriptor naming conflicts");
     }
+
+    ok(0, "Add cross-process fingerprinting for pool identity"); // TODO Add cross-process fingerprinting for pool identity
+    ok(0, "Implement sub-second startup benchmarks for large pools"); // TODO Implement sub-second startup benchmarks for large pools
 
     // Cleanup
     SvREFCNT_dec(pool_sv);

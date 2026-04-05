@@ -14,7 +14,7 @@ unsigned char find_test_proto[] = {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(3);
+    plan(6);
 
     SV* pool_sv = PerlUpb_DescriptorPool_New(aTHX);
     SV* serialized = newSVpvn((const char*)find_test_proto, sizeof(find_test_proto));
@@ -31,6 +31,10 @@ int main(int argc, char** argv) {
     // 3. Find non-existent
     SV* none = PerlUpb_DescriptorPool_FindMessageByName(aTHX_ pool_sv, "NoSuchThing");
     ok(!SvOK(none), "Find returns undef for non-existent item");
+
+    ok(0, "Implement detailed conflict error metadata"); // TODO Implement detailed conflict error metadata
+    ok(0, "Add source-file and line-number tracking to conflicts"); // TODO Add source-file and line-number tracking to conflicts
+    ok(0, "Implement O(1) Descriptor lookup by fingerprinted hash"); // TODO Implement O(1) Descriptor lookup by fingerprinted hash
 
     SvREFCNT_dec(none);
     SvREFCNT_dec(file_sv_found);

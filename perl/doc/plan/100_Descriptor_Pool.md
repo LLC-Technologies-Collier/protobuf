@@ -32,4 +32,5 @@
     *   [ ] Implement sub-second startup benchmarks for large pools. (Difficulty: 3/10).
     *   [ ] Add on-demand parsing hook for missing symbols. (Difficulty: 3/10).
     *   [ ] Implement conflict resolution traceback utility. (Difficulty: 3/10).
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+    *   [ ] Implement O(1) Descriptor lookup by fingerprinted hash for ultra-fast dispatch. (Difficulty: 7/10)
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
