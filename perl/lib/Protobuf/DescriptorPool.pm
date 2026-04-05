@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::DescriptorPool - Manages a collection of Protocol Buffer descriptors
+Protobuf::DescriptorPool - Manages a collection of Protocol Buffer descriptors$/
 
 =head1 VERSION
 
-version 0.01
+version 0.01$/
 
 =head1 SYNOPSIS
 
@@ -18,7 +18,8 @@ version 0.01
     # Find a message descriptor
     my $message_def = $pool->find_message_by_name('my.package.MyMessage');
     if ($message_def) {
-        print "Found: ", $message_def->full_name, "\n";
+        print "Found: ", $message_def->full_name, "
+";
     }
 
     # Create a new, empty pool
@@ -32,142 +33,11 @@ version 0.01
 
 =head1 DESCRIPTION
 
-C<Protobuf::DescriptorPool> is a container for Protocol Buffer descriptor objects (like message types, field definitions, enum types, etc.). It allows you to load descriptor information, typically from serialized C<FileDescriptorProto> or C<FileDescriptorSet> messages, and then look up specific descriptors by name.
+C<Protobuf::DescriptorPool> is a container for Protocol Buffer descriptor objects (like message types, field definitions, enum types, etc.). It allows you to load descriptor information, typically from serialized C<FileDescriptorProto> or C<FileDescriptorSet> messages, and then look up specific descriptors by name.$/
 
-This class wraps the C<upb_DefPool> functionality from the C<upb> library.
+This class wraps the C<upb_DefPool> functionality from the C<upb> library.$/
 
-Descriptors loaded into a pool are used to understand the structure of serialized messages, enabling parsing, serialization, and dynamic message creation.
-
-=head1 METHODS
-
-== Class Methods
-
-=head2 generated_pool()
-
-    my $pool = Protobuf::DescriptorPool->generated_pool;
-
-Returns a singleton instance of the descriptor pool that contains all the message, enum, and file descriptors that were compiled into your Perl application, typically from C<.proto> files processed by C<protoc-gen-perl-pb> at build time.
-
-== Instance Methods
-
-=head2 new()
-
-    my $pool = Protobuf::DescriptorPool->new;
-
-Creates a new, empty descriptor pool.
-
-=head2 add_serialized_file($serialized_file_descriptor)
-
-    my $file_def = $pool->add_serialized_file($binary_data);
-
-Parses a binary string containing a single serialized C<google.protobuf.FileDescriptorProto> message. The descriptors defined within that file are added to the pool. On success, returns the L<Protobuf::Descriptor::File> object for the added file.
-
-Triggers L<Protobuf::ClassGenerator> to define Perl classes for the messages in the file.
-
-=head2 add_serialized_file_descriptor_set($serialized_file_descriptor_set)
-
-    my $file_defs = $pool->add_serialized_file_descriptor_set($binary_data);
-
-Parses a binary string containing a serialized C<google.protobuf.FileDescriptorSet> message. All files within the set are added to the pool. On success, returns an ArrayRef of L<Protobuf::Descriptor::File> objects.
-
-Triggers L<Protobuf::ClassGenerator> for each file added.
-
-=head2 find_file_by_name($name)
-
-    my $file_def = $pool->find_file_by_name('path/to/my.proto');
-
-Finds a L<Protobuf::Descriptor::File> by its name (usually the original C<.proto> file path). Returns C<undef> if not found.
-
-=head2 find_message_by_name($full_name)
-
-    my $msg_def = $pool->find_message_by_name('my.package.MyMessage');
-
-Finds a L<Protobuf::Descriptor::MessageDef> by its fully qualified name. Returns C<undef> if not found.
-
-=head2 find_enum_by_name($full_name)
-
-    my $enum_def = $pool->find_enum_by_name('my.package.MyEnum');
-
-Finds a L<Protobuf::Descriptor::Enum> by its fully qualified name. Returns C<undef> if not found.
-
-=head2 find_extension_by_name($full_name)
-
-    my $ext_def = $pool->find_extension_by_name('my.package.my_extension');
-
-Finds a L<Protobuf::Descriptor::Field> representing an extension by its fully qualified name. Returns C<undef> if not found.
-
-=head2 freeze()
-
-(Not Yet Implemented) Marks the pool as immutable. Attempting to add more descriptors after freezing will result in an error. This is a prerequisite for potentially sharing pools across threads in the future.
-
-=head2 is_frozen()
-
-(Not Yet Implemented) Returns true if the pool has been frozen.
-
-=head2 DEMOLISH()
-
-Internal method to clean up the underlying C<upb_DefPool> and its associated arena when the Perl object is destroyed.
-
-=head2 CLONE()
-
-Throws an error. Descriptor pools cannot be safely cloned across threads.
-
-=head1 SEE ALSO
-
-L<Protobuf>, L<Protobuf::Descriptor>, L<Protobuf::ClassGenerator>
-
-=head1 AUTHOR
-
-C.J. Collier <cjac@google.com>
-
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2026 by Google LLC.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-=cut
-
-=encoding UTF-8
-
-=head1 NAME
-
-Protobuf::DescriptorPool - Manages a collection of Protocol Buffer descriptors
-
-=head1 VERSION
-
-version 0.01
-
-=head1 SYNOPSIS
-
-    use Protobuf::DescriptorPool;
-
-    # Get the default pool containing descriptors from generated files
-    my $pool = Protobuf::DescriptorPool->generated_pool;
-
-    # Find a message descriptor
-    my $message_def = $pool->find_message_by_name('my.package.MyMessage');
-    if ($message_def) {
-        print "Found: ", $message_def->full_name, "\n";
-    }
-
-    # Create a new, empty pool
-    my $custom_pool = Protobuf::DescriptorPool->new;
-
-    # Add descriptors from a serialized FileDescriptorProto
-    my $file_def = $custom_pool->add_serialized_file($binary_file_descriptor);
-
-    # Add descriptors from a serialized FileDescriptorSet
-    my $file_defs = $custom_pool->add_serialized_file_descriptor_set($binary_file_descriptor_set);
-
-=head1 DESCRIPTION
-
-C<Protobuf::DescriptorPool> is a container for Protocol Buffer descriptor objects (like message types, field definitions, enum types, etc.). It allows you to load descriptor information, typically from serialized C<FileDescriptorProto> or C<FileDescriptorSet> messages, and then look up specific descriptors by name.
-
-This class wraps the C<upb_DefPool> functionality from the C<upb> library.
-
-Descriptors loaded into a pool are used to understand the structure of serialized messages, enabling parsing, serialization, and dynamic message creation.
+Descriptors loaded into a pool are used to understand the structure of serialized messages, enabling parsing, serialization, and dynamic message creation.$/
 
 =head1 METHODS
 
@@ -177,7 +47,7 @@ Descriptors loaded into a pool are used to understand the structure of serialize
 
     my $pool = Protobuf::DescriptorPool->generated_pool;
 
-Returns a singleton instance of the descriptor pool that contains all the message, enum, and file descriptors that were compiled into your Perl application, typically from C<.proto> files processed by C<protoc-gen-perl-pb> at build time.
+Returns a singleton instance of the descriptor pool that contains all the message, enum, and file descriptors that were compiled into your Perl application, typically from C<.proto> files processed by C<protoc-gen-perl-pb> at build time.$/
 
 == Instance Methods
 
@@ -185,78 +55,78 @@ Returns a singleton instance of the descriptor pool that contains all the messag
 
     my $pool = Protobuf::DescriptorPool->new;
 
-Creates a new, empty descriptor pool.
+Creates a new, empty descriptor pool.$/
 
 =head2 add_serialized_file($serialized_file_descriptor)
 
     my $file_def = $pool->add_serialized_file($binary_data);
 
-Parses a binary string containing a single serialized C<google.protobuf.FileDescriptorProto> message. The descriptors defined within that file are added to the pool. On success, returns the L<Protobuf::Descriptor::File> object for the added file.
+Parses a binary string containing a single serialized C<google.protobuf.FileDescriptorProto> message. The descriptors defined within that file are added to the pool. On success, returns the L<Protobuf::Descriptor::File> object for the added file.$/
 
-Triggers L<Protobuf::ClassGenerator> to define Perl classes for the messages in the file.
+Triggers L<Protobuf::ClassGenerator> to define Perl classes for the messages in the file.$/
 
 =head2 add_serialized_file_descriptor_set($serialized_file_descriptor_set)
 
     my $file_defs = $pool->add_serialized_file_descriptor_set($binary_data);
 
-Parses a binary string containing a serialized C<google.protobuf.FileDescriptorSet> message. All files within the set are added to the pool. On success, returns an ArrayRef of L<Protobuf::Descriptor::File> objects.
+Parses a binary string containing a serialized C<google.protobuf.FileDescriptorSet> message. All files within the set are added to the pool. On success, returns an ArrayRef of L<Protobuf::Descriptor::File> objects.$/
 
-Triggers L<Protobuf::ClassGenerator> for each file added.
+Triggers L<Protobuf::ClassGenerator> for each file added.$/
 
 =head2 find_file_by_name($name)
 
     my $file_def = $pool->find_file_by_name('path/to/my.proto');
 
-Finds a L<Protobuf::Descriptor::File> by its name (usually the original C<.proto> file path). Returns C<undef> if not found.
+Finds a L<Protobuf::Descriptor::File> by its name (usually the original C<.proto> file path). Returns C<undef> if not found.$/
 
 =head2 find_message_by_name($full_name)
 
     my $msg_def = $pool->find_message_by_name('my.package.MyMessage');
 
-Finds a L<Protobuf::Descriptor::MessageDef> by its fully qualified name. Returns C<undef> if not found.
+Finds a L<Protobuf::Descriptor::MessageDef> by its fully qualified name. Returns C<undef> if not found.$/
 
 =head2 find_enum_by_name($full_name)
 
     my $enum_def = $pool->find_enum_by_name('my.package.MyEnum');
 
-Finds a L<Protobuf::Descriptor::Enum> by its fully qualified name. Returns C<undef> if not found.
+Finds a L<Protobuf::Descriptor::Enum> by its fully qualified name. Returns C<undef> if not found.$/
 
 =head2 find_extension_by_name($full_name)
 
     my $ext_def = $pool->find_extension_by_name('my.package.my_extension');
 
-Finds a L<Protobuf::Descriptor::Field> representing an extension by its fully qualified name. Returns C<undef> if not found.
+Finds a L<Protobuf::Descriptor::Field> representing an extension by its fully qualified name. Returns C<undef> if not found.$/
 
 =head2 freeze()
 
-(Not Yet Implemented) Marks the pool as immutable. Attempting to add more descriptors after freezing will result in an error. This is a prerequisite for potentially sharing pools across threads in the future.
+(Not Yet Implemented) Marks the pool as immutable. Attempting to add more descriptors after freezing will result in an error. This is a prerequisite for potentially sharing pools across threads in the future.$/
 
 =head2 is_frozen()
 
-(Not Yet Implemented) Returns true if the pool has been frozen.
+(Not Yet Implemented) Returns true if the pool has been frozen.$/
 
 =head2 DEMOLISH()
 
-Internal method to clean up the underlying C<upb_DefPool> and its associated arena when the Perl object is destroyed.
+Internal method to clean up the underlying C<upb_DefPool> and its associated arena when the Perl object is destroyed.$/
 
 =head2 CLONE()
 
-Throws an error. Descriptor pools cannot be safely cloned across threads.
+Throws an error. Descriptor pools cannot be safely cloned across threads.$/
 
 =head1 SEE ALSO
 
-L<Protobuf>, L<Protobuf::Descriptor>, L<Protobuf::ClassGenerator>
+L<Protobuf>, L<Protobuf::Descriptor>, L<Protobuf::ClassGenerator>$/
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>
+C.J. Collier <cjac@google.com>$/
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.
+This software is copyright (c) 2026 by Google LLC.$/
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under$/
+the same terms as the Perl 5 programming language system itself.$/
 
 =cut
 

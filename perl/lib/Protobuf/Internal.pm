@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::Internal - Internal XS functions and utilities
+Protobuf::Internal - Internal XS functions and utilities$/
 
 =head1 VERSION
 
-version 0.01
+version 0.01$/
 
 =head1 SYNOPSIS
 
@@ -17,86 +17,86 @@ version 0.01
 
 =head1 DESCRIPTION
 
-This module serves as the primary interface to the C/XS layer for the L<Protobuf> distribution. It uses L<XSLoader> to load functions implemented in C, which interact directly with the C<upb> library.
+This module serves as the primary interface to the C/XS layer for the L<Protobuf> distribution. It uses L<XSLoader> to load functions implemented in C, which interact directly with the C<upb> library.$/
 
-Key functionalities provided through this module include:
+Key functionalities provided through this module include:$/
 
 =over 4
 
-=item * Initializing the per-interpreter registry (C<init_registry>).
+=item * Initializing the per-interpreter registry (C<init_registry>).$/
 
-=item * Accessing and managing the object cache (C<get_obj_cache>, C<set_cache_capacity>).
+=item * Accessing and managing the object cache (C<get_obj_cache>, C<set_cache_capacity>).$/
 
-=item * Retrieving cache audit logs and contention statistics (C<get_cache_audit_log>, C<get_contention_stats>).
+=item * Retrieving cache audit logs and contention statistics (C<get_cache_audit_log>, C<get_contention_stats>).$/
 
-=item * Core type conversion functions between Perl SVs and C<upb> types.
+=item * Core type conversion functions between Perl SVs and C<upb> types.$/
 
 =back
 
 =head1 METHODS
 
-Most functions in this module are not intended for public use. The following are called during initialization:
+Most functions in this module are not intended for public use. The following are called during initialization:$/
 
 =head2 init_registry()
 
-Called once when L<Protobuf> is loaded to initialize the per-interpreter C-level registry, which holds the object cache, audit log, and other global states for the current Perl interpreter.
+Called once when L<Protobuf> is loaded to initialize the per-interpreter C-level registry, which holds the object cache, audit log, and other global states for the current Perl interpreter.$/
 
 =head1 INTERNAL XS FUNCTIONS
 
-The following functions are exposed from the XS layer but are for internal use by other C<Protobuf::*> modules only:
+The following functions are exposed from the XS layer but are for internal use by other C<Protobuf::*> modules only:$/
 
 =over 4
 
-=item * C<class_name_to_full_name>
+=item * C<class_name_to_full_name>$/
 
-=item * C<clear_cache>
+=item * C<clear_cache>$/
 
-=item * C<delete_cache_entry>
+=item * C<delete_cache_entry>$/
 
-=item * C<delete_cache_ptr>
+=item * C<delete_cache_ptr>$/
 
-=item * C<find_by_fingerprint>
+=item * C<find_by_fingerprint>$/
 
-=item * C<full_name_to_class_name>
+=item * C<full_name_to_class_name>$/
 
-=item * C<get_cache_audit_log>
+=item * C<get_cache_audit_log>$/
 
-=item * C<get_cache_capacity>
+=item * C<get_cache_capacity>$/
 
-=item * C<get_contention_stats>
+=item * C<get_contention_stats>$/
 
-=item * C<get_cpu_features>
+=item * C<get_cpu_features>$/
 
-=item * C<get_fingerprint>
+=item * C<get_fingerprint>$/
 
-=item * C<preallocate_arena>
+=item * C<preallocate_arena>$/
 
-=item * C<register_fingerprint>
+=item * C<register_fingerprint>$/
 
-=item * C<set_cache_capacity>
+=item * C<set_cache_capacity>$/
 
-=item * C<set_chaos_enabled>
+=item * C<set_chaos_enabled>$/
 
-=item * C<set_chaos_params>
+=item * C<set_chaos_params>$/
 
-=item * C<verify_binary_diff>
+=item * C<verify_binary_diff>$/
 
 =back
 
 =head1 SEE ALSO
 
-L<Protobuf>
+L<Protobuf>$/
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>
+C.J. Collier <cjac@google.com>$/
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.
+This software is copyright (c) 2026 by Google LLC.$/
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under$/
+the same terms as the Perl 5 programming language system itself.$/
 
 =cut
 

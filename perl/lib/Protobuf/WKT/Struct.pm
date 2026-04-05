@@ -1,3 +1,139 @@
+=encoding UTF-8
+
+=head1 NAME
+
+Protobuf::WKT::Struct - Mixin for google.protobuf.Struct, Value, and ListValue$/
+
+=head1 VERSION
+
+version 0.01$/
+
+=head1 SYNOPSIS
+
+    # In your .proto
+    import "google/protobuf/struct.proto";
+
+    message MyConfig {
+      google.protobuf.Struct params = 1;
+    }
+
+    # In your Perl code
+    my $config = MyConfig->new;
+    my $struct = $config->params;
+
+    # Using from_perl to populate
+    $struct->from_perl({
+        foo => "bar",
+        baz => [1, 2.5, true],
+        nested => { key => "val" }
+    });
+
+    # Using to_perl to convert back
+    my $hash_ref = $struct->to_perl();
+    # $hash_ref is now { foo => "bar", baz => [1, 2.5, 1], nested => { key => "val" } }
+
+    # Converting to JSON
+    my $json_string = $struct->to_json;
+
+=head1 DESCRIPTION
+
+This module provides helper methods for the generated classes corresponding to the C<google.protobuf.Struct>, C<google.protobuf.Value>, and C<google.protobuf.ListValue> Well-Known Types. These methods are injected into the respective classes (C<Protobuf::WKT::Struct>, C<Protobuf::WKT::Value>, C<Protobuf::WKT::ListValue>) which are used when C<google/protobuf/struct.proto> is processed.$/
+
+These types allow representing arbitrary JSON-like structures within protobuf messages.$/
+
+=head1 METHODS for Protobuf::WKT::Struct
+
+=head2 to_perl()
+
+Converts the C<Struct> message into a Perl HASH reference. Keys are strings, and values are recursively converted from C<Protobuf::WKT::Value> objects to their Perl equivalents (scalars, ARRAY refs, HASH refs).$/
+
+=head2 from_perl($hash_ref)
+
+Populates the C<Struct> message from a Perl HASH reference. The keys of the hash become the keys in the C<fields> map. The values of the hash are recursively converted into C<Protobuf::WKT::Value> messages.$/
+
+Dies if C<$hash_ref> is not a HASH reference.$/
+
+Returns C<$self> for chaining.$/
+
+=head2 to_json()
+
+Serializes the C<Struct> message to a JSON string. This is equivalent to encoding the result of C<to_perl()> using L<JSON::MaybeXS>.$/
+
+=head1 METHODS for Protobuf::WKT::Value
+
+=head2 to_perl()
+
+Converts the C<Value> message to its native Perl representation based on which field in the C<kind> oneof is set:$/
+
+=over 4
+
+=item * null_value: C<undef>
+
+=item * number_value: Perl number
+
+=item * string_value: Perl string
+
+=item * bool_value: Perl boolean (1 or 0)
+
+=item * struct_value: HASH reference (recursively converted)
+
+=item * list_value: ARRAY reference (recursively converted)
+
+=back
+
+=head2 from_perl($scalar)
+
+Populates the C<Value> message from a Perl scalar, ARRAY ref, or HASH ref.$/
+
+=over 4
+
+=item * C<undef>: sets C<null_value>
+
+=item * HASH ref: sets C<struct_value> (recursively converted)
+
+=item * ARRAY ref: sets C<list_value> (recursively converted)
+
+=item * Boolean (from L<JSON::MaybeXS::is_bool>): sets C<bool_value>
+
+=item * Looks like a number: sets C<number_value>
+
+=item * Otherwise: sets C<string_value>
+
+=back
+
+Returns C<$self> for chaining.$/
+
+=head1 METHODS for Protobuf::WKT::ListValue
+
+=head2 to_perl()
+
+Converts the C<ListValue> message into a Perl ARRAY reference. Each element is recursively converted using C<Protobuf::WKT::Value->to_perl()D>.$/
+
+=head2 from_perl($array_ref)
+
+Populates the C<ListValue> message from a Perl ARRAY reference. Each element in the array is converted into a C<Protobuf::WKT::Value> message using C<from_perl()D>.$/
+
+Dies if C<$array_ref> is not an ARRAY reference.$/
+
+Returns C<$self> for chaining.$/
+
+=head1 SEE ALSO
+
+L<Protobuf>, L<Protobuf::Message>, L<JSON::MaybeXS>$/
+
+=head1 AUTHOR
+
+C.J. Collier <cjac@google.com>$/
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2026 by Google LLC.$/
+
+This is free software; you can redistribute it and/or modify it under$/
+the same terms as the Perl 5 programming language system itself.$/
+
+=cut
+
 package Protobuf::WKT::Struct;
 
 use strict;

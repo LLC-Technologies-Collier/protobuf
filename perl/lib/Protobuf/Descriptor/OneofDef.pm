@@ -1,3 +1,77 @@
+=encoding UTF-8
+
+=head1 NAME
+
+Protobuf::Descriptor::OneofDef - Descriptor for a Protocol Buffer oneof$/
+
+=head1 VERSION
+
+version 0.01$/
+
+=head1 SYNOPSIS
+
+    my $pool = Protobuf::DescriptorPool->generated_pool;
+    my $msg_def = $pool->find_message_by_name('my.package.MyMessage');
+    my $oneof_def = $msg_def->find_oneof_by_name('my_oneof');
+
+    if ($oneof_def) {
+        print "Oneof Name: ", $oneof_def->name, "
+";
+        foreach my $field ($oneof_def->fields) {
+            print "  Field: ", $field->name, "
+";
+        }
+    }
+
+=head1 DESCRIPTION
+
+This class represents the descriptor for a single C<oneof> definition within a message. A C<oneof> ensures that at most one of a set of fields can be set on a message instance.$/
+
+Instances of this class are usually obtained from a L<Protobuf::Descriptor::MessageDef>.$/
+
+=head1 METHODS
+
+=head2 full_name()
+
+Returns the fully qualified name of the oneof.$/
+
+=head2 name()
+
+Returns the short name of the oneof.$/
+
+=head2 field_count()
+
+Returns the number of fields belonging to this oneof.$/
+
+=head2 get_field($index)
+
+Returns the L<Protobuf::Descriptor::Field> at the given C<$index> (0-based) within the oneof.$/
+
+=head2 fields()
+
+Returns a list of all L<Protobuf::Descriptor::Field> objects belonging to this oneof.$/
+
+=head2 is_synthetic()
+
+Returns true if this oneof was synthesised for a proto3 optional field.$/
+
+=head1 SEE ALSO
+
+L<Protobuf>, L<Protobuf::DescriptorPool>, L<Protobuf::Descriptor>, L<Protobuf::Descriptor::MessageDef>$/
+
+=head1 AUTHOR
+
+C.J. Collier <cjac@google.com>$/
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2026 by Google LLC.$/
+
+This is free software; you can redistribute it and/or modify it under$/
+the same terms as the Perl 5 programming language system itself.$/
+
+=cut
+
 package Protobuf::Descriptor::OneofDef;
 
 use Moo;

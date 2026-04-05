@@ -1,3 +1,24 @@
+=encoding UTF-8
+
+=head1 NAME
+
+Protobuf::Internal::Repeated - Internal XS implementation for repeated fields$/
+
+=head1 VERSION
+
+version 0.01$/
+
+=head1 SYNOPSIS
+
+    # This module is not intended for direct use.
+    # It backs the array-like interface for repeated fields in Protobuf messages.
+
+=head1 DESCRIPTION
+
+This module provides the internal XS implementation for Protobuf repeated fields. It uses L<Tie::Array> to provide an array-like interface to the underlying C<upb_Array> data structure.$/
+
+=cut
+
 package Protobuf::Internal::Repeated;
 
 use strict;

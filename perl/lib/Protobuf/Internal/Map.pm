@@ -1,3 +1,24 @@
+=encoding UTF-8
+
+=head1 NAME
+
+Protobuf::Internal::Map - Internal XS implementation for map fields$/
+
+=head1 VERSION
+
+version 0.01$/
+
+=head1 SYNOPSIS
+
+    # This module is not intended for direct use.
+    # It backs the hash-like interface for map fields in Protobuf messages.
+
+=head1 DESCRIPTION
+
+This module provides the internal XS implementation for Protobuf map fields. It uses L<Tie::Hash> to provide a hash-like interface to the underlying C<upb_Map> data structure.$/
+
+=cut
+
 package Protobuf::Internal::Map;
 
 use strict;

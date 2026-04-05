@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::Arena - Memory arena for Protocol Buffer messages
+Protobuf::Arena - Memory arena for Protocol Buffer messages$/
 
 =head1 VERSION
 
-version 0.01
+version 0.01$/
 
 =head1 SYNOPSIS
 
@@ -25,21 +25,21 @@ version 0.01
 
 =head1 DESCRIPTION
 
-This module wraps the C<upb_Arena> type from the C<upb> library. Arenas provide an efficient way to manage the memory lifecycle of Protocol Buffer messages and their submessages. All memory allocated for messages within an arena is freed at once when the arena itself is destroyed (typically when the C<Protobuf::Arena> object goes out of scope).
+This module wraps the C<upb_Arena> type from the C<upb> library. Arenas provide an efficient way to manage the memory lifecycle of Protocol Buffer messages and their submessages. All memory allocated for messages within an arena is freed at once when the arena itself is destroyed (typically when the C<Protobuf::Arena> object goes out of scope).$/
 
-This approach reduces the overhead of individual allocations and deallocations, significantly improving performance, especially for complex messages or high-throughput scenarios.
+This approach reduces the overhead of individual allocations and deallocations, significantly improving performance, especially for complex messages or high-throughput scenarios.$/
 
-Key architectural features related to arenas in this implementation:
+Key architectural features related to arenas in this implementation:$/
 
 =over 4
 
-=item * **Ownership:** Top-level L<Protobuf::Message> objects usually create and own their C<Protobuf::Arena> instance.
+=item * **Ownership:** Top-level L<Protobuf::Message> objects usually create and own their C<Protobuf::Arena> instance.$/
 
-=item * **Shared Memory (tmpfs):** Supports creating arenas backed by C<tmpfs> for high-performance, zero-copy Inter-Process Communication (IPC), as detailed in C<perl/doc/architecture/advanced/01-tmpfs-ipc-design.md>.
+=item * **Shared Memory (tmpfs):** Supports creating arenas backed by C<tmpfs> for high-performance, zero-copy Inter-Process Communication (IPC), as detailed in C<perl/doc/architecture/advanced/01-tmpfs-ipc-design.md>.$/
 
-=item * **Memory Canaries:** Arenas use canary bytes (C<0xDEADBEEFCAFEBABEULL>) to detect memory corruption (buffer overflows/underflows) within arena-allocated blocks.
+=item * **Memory Canaries:** Arenas use canary bytes (C<0xDEADBEEFCAFEBABEULL>) to detect memory corruption (buffer overflows/underflows) within arena-allocated blocks.$/
 
-=item * **NUMA Awareness:** (Planned) Optimizations for memory placement on multi-socket systems.
+=item * **NUMA Awareness:** (Planned) Optimizations for memory placement on multi-socket systems.$/
 
 =back
 
@@ -51,80 +51,80 @@ Key architectural features related to arenas in this implementation:
 
     my $arena = Protobuf::Arena->new;
 
-Creates a new, standard memory-backed arena.
+Creates a new, standard memory-backed arena.$/
 
 =head2 new_tmpfs($path, $size)
 
     my $arena = Protobuf::Arena->new_tmpfs('/dev/shm/my_ipc', 1048576);
 
-Creates a new arena backed by a file in C<tmpfs> at the given C<$path> with a specified C<$size>. This is used for shared memory IPC.
+Creates a new arena backed by a file in C<tmpfs> at the given C<$path> with a specified C<$size>. This is used for shared memory IPC.$/
 
 =head2 attach_tmpfs($path, $size)
 
     my $arena = Protobuf::Arena->attach_tmpfs('/dev/shm/my_ipc', 1048576);
 
-Attaches to an existing C<tmpfs>-backed arena at C<$path> with the given C<$size>.
+Attaches to an existing C<tmpfs>-backed arena at C<$path> with the given C<$size>.$/
 
 == Instance Methods
 
 =head2 space_allocated()
 
-Returns the total bytes currently allocated by objects within the arena.
+Returns the total bytes currently allocated by objects within the arena.$/
 
 =head2 space_reserved()
 
-Returns the total bytes reserved by the arena from the system, including any overhead or preallocated blocks.
+Returns the total bytes reserved by the arena from the system, including any overhead or preallocated blocks.$/
 
 =head2 stats()
 
-Returns a hash reference containing detailed memory usage statistics for the arena, such as allocated bytes, reserved bytes, and block counts.
+Returns a hash reference containing detailed memory usage statistics for the arena, such as allocated bytes, reserved bytes, and block counts.$/
 
 =head2 is_tmpfs()
 
-Returns true if the arena is backed by C<tmpfs>.
+Returns true if the arena is backed by C<tmpfs>.$/
 
 =head2 get_path()
 
-If the arena is C<tmpfs>-backed, returns the file system path.
+If the arena is C<tmpfs>-backed, returns the file system path.$/
 
 =head2 verify_selinux()
 
-(Experimental) Performs checks related to SELinux contexts if being used with C<tmpfs>-backed arenas for secure IPC.
+(Experimental) Performs checks related to SELinux contexts if being used with C<tmpfs>-backed arenas for secure IPC.$/
 
 =head2 get_offset($pointer_iv)
 
-Given an integer representing a memory address within the arena, returns the offset from the base of the arena's memory block. Used for shared memory IPC handle serialization.
+Given an integer representing a memory address within the arena, returns the offset from the base of the arena's memory block. Used for shared memory IPC handle serialization.$/
 
 =head2 attach_message($message_full_name, $offset)
 
-(Experimental) Reifies a message object of the given type (C<$message_full_name>) from the arena memory at the specified C<$offset>. Used for shared memory IPC.
+(Experimental) Reifies a message object of the given type (C<$message_full_name>) from the arena memory at the specified C<$offset>. Used for shared memory IPC.$/
 
 =head2 set_numa_node($node)
 
-(Planned) Sets the preferred NUMA node for memory allocations within this arena.
+(Planned) Sets the preferred NUMA node for memory allocations within this arena.$/
 
 =head2 DEMOLISH()
 
-Internal method. Frees the underlying C<upb_Arena> and all memory associated with it when the Perl object is destroyed.
+Internal method. Frees the underlying C<upb_Arena> and all memory associated with it when the Perl object is destroyed.$/
 
 =head2 Clone()
 
-Creates a new, empty C<Protobuf::Arena>. It does *not* copy the contents of the original arena.
+Creates a new, empty C<Protobuf::Arena>. It does *not* copy the contents of the original arena.$/
 
 =head1 SEE ALSO
 
-L<Protobuf>, L<Protobuf::Message>
+L<Protobuf>, L<Protobuf::Message>$/
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>
+C.J. Collier <cjac@google.com>$/
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.
+This software is copyright (c) 2026 by Google LLC.$/
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under$/
+the same terms as the Perl 5 programming language system itself.$/
 
 =cut
 

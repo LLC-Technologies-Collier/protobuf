@@ -1,3 +1,26 @@
+=encoding UTF-8
+
+=head1 NAME
+
+Protobuf::Internal::Proxy - Base class for tied XS objects$/
+
+=head1 VERSION
+
+version 0.01$/
+
+=head1 SYNOPSIS
+
+    package MyTiedClass;
+    use parent 'Protobuf::Internal::Proxy';
+
+    # ... implementation ...
+
+=head1 DESCRIPTION
+
+This module provides common helper functions for classes that tie Perl variables to internal XS objects, for example, delegating method calls to the underlying XS object.$/
+
+=cut
+
 package Protobuf::Internal::Proxy;
 
 use strict;
