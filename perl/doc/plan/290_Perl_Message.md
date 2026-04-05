@@ -43,10 +43,10 @@
         *   [ ] TODO: Create background auditor thread/coro for periodic message checks. (Difficulty: 3/10)
         *   [ ] TODO: Implement reporting and recovery mechanism for corrupted messages. (Difficulty: 3/10)
 *   [x] Implement `Moo` dynamic method creation for field access.
-*   [x] Implement XS Bindings (`perl/lib/Protobuf/Message.xs`).
+*   [x] Implement XS Bindings in `xs/message/`.
 *   [x] Implement typemaps for `upb_Message *` in `perl/typemap`.
 *   [x] Perl tests pass for Protobuf::Message.
 *   [x] Refine C API for Message (if any).
 *   [x] C layer tests for Message still pass.
 *   [x] All prior Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.one's learnings.

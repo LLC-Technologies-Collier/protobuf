@@ -30,7 +30,7 @@
     *   [ ] TODO: Implement automated tests that trigger and detect known race conditions in array access. (Difficulty: 3/10).
 *   [x] libcoro integration tests pass.
 *   [x] Integration tests pass.
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.
 
 *   **Engineering Excellence (Reach for More):**
     *   [ ] TODO: Implement Lazy Repeated Entry Inflation for deferred wrapper creation. (Difficulty: 7/10).

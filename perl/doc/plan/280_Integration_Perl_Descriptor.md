@@ -27,4 +27,4 @@
         *   [ ] TODO: Implement descriptor serialization for cross-interpreter "wire-transfer". (Difficulty: 3/10)
         *   [ ] TODO: Create automated recovery for partial descriptor sets during migration. (Difficulty: 3/10)
         *   [ ] TODO: Implement "shadow" pool for validating migrated descriptors against source. (Difficulty: 3/10)
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.

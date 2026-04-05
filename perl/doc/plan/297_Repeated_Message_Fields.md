@@ -10,5 +10,5 @@
 *   [x] Handle adding new messages via plain HashRefs (auto-populating) or existing message objects (deep-copying) in `perl/xs/convert/sv_to_upb.c`.
 *   [x] Ensure standard Perl array operations (`push`, index assignment, etc.) work correctly with sub-messages.
 *   [x] Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
 

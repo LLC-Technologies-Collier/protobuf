@@ -10,4 +10,4 @@
 *   [x] Ensure the generated class correctly inherits from `Protobuf::Message` and uses `Moo`.
 *   [x] Ensure the base `Protobuf::Message` constructor `new()` (in `perl/lib/Protobuf/Message.pm` and `perl/lib/Protobuf/Message.xs`) properly allocates a `upb_Message` on the provided (or newly created) `upb_Arena`.
 *   [x] Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

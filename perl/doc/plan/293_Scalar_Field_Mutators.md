@@ -10,4 +10,4 @@
 *   [x] Implement the XS logic (in `perl/lib/Protobuf/Message.xs`) to perform type-checking/conversion on the incoming Perl SV and write the value into the `upb_Message`.
 *   [x] Implement the XS logic to clear a field and to check if a field is explicitly set.
 *   [x] Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

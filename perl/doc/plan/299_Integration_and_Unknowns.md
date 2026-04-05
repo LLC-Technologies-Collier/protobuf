@@ -16,5 +16,5 @@
 *   [x] Ensure `parse` correctly uses the message's generated class.
 *   [x] Implement `Protobuf::UnknownFieldSet` (in `perl/lib/Protobuf/UnknownFieldSet.pm` and `perl/lib/Protobuf/UnknownFieldSet.xs`) and expose it via `$msg->unknown_fields`.
 *   [x] Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
 *   [ ] FINAL REVIEW: Ensure all Milestones 291-299 are verified and documented.

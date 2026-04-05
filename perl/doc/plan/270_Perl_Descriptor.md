@@ -29,4 +29,4 @@
 *   [x] Refine C API for Descriptor (if any).
 *   [x] C layer tests for Descriptor still pass.
 *   [x] All prior Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

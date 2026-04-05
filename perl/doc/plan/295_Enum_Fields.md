@@ -10,4 +10,4 @@
 *   [x] Validate that setting an invalid Enum value appropriately throws a croak/exception.
 *   [x] Implement the logic to retrieve the Enum value (currently returns integer in `perl/xs/convert/upb_to_sv.c`).
 *   [x] Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

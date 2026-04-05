@@ -10,4 +10,4 @@
 *   [x] Implement the underlying XS code (in `perl/lib/Protobuf/Message.xs`) to fetch a scalar field value from the `upb_Message`.
 *   [x] Ensure that fetching an unset optional field returns the appropriate default value defined by the protocol buffer specification.
 *   [x] Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

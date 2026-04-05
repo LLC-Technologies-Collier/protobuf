@@ -13,4 +13,4 @@
 *   [x] Rename XS classes from `Protobuf::*Descriptor` to `Protobuf::Descriptor::*` for consistency.
 *   [x] Fix `FindFieldByName` issue using manual iteration in the XS wrapper (working around UPB lookup issues).
 *   [x] Perl tests pass for all descriptors.
-*   [x] Review and update perl/doc/architecture/api/02-descriptors.md (Note: file might be named differently, updated 01-descriptor-pool.md already).
+*   [ ] Review and update perl/doc/architecture/api/02-descriptors.md (Note: file might be named differently, updated 01-descriptor-pool.md already).

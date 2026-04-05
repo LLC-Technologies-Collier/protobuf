@@ -17,7 +17,7 @@
 *   [ ] Integrate race checks into concurrent unknown field tests. (Difficulty: 3/10).
 *   [x] libcoro integration tests pass.
 *   [x] Integration tests pass.
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.
 
 *   **Engineering Excellence (Reach for More):**
     *   [ ] Implement bulk-tag removal using a bitmask. (Difficulty: 3/10).

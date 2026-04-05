@@ -27,4 +27,4 @@
     *   [ ] Implement bitset-based tag indexing. (Difficulty: 3/10).
     *   [ ] Add CRC32 verification kernel for raw buffers. (Difficulty: 3/10).
     *   [ ] Implement background audit of Unknown blob consistency. (Difficulty: 3/10).
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

@@ -19,4 +19,4 @@
 *   [x] Ensure that retrieving a value from the map returns a correctly blessed `Protobuf::Message` instance (if the value type is a message) or the correct scalar type.
 *   [x] Ensure that setting a value in the map performs correct type-checking and conversion.
 *   [x] Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

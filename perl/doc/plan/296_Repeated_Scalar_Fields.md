@@ -9,5 +9,5 @@
 *   [x] Update the class generator (in `perl/lib/Protobuf/ClassGenerator.pm`) to return this tied array when a repeated scalar field is accessed.
 *   [x] Ensure standard Perl array operations (e.g., `push`, `pop`, `shift`, `unshift`, `splice`, scalar assignment, size fetching) work seamlessly and update the underlying UPB data structure without needing a manual "save" step.
 *   [x] Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
 

@@ -11,4 +11,4 @@
 *   [x] The returned sub-message instance MUST share the `upb_Arena` of the parent message (verified in `perl/xs/protobuf/message.c`).
 *   [x] Implement the `has_` and `clear_` logic for sub-message fields (in `perl/xs/message/access.c`).
 *   [x] Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

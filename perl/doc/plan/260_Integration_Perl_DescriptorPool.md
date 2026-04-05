@@ -19,4 +19,4 @@
     *   [ ] Add cross-process fingerprint validation for schemas. (Difficulty: 3/10).
     *   [ ] Add weak-ref tracking to descriptor wrappers. (Difficulty: 3/10).
     *   [ ] Implement background audit of wrapper identity. (Difficulty: 3/10).
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.

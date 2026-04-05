@@ -27,4 +27,4 @@
 *   [x] Refine C API for DescriptorPool (if any).
 *   [x] C layer tests for DescriptorPool still pass.
 *   [x] All prior Perl tests pass.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
