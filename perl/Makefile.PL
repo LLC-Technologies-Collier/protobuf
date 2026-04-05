@@ -304,7 +304,7 @@ sub MY::postamble {
     my $protoc_plugin_obj = "protoc/protoc-gen-perl-pb.o";
     my $protoc_plugin_exe = "protoc-gen-perl-pb";
     my $protoc_cflags = "-g -D_GNU_SOURCE -std=c99 -Wall";
-    my $protoc_inc = $self->{INC};
+    my $protoc_inc = "-I. -I./protoc -I.. -I../upb -I../src -I../third_party/utf8_range -I../bazel-bin/src/google/protobuf/_virtual_imports/descriptor_proto -I$Config{archlibexp}/CORE";
 
     $make_frag .= main::_render_tt('protoc_plugin_compile.mk.tt', {
         src => $protoc_plugin_src,

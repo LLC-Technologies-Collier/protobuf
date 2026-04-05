@@ -1,5 +1,3 @@
 # Rule to compile protoc-gen-perl-pb.c
 [% obj %]: [% src %]
-	@echo "INC is: [% inc %]"
 	$(CC) $(CCFLAGS) [% inc %] [% cflags %] -c [% src %] -o [% obj %]
-
