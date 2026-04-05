@@ -1,3 +1,50 @@
+=encoding UTF-8
+
+=head1 NAME
+
+Protobuf - High-performance Google Protocol Buffers implementation
+
+=head1 VERSION
+
+version 0.01
+
+=head1 SYNOPSIS
+
+    use Protobuf;
+
+    # Load descriptors (typically done by generated code)
+    my $pool = Protobuf::DescriptorPool->generated_pool;
+
+    # Example: Create a new message (assuming My::Message is generated)
+    # my $msg = My::Message->new({ name => 'foo', value => 123 });
+
+    # Serialize
+    # my $binary = $msg->serialize;
+
+    # Parse
+    # my $decoded = My::Message->parse($binary);
+
+=head1 DESCRIPTION
+
+This module provides a Perl interface to Google Protocol Buffers, leveraging the high-performance C library L<upb|https://github.com/protocolbuffers/upb>. The implementation aims for speed, efficiency, and close alignment with the features and behaviors of the official Python UPB-based extension.
+
+=head1 SEE ALSO
+
+L<Protobuf::Message>, L<Protobuf::DescriptorPool>, L<Protobuf::Arena>
+
+=head1 AUTHOR
+
+C.J. Collier <cjac@google.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2026 by Google LLC.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
 package Protobuf;
 
 use strict;
