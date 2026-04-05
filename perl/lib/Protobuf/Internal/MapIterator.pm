@@ -17,6 +17,16 @@ version 0.01$/
 
 This module provides the internal XS implementation for iterating over Protobuf map fields, interfacing with the C<upb_MapIterator> structure.$/
 
+=head1 METHODS
+
+=head2 next_key()
+
+Returns the next key in the map iteration.$/
+
+=head2 next_value()
+
+Returns the next value in the map iteration.$/
+
 =cut
 
 package Protobuf::Internal::MapIterator;

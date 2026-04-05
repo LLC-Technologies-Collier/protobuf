@@ -57,6 +57,10 @@ Returns C<$self> for chaining.$/
 
 Returns an ISO 8601 string representation of the timestamp in UTC (e.g., "2026-04-01T12:00:00Z"). This uses L<Time::Piece> internally, so nanosecond precision is lost.$/
 
+=head2 get_injected_methods()
+
+Internal method used by L<Protobuf::ClassGenerator> to list methods to inject into the class.$/
+
 =head1 SEE ALSO
 
 L<Protobuf>, L<Protobuf::Message>, L<Time::Piece>$/

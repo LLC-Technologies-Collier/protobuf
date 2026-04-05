@@ -17,6 +17,20 @@ version 0.01$/
 
 This module provides the internal XS implementation for Protobuf repeated fields. It uses L<Tie::Array> to provide an array-like interface to the underlying C<upb_Array> data structure.$/
 
+=head1 METHODS
+
+=head2 audit_integrity()
+
+Internal method for debugging memory and object cache integrity.$/
+
+=head2 slice()
+
+Returns a slice of the repeated field.$/
+
+=head2 sort()
+
+Sorts the repeated field in place.$/
+
 =cut
 
 package Protobuf::Internal::Repeated;

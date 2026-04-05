@@ -117,6 +117,14 @@ Dies if C<$array_ref> is not an ARRAY reference.$/
 
 Returns C<$self> for chaining.$/
 
+=head2 get_injected_methods()
+
+Internal method used by L<Protobuf::ClassGenerator> to list methods to inject into the class.$/
+
+=head2 memory_profile()
+
+Internal method for memory profiling.$/
+
 =head1 SEE ALSO
 
 L<Protobuf>, L<Protobuf::Message>, L<JSON::MaybeXS>$/

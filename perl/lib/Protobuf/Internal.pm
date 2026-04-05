@@ -79,7 +79,73 @@ The following functions are exposed from the XS layer but are for internal use b
 
 =item * C<set_chaos_params>$/
 
-=item * C<verify_binary_diff>$/
+=item * C<class_name_to_full_name>
+
+Converts a Perl class name (e.g., C<My::Package::Message>) to a fully qualified protobuf message name (e.g., C<my.package.Message>).$/
+
+=item * C<clear_cache>
+
+Clears the internal object cache.$/
+
+=item * C<delete_cache_entry>
+
+Deletes a specific entry from the object cache.$/
+
+=item * C<delete_cache_ptr>
+
+Deletes a cache entry based on a pointer.$/
+
+=item * C<find_by_fingerprint>
+
+Finds an object in the cache by its fingerprint.$/
+
+=item * C<full_name_to_class_name>
+
+Converts a fully qualified protobuf message name to a Perl class name.$/
+
+=item * C<get_cache_audit_log>
+
+Retrieves the cache audit log.$/
+
+=item * C<get_cache_capacity>
+
+Gets the current capacity of the object cache.$/
+
+=item * C<get_contention_stats>
+
+Retrieves cache contention statistics.$/
+
+=item * C<get_cpu_features>
+
+Detects CPU features relevant to upb.$/
+
+=item * C<get_fingerprint>
+
+Gets the fingerprint for a given object.$/
+
+=item * C<preallocate_arena>
+
+Preallocates memory within an arena.$/
+
+=item * C<register_fingerprint>
+
+Registers an object's fingerprint in the cache.$/
+
+=item * C<set_cache_capacity>
+
+Sets the capacity of the object cache.$/
+
+=item * C<set_chaos_enabled>
+
+Enables or disables chaos testing features.$/
+
+=item * C<set_chaos_params>
+
+Sets parameters for chaos testing.$/
+
+=item * C<verify_binary_diff>
+
+Verifies binary differences between messages.$/
 
 =back
 

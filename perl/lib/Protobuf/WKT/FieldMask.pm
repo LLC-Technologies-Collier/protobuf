@@ -47,6 +47,10 @@ Parses a comma-separated string and populates the C<paths> repeated field.$/
 
 Returns C<$self> for chaining.$/
 
+=head2 get_injected_methods()
+
+Internal method used by L<Protobuf::ClassGenerator> to list methods to inject into the class.$/
+
 =head1 SEE ALSO
 
 L<Protobuf>, L<Protobuf::Message>$/
