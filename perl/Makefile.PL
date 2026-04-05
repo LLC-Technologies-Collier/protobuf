@@ -28,7 +28,7 @@ my $sanitizer_flags = _get_sanitizer_flags();
 # Attempt to generate ppport.h
 eval { require Devel::PPPort; };
 if (!$@) {
-    warn "Generating ppport.h ...\n";
+    warn "Generating ppport.h ...$/";
     if (!Devel::PPPort::WriteFile('ppport.h')) {
         warn "Failed to generate ppport.h: $!";
     }
@@ -117,7 +117,7 @@ sub MY::postamble {
     my $file_pairs = \@COMMON_FILES_PAIRS;
 
     my $make_frag = main::_render_tt('common_lib_def.mk.tt', { COMMON_LIB => $common_lib });
-    $make_frag .= "\n";
+    $make_frag .= $/;
 
     my %done_o;
     my @obj_rules;
@@ -144,20 +144,20 @@ sub MY::postamble {
             base_flags => $base_flags,
         });
     }
-    $make_frag .= join("", @obj_rules) . "\n";
+    $make_frag .= join("", @obj_rules) . $/;
 
     $make_frag .= main::_render_tt('all_common_lib_dep.mk.tt', { COMMON_LIB => $common_lib });
-    $make_frag .= "\n";
+    $make_frag .= $/;
 
     $make_frag .= main::_render_tt('common_lib_link_rule.mk.tt', {
         COMMON_LIB => $common_lib,
         COMMON_O_STRING => $common_o_string,
     });
-    $make_frag .= "\n";
+    $make_frag .= $/;
 
     # Rule for upb-perl-test.o
     $make_frag .= main::_render_tt('upb_perl_test_o.mk.tt', {});
-    $make_frag .= "\n";
+    $make_frag .= $/;
 
     # Custom C test rules
     my ($embed_cflags, $embed_ldflags) = main::_get_adjusted_embed_flags();
@@ -168,7 +168,7 @@ sub MY::postamble {
     my $c_test_config = decode_json($json_text);
 
     my @c_test_targets;
-    my $c_test_rules = "# c test rules\n";
+    my $c_test_rules = "# c test rules$/";
     my $test_inc = '$(INC)'; # Inherit INC from WriteMakefile
 
     foreach my $test_key ( sort keys %$c_test_config ){
@@ -250,7 +250,7 @@ sub MY::postamble {
             link_line => $link_line,
         });
     }
-    $c_test_rules .= "# end c test rules\n";
+    $c_test_rules .= "# end c test rules$/";
     $make_frag .= $c_test_rules;
 
     # C Benchmarks rules
@@ -284,7 +284,7 @@ sub MY::postamble {
         c_test_targets  => \@c_test_targets,
         c_bench_targets => \@c_bench_targets,
     });
-    $make_frag .= "\n";
+    $make_frag .= $/;
 
     # Rules to run all C tests and benchmarks
     $make_frag .= main::_render_tt('run_targets.mk.tt', {
@@ -293,11 +293,11 @@ sub MY::postamble {
         archlibexp      => $Config{archlibexp},
         COMMON_LIB => $common_lib,
     });
-    $make_frag .= "\n";
+    $make_frag .= $/;
 
     # Rule for TSAN test
     $make_frag .= main::_render_tt('tsan_test.mk.tt', {});
-    $make_frag .= "\n";
+    $make_frag .= $/;
 
     # Rule for protoc-gen-perl-pb executable
     my $protoc_plugin_src = "xs/protoc/protoc-gen-perl-pb.c";
@@ -311,7 +311,7 @@ sub MY::postamble {
         obj => $protoc_plugin_obj,
         cflags => $protoc_cflags,
     });
-    $make_frag .= "\n";
+    $make_frag .= $/;
 
     my $protoc_link_line = join(" ",
         '$(CC)', '$(LDFLAGS)', '-o', $protoc_plugin_exe, $protoc_plugin_obj,
@@ -324,10 +324,10 @@ sub MY::postamble {
         common_lib => $COMMON_LIB,
         link_line => $protoc_link_line,
     });
-    $make_frag .= "\n";
+    $make_frag .= $/;
 
-    $make_frag .= ".PHONY: build_protoc_plugin\n";
-    $make_frag .= "build_protoc_plugin: $protoc_plugin_exe\n\n";
+    $make_frag .= ".PHONY: build_protoc_plugin$/";
+    $make_frag .= "build_protoc_plugin: $protoc_plugin_exe$/$/";
 
     return $make_frag;
 
