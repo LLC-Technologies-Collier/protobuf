@@ -23,4 +23,4 @@
 *   [ ] Implement cross-message SV transfer for extensions. (Difficulty: 3/10).
 *   [ ] Implement hash-table for O(1) extension resolution. (Difficulty: 3/10).
 *   [x] Add background audit of extension wrapper identity.
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

@@ -26,7 +26,7 @@
     *   [ ] TODO: Benchmark lookup performance under heavy contention. (Difficulty: 3/10).
 *   [x] libcoro integration tests pass.
 *   [x] Integration tests pass.
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.
 
 *   **Engineering Excellence (Reach for More):**
     *   [ ] TODO: Implement Cross-Pool Definition Migration safety verification. (Difficulty: 8/10).

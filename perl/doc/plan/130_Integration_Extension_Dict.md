@@ -24,7 +24,7 @@
 *   [ ] TODO: Stress concurrent extension dictionary iterator creation. (Difficulty: 5/10).
 *   [x] libcoro integration tests pass.
 *   [x] Integration tests pass.
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.
 
 *   **Engineering Excellence (Reach for More):**
     *   [ ] TODO: Implement Predictive Extension Pre-fetching during parsing. (Difficulty: 7/10).

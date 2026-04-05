@@ -50,4 +50,4 @@
     *   [ ] Implement shared memory metadata tracking for IPC arenas. (Difficulty: 3/10).
     *   [ ] Integrate NUMA node identification in `upb_alloc` overrides. (Difficulty: 3/10).
     *   [ ] Verify message tree placement on target memory nodes. (Difficulty: 3/10).
-*   [x] Review and update perl/doc/architecture/** documents based on this milestone's learnings.
+*   [ ] Review and update perl/doc/architecture/** documents based on this milestone's learnings.

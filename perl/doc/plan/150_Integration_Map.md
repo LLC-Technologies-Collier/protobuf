@@ -26,7 +26,7 @@
     *   [ ] TODO: Monitor arena block fragmentation during high-pressure map growth. (Difficulty: 2/10)
 *   [x] libcoro integration tests pass.
 *   [x] Integration tests pass.
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.
 
 *   **Engineering Excellence (Reach for More):**
     *   [ ] TODO: Implement Lazy Map Entry Inflation for deferred wrapper creation:

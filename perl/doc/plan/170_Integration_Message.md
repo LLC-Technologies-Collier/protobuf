@@ -20,7 +20,7 @@
 *   [ ] Integrate race checks into concurrent message tests. (Difficulty: 3/10).
 *   [x] libcoro integration tests pass.
 *   [x] Integration tests pass.
-*   [x] Review and update perl/doc/architecture/** documents.
+*   [ ] Review and update perl/doc/architecture/** documents.
 
 *   **Engineering Excellence (Reach for More):**
     *   [ ] Implement vectorized field-by-field comparison. (Difficulty: 3/10).
