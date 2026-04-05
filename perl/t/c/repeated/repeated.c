@@ -21,10 +21,19 @@ static void test_repeated_creation(pTHX) {
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
-    plan(11);
+    plan(11 + 8);
 
     test_repeated_creation(aTHX);
     ok(1, "Repeated functions cover creation and basic access");
+
+    ok(0, "PerlUpb_Repeated_GetItem works"); // TODO PerlUpb_Repeated_GetItem works
+    ok(0, "PerlUpb_Repeated_SetItem works"); // TODO PerlUpb_Repeated_SetItem works
+    ok(0, "PerlUpb_Repeated_Append works"); // TODO PerlUpb_Repeated_Append works
+    ok(0, "PerlUpb_Repeated_Delete works"); // TODO PerlUpb_Repeated_Delete works
+    ok(0, "PerlUpb_Repeated_Clear works"); // TODO PerlUpb_Repeated_Clear works
+    ok(0, "PerlUpb_Repeated_GetArray works"); // TODO PerlUpb_Repeated_GetArray works
+    ok(0, "PerlUpb_Repeated_GetFieldDef works"); // TODO PerlUpb_Repeated_GetFieldDef works
+    ok(0, "PerlUpb_Repeated_AuditIntegrity works"); // TODO PerlUpb_Repeated_AuditIntegrity works
 
     TODO("Implement SIMD-accelerated scalar appending") {
         ok(0, "SSE4.1/AVX2 optimization for bulk numeric appends verified");

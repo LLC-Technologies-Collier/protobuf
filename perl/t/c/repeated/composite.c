@@ -4,11 +4,11 @@
 
 int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
-
-    plan(1);
+    plan(1 + 1);
 
     TODO("Implement composite repeated field unit tests") {
         ok(0, "Composite repeated field logic tested");
+        ok(0, "PerlUpb_Repeated_Add works"); // TODO PerlUpb_Repeated_Add works
     }
 
     test_perl_destroy(my_perl);
