@@ -14,6 +14,15 @@ conversions, and zero-copy IPC support.
 - **Well-Known Types:** Full support for Any, Duration, Timestamp, Struct, etc.
 - **JSON & Text Format:** High-speed serialization and parsing.
 
+## Prerequisites
+
+This Perl module links against components built by Bazel. Ensure that you have Bazel installed and have built the necessary dependencies from the root of the repository. Typically, this involves running a command similar to:
+
+```bash
+# From the repository root directory (one level up)
+bazel clean --expunge && bazel build //src/google/protobuf:descriptor_proto //src/google/protobuf:descriptor_upb_c_proto
+```
+
 ## Installation
 
 ```bash
