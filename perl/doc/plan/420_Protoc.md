@@ -50,5 +50,12 @@
     *   [ ] Add zero-copy IPC transport templates. (Difficulty: 3/10).
     *   [ ] Performance: Precompute hashes for field names in generated code. (Difficulty: 4/10).
     *   [ ] Observability: Embed source code info (proto file/line) in generated PMs. (Difficulty: 3/10).
-    *   [ ] Safety: Generate Type::Tiny constraints for messages. (Difficulty: 6/10).
+    *   [ ] Safety: Generate Type::Tiny constraints for messages:
+        *   [ ] Design Type::Tiny constraint generation strategy. (Difficulty: 3/10)
+        *   [ ] Implement basic constraint generation for scalar types. (Difficulty: 3/10)
+        *   [ ] Implement constraint generation for Enum types. (Difficulty: 2/10)
+        *   [ ] Implement constraint generation for Message types (e.g., `InstanceOf`). (Difficulty: 2/10)
+        *   [ ] Implement constraint generation for Repeated fields (e.g., `ArrayRef`). (Difficulty: 3/10)
+        *   [ ] Implement constraint generation for Map fields (e.g., `HashRef`). (Difficulty: 3/10)
+        *   [ ] Add tests for generated Type::Tiny constraints in `t/98-generated.t`. (Difficulty: 3/10)
 *   [ ] Review and update perl/doc/architecture/** documents.
