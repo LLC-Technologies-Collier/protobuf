@@ -1,5 +1,6 @@
 #include "upb/upb.h"
 #include "upb/reflection/def.h"
+#include "upb/status.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
 #include <iostream>

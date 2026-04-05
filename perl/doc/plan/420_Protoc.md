@@ -29,7 +29,7 @@
         *   [ ] Implement Coro-specific service templates. (Difficulty: 3/10).
     *   [x] **Options & Configuration:**
         *   [ ] TODO: Handle standard protobuf options.
-        *   [ ] TODO: Implement command-line flags for the plugin (e.g., output directory, service generation options).
+        *   [x] TODO: Implement command-line flags for the plugin (e.g., output directory, service generation options). (out_dir added)
         *   [x] Add flag to embed binary descriptors in generated PMs. (Difficulty: 2/10) - Option parsing added.
         *   [ ] TODO: Implement loader logic for embedded descriptors. (Difficulty: 3/10).
 *   [x] Create test file `t/98-generated.t`. (Placeholder created)
