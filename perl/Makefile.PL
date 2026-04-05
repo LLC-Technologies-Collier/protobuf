@@ -299,7 +299,38 @@ sub MY::postamble {
     $make_frag .= main::_render_tt('tsan_test.mk.tt', {});
     $make_frag .= "\n";
 
+    # Rule for protoc-gen-perl-pb executable
+    my $protoc_plugin_src = "xs/protoc/protoc-gen-perl-pb.c";
+    my $protoc_plugin_obj = "xs/protoc/protoc-gen-perl-pb.o";
+    my $protoc_plugin_exe = "protoc-gen-perl-pb";
+    my $bazel_gen_include = File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto");
+    my $protoc_cflags = "-g -I. -I.. -I../upb -I../src -I../third_party/utf8_range -I$bazel_gen_include -D_GNU_SOURCE -std=c99 -Wall";
+
+    $make_frag .= main::_render_tt('protoc_plugin_compile.mk.tt', {
+        src => $protoc_plugin_src,
+        obj => $protoc_plugin_obj,
+        cflags => $protoc_cflags,
+    });
+    $make_frag .= "\n";
+
+    my $protoc_link_line = join(" ",
+        '$(CC)', '$(LDFLAGS)', '-o', $protoc_plugin_exe, $protoc_plugin_obj,
+        $COMMON_O_STRING, "-Wl,-rpath,$(CURDIR)", "-L$(CURDIR)", "-lprotobufperl",
+        "-lstdc++", $sanitizer_flags
+    );
+    $make_frag .= main::_render_tt('protoc_plugin_link.mk.tt', {
+        exe => $protoc_plugin_exe,
+        obj => $protoc_plugin_obj,
+        common_lib => $COMMON_LIB,
+        link_line => $protoc_link_line,
+    });
+    $make_frag .= "\n";
+
+    $make_frag .= ".PHONY: build_protoc_plugin\n";
+    $make_frag .= "build_protoc_plugin: $protoc_plugin_exe\n\n";
+
     return $make_frag;
+
 }
 
 WriteMakefile(
@@ -331,7 +362,9 @@ WriteMakefile(
     LDFLAGS           => "$Config{ldflags} $sanitizer_flags",
     
     # Clean the generated object files and the static library
-    clean             => { FILES => join(' ', @COMMON_O_FILES, $COMMON_LIB, 'blib') },
+    clean             => { FILES => join(' ', @COMMON_O_FILES, $COMMON_LIB, 'blib', 'protoc/protoc-gen-perl-pb.o', 'protoc-gen-perl-pb') },
+
+
 );
 
 package MY;

@@ -1,0 +1,3 @@
+# Rule to link protoc-gen-perl-pb executable
+[% exe %]: [% obj %] [% common_lib %]
+	[% link_line %]
