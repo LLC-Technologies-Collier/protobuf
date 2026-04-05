@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 use Protobuf::Internal;
+use Capture::Tiny qw(capture);
 
 subtest 'binary diff verification' => sub {
     my $data1 = "\x01\x02\x03";
@@ -13,11 +14,18 @@ subtest 'binary diff verification' => sub {
     };
     ok(!$@, "Matching data passes") or diag($@);
 
+    my $exception;
     eval {
-        Protobuf::Internal::verify_binary_diff($data1, $data3, "mismatching data");
+        capture {
+            Protobuf::Internal::verify_binary_diff($data1, $data3, "mismatching data");
+        };
     };
-    ok($@, "Mismatching data croaks");
-    like($@, qr/Binary diff verification failed: mismatching data/, "Error message is correct");
+    $exception = $@;
+
+    ok($exception, "Mismatching data croaks");
+    like($exception, qr/Binary diff verification failed: mismatching data/, "Error message is correct");
+    # We can't easily check the STDERR content here because capture doesn't return if the block dies.
+    # The main goal is to suppress the STDERR leak in the TAP output.
 };
 
 subtest 'avx2 instrumentation' => sub {

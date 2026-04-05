@@ -14,4 +14,4 @@ export ASAN_OPTIONS="detect_leaks=0:abort_on_error=1"
 # -Mblib ensures we use the compiled XS in blib/
 # -It/lib for test helper modules
 # -b for blib
-prove -Mblib -It/lib -b "$@"
+prove -Mblib -It/lib -bv "$@"
