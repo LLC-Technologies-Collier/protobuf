@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
     std::cerr << "protoc-gen-perl-pb plugin not fully implemented yet." << std::endl;
     std::cerr << "Embed descriptors: " << (embed_descriptors ? "true" : "false") << std::endl;
     std::cerr << "Generate services: " << (generate_services ? "true" : "false") << std::endl;
+    std::cerr << "Output directory: " << out_dir << std::endl;
 
     // TODO: Implement actual code generation
     google::protobuf::compiler::CodeGeneratorResponse response;
@@ -73,4 +74,6 @@ int main(int argc, char* argv[]) {
 
     upb_DefPool_Free(pool);
     return 1; // Return 1 to signal error to protoc for now
+}
+1; // Return 1 to signal error to protoc for now
 }

@@ -303,13 +303,14 @@ sub MY::postamble {
     my $protoc_plugin_src = "protoc/protoc-gen-perl-pb.c";
     my $protoc_plugin_obj = "protoc/protoc-gen-perl-pb.o";
     my $protoc_plugin_exe = "protoc-gen-perl-pb";
-    my $bazel_gen_include = File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto");
     my $protoc_cflags = "-g -D_GNU_SOURCE -std=c99 -Wall";
+    my $protoc_inc = $self->{INC};
 
     $make_frag .= main::_render_tt('protoc_plugin_compile.mk.tt', {
         src => $protoc_plugin_src,
         obj => $protoc_plugin_obj,
         cflags => $protoc_cflags,
+        inc => $protoc_inc,
     });
     $make_frag .= $/;
 
