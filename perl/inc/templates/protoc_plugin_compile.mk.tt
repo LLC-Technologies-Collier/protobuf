@@ -1,4 +1,6 @@
 # Rule to compile protoc-gen-perl-pb.c
 [% obj %]: [% src %]
-	$(CC) $(CCFLAGS) [% cflags %] $(INC) -c [% src %] -o [% obj %]
+	$(CC) $(CCFLAGS) $(INC) [% cflags %] -c [% src %] -o [% obj %]
+
+
 

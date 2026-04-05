@@ -300,11 +300,11 @@ sub MY::postamble {
     $make_frag .= $/;
 
     # Rule for protoc-gen-perl-pb executable
-    my $protoc_plugin_src = "xs/protoc/protoc-gen-perl-pb.c";
-    my $protoc_plugin_obj = "xs/protoc/protoc-gen-perl-pb.o";
+    my $protoc_plugin_src = "protoc/protoc-gen-perl-pb.c";
+    my $protoc_plugin_obj = "protoc/protoc-gen-perl-pb.o";
     my $protoc_plugin_exe = "protoc-gen-perl-pb";
     my $bazel_gen_include = File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto");
-    my $protoc_cflags = "-g -I. -I.. -I../upb -I../src -I../third_party/utf8_range -I$bazel_gen_include -D_GNU_SOURCE -std=c99 -Wall";
+    my $protoc_cflags = "-g -D_GNU_SOURCE -std=c99 -Wall";
 
     $make_frag .= main::_render_tt('protoc_plugin_compile.mk.tt', {
         src => $protoc_plugin_src,

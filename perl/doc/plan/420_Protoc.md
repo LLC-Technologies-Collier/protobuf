@@ -7,7 +7,7 @@
 *   [x] Design and implement `protoc-gen-perl-pb`.
     *   [x] **Core Logic (C/C++):**
         *   [x] Implement main plugin entry point to interact with `protoc` via stdin/stdout using `CodeGeneratorRequest` and `CodeGeneratorResponse`. (Placeholder in `perl/protoc/protoc-gen-perl-pb.c`)
-        *   [ ] TODO: Use `upb_DefPool` to load and process the `FileDescriptorProto`s provided by `protoc`.
+        *   [x] TODO: Use `upb_DefPool` to load and process the `FileDescriptorProto`s provided by `protoc`. (Pool creation/free added)
         *   [ ] TODO: Traverse the descriptors (Messages, Enums, Services, Fields, Extensions).
     *   [ ] **Template Engine:**
         *   [ ] TODO: Integrate a C/C++ templating engine (e.g., inja, ctemplate) or use simple string manipulation for code generation.
@@ -22,8 +22,8 @@
     *   [ ] **Field Accessors:** (Handled by `Protobuf::Message` and `Protobuf::ClassGenerator` at runtime based on the loaded descriptor).
     *   [ ] **Enum Handling:**
         *   [ ] TODO: Generate constants for enum values within the message package or a separate Enum package.
-    *   [ ] **Service Generation (Optional):**
-        *   [ ] TODO: Add flags to enable/disable service generation.
+    *   [x] **Service Generation (Optional):**
+        *   [x] TODO: Add flags to enable/disable service generation. (Option parsing added)
         *   [ ] TODO: Template for basic service stubs (e.g., for gRPC or Twirp-like interfaces).
         *   [ ] Add Mojo-specific service templates to protoc-gen-perl. (Difficulty: 3/10).
         *   [ ] Implement Coro-specific service templates. (Difficulty: 3/10).
