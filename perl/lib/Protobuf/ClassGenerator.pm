@@ -1,3 +1,90 @@
+=encoding UTF-8
+
+=head1 NAME
+
+Protobuf::ClassGenerator - Generates Perl classes from Protocol Buffer descriptors
+
+=head1 VERSION
+
+version 0.01
+
+=head1 SYNOPSIS
+
+    use Protobuf::ClassGenerator;
+    use Protobuf::DescriptorPool;
+
+    my $pool = Protobuf::DescriptorPool->generated_pool;
+    my $file_def = $pool->find_file_by_name('my/app/protos.proto');
+
+    # Generate classes for all messages in the file
+    Protobuf::ClassGenerator->generate_for_file($file_def);
+
+    # Now you can use the generated classes
+    # my $msg = My::App::Message->new();
+
+=head1 DESCRIPTION
+
+This module is responsible for dynamically creating Perl classes based on Protocol Buffer message descriptors (L<Protobuf::Descriptor::MessageDef>). When a C<.proto> file is loaded into a L<Protobuf::DescriptorPool>, this generator is invoked to build the corresponding Moo-based Perl classes, complete with accessors and other methods for each field.
+
+Key features of the generated classes:
+
+=over 4
+
+=item * Inherit from L<Protobuf::Message>.
+
+=item * Have methods for getting, setting, checking presence, and clearing each field (e.g., C<my_field()>, C<set_my_field()>, C<has_my_field()>, C<clear_my_field()>).
+
+=item * Return tied arrays/hashes for repeated/map fields, offering a standard Perl interface.
+
+=item * Associate the class with its L<Protobuf::Descriptor::MessageDef>.
+
+=back
+
+This module is primarily used internally by L<Protobuf::DescriptorPool> when adding new file descriptors.
+
+=head1 METHODS
+
+=head2 generate_for_file($file_descriptor)
+
+Takes a L<Protobuf::Descriptor::File> object and generates Perl classes for all top-level and nested messages defined within that file. This method is called recursively for nested types.
+
+=head2 generate_for_message($message_descriptor)
+
+Generates the Perl class for a single L<Protobuf::Descriptor::MessageDef>.
+
+=head2 generate_type_library($file_descriptor)
+
+(Experimental) Generates a string containing code for a L<Type::Library> based on the message definitions in the given L<Protobuf::Descriptor::File>.
+
+=head2 type_library($file_descriptor)
+
+Alias for C<generate_type_library>.
+
+=head2 generate_docs()
+
+(Placeholder) Intended to generate HTML documentation from descriptors.
+
+=head2 generate_validator_xs($message_descriptor)
+
+(Experimental) Generates C code for a highly optimized validator function for the given message type.
+
+=head1 SEE ALSO
+
+L<Protobuf>, L<Protobuf::DescriptorPool>, L<Protobuf::Message>, L<Protobuf::Descriptor>
+
+=head1 AUTHOR
+
+C.J. Collier <cjac@google.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2026 by Google LLC.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
 package Protobuf::ClassGenerator;
 
 use strict;
