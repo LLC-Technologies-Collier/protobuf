@@ -1,0 +1,4 @@
+# Placeholder for deps, can be removed if not needed
+.PHONY: deps
+deps:
+	@echo "Deps target does nothing for now"

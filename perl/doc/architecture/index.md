@@ -2,6 +2,7 @@
 
 This directory contains documentation about the internal architecture of the Perl Protobuf module.
 
+-   [Architecture Overview](000-Architecture-Overview.md)
 -   [Core Concepts](core/)
     -   [UPB Interfacing](core/01-upb-interfacing.md)
     -   [Memory Management](core/02-memory-management.md)
