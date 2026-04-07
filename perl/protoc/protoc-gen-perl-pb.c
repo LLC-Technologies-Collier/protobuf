@@ -40,7 +40,29 @@ std::string to_camel_case(const std::string& s) {
     return result;
 }
 
+// Function to base64 encode
+std::string base64_encode(const std::string& in) {
+    std::string out;
+    int val = 0, valb = -6;
+    const std::string base64_chars =
+                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                 "abcdefghijklmnopqrstuvwxyz"
+                 "0123456789+/";
+    for (unsigned char c : in) {
+        val = (val << 8) + c;
+        valb += 8;
+        while (valb >= 0) {
+            out.push_back(base64_chars[(val >> valb) & 0x3F]);
+            valb -= 6;
+        }
+    }
+    if (valb > -6) out.push_back(base64_chars[((val << 8) >> (valb + 8)) & 0x3F]);
+    while (out.size() % 4) out.push_back('=');
+    return out;
+}
+
 // Converts package and proto file name to Perl module name base
+
 std::string get_module_base_name(const std::string& package, const std::string& proto_file) {
     std::string module_name = "";
     if (!package.empty()) {
@@ -232,7 +254,16 @@ int main(int argc, char* argv[]) {
             content += "}\n\n";
         }
 
-        // TODO: Register classes
+        // Message Class Stubs
+        if (!embed_descriptors) {
+            for (int j = 0; j < proto_file.message_type_size(); ++j) {
+                const google::protobuf::DescriptorProto& msg_proto = proto_file.message_type(j);
+                content += "# Protobuf::ClassGenerator->register_class('" + package_name + "::" + msg_proto.name() + "');\n";
+            }
+            if (proto_file.message_type_size() > 0) {
+                content += "\n";
+            }
+        }
 
         // Generate Enums
         if (has_enums) {
