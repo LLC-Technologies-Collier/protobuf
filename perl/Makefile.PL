@@ -15,6 +15,15 @@ use Sideload::Build::FileLists qw(
     get_xs_helper_c_files
 );
 
+# --- Path Macros ---
+our $perl_dir = Cwd::abs_path(File::Spec->curdir());
+our $project_root = Cwd::abs_path(File::Spec->catdir($perl_dir, '..'));
+our $upb_dir = File::Spec->catdir($project_root, 'upb');
+our $src_dir = File::Spec->catdir($project_root, 'src');
+our $third_party_dir = File::Spec->catdir($project_root, 'third_party');
+# --- End Path Macros ---
+
+
 sub _get_sanitizer_flags {
     my $asan_flags = $ENV{USE_ASAN} ? "-fsanitize=address" : "";
     my $ubsan_flags = $ENV{USE_UBSAN} ? "-fsanitize=undefined" : "";
