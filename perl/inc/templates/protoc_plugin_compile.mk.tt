@@ -1,3 +1,3 @@
 
-$(obj): $(src)
-	$(CXX) $(CXXFLAGS) $(inc) -c $(src) -o $(obj)
+[% obj %]: [% src %]
+	$(CXX) $(CXXFLAGS) [% inc %] [% cflags %] -c [% src %] -o [% obj %]
