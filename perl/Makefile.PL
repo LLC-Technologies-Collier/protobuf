@@ -328,7 +328,7 @@ sub MY::postamble {
     $make_frag .= $/;
 
     # Rule for protoc-gen-perl-pb executable
-    my $protoc_plugin_src = "protoc/protoc-gen-perl-pb.c";
+    my $protoc_plugin_src = "protoc/protoc-gen-perl-pb.cc";
     my $protoc_plugin_obj = "protoc/protoc-gen-perl-pb.o";
     my $protoc_plugin_exe = "protoc-gen-perl-pb";
     my $protoc_cflags = "-g -D_GNU_SOURCE -std=c99 -Wall";
