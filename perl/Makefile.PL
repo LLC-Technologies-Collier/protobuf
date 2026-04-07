@@ -24,6 +24,25 @@ our $third_party_dir = File::Spec->catdir($project_root, 'third_party');
 # --- End Path Macros ---
 
 
+# Template Toolkit helper function
+my $tt;
+sub _render_tt {
+    my ($template_file, $vars) = @_;
+    if (!$tt) {
+        $tt = Template->new({
+            INCLUDE_PATH => [ 'inc/templates' ],
+            PRE_CHOMP    => 0,
+            POST_CHOMP   => 0,
+            TRIM         => 0,
+        });
+    }
+    my $output = '';
+    if (!$tt->process($template_file, $vars, \$output)) {
+        die "Template processing failed for $template_file: " . $tt->error();
+    }
+    return $output;
+}
+
 sub _get_sanitizer_flags {
     my $asan_flags = $ENV{USE_ASAN} ? "-fsanitize=address" : "";
     my $ubsan_flags = $ENV{USE_UBSAN} ? "-fsanitize=undefined" : "";
