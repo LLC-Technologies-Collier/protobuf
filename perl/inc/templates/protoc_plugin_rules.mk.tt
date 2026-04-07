@@ -1,0 +1,15 @@
+# Rule for protoc-gen-perl-pb executable
+PROTOC_PLUGIN_SRC = protoc/protoc-gen-perl-pb.c
+PROTOC_PLUGIN_OBJ = protoc/protoc-gen-perl-pb.o
+PROTOC_PLUGIN_EXE = bin/protoc-gen-perl-pb
+
+PROTOC_INC = -I. -I[% project_root %] -I[% upb_dir %] -I[% src_dir %] -I[% third_party_dir %]/utf8_range -I$(CURDIR)/blib/arch/auto/Protobuf/upb_proto_hdrs -I/usr/include -I/usr/local/include -I[% Config.archlibexp %]/CORE
+
+$(PROTOC_PLUGIN_OBJ): $(PROTOC_PLUGIN_SRC)
+	$(CXX) $(CXXFLAGS) $(PROTOC_INC) -c $(PROTOC_PLUGIN_SRC) -o $(PROTOC_PLUGIN_OBJ)
+
+$(PROTOC_PLUGIN_EXE): $(PROTOC_PLUGIN_OBJ) [% COMMON_LIB %]
+	$(CXX) $(LDFLAGS) -o $(PROTOC_PLUGIN_EXE) $(PROTOC_PLUGIN_OBJ) [% COMMON_O_STRING %] -Wl,-rpath,$(CURDIR) -L$(CURDIR) -lprotobufperl -lprotobuf [% sanitizer_flags %]
+
+.PHONY: build_protoc_plugin
+build_protoc_plugin: $(PROTOC_PLUGIN_EXE)

@@ -2,6 +2,7 @@ package Sideload::Build::FileLists;
 
 use strict;
 use warnings;
+warn "Loading Sideload::Build::FileLists\n";
 use File::Find;
 use File::Spec;
 use Exporter 'import';
