@@ -61,9 +61,8 @@ std::string base64_encode(const std::string& in) {
     return out;
 }
 
-// Converts package and proto file name to Perl module name base
-
-std::string get_module_base_name(const std::string& package, const std::string& proto_file) {
+// Converts package to Perl module name base
+std::string get_module_base_name(const std::string& package) {
     std::string module_name = "";
     if (!package.empty()) {
         std::stringstream ss(package);
@@ -78,11 +77,9 @@ std::string get_module_base_name(const std::string& package, const std::string& 
     return module_name;
 }
 
-// Converts a proto file path to a Perl module file path
-std::string proto_path_to_module_path(const std::string& proto_file_path, const std::string& package) {
-    std::string package_path = package;
-    std::replace(package_path.begin(), package_path.end(), '.', '/');
-
+std::string get_perl_package_name(const std::string& proto_file_path, const std::string& package) {
+    std::string base = get_module_base_name(package);
+    
     std::string proto_basename = proto_file_path;
     size_t last_slash = proto_basename.find_last_of('/');
     if (last_slash != std::string::npos) {
@@ -93,8 +90,22 @@ std::string proto_path_to_module_path(const std::string& proto_file_path, const 
         proto_basename = proto_basename.substr(0, last_dot);
     }
     proto_basename = to_camel_case(proto_basename);
+    
+    if (base.empty()) {
+        return proto_basename;
+    }
+    return base + "::" + proto_basename;
+}
 
-    return (package_path.empty() ? "" : package_path + "/") + proto_basename + ".pm";
+// Converts a Perl package name to a module file path
+std::string package_name_to_module_path(const std::string& package_name) {
+    std::string path = package_name;
+    size_t pos = 0;
+    while ((pos = path.find("::", pos)) != std::string::npos) {
+        path.replace(pos, 2, "/");
+        pos += 1;
+    }
+    return path + ".pm";
 }
 
 // TODO: Implement the main logic for protoc-gen-perl-pb
@@ -183,13 +194,10 @@ int main(int argc, char* argv[]) {
     upb_Arena_Free(&arena);
 
     std::cerr << "protoc-gen-perl-pb plugin not fully implemented yet." << std::endl;
-    fprintf(stderr, "Embed descriptors: %s
-", (embed_descriptors ? "true" : "false"));
-    fprintf(stderr, "Generate services: %s
-", (generate_services ? "true" : "false"));
+    fprintf(stderr, "Embed descriptors: %s\n", (embed_descriptors ? "true" : "false"));
+    fprintf(stderr, "Generate services: %s\n", (generate_services ? "true" : "false"));
     if (out_dir) {
-        fprintf(stderr, "Output directory: %s
-", out_dir);
+        fprintf(stderr, "Output directory: %s\n", out_dir);
         free(out_dir);
     }
 
@@ -236,7 +244,7 @@ int main(int argc, char* argv[]) {
             if (!proto_file.SerializeToString(&serialized_fd)) {
                  google::protobuf::compiler::CodeGeneratorResponse err_response;
                  err_response.set_error("Failed to serialize FileDescriptorProto: " + proto_file.name());
-                 err_response.SerializeToOstream(&std::cout);
+                 (void)err_response.SerializeToOstream(&std::cout);
                  return 1;
             }
             std::string b64_descriptor = base64_encode(serialized_fd);
@@ -249,7 +257,7 @@ int main(int argc, char* argv[]) {
             }
             content += "END_DESC\n";
             content += "    Protobuf::DescriptorPool::get_generated_pool()->add_serialized_file(\n";
-            content += "        MIME::Base64::decode_base64(join(\"\", grep { /\S/ } split(/\r?\n/, $descriptor_b64)))\n";
+            content += "        MIME::Base64::decode_base64(join(\"\", grep { /\\S/ } split(/\r?\n/, $descriptor_b64)))\n";
             content += "    );\n";
             content += "}\n\n";
         }
@@ -264,19 +272,19 @@ int main(int argc, char* argv[]) {
                 content += "\n";
             }
         }
-
+\
         // Generate Enums
         if (has_enums) {
             for (int j = 0; j < proto_file.enum_type_size(); ++j) {
                 const google::protobuf::EnumDescriptorProto& enum_proto = proto_file.enum_type(j);
-                // TODO: Prefix enum values with enum name?
                 for (int k = 0; k < enum_proto.value_size(); ++k) {
                     const google::protobuf::EnumValueDescriptorProto& value_proto = enum_proto.value(k);
-                    content += "const my $" + value_proto.name() + " => " + std::to_string(value_proto.number()) + ";\n";
+                    content += "const my $" + enum_proto.name() + "_" + value_proto.name() + " => " + std::to_string(value_proto.number()) + ";\\n";
                 }
-                content += "\n";
+                content += "\\n";
             }
         }
+
 
         // Generate Services
         if (generate_services && proto_file.service_size() > 0) {
