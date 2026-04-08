@@ -395,6 +395,19 @@ int main(int argc, char* argv[]) {
                 }
 
                 // TODO: Generate extension ranges
+                size_t extension_range_count;
+                const google_protobuf_DescriptorProto_ExtensionRange* const* extension_ranges =
+                    google_protobuf_DescriptorProto_extension_range(msg_proto, &extension_range_count);
+                if (extension_range_count > 0) {
+                    content_ss << "    # Extension Ranges" << std::endl;
+                    for (size_t k = 0; k < extension_range_count; ++k) {
+                        const google_protobuf_DescriptorProto_ExtensionRange* range = extension_ranges[k];
+                        content_ss << "    #   Range: " << google_protobuf_DescriptorProto_ExtensionRange_start(range)
+                                   << " to " << google_protobuf_DescriptorProto_ExtensionRange_end(range) - 1 << std::endl;
+                        // TODO: Register extension ranges with the runtime
+                    }
+                    content_ss << std::endl;
+                }
 
                 content_ss << std::endl;
             }
