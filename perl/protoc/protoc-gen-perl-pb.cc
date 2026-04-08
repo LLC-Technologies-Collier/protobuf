@@ -234,10 +234,27 @@ int main(int argc, char* argv[]) {
         content_ss << R"(use warnings;)" << std::endl;
         content_ss << R"(use Protobuf::Message;)" << std::endl;
         content_ss << R"(use Protobuf::Internal qw(:all);)" << std::endl;
+
+        bool has_any_enums = false;
         size_t enum_count;
         google_protobuf_FileDescriptorProto_enum_type(proto_file, &enum_count);
-        bool has_enums = enum_count > 0;
-        if (has_enums) {
+        if (enum_count > 0) has_any_enums = true;
+
+        size_t message_count;
+        const google_protobuf_DescriptorProto* const* messages =
+            google_protobuf_FileDescriptorProto_message_type(proto_file, &message_count);
+        if (!has_any_enums && message_count > 0) {
+            for (size_t j = 0; j < message_count; ++j) {
+                size_t nested_enum_count;
+                google_protobuf_DescriptorProto_enum_type(messages[j], &nested_enum_count);
+                if (nested_enum_count > 0) {
+                    has_any_enums = true;
+                    break;
+                }
+            }
+        }
+
+        if (has_any_enums) {
             content_ss << R"(use Const::Fast;)" << std::endl;
         }
         if (embed_descriptors) {
@@ -264,32 +281,36 @@ int main(int argc, char* argv[]) {
             }
             content_ss << R"(END_DESC)" << std::endl;
             content_ss << R"(    Protobuf::DescriptorPool::get_generated_pool()->add_serialized_file()" << std::endl;
-            content_ss << R"(        MIME::Base64::decode_base64(join("", grep { /\S/ } split(/\r?\n/, $descriptor_b64))))" << std::endl;
+?
+/, $descriptor_b64))))" << std::endl;
             content_ss << R"(    );)" << std::endl;
             content_ss << R"(})" << std::endl;
         }
         content_ss << std::endl << std::endl;
 
         // Generate Enums
-        if (has_enums) {
-            const google_protobuf_EnumDescriptorProto* const* enums =
-                google_protobuf_FileDescriptorProto_enum_type(proto_file, &enum_count);
-            for (size_t j = 0; j < enum_count; ++j) {
-                const google_protobuf_EnumDescriptorProto* enum_proto = enums[j];
-                upb_StringView enum_name_sv = google_protobuf_EnumDescriptorProto_name(enum_proto);
-                std::string enum_name(enum_name_sv.data, enum_name_sv.size);
+        if (has_any_enums) {
+             google_protobuf_FileDescriptorProto_enum_type(proto_file, &enum_count);
+            if (enum_count > 0) {
+                const google_protobuf_EnumDescriptorProto* const* enums =
+                    google_protobuf_FileDescriptorProto_enum_type(proto_file, &enum_count);
+                for (size_t j = 0; j < enum_count; ++j) {
+                    const google_protobuf_EnumDescriptorProto* enum_proto = enums[j];
+                    upb_StringView enum_name_sv = google_protobuf_EnumDescriptorProto_name(enum_proto);
+                    std::string enum_name(enum_name_sv.data, enum_name_sv.size);
 
-                size_t value_count;
-                const google_protobuf_EnumValueDescriptorProto* const* values =
-                    google_protobuf_EnumDescriptorProto_value(enum_proto, &value_count);
-                for (size_t k = 0; k < value_count; ++k) {
-                    const google_protobuf_EnumValueDescriptorProto* value_proto = values[k];
-                    upb_StringView value_name_sv = google_protobuf_EnumValueDescriptorProto_name(value_proto);
-                    std::string value_name(value_name_sv.data, value_name_sv.size);
-                    int32_t value_number = google_protobuf_EnumValueDescriptorProto_number(value_proto);
-                    content_ss << "const my $" << value_name << " => " << value_number << ";" << std::endl;
+                    size_t value_count;
+                    const google_protobuf_EnumValueDescriptorProto* const* values =
+                        google_protobuf_EnumDescriptorProto_value(enum_proto, &value_count);
+                    for (size_t k = 0; k < value_count; ++k) {
+                        const google_protobuf_EnumValueDescriptorProto* value_proto = values[k];
+                        upb_StringView value_name_sv = google_protobuf_EnumValueDescriptorProto_name(value_proto);
+                        std::string value_name(value_name_sv.data, value_name_sv.size);
+                        int32_t value_number = google_protobuf_EnumValueDescriptorProto_number(value_proto);
+                        content_ss << "const my $" << value_name << " => " << value_number << ";" << std::endl;
+                    }
+                    content_ss << std::endl;
                 }
-                content_ss << std::endl;
             }
         }
 
@@ -321,9 +342,8 @@ int main(int argc, char* argv[]) {
         }
 
         // Generate Messages
-        size_t message_count;
-        const google_protobuf_DescriptorProto* const* messages =
-            google_protobuf_FileDescriptorProto_message_type(proto_file, &message_count);
+        // size_t message_count; // Already declared above
+        // const google_protobuf_DescriptorProto* const* messages = // Already declared above
         if (message_count > 0) {
             content_ss << "# Message definitions" << std::endl << std::endl;
             for (size_t j = 0; j < message_count; ++j) {
@@ -354,15 +374,29 @@ int main(int argc, char* argv[]) {
                         upb_StringView field_name_sv = google_protobuf_FieldDescriptorProto_name(field_proto);
                         std::string field_name(field_name_sv.data, field_name_sv.size);
                         content_ss << "    # Field: " << field_name << std::endl;
-
-                        // TODO: Determine field type
-                        // TODO: If field type is a message or enum from another package, add to use_statements
+\
+                        google_protobuf_FieldDescriptorProto_Type type = google_protobuf_FieldDescriptorProto_type(field_proto);
+                        if (type == google_protobuf_FieldDescriptorProto_TYPE_MESSAGE || type == google_protobuf_FieldDescriptorProto_TYPE_ENUM) {
+                            upb_StringView type_name_sv = google_protobuf_FieldDescriptorProto_type_name(field_proto);
+                            std::string type_name(type_name_sv.data, type_name_sv.size);
+                            if (!type_name.empty() && type_name[0] == '.') {
+                                type_name = type_name.substr(1);
+                            }
+                            // TODO: Convert this fully qualified type name to a Perl module name
+                            // and add to use_statements if it's from a different file.
+                            content_ss << "    #   Type Name: " << type_name << std::endl;
+                        }
                         // TODO: Generate accessors/mutators (if not dynamic)
                     }
                     content_ss << std::endl;
                 }
 
                 // TODO: Output unique 'use' statements collected above
+                for (const auto& use_stmt : use_statements) {
+                    content_ss << use_stmt << std::endl;
+                }
+                content_ss << std::endl;
+
 
                 // Nested Enums
                 size_t nested_enum_count;
