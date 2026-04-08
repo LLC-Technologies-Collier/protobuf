@@ -344,9 +344,35 @@ int main(int argc, char* argv[]) {
 
                 // TODO: Generate field accessors/mutators (if not handled dynamically)
 
-                // TODO: Generate nested enum definitions
+                // Nested Enums
+                size_t nested_enum_count;
+                const google_protobuf_EnumDescriptorProto* const* nested_enums =
+                    google_protobuf_DescriptorProto_enum_type(msg_proto, &nested_enum_count);
+                if (nested_enum_count > 0) {
+                    content_ss << "    # Nested Enums" << std::endl;
+                    for (size_t k = 0; k < nested_enum_count; ++k) {
+                        const google_protobuf_EnumDescriptorProto* nested_enum_proto = nested_enums[k];
+                        upb_StringView nested_enum_name_sv = google_protobuf_EnumDescriptorProto_name(nested_enum_proto);
+                        content_ss << "    # Enum: " << std::string(nested_enum_name_sv.data, nested_enum_name_sv.size) << std::endl;
+                        // TODO: Generate const my $VAR for nested enum values
+                    }
+                    content_ss << std::endl;
+                }
 
-                // TODO: Generate nested message definitions
+                // Nested Messages
+                size_t nested_message_count;
+                const google_protobuf_DescriptorProto* const* nested_messages =
+                    google_protobuf_DescriptorProto_nested_type(msg_proto, &nested_message_count);
+                if (nested_message_count > 0) {
+                    content_ss << "    # Nested Messages" << std::endl;
+                    for (size_t k = 0; k < nested_message_count; ++k) {
+                        const google_protobuf_DescriptorProto* nested_msg_proto = nested_messages[k];
+                        upb_StringView nested_msg_name_sv = google_protobuf_DescriptorProto_name(nested_msg_proto);
+                        content_ss << "    # Message: " << std::string(nested_msg_name_sv.data, nested_msg_name_sv.size) << std::endl;
+                        // TODO: Recursively generate nested message definitions
+                    }
+                    content_ss << std::endl;
+                }
 
                 // TODO: Generate extension ranges
 
