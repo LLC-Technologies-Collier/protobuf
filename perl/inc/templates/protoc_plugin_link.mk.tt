@@ -1,3 +1,3 @@
 
 [% exe %]: [% obj %] [% common_lib %]
-	[% link_line %]
+	$(CXX) $(LDFLAGS) -o [% exe %] [% obj %] -Wl,-rpath,$(CURDIR) -L$(CURDIR) -lprotobufperl -lprotobuf -lstdc++ [% sanitizer_flags %]

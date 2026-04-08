@@ -331,7 +331,7 @@ sub MY::postamble {
     my $protoc_plugin_src = "protoc/protoc-gen-perl-pb.cc";
     my $protoc_plugin_obj = "protoc/protoc-gen-perl-pb.o";
     my $protoc_plugin_exe = "protoc-gen-perl-pb";
-    my $protoc_cflags = "-g -D_GNU_SOURCE -std=c++14 -Wall";
+    my $protoc_cflags = "-g -D_GNU_SOURCE -std=c++17 -Wall";
     my $protoc_inc = "-I. -I./protoc -I.. -I../upb -I../src -I../third_party/utf8_range -I../bazel-bin/src/google/protobuf/_virtual_imports/descriptor_proto -I$Config{archlibexp}/CORE";
 
     $make_frag .= main::_render_tt('protoc_plugin_compile.mk.tt', {
@@ -342,16 +342,12 @@ sub MY::postamble {
     });
     $make_frag .= $/;
 
-    my $protoc_link_line = join(" ",
-        '$(CC)', '$(LDFLAGS)', '-o', $protoc_plugin_exe, $protoc_plugin_obj,
-        $COMMON_O_STRING, "-Wl,-rpath,$(CURDIR)", "-L$(CURDIR)", "-lprotobufperl",
-        "-lstdc++", $sanitizer_flags
-    );
     $make_frag .= main::_render_tt('protoc_plugin_link.mk.tt', {
         exe => $protoc_plugin_exe,
         obj => $protoc_plugin_obj,
         common_lib => $COMMON_LIB,
-        link_line => $protoc_link_line,
+        common_o => $COMMON_O_STRING,
+        sanitizer_flags => $sanitizer_flags,
     });
     $make_frag .= $/;
 
