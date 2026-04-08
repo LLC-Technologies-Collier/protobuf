@@ -379,23 +379,30 @@ int main(int argc, char* argv[]) {
                         if (type == google_protobuf_FieldDescriptorProto_TYPE_MESSAGE || type == google_protobuf_FieldDescriptorProto_TYPE_ENUM) {
                             upb_StringView type_name_sv = google_protobuf_FieldDescriptorProto_type_name(field_proto);
                             std::string type_name(type_name_sv.data, type_name_sv.size);
-                            if (!type_name.empty() && type_name[0] == '.') {
-                                type_name = type_name.substr(1);
-                            }
-                            // TODO: Convert this fully qualified type name to a Perl module name
-                            // and add to use_statements if it's from a different file.
-                            content_ss << "    #   Type Name: " << type_name << std::endl;
-                        }
-                        // TODO: Generate accessors/mutators (if not dynamic)
-                    }
-                    content_ss << std::endl;
-                }
+                            \
+                                                        if (!type_name.empty() && type_name[0] == '.') {
+                                                            type_name = type_name.substr(1);
+                                                        }
+                                                        std::string module_name = proto_type_to_perl_module(type_name);
+                                                        // TODO: intelligently check if the type is from a different FILE
+                                                        // For now, assume different package means different file
+                                                        if (!module_name.empty() && module_name.rfind(package_name + "::", 0) != 0) {
+                                                            use_statements.insert("use " + module_name + ";");
+                                                        }
+                                                        content_ss << "    #   Type Name: " << type_name << " -> " << module_name << std::endl;
+                                                    }
+                                                    // TODO: Generate accessors/mutators (if not dynamic)
+                                                }
+                                                content_ss << std::endl;
+                                            }
 
-                // TODO: Output unique 'use' statements collected above
-                for (const auto& use_stmt : use_statements) {
-                    content_ss << use_stmt << std::endl;
-                }
-                content_ss << std::endl;
+                                            if (!use_statements.empty()) {
+                                                content_ss << "    # External Types" << std::endl;
+                                                for (const auto& use_stmt : use_statements) {
+                                                    content_ss << "    " << use_stmt << std::endl;
+                                                }
+                                                content_ss << std::endl;
+                                            }
 
 
                 // Nested Enums
