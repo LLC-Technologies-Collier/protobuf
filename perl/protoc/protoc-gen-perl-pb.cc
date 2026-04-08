@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <set>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -107,6 +108,25 @@ std::string package_name_to_module_path(const std::string& package_name) {
         pos += 1;
     }
     return path + ".pm";
+}
+
+// Converts a fully qualified protobuf type name to a Perl module name
+std::string proto_type_to_perl_module(const std::string& type_name) {
+    std::string module_name = type_name;
+    if (!module_name.empty() && module_name[0] == '.') {
+        module_name = module_name.substr(1);
+    }
+
+    std::string result = "";
+    std::stringstream ss(module_name);
+    std::string segment;
+    bool first = true;
+    while(std::getline(ss, segment, '.')) {
+        if (!first) result += "::";
+        result += segment;
+        first = false;
+    }
+    return result;
 }
 
 bool embed_descriptors = false;
@@ -281,7 +301,7 @@ int main(int argc, char* argv[]) {
             }
             content_ss << R"(END_DESC)" << std::endl;
             content_ss << R"(    Protobuf::DescriptorPool::get_generated_pool()->add_serialized_file()" << std::endl;
-?
+            content_ss << R"(        MIME::Base64::decode_base64(join("", grep { /\S/ } split(/?
 /, $descriptor_b64))))" << std::endl;
             content_ss << R"(    );)" << std::endl;
             content_ss << R"(})" << std::endl;
@@ -360,8 +380,7 @@ int main(int argc, char* argv[]) {
                 // This is not strictly necessary if all messages are in the same file as the main package,
                 // but good practice for clarity if we ever split them.
 
-                // TODO: Collect needed 'use' statements for field types
-                std::vector<std::string> use_statements;
+                std::set<std::string> use_statements;
 
                 // Fields
                 size_t field_count;
@@ -374,35 +393,34 @@ int main(int argc, char* argv[]) {
                         upb_StringView field_name_sv = google_protobuf_FieldDescriptorProto_name(field_proto);
                         std::string field_name(field_name_sv.data, field_name_sv.size);
                         content_ss << "    # Field: " << field_name << std::endl;
-\
-                        google_protobuf_FieldDescriptorProto_Type type = google_protobuf_FieldDescriptorProto_type(field_proto);
+
+                        google_protobuf_FieldDescriptorProto_Type type = (google_protobuf_FieldDescriptorProto_Type)google_protobuf_FieldDescriptorProto_type(field_proto);
                         if (type == google_protobuf_FieldDescriptorProto_TYPE_MESSAGE || type == google_protobuf_FieldDescriptorProto_TYPE_ENUM) {
                             upb_StringView type_name_sv = google_protobuf_FieldDescriptorProto_type_name(field_proto);
                             std::string type_name(type_name_sv.data, type_name_sv.size);
-                            \
-                                                        if (!type_name.empty() && type_name[0] == '.') {
-                                                            type_name = type_name.substr(1);
-                                                        }
-                                                        std::string module_name = proto_type_to_perl_module(type_name);
-                                                        // TODO: intelligently check if the type is from a different FILE
-                                                        // For now, assume different package means different file
-                                                        if (!module_name.empty() && module_name.rfind(package_name + "::", 0) != 0) {
-                                                            use_statements.insert("use " + module_name + ";");
-                                                        }
-                                                        content_ss << "    #   Type Name: " << type_name << " -> " << module_name << std::endl;
-                                                    }
-                                                    // TODO: Generate accessors/mutators (if not dynamic)
-                                                }
-                                                content_ss << std::endl;
-                                            }
+                            if (!type_name.empty() && type_name[0] == '.') {
+                                type_name = type_name.substr(1);
+                            }
+                            std::string module_name = proto_type_to_perl_module(type_name);
+                            // TODO: intelligently check if the type is from a different FILE
+                            // For now, assume different package means different file
+                            if (!module_name.empty() && module_name.rfind(package_name + "::", 0) != 0) {
+                                use_statements.insert("use " + module_name + ";");
+                            }
+                            content_ss << "    #   Type Name: " << type_name << " -> " << module_name << std::endl;
+                        }
+                        // TODO: Generate accessors/mutators (if not dynamic)
+                    }
+                    content_ss << std::endl;
+                }
 
-                                            if (!use_statements.empty()) {
-                                                content_ss << "    # External Types" << std::endl;
-                                                for (const auto& use_stmt : use_statements) {
-                                                    content_ss << "    " << use_stmt << std::endl;
-                                                }
-                                                content_ss << std::endl;
-                                            }
+                if (!use_statements.empty()) {
+                    content_ss << "    # External Types" << std::endl;
+                    for (const auto& use_stmt : use_statements) {
+                        content_ss << "    " << use_stmt << std::endl;
+                    }
+                    content_ss << std::endl;
+                }
 
 
                 // Nested Enums
