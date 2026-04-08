@@ -474,7 +474,8 @@ int main(int argc, char* argv[]) {
                         const google_protobuf_DescriptorProto_ExtensionRange* range = extension_ranges[k];
                         content_ss << "    #   Range: " << google_protobuf_DescriptorProto_ExtensionRange_start(range)
                                    << " to " << google_protobuf_DescriptorProto_ExtensionRange_end(range) - 1 << std::endl;
-                        // TODO: Register extension ranges with the runtime
+                        // TODO: Register extension ranges with the runtime, likely via Protobuf::ClassGenerator
+                        // Protobuf::ClassGenerator->register_extension_range(full_msg_name, start, end);
                     }
                     content_ss << std::endl;
                 }
