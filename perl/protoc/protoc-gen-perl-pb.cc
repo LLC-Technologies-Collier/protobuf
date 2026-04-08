@@ -325,18 +325,47 @@ int main(int argc, char* argv[]) {
         const google_protobuf_DescriptorProto* const* messages =
             google_protobuf_FileDescriptorProto_message_type(proto_file, &message_count);
         if (message_count > 0) {
-            content_ss << "# Message definitions would go here." << std::endl << std::endl;
+            content_ss << "# Message definitions" << std::endl << std::endl;
             for (size_t j = 0; j < message_count; ++j) {
                 const google_protobuf_DescriptorProto* msg_proto = messages[j];
                 upb_StringView msg_name_sv = google_protobuf_DescriptorProto_name(msg_proto);
                 std::string msg_name(msg_name_sv.data, msg_name_sv.size);
-                content_ss << "# Message: " << msg_name << std::endl;
-                // TODO: Implement actual message class generation
+                std::string full_msg_name = package_name + "::" + msg_name;
+
+                content_ss << "# ============================================================================" << std::endl;
+                content_ss << "# Message: " << full_msg_name << std::endl;
+                content_ss << "# ============================================================================" << std::endl;
+
+                // TODO: Generate package declaration for the message (e.g., package My::Package::MyMessage;)
+                // This is not strictly necessary if all messages are in the same file as the main package,
+                // but good practice for clarity if we ever split them.
+
+                // TODO: Add any necessary 'use' statements for field types (e.g., other message types)
+
+                // TODO: Generate field accessors/mutators (if not handled dynamically)
+
+                // TODO: Generate nested enum definitions
+
+                // TODO: Generate nested message definitions
+
+                // TODO: Generate extension ranges
+
+                content_ss << std::endl;
+            }
+            content_ss << std::endl;
+
+            // Class registration
+            content_ss << "# Register Messages" << std::endl;
+            for (size_t j = 0; j < message_count; ++j) {
+                const google_protobuf_DescriptorProto* msg_proto = messages[j];
+                upb_StringView msg_name_sv = google_protobuf_DescriptorProto_name(msg_proto);
+                std::string msg_name(msg_name_sv.data, msg_name_sv.size);
+                std::string full_msg_name = package_name + "::" + msg_name;
+                content_ss << "Protobuf::ClassGenerator->register_class('" << full_msg_name << "');" << std::endl;
             }
             content_ss << std::endl;
         }
 
-        // TODO: Class registration with Protobuf::ClassGenerator
 
         content_ss << std::endl << "1;" << std::endl;
         std::string content = content_ss.str();
