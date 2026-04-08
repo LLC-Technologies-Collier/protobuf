@@ -340,9 +340,29 @@ int main(int argc, char* argv[]) {
                 // This is not strictly necessary if all messages are in the same file as the main package,
                 // but good practice for clarity if we ever split them.
 
-                // TODO: Add any necessary 'use' statements for field types (e.g., other message types)
+                // TODO: Collect needed 'use' statements for field types
+                std::vector<std::string> use_statements;
 
-                // TODO: Generate field accessors/mutators (if not handled dynamically)
+                // Fields
+                size_t field_count;
+                const google_protobuf_FieldDescriptorProto* const* fields =
+                    google_protobuf_DescriptorProto_field(msg_proto, &field_count);
+                if (field_count > 0) {
+                    content_ss << "    # Fields" << std::endl;
+                    for (size_t k = 0; k < field_count; ++k) {
+                        const google_protobuf_FieldDescriptorProto* field_proto = fields[k];
+                        upb_StringView field_name_sv = google_protobuf_FieldDescriptorProto_name(field_proto);
+                        std::string field_name(field_name_sv.data, field_name_sv.size);
+                        content_ss << "    # Field: " << field_name << std::endl;
+
+                        // TODO: Determine field type
+                        // TODO: If field type is a message or enum from another package, add to use_statements
+                        // TODO: Generate accessors/mutators (if not dynamic)
+                    }
+                    content_ss << std::endl;
+                }
+
+                // TODO: Output unique 'use' statements collected above
 
                 // Nested Enums
                 size_t nested_enum_count;
