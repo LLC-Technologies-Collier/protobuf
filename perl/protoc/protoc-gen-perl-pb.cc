@@ -369,12 +369,23 @@ int main(int argc, char* argv[]) {
                 const google_protobuf_EnumDescriptorProto* const* nested_enums =
                     google_protobuf_DescriptorProto_enum_type(msg_proto, &nested_enum_count);
                 if (nested_enum_count > 0) {
-                    content_ss << "    # Nested Enums" << std::endl;
+                    content_ss << "    # Nested Enums for " << msg_name << std::endl;
                     for (size_t k = 0; k < nested_enum_count; ++k) {
                         const google_protobuf_EnumDescriptorProto* nested_enum_proto = nested_enums[k];
                         upb_StringView nested_enum_name_sv = google_protobuf_EnumDescriptorProto_name(nested_enum_proto);
-                        content_ss << "    # Enum: " << std::string(nested_enum_name_sv.data, nested_enum_name_sv.size) << std::endl;
-                        // TODO: Generate const my $VAR for nested enum values
+                        std::string nested_enum_name(nested_enum_name_sv.data, nested_enum_name_sv.size);
+                        content_ss << "    # Enum: " << nested_enum_name << std::endl;
+
+                        size_t nested_value_count;
+                        const google_protobuf_EnumValueDescriptorProto* const* nested_values =
+                            google_protobuf_EnumDescriptorProto_value(nested_enum_proto, &nested_value_count);
+                        for (size_t l = 0; l < nested_value_count; ++l) {
+                            const google_protobuf_EnumValueDescriptorProto* nested_value_proto = nested_values[l];
+                            upb_StringView nested_value_name_sv = google_protobuf_EnumValueDescriptorProto_name(nested_value_proto);
+                            std::string nested_value_name(nested_value_name_sv.data, nested_value_name_sv.size);
+                            int32_t nested_value_number = google_protobuf_EnumValueDescriptorProto_number(nested_value_proto);
+                            content_ss << "    const my $" << msg_name << "_" << nested_value_name << " => " << nested_value_number << ";" << std::endl;
+                        }
                     }
                     content_ss << std::endl;
                 }
