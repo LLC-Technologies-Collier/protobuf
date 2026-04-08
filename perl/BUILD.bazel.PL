@@ -58,9 +58,9 @@ foreach my $test_key ( sort keys %$c_test_config ) {
         }
     }
 
-    my @deps = (':libprotobufperl', ':upb_perl_test_lib', '@pcre2//:pcre2');
+    my @deps = (':libprotobufperl', ':upb_perl_test_lib'); # , '@pcre2//:pcre2');
     if (exists $config->{deps} && ref $config->{deps} eq 'ARRAY') {
-        push @deps, map { my $d = $_; $d =~ s{^\.\./}{}; $d } @{$config->{deps}};
+        push @deps, grep { $_ !~ /\.h$/ } map { my $d = $_; $d =~ s{^\.\./}{}; $d } @{$config->{deps}};
     }
     my %seen;
     @deps = grep { !$seen{$_}++ } @deps;

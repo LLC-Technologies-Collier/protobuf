@@ -101,7 +101,7 @@ genrule(
         "@com_google_protobuf//:descriptor_proto",
     ],
     outs = ["t/data/test_descriptor.bin"],
-    cmd = "$(execpath @com_google_protobuf//:protoc) --descriptor_set_out=$@ --include_imports --proto_path=t/c --proto_path=$(location //google/protobuf:descriptor_proto)/.. $(location t/c/test.proto)",
+    cmd = "$(execpath @com_google_protobuf//:protoc) --descriptor_set_out=$@ --include_imports --proto_path=t/c --proto_path=$(rootpath @com_google_protobuf//:descriptor_proto)/.. $(location t/c/test.proto)",
     tools = ["@com_google_protobuf//:protoc"],
 )
 

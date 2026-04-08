@@ -264,14 +264,79 @@ int main(int argc, char* argv[]) {
             }
             content_ss << R"(END_DESC)" << std::endl;
             content_ss << R"(    Protobuf::DescriptorPool::get_generated_pool()->add_serialized_file()" << std::endl;
-            content_ss << R"(        MIME::Base64::decode_base64(join("", grep { /\S/ } split(/?
-/, $descriptor_b64)))))" << std::endl;
+            content_ss << R"(        MIME::Base64::decode_base64(join("", grep { /\S/ } split(/\r?\n/, $descriptor_b64))))" << std::endl;
             content_ss << R"(    );)" << std::endl;
-            content_ss << R"(})";
+            content_ss << R"(})" << std::endl;
         }
         content_ss << std::endl << std::endl;
 
-        // TODO: Convert Message, Enum, Service generation to use UPB accessors
+        // Generate Enums
+        if (has_enums) {
+            const google_protobuf_EnumDescriptorProto* const* enums =
+                google_protobuf_FileDescriptorProto_enum_type(proto_file, &enum_count);
+            for (size_t j = 0; j < enum_count; ++j) {
+                const google_protobuf_EnumDescriptorProto* enum_proto = enums[j];
+                upb_StringView enum_name_sv = google_protobuf_EnumDescriptorProto_name(enum_proto);
+                std::string enum_name(enum_name_sv.data, enum_name_sv.size);
+
+                size_t value_count;
+                const google_protobuf_EnumValueDescriptorProto* const* values =
+                    google_protobuf_EnumDescriptorProto_value(enum_proto, &value_count);
+                for (size_t k = 0; k < value_count; ++k) {
+                    const google_protobuf_EnumValueDescriptorProto* value_proto = values[k];
+                    upb_StringView value_name_sv = google_protobuf_EnumValueDescriptorProto_name(value_proto);
+                    std::string value_name(value_name_sv.data, value_name_sv.size);
+                    int32_t value_number = google_protobuf_EnumValueDescriptorProto_number(value_proto);
+                    content_ss << "const my $" << value_name << " => " << value_number << ";" << std::endl;
+                }
+                content_ss << std::endl;
+            }
+        }
+
+        // Generate Services
+        if (generate_services) {
+            size_t service_count;
+            const google_protobuf_ServiceDescriptorProto* const* services =
+                google_protobuf_FileDescriptorProto_service(proto_file, &service_count);
+            if (service_count > 0) {
+                content_ss << "# Service definitions would go here." << std::endl << std::endl;
+                for (size_t j = 0; j < service_count; ++j) {
+                    const google_protobuf_ServiceDescriptorProto* service_proto = services[j];
+                    upb_StringView service_name_sv = google_protobuf_ServiceDescriptorProto_name(service_proto);
+                    std::string service_name(service_name_sv.data, service_name_sv.size);
+                    content_ss << "# Service: " << service_name << std::endl;
+
+                    size_t method_count;
+                    const google_protobuf_MethodDescriptorProto* const* methods =
+                        google_protobuf_ServiceDescriptorProto_method(service_proto, &method_count);
+                    for (size_t k = 0; k < method_count; ++k) {
+                        const google_protobuf_MethodDescriptorProto* method_proto = methods[k];
+                        upb_StringView method_name_sv = google_protobuf_MethodDescriptorProto_name(method_proto);
+                        std::string method_name(method_name_sv.data, method_name_sv.size);
+                        content_ss << "#   Method: " << method_name << std::endl;
+                    }
+                    content_ss << std::endl;
+                }
+            }
+        }
+
+        // Generate Messages
+        size_t message_count;
+        const google_protobuf_DescriptorProto* const* messages =
+            google_protobuf_FileDescriptorProto_message_type(proto_file, &message_count);
+        if (message_count > 0) {
+            content_ss << "# Message definitions would go here." << std::endl << std::endl;
+            for (size_t j = 0; j < message_count; ++j) {
+                const google_protobuf_DescriptorProto* msg_proto = messages[j];
+                upb_StringView msg_name_sv = google_protobuf_DescriptorProto_name(msg_proto);
+                std::string msg_name(msg_name_sv.data, msg_name_sv.size);
+                content_ss << "# Message: " << msg_name << std::endl;
+                // TODO: Implement actual message class generation
+            }
+            content_ss << std::endl;
+        }
+
+        // TODO: Class registration with Protobuf::ClassGenerator
 
         content_ss << std::endl << "1;" << std::endl;
         std::string content = content_ss.str();
