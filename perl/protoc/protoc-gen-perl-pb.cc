@@ -34,12 +34,12 @@ private:
     std::string package_name_;
 
     // String utilities
-    std::string capitalize(std::string s);
-    std::string to_camel_case(const std::string& s);
-    std::string base64_encode(const std::string& in);
-    std::string get_module_base_name(const std::string& package);
-    std::string get_perl_package_name(const std::string& proto_file_path, const std::string& package);
-    std::string proto_type_to_perl_module(const std::string& type_name);
+    static inline std::string capitalize(std::string s);
+    static inline std::string to_camel_case(const std::string& s);
+    static inline std::string base64_encode(const std::string& in);
+    static inline std::string get_module_base_name(const std::string& package);
+    static inline std::string get_perl_package_name(const std::string& proto_file_path, const std::string& package);
+    static inline std::string proto_type_to_perl_module(const std::string& type_name);
 
     // Use statement management
     bool has_enums() const;
@@ -60,29 +60,7 @@ private:
     std::set<std::string> required_uses_;
 };
 
-PerlCodeGenerator::PerlCodeGenerator(const google_protobuf_FileDescriptorProto* file_proto, upb_Arena* arena, bool embed_descriptors, bool generate_services)
-    : file_proto_(file_proto), arena_(arena), embed_descriptors_(embed_descriptors), generate_services_(generate_services) {
-    upb_StringView proto_file_name_sv = google_protobuf_FileDescriptorProto_name(file_proto_);
-    std::string proto_file_name(proto_file_name_sv.data, proto_file_name_sv.size);
-    upb_StringView package_sv = google_protobuf_FileDescriptorProto_package(file_proto_);
-    std::string package(package_sv.data, package_sv.size);
-    package_name_ = get_perl_package_name(proto_file_name, package);
-}
-
-std::string PerlCodeGenerator::generate() {
-    print_header();
-    print_uses();
-    if (embed_descriptors_) {
-        print_embedded_descriptor();
-    }
-    print_enums();
-    print_services();
-    print_messages();
-
-    content_ss_ << std::endl << "1;" << std::endl;
-    return content_ss_.str();
-}
-
+// -- String Utilities --
 std::string PerlCodeGenerator::capitalize(std::string s) {
     if (!s.empty()) {
         s[0] = std::toupper(s[0]);
@@ -179,6 +157,30 @@ std::string PerlCodeGenerator::proto_type_to_perl_module(const std::string& type
     return result;
 }
 
+// -- PerlCodeGenerator Methods --
+PerlCodeGenerator::PerlCodeGenerator(const google_protobuf_FileDescriptorProto* file_proto, upb_Arena* arena, bool embed_descriptors, bool generate_services)
+    : file_proto_(file_proto), arena_(arena), embed_descriptors_(embed_descriptors), generate_services_(generate_services) {
+    upb_StringView proto_file_name_sv = google_protobuf_FileDescriptorProto_name(file_proto_);
+    std::string proto_file_name(proto_file_name_sv.data, proto_file_name_sv.size);
+    upb_StringView package_sv = google_protobuf_FileDescriptorProto_package(file_proto_);
+    std::string package(package_sv.data, package_sv.size);
+    package_name_ = get_perl_package_name(proto_file_name, package);
+}
+
+std::string PerlCodeGenerator::generate() {
+    print_header();
+    print_uses();
+    if (embed_descriptors_) {
+        print_embedded_descriptor();
+    }
+    print_enums();
+    print_services();
+    print_messages();
+
+    content_ss_ << std::endl << "1;" << std::endl;
+    return content_ss_.str();
+}
+
 void PerlCodeGenerator::print_header() {
     content_ss_ << "package " << package_name_ << ";" << std::endl;
     content_ss_ << R"(use strict;)" << std::endl;
@@ -234,7 +236,6 @@ bool PerlCodeGenerator::is_type_defined_in_file(const std::string& module_name) 
         upb_StringView msg_name_sv = google_protobuf_DescriptorProto_name(messages[l]);
         std::string msg_name(msg_name_sv.data, msg_name_sv.size);
         if (package_name_ + "::" + msg_name == module_name) return true;
-        // TODO: Check nested messages
     }
 
     size_t top_enum_count;
@@ -261,7 +262,6 @@ void PerlCodeGenerator::print_uses() {
         google_protobuf_FileDescriptorProto_message_type(file_proto_, &message_count);
     for (size_t j = 0; j < message_count; ++j) {
         collect_field_type_uses(messages[j]);
-        // TODO: Collect uses from nested messages
     }
 
     for (const auto& use_stmt : required_uses_) {
@@ -504,13 +504,11 @@ int main(int argc, char* argv[]) {
     upb_Arena_Init(&arena, 0, NULL);
 
     std::string stdin_content;
+    // Read all of stdin
     std::cin.seekg(0, std::ios::end);
-    size_t length = std::cin.tellg();
-    if (length > 0) {
-        stdin_content.resize(length);
-        std::cin.seekg(0, std::ios::beg);
-        std::cin.read(&stdin_content[0], length);
-    }
+    stdin_content.resize(std::cin.tellg());
+    std::cin.seekg(0, std::ios::beg);
+    std::cin.read(&stdin_content[0], stdin_content.size());
 
     google_protobuf_compiler_CodeGeneratorRequest* request =
         google_protobuf_compiler_CodeGeneratorRequest_parse(stdin_content.data(), stdin_content.size(), &arena);
