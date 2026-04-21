@@ -136,14 +136,15 @@ sub MY::postamble {
         my $o_file = $pair->{o};
         next if $done_o{$o_file}++;
         my $compiler = '$(CC)';
-        my $bazel_gen_include = File::Spec->catfile("..", "bazel-bin", "src", "google", "protobuf", "_virtual_imports", "descriptor_proto");
-        my $base_flags = "-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I$bazel_gen_include";
+        my $bazel_gen_include = File::Spec->catfile("..", "upb", "reflection", "stage0");
+        my $cmake_gen_include = File::Spec->catfile("..", "upb", "reflection", "cmake");
+        my $base_flags = "-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I$bazel_gen_include -I$cmake_gen_include -DUPB_BOOTSTRAP_STAGE=0";
         my $cflags = "";
         if ($c_file =~ /\.cc$/) {
             $compiler = '$(CXX)';
             $cflags = "-Wno-error=attributes -I../third_party/abseil-cpp";
         } else {
-            $cflags = "-D_GNU_SOURCE -Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes -mssse3 -msse4.1";
+            $cflags = "-D_GNU_SOURCE -Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes";
         }
         push @obj_rules, main::_render_tt('common_obj_rule.mk.tt', {
             c => $c_file,
@@ -182,6 +183,10 @@ sub MY::postamble {
 
     foreach my $test_key ( sort keys %$c_test_config ){
         next if $test_key =~ /eval_croak_test/;
+        if ($test_key =~ /coro/ && $Config{archname} !~ /x86_64|i[3456]86/) {
+            warn "Skipping coroutine test $test_key on non-x86 architecture ($Config{archname})$/";
+            next;
+        }
 
         my $target = "t/c/$test_key";
         my $source = "$target.c";
@@ -312,8 +317,8 @@ sub MY::postamble {
     my $protoc_plugin_src = "protoc/protoc-gen-perl-pb.cc";
     my $protoc_plugin_obj = "protoc/protoc-gen-perl-pb.o";
     my $protoc_plugin_exe = "protoc-gen-perl-pb";
-    my $protoc_cflags = "-g -D_GNU_SOURCE -std=c++17 -Wall";
-    my $protoc_inc = "-I. -I./protoc -I.. -I../upb -I../src -I../third_party/utf8_range -I../bazel-bin/src/google/protobuf/_virtual_imports/descriptor_proto -I$Config{archlibexp}/CORE";
+    my $protoc_cflags = "-g -D_GNU_SOURCE -std=c++17 -Wall -DUPB_BOOTSTRAP_STAGE=0";
+    my $protoc_inc = "-I. -I./protoc -I.. -I../upb -I../src -I../third_party/utf8_range -I../upb/reflection/stage0 -I../upb/reflection/cmake -I$Config{archlibexp}/CORE";
 
     $make_frag .= main::_render_tt('protoc_plugin_compile.mk.tt', {
         src => $protoc_plugin_src,
@@ -342,7 +347,7 @@ sub MY::postamble {
 
     # Add bazel_build_protoc_plugin to the default dependencies
     sub MY::all_before {
-    return 'bazel_build_protoc_plugin';
+    return '';
     }
 
     WriteMakefile(
@@ -379,8 +384,8 @@ sub MY::postamble {
     },
     AUTHOR            => 'C.J. Collier <cjac@colliertech.org>',
     LICENSE           => 'apache_2_0',
-    DEFINE            => '',
-    INC               => '-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I../bazel-bin/src/google/protobuf/_virtual_imports/descriptor_proto -I$(PERL_INC)',
+    DEFINE            => '-DUPB_BOOTSTRAP_STAGE=0',
+    INC               => '-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I../upb/reflection/stage0 -I../upb/reflection/cmake -I$(PERL_INC)',
     MYEXTLIB          => 'libprotobufperl.$(DLEXT)',
     CCFLAGS           => "-g $Config{ccflags} -fPIC $sanitizer_flags",
     XSMULTI           => 1,

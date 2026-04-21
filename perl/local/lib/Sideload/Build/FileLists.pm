@@ -39,12 +39,14 @@ sub get_utf8_c_files {
 }
 
 sub get_generated_c_files {
-    my ($bazel_bin_root) = @_;
-    $bazel_bin_root //= File::Spec->catfile("..", "bazel-bin");
-    my $descriptor_base = File::Spec->catfile($bazel_bin_root, "src", "google", "protobuf", "_virtual_imports", "descriptor_proto", "google", "protobuf");
+    my ($project_root) = @_;
+    $project_root //= "..";
+    my $descriptor_base = File::Spec->catfile($project_root, "upb", "reflection", "stage0", "google", "protobuf");
     return (
         File::Spec->catfile($descriptor_base, "descriptor.upb.c"),
-        File::Spec->catfile($descriptor_base, "descriptor.upb_minitable.c"),
+        # descriptor.upb_minitable.c is not present in stage0, and might be redundant
+        # If it is needed, we might need to generate it or find it elsewhere.
+        # stage0 only has descriptor.upb.c and descriptor.upb.h
     );
 }
 

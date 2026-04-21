@@ -5,7 +5,12 @@
 #include "perl/xs/protobuf/utils.h"
 #include "xs/protobuf/obj_cache.h"
 #include "upb/reflection/def.h"
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include <immintrin.h>
+#include <cpuid.h>
+#define HAS_X86_INTRINSICS
+#endif
 
 #define AVX2_INSTRUMENT(path_name) \
     do { \
@@ -30,8 +35,7 @@ const char* PerlUpb_VerifyStrData(pTHX_ SV *sv) {
     return SvPVutf8(sv, len);
 }
 
-#include <immintrin.h>
-
+#ifdef HAS_X86_INTRINSICS
 // Helper to check for dots or colons in 32-byte chunks
 __attribute__((target("avx2")))
 static inline uint32_t find_special_chars_avx2(const char* s) {
@@ -42,8 +46,11 @@ static inline uint32_t find_special_chars_avx2(const char* s) {
     __m256i special = _mm256_or_si256(dots, colons);
     return (uint32_t)_mm256_movemask_epi8(special);
 }
+#endif
 
+#ifdef HAS_X86_INTRINSICS
 __attribute__((target("avx2")))
+#endif
 char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
     if (!class_name) return NULL;
     STRLEN len = strlen(class_name);
@@ -52,6 +59,7 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
     const char* s = class_name;
     STRLEN remaining = len;
 
+#ifdef HAS_X86_INTRINSICS
     // AVX2 Optimization for 32-byte chunks
     while (remaining >= 32) {
         uint32_t mask = find_special_chars_avx2(s);
@@ -80,6 +88,7 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
             break;
         }
     }
+#endif
 
     while (*s) {
         if (*s == ':' && *(s+1) == ':') {
@@ -93,7 +102,9 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
     return full_name;
 }
 
+#ifdef HAS_X86_INTRINSICS
 __attribute__((target("avx2")))
+#endif
 char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name) {
     if (!full_name) return NULL;
     STRLEN len = strlen(full_name);
@@ -105,6 +116,7 @@ char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name) {
     const char* s = full_name;
     STRLEN remaining = len;
 
+#ifdef HAS_X86_INTRINSICS
     // AVX2 Optimization for 32-byte chunks (no dots)
     while (remaining >= 32) {
         uint32_t mask = find_special_chars_avx2(s);
@@ -117,6 +129,7 @@ char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name) {
             break;
         }
     }
+#endif
 
     while (*s) {
         if (*s == '.') {
@@ -246,12 +259,10 @@ SV* PerlUpb_I64ToSV(pTHX_ int64_t val) {
     return bigint_sv;
 }
 
-#include <immintrin.h>
-#include <cpuid.h>
-
 static uint32_t cpu_features = 0;
 
 void PerlUpb_InitCpuFeatures(void) {
+#ifdef HAS_X86_INTRINSICS
     uint32_t eax, ebx, ecx, edx;
     if (__get_cpuid(1, &eax, &ebx, &ecx, &edx)) {
         if (ecx & (1 << 19)) cpu_features |= PERL_UPB_HAS_SSE41;
@@ -259,6 +270,7 @@ void PerlUpb_InitCpuFeatures(void) {
     if (__get_cpuid_count(7, 0, &eax, &ebx, &ecx, &edx)) {
         if (ebx & (1 << 5)) cpu_features |= PERL_UPB_HAS_AVX2;
     }
+#endif
 }
 
 uint32_t PerlUpb_GetCpuFeatures(void) {
@@ -274,8 +286,11 @@ void PerlUpb_DetectCpuFeatures(void) {
     }
 }
 
+#ifdef HAS_X86_INTRINSICS
 __attribute__((target("sse4.1")))
+#endif
 bool PerlUpb_ValidateIntRange_SSE41(const int32_t* vals, size_t count, int32_t min, int32_t max) {
+#ifdef HAS_X86_INTRINSICS
     __m128i vmin = _mm_set1_epi32(min);
     __m128i vmax = _mm_set1_epi32(max);
     size_t i = 0;
@@ -289,10 +304,17 @@ bool PerlUpb_ValidateIntRange_SSE41(const int32_t* vals, size_t count, int32_t m
     for (; i < count; i++) {
         if (vals[i] < min || vals[i] > max) return false;
     }
+#else
+    for (size_t i = 0; i < count; i++) {
+        if (vals[i] < min || vals[i] > max) return false;
+    }
+#endif
     return true;
 }
 
+#ifdef HAS_X86_INTRINSICS
 __attribute__((target("avx2")))
+#endif
 bool PerlUpb_ValidateStrings_AVX2(const char** strings, const size_t* lens, size_t count) {
     AVX2_INSTRUMENT("PerlUpb_ValidateStrings_AVX2");
     for (size_t i = 0; i < count; i++) {

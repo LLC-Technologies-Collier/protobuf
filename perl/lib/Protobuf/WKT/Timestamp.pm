@@ -87,7 +87,7 @@ use Time::Piece;
 sub to_time_piece {
     my ($self) = @_;
     my $seconds = $self->seconds;
-    return Time::Piece->new($seconds);
+    return Time::Piece->gmtime($seconds);
 }
 
 sub from_time_piece {

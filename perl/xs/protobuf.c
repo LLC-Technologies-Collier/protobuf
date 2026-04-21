@@ -60,7 +60,6 @@ void PerlUpb_Protobuf_InitModule(pTHX) {
 }
 
 // get_descriptor_proto_fds() function remains here for now
-#include "google/protobuf/descriptor.upb_minitable.h"
 SV* get_descriptor_proto_fds(void) {
     dTHX;
     // This is a stub for now or would return the serialized descriptor data.
