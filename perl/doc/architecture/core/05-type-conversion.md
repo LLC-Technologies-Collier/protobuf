@@ -31,8 +31,9 @@ XS functions will be needed to handle conversions for each Protocol Buffer type:
 
 ## Encoding
 
--   Perl strings used for Protobuf `string` fields MUST be valid UTF-8. XS code should validate this, potentially using `sv_utf8_check()` and `SvUTF8()`.
--   Data for `bytes` fields will be treated as raw octets.
+-   Perl strings used for Protobuf `string` fields MUST be valid UTF-8. XS code uses `SvPVutf8` to ensure correct decoding.
+-   Data for `bytes` fields will be treated as raw octets, accessed via `SvPVbyte`.
+-   This follows best practices for handling Perl strings in XS to avoid encoding issues, as highlighted by community feedback.
 
 ## Advanced Conversion Goals
 

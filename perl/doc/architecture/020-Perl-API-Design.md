@@ -21,3 +21,8 @@
 
 1.  **Accessors:** Use standard Moo `has` for attribute access.
 2.  **Actions:** Methods performing actions should be named descriptively (e.g., `parse`, `serialize`, `add_item`).
+
+## Future Considerations
+
+1.  **Native Booleans:** Perl has added a native boolean type. Consider how this might be integrated into the API for boolean fields, potentially using `boolean.pm` or similar, for stricter type checking and clarity, instead of relying solely on Perl's standard truthiness.
+2.  **Asynchronous Operations:** Explore integration with `IO::Async` or other event loops like `Mojo::IOLoop` to provide non-blocking APIs for operations like service calls or streaming, especially relevant for network-bound Protobuf usage.
