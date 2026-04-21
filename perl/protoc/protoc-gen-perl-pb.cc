@@ -162,17 +162,23 @@ PerlCodeGenerator::PerlCodeGenerator(const google_protobuf_FileDescriptorProto* 
     : file_proto_(file_proto), arena_(arena), embed_descriptors_(embed_descriptors), generate_services_(generate_services) {
     upb_StringView proto_file_name_sv = google_protobuf_FileDescriptorProto_name(file_proto_);
     std::string proto_file_name(proto_file_name_sv.data, proto_file_name_sv.size);
+    std::cerr << "--- DEBUG: PerlCodeGenerator() for: " << proto_file_name << std::endl;
+
     upb_StringView package_sv = google_protobuf_FileDescriptorProto_package(file_proto_);
     std::string package(package_sv.data, package_sv.size);
     package_name_ = get_perl_package_name(proto_file_name, package);
 }
 
 std::string PerlCodeGenerator::generate() {
+    upb_StringView proto_file_name_sv = google_protobuf_FileDescriptorProto_name(file_proto_);
+    std::string proto_file_name(proto_file_name_sv.data, proto_file_name_sv.size);
+    std::cerr << "--- DEBUG: generate() called for: " << proto_file_name << std::endl;
+
     print_header();
     print_uses();
-    if (embed_descriptors_) {
-        print_embedded_descriptor();
-    }
+    // if (embed_descriptors_) {
+    //     print_embedded_descriptor();
+    // }
     print_enums();
     print_services();
     print_messages();
@@ -271,26 +277,41 @@ void PerlCodeGenerator::print_uses() {
 }
 
 void PerlCodeGenerator::print_embedded_descriptor() {
-    size_t serialized_fd_size;
+    upb_StringView proto_file_name_sv = google_protobuf_FileDescriptorProto_name(file_proto_);
+    std::string proto_file_name(proto_file_name_sv.data, proto_file_name_sv.size);
+    std::cerr << "--- DEBUG: print_embedded_descriptor for: " << proto_file_name << std::endl;
+
+    size_t serialized_fd_size = 0; // Initialize
     const char* serialized_fd_data = google_protobuf_FileDescriptorProto_serialize(file_proto_, arena_, &serialized_fd_size);
     if (!serialized_fd_data) {
-         std::cerr << "Failed to serialize FileDescriptorProto for embedding" << std::endl;
+         std::cerr << "--- ERROR: Failed to serialize FileDescriptorProto for embedding" << std::endl;
          return;
     }
+    std::cerr << "--- DEBUG: Serialized descriptor size from upb: " << serialized_fd_size << std::endl;
+
+    if (serialized_fd_size > 5000000) { // Safety check on size from UPB
+        std::cerr << "--- ERROR: UPB returned suspiciously large size for serialized descriptor: " << serialized_fd_size << std::endl;
+        content_ss_ << "die 'Serialized descriptor too large, plugin error';";
+        return;
+    }
+
+    // CRASH POINT IS LIKELY HERE:
     std::string serialized_fd(serialized_fd_data, serialized_fd_size);
-    std::string b64_descriptor = base64_encode(serialized_fd);
+    std::cerr << "--- DEBUG: std::string serialized_fd constructed, length: " << serialized_fd.length() << std::endl;
+
+    // COMMENT OUT base64 for now
+    // std::string b64_descriptor = base64_encode(serialized_fd);
+    // std::cerr << "--- DEBUG: Base64 descriptor length: " << b64_descriptor.length() << std::endl;
+
+    // if (b64_descriptor.length() > 5000000) { // Safety break for huge strings
+    //     std::cerr << "--- ERROR: Base64 string is suspiciously large! Length: " << b64_descriptor.length() << std::endl;
+    //     // Intentionally cause a visible failure in the output to protoc
+    //     content_ss_ << "die 'Base64 descriptor too large, plugin error';";
+    //     return;
+    // }
 
     content_ss_ << R"(BEGIN {)" << std::endl;
-    content_ss_ << R"(    my $descriptor_b64 = <<'END_DESC';)" << std::endl;
-    size_t chunk_size = 64;
-    for (size_t k = 0; k < b64_descriptor.length(); k += chunk_size) {
-        content_ss_ << b64_descriptor.substr(k, chunk_size) << std::endl;
-    }
-    content_ss_ << R"(END_DESC)" << std::endl;
-    content_ss_ << R"(    Protobuf::DescriptorPool::get_generated_pool()->add_serialized_file()" << std::endl;
-    content_ss_ << R"(        MIME::Base64::decode_base64(join("", grep { /\S/ } split(/?
-/, $descriptor_b64))))" << std::endl;
-    content_ss_ << R"(    );)" << std::endl;
+    content_ss_ << R"(    # ... base64 embedding removed for debug ...)" << std::endl;
     content_ss_ << R"(})" << std::endl << std::endl;
 }
 
@@ -427,6 +448,7 @@ void PerlCodeGenerator::print_message(const google_protobuf_DescriptorProto* msg
     for (size_t k = 0; k < nested_message_count; ++k) {
         print_message(nested_messages[k], full_msg_name);
     }
+    content_ss_ << "}" << std::endl << std::endl;
 
     // Extension Ranges
     size_t extension_range_count;
@@ -501,78 +523,38 @@ void parse_options(const std::string& options) {
 
 int main(int argc, char* argv[]) {
     upb_Arena arena;
-    upb_Arena_Init(&arena, 0, NULL);
+    if (!upb_Arena_Init(&arena, 0, NULL)) {
+        std::cerr << "--- ERROR: Failed to initialize arena!" << std::endl;
+        return 1;
+    }
+    std::cerr << "--- DEBUG: Arena initialized ---" << std::endl;
 
     std::string stdin_content;
-    // Read all of stdin
-    std::cin.seekg(0, std::ios::end);
-    stdin_content.resize(std::cin.tellg());
-    std::cin.seekg(0, std::ios::beg);
-    std::cin.read(&stdin_content[0], stdin_content.size());
+    try {
+        std::cin >> std::noskipws; // Don't skip whitespace
+        std::istream_iterator<char> it(std::cin);
+        std::istream_iterator<char> end;
+        stdin_content.assign(it, end);
+    } catch (const std::exception& e) {
+        std::cerr << "--- ERROR: Exception while reading stdin: " << e.what() << std::endl;
+        upb_Arena_Free(&arena);
+        return 1;
+    }
+    std::cerr << "--- DEBUG: Read " << stdin_content.length() << " bytes from stdin." << std::endl;
 
     google_protobuf_compiler_CodeGeneratorRequest* request =
         google_protobuf_compiler_CodeGeneratorRequest_parse(stdin_content.data(), stdin_content.size(), &arena);
 
     if (!request) {
-        std::cerr << "Failed to parse CodeGeneratorRequest from stdin." << std::endl;
+        std::cerr << "--- ERROR: Failed to parse CodeGeneratorRequest from stdin." << std::endl;
         upb_Arena_Free(&arena);
         return 1;
     }
+    std::cerr << "--- DEBUG: CodeGeneratorRequest parsed successfully." << std::endl;
 
-    upb_StringView params = google_protobuf_compiler_CodeGeneratorRequest_parameter(request);
-    if (params.size > 0) {
-        parse_options(std::string(params.data, params.size));
-    }
+    // Do nothing else with the request for now
 
-    size_t num_proto_files;
-    const google_protobuf_FileDescriptorProto* const* proto_files =
-        google_protobuf_compiler_CodeGeneratorRequest_proto_file(request, &num_proto_files);
-
-    google_protobuf_compiler_CodeGeneratorResponse* response =
-        google_protobuf_compiler_CodeGeneratorResponse_new(&arena);
-
-    size_t num_files_to_generate;
-    const upb_StringView* files_to_generate =
-        google_protobuf_compiler_CodeGeneratorRequest_file_to_generate(request, &num_files_to_generate);
-
-    for (size_t i = 0; i < num_proto_files; ++i) {
-        const google_protobuf_FileDescriptorProto* proto_file = proto_files[i];
-        upb_StringView proto_file_name_sv = google_protobuf_FileDescriptorProto_name(proto_file);
-        std::string proto_file_name(proto_file_name_sv.data, proto_file_name_sv.size);
-
-        bool generate = false;
-        for (size_t j = 0; j < num_files_to_generate; ++j) {
-            if (files_to_generate[j].size == proto_file_name_sv.size &&
-                memcmp(files_to_generate[j].data, proto_file_name_sv.data, proto_file_name_sv.size) == 0) {
-                generate = true;
-                break;
-            }
-        }
-        if (!generate) {
-            continue;
-        }
-
-        PerlCodeGenerator generator(proto_file, &arena, embed_descriptors, generate_services);
-        std::string content = generator.generate();
-        std::string module_path = package_name_to_module_path(generator.get_package_name());
-
-        google_protobuf_compiler_CodeGeneratorResponse_File* file =
-            google_protobuf_compiler_CodeGeneratorResponse_add_file(response, &arena);
-        google_protobuf_compiler_CodeGeneratorResponse_File_set_name(file, upb_StringView_FromStringView(module_path, &arena));
-        google_protobuf_compiler_CodeGeneratorResponse_File_set_content(file, upb_StringView_FromStringView(content, &arena));
-    }
-
-    size_t response_size;
-    const char* response_data = google_protobuf_compiler_CodeGeneratorResponse_serialize(response, &arena, &response_size);
-    if (!response_data) {
-        std::cerr << "Failed to serialize CodeGeneratorResponse." << std::endl;
-        if (out_dir) free(out_dir);
-        upb_Arena_Free(&arena);
-        return 1;
-    }
-    std::cout.write(response_data, response_size);
-
-    if (out_dir) free(out_dir);
     upb_Arena_Free(&arena);
+    std::cerr << "--- DEBUG: Arena freed ---" << std::endl;
     return 0;
 }

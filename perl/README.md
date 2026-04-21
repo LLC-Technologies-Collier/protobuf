@@ -16,21 +16,51 @@ conversions, and zero-copy IPC support.
 
 ## Prerequisites
 
-This Perl module links against components built by Bazel. Ensure that you have Bazel installed and have built the necessary dependencies from the root of the repository. Typically, this involves running a command similar to:
+This Perl module requires Bazel to build the `protoc-gen-perl-pb` plugin. Ensure you have Bazel installed. The necessary C++ Protobuf libraries used by the plugin are typically fetched and built by Bazel as part of the main project's workspace setup.
+
+Additionally, you'll need a C++ compiler (like g++), Make, and the Perl development headers.
+
+To install Perl module dependencies, you can use `cpanm`:
 
 ```bash
-# From the repository root directory (one level up)
-bazel clean --expunge && bazel build //src/google/protobuf:descriptor_proto //src/google/protobuf:descriptor_upb_c_proto
+# Install cpanminus and Carton
+cpanm App::cpanminus Carton
+
+# From the perl/ directory
+carton install
 ```
+This will install dependencies listed in the `cpanfile`.
+
+## Building the Plugin
+
+The `protoc-gen-perl-pb` plugin is built automatically via Bazel when you run `make` in the `perl/` directory, as configured in `Makefile.PL`.
 
 ## Installation
 
+To build and test the Perl module:
+
 ```bash
+# From the perl/ directory
 perl Makefile.PL
-make
+make -j$(nproc)
 make test
 sudo make install
 ```
+
+To run a full clean test cycle, including rebuilding the plugin:
+
+```bash
+# From the perl/ directory
+# Clean up previous Bazel run for the plugin
+bazel --output_base=/usr/local/google/home/cjac/.gemini/tmp/protobuf/bazel_output_base clean --expunge
+# Clean up MakeMaker build
+make clean
+# Regenerate Makefile and build everything including the plugin, then test
+perl Makefile.PL && make -j$(nproc) && make test
+```
+**Note:** We use a specific Bazel `output_base` to ensure cache consistency between different shells. If you run Bazel commands manually in this workspace, you should use the same output base:
+`alias bazel='bazel --output_base=/usr/local/google/home/cjac/.gemini/tmp/protobuf/bazel_output_base'`
+
 
 ## Usage
 

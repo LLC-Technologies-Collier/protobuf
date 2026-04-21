@@ -64,11 +64,6 @@ cc_library(
 cc_binary(
     name = "protoc-gen-perl-pb",
     srcs = ["protoc/protoc-gen-perl-pb.cc"],
-    copts = [
-        "-I.",
-        "-Isrc",
-        "-Iupb",
-    ],
     deps = [
         "//:protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",

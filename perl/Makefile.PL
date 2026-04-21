@@ -90,25 +90,6 @@ for my $i (0 .. $#COMMON_C_FILES) {
 
 # Subroutines to override MakeMaker behavior must be defined before WriteMakefile
 
-# Template Toolkit helper function
-my $tt;
-sub _render_tt {
-    my ($template_file, $vars) = @_;
-    if (!$tt) {
-        $tt = Template->new({
-            INCLUDE_PATH => [ 'inc/templates' ],
-            PRE_CHOMP    => 0,
-            POST_CHOMP   => 0,
-            TRIM         => 0,
-        });
-    }
-    my $output = '';
-    if (!$tt->process($template_file, $vars, \$output)) {
-        die "Template processing failed for $template_file: " . $tt->error();
-    }
-    return $output;
-}
-
 sub _get_adjusted_embed_flags {
     use ExtUtils::Embed;
     use File::Spec;
@@ -351,14 +332,22 @@ sub MY::postamble {
     });
     $make_frag .= $/;
 
-    $make_frag .= ".PHONY: build_protoc_plugin$/";
-    $make_frag .= "build_protoc_plugin: $protoc_plugin_exe$/$/";
+    # Rules to build the protoc plugin using Bazel
+    $make_frag .= main::_render_tt('bazel_protoc_plugin.mk.tt', {});
+    $make_frag .= $/;
 
     return $make_frag;
 
-}
+    }
 
-WriteMakefile(
+    # Add bazel_build_protoc_plugin to the default dependencies
+    sub MY::all_before {
+    return 'bazel_build_protoc_plugin';
+    }
+
+    WriteMakefile(
+
+
     NAME              => 'Protobuf',
     VERSION           => '0.01',
     PREREQ_PM         => {
@@ -374,6 +363,19 @@ WriteMakefile(
       'Path::Tiny'       => 0,
       'Test::Valgrind'   => 0, # Optional, for memory checks
       'Coro'             => 0,
+    },
+    CONFIGURE_REQUIRES => {
+        'ExtUtils::MakeMaker' => 0,
+        'Config'              => 0,
+        'File::Spec'          => 0,
+        'File::Find'          => 0,
+        'ExtUtils::Embed'     => 0,
+        'JSON::MaybeXS'       => 0,
+        'Template'            => 0,
+        'Path::Tiny'          => 0,
+        'Cwd'                 => 0,
+        'Sideload::Build::FileLists' => 0,
+        'Devel::PPPort'       => 0,
     },
     AUTHOR            => 'C.J. Collier <cjac@colliertech.org>',
     LICENSE           => 'apache_2_0',
@@ -393,6 +395,16 @@ WriteMakefile(
 );
 
 package MY;
+
+# Modify the MY::test subroutine
+sub test {
+    my $self = shift;
+    return main::_render_tt('my_test.mk.tt', {});
+}
+
+package main;
+1;
+
 
 # Modify the MY::test subroutine
 sub test {
