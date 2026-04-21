@@ -39,13 +39,24 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
             }
             CROAK_WRONG_TYPE(sv, "an Integer", f);
             return false;
-        case kUpb_FieldType_String:
-        case kUpb_FieldType_Bytes: {
-            if (!SvPOK(sv)) CROAK_WRONG_TYPE(sv, "a String or Bytes", f);
+        case kUpb_FieldType_String: {
+            if (!SvPOK(sv)) CROAK_WRONG_TYPE(sv, "a String", f);
             STRLEN len;
-            const char *ptr = SvPV(sv, len);
+            // Decode as UTF-8
+            const char *ptr = SvPVutf8(sv, len);
             char *new_ptr = (char *)upb_Arena_Malloc(arena, len);
-            if (!new_ptr) croak("Arena allocation failed for string/bytes");
+            if (!new_ptr) croak("Arena allocation failed for string");
+            memcpy(new_ptr, ptr, len);
+            val->str_val = upb_StringView_FromDataAndSize(new_ptr, len);
+            return true;
+        }
+        case kUpb_FieldType_Bytes: {
+            if (!SvPOK(sv)) CROAK_WRONG_TYPE(sv, "a Bytes", f);
+            STRLEN len;
+            // Treat as bytes
+            const char *ptr = SvPVbyte(sv, len);
+            char *new_ptr = (char *)upb_Arena_Malloc(arena, len);
+            if (!new_ptr) croak("Arena allocation failed for bytes");
             memcpy(new_ptr, ptr, len);
             val->str_val = upb_StringView_FromDataAndSize(new_ptr, len);
             return true;
@@ -94,7 +105,7 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
                 return true;
             } else if (SvPOK(sv)) {
                 STRLEN len;
-                const char *name = SvPV(sv, len);
+                const char *name = SvPVutf8(sv, len);
                 const upb_EnumDef *edef = upb_FieldDef_EnumSubDef(f);
                 if (!edef) croak("Missing EnumDef for field '%s'", upb_FieldDef_Name(f));
                 
