@@ -76,7 +76,7 @@ void PerlUpb_UnknownFieldSet_Add(pTHX_ SV* self, SV* data_sv) {
     if (!msg) return;
 
     STRLEN len;
-    const char* data = SvPV(data_sv, len);
+    const char* data = SvPVbyte(data_sv, len);
 
     SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ s->message_sv);
     upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);

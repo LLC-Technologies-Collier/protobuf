@@ -19,7 +19,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
     if (!pool) return &PL_sv_undef;
 
     STRLEN len;
-    const char* data = SvPV(serialized, len);
+    const char* data = SvPVbyte(serialized, len);
 
     upb_Arena* arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
     google_protobuf_FileDescriptorProto* proto = google_protobuf_FileDescriptorProto_parse(data, len, arena);
@@ -50,7 +50,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* se
     if (!pool) return &PL_sv_undef;
 
     STRLEN len;
-    const char* data = SvPV(serialized, len);
+    const char* data = SvPVbyte(serialized, len);
 
     upb_Arena* arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
     google_protobuf_FileDescriptorSet* set = google_protobuf_FileDescriptorSet_parse(data, len, arena);

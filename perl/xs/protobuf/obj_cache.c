@@ -181,7 +181,7 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
         SV* oldest_key_sv = av_shift(lru);
         if (oldest_key_sv && SvOK(oldest_key_sv)) {
             STRLEN len;
-            const char* oldest_key = SvPV(oldest_key_sv, len);
+            const char* oldest_key = SvPVbyte(oldest_key_sv, len);
             void* evict_ptr;
             if (sscanf(oldest_key, "%p", &evict_ptr) == 1) {
                 int evict_stripe = get_stripe(evict_ptr);

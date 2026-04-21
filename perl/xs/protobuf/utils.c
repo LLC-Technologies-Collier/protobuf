@@ -19,7 +19,7 @@ const char* PerlUpb_GetStrData(pTHX_ SV *sv) {
         return NULL;
     }
     STRLEN len;
-    return SvPV(sv, len);
+    return SvPVutf8(sv, len);
 }
 
 const char* PerlUpb_VerifyStrData(pTHX_ SV *sv) {
@@ -27,7 +27,7 @@ const char* PerlUpb_VerifyStrData(pTHX_ SV *sv) {
         croak("Expected a string SV");
     }
     STRLEN len;
-    return SvPV(sv, len);
+    return SvPVutf8(sv, len);
 }
 
 #include <immintrin.h>

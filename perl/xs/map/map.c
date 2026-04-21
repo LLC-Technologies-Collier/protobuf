@@ -124,7 +124,13 @@ SV* PerlUpb_Map_AsHash(pTHX_ SV* self) {
         SV* v_sv = PerlUpb_UpbToSv_Element(aTHX_ &v, val_f, m->arena_sv);
         
         STRLEN len;
-        char* key_str = SvPV(k_sv, len);
+        char* key_str;
+        if (upb_FieldDef_Type(key_f) == kUpb_FieldType_String) {
+            key_str = SvPVutf8(k_sv, len);
+        } else {
+            // Integer types are already stringified by PerlUpb_UpbToSv_Element
+            key_str = SvPVbyte(k_sv, len);
+        }
         hv_store(hv, key_str, len, v_sv, 0);
         SvREFCNT_dec(k_sv);
     }

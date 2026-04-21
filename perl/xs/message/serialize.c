@@ -21,7 +21,7 @@ SV* PerlUpb_Message_Parse(pTHX_ SV* descriptor_sv, SV* data_sv) {
     }
 
     STRLEN len;
-    const char* data = SvPV(data_sv, len);
+    const char* data = SvPVbyte(data_sv, len);
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
@@ -150,8 +150,9 @@ SV* PerlUpb_Message_ToJson(pTHX_ SV* message_sv) {
 
 SV* PerlUpb_Message_FromJson(pTHX_ SV* class_name, SV* json_sv) {
     STRLEN len;
-    const char* json_str = SvPV(json_sv, len);
-    const char* class_str = SvPV_nolen(class_name);
+    const char* json_str = SvPVutf8(json_sv, len);
+    STRLEN class_len;
+    const char* class_str = SvPVutf8(class_name, class_len);
 
     char* full_name = PerlUpb_ClassNameToFullName(aTHX_ class_str);
 
