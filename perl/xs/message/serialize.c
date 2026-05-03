@@ -174,6 +174,38 @@ SV* PerlUpb_Message_ToJson(pTHX_ SV* message_sv) {
     return result;
 }
 
+void PerlUpb_Message_JsonToHandle(pTHX_ SV* message_sv, SV* fh_sv) {
+    const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);
+    if (!msg || !mdef) croak("Invalid message object");
+
+    IO* io = sv_2io(fh_sv);
+    if (!io) croak("Invalid file handle");
+    PerlIO* fp = IoOFP(io);
+    if (!fp) croak("File handle not open for writing");
+
+    const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(mdef));
+    upb_Status status;
+    upb_Status_Clear(&status);
+
+    size_t size = upb_JsonEncode(msg, mdef, ext_pool, 0, NULL, 0, &status);
+    if (!upb_Status_IsOk(&status)) {
+        croak("JSON Encode error: %s", upb_Status_ErrorMessage(&status));
+    }
+    
+    char* buf = (char*)malloc(size + 1);
+    if (!buf) croak("Out of memory encoding JSON");
+    
+    size_t encoded = upb_JsonEncode(msg, mdef, ext_pool, 0, buf, size + 1, &status);
+    if (!upb_Status_IsOk(&status)) {
+        free(buf);
+        croak("JSON Encode error: %s", upb_Status_ErrorMessage(&status));
+    }
+    
+    PerlIO_write(fp, buf, encoded);
+    free(buf);
+}
+
 SV* PerlUpb_Message_FromJson(pTHX_ SV* descriptor_sv, SV* json_sv) {
     const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ descriptor_sv);
     if (!mdef) {
@@ -211,5 +243,135 @@ SV* PerlUpb_Message_FromJson(pTHX_ SV* descriptor_sv, SV* json_sv) {
     SV *msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
     SvREFCNT_dec(arena_sv);
 
+    return msg_sv;
+}
+
+static void WriteVarint(pTHX_ PerlIO* fp, uint64_t val) {
+    uint8_t buf[10];
+    int i = 0;
+    do {
+        buf[i] = (uint8_t)(val & 0x7F);
+        val >>= 7;
+        if (val > 0) buf[i] |= 0x80;
+        i++;
+    } while (val > 0);
+    PerlIO_write(fp, buf, i);
+}
+
+void PerlUpb_Message_ToHandle(pTHX_ SV* message_sv, SV* fh_sv, bool length_prefixed) {
+    const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);
+    if (!msg || !mdef) croak("Invalid message object");
+
+    IO* io = sv_2io(fh_sv);
+    if (!io) croak("Invalid file handle");
+    PerlIO* fp = IoOFP(io);
+    if (!fp) croak("File handle not open for writing");
+
+    const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+    upb_Arena* enc_arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
+    char* buf = NULL;
+    size_t size = 0;
+
+    upb_EncodeStatus status = upb_Encode(msg, mt, kUpb_EncodeOption_CheckRequired, enc_arena, &buf, &size);
+    if (status != kUpb_EncodeStatus_Ok) {
+        PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
+        croak("Serialization failed: %d", status);
+    }
+
+    if (length_prefixed) {
+        WriteVarint(aTHX_ fp, size);
+    }
+
+    if (size > 0) {
+        SSize_t written = PerlIO_write(fp, buf, size);
+        if (written < (SSize_t)size) {
+            PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
+            croak("Failed to write full message to handle: %d of %zu bytes written", (int)written, size);
+        }
+    }
+
+    PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
+}
+
+static uint64_t ReadVarint(pTHX_ PerlIO* fp, bool* ok) {
+    uint64_t val = 0;
+    int shift = 0;
+    uint8_t byte;
+    *ok = false;
+
+    while (shift < 64) {
+        if (PerlIO_read(fp, &byte, 1) != 1) return 0;
+        val |= (uint64_t)(byte & 0x7F) << shift;
+        if (!(byte & 0x80)) {
+            *ok = true;
+            return val;
+        }
+        shift += 7;
+    }
+    return 0;
+}
+
+SV* PerlUpb_Message_FromHandle(pTHX_ SV* descriptor_sv, SV* fh_sv, bool length_prefixed) {
+    const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ descriptor_sv);
+    if (!mdef) croak("descriptor_sv must be a Protobuf::MessageDescriptor");
+
+    IO* io = sv_2io(fh_sv);
+    if (!io) croak("Invalid file handle");
+    PerlIO* fp = IoIFP(io);
+    if (!fp) croak("File handle not open for reading");
+
+    SV* arena_sv = PerlUpb_Arena_New(aTHX);
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+
+    char* buf = NULL;
+    size_t total_to_read = 0;
+
+    if (length_prefixed) {
+        bool ok;
+        total_to_read = (size_t)ReadVarint(aTHX_ fp, &ok);
+        if (!ok) {
+            SvREFCNT_dec(arena_sv);
+            return &PL_sv_undef; // EOF or error reading length
+        }
+        buf = upb_Arena_Malloc(arena, total_to_read);
+        SSize_t n = PerlIO_read(fp, buf, total_to_read);
+        if (n < (SSize_t)total_to_read) {
+            SvREFCNT_dec(arena_sv);
+            croak("Unexpected EOF reading length-prefixed message: expected %zu, got %zd", total_to_read, n);
+        }
+    } else {
+        // Read until EOF
+        size_t capacity = 4096;
+        size_t total_read = 0;
+        buf = upb_Arena_Malloc(arena, capacity);
+
+        while (1) {
+            if (total_read == capacity) {
+                size_t new_capacity = capacity * 2;
+                char* new_buf = upb_Arena_Malloc(arena, new_capacity);
+                memcpy(new_buf, buf, total_read);
+                buf = new_buf;
+                capacity = new_capacity;
+            }
+
+            SSize_t n = PerlIO_read(fp, buf + total_read, capacity - total_read);
+            if (n <= 0) break;
+            total_read += n;
+        }
+        total_to_read = total_read;
+    }
+
+    const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+    upb_Message* msg = upb_Message_New(mt, arena);
+    
+    upb_DecodeStatus status = upb_Decode(buf, total_to_read, msg, mt, NULL, 0, arena);
+    if (status != kUpb_DecodeStatus_Ok) {
+        SvREFCNT_dec(arena_sv);
+        croak("Failed to parse message from handle: %d", status);
+    }
+
+    SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+    SvREFCNT_dec(arena_sv);
     return msg_sv;
 }

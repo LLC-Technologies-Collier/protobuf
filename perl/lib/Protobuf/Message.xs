@@ -186,6 +186,52 @@ _xs_to_json(self)
     OUTPUT:
         RETVAL
 
+void
+_xs_json_to_handle(self, fh_sv)
+    SV* self
+    SV* fh_sv
+    CODE:
+        PerlUpb_Message_JsonToHandle(aTHX_ self, fh_sv);
+
+void
+_xs_to_handle(self, fh_sv, length_prefixed = false)
+    SV* self
+    SV* fh_sv
+    bool length_prefixed
+    CODE:
+        PerlUpb_Message_ToHandle(aTHX_ self, fh_sv, length_prefixed);
+
+SV*
+_xs_from_handle(class_name, fh_sv, length_prefixed = false)
+    SV* class_name
+    SV* fh_sv
+    bool length_prefixed
+    CODE:
+        // Use the descriptor() method on the class to get the mdef
+        dSP;
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs(class_name);
+        PUTBACK;
+        int count = call_method("descriptor", G_SCALAR);
+        SPAGAIN;
+        if (count != 1) {
+            PUTBACK; FREETMPS; LEAVE;
+            croak("Failed to get descriptor for class %s", SvPV_nolen(class_name));
+        }
+        SV* descriptor_sv = POPs;
+        // Keep a copy because we're about to free temps
+        SV* mdef_sv = newSVsv(descriptor_sv);
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+
+        RETVAL = PerlUpb_Message_FromHandle(aTHX_ mdef_sv, fh_sv, length_prefixed);
+        SvREFCNT_dec(mdef_sv);
+    OUTPUT:
+        RETVAL
+
 SV*
 _xs_from_json(class_name, json_data)
     SV* class_name

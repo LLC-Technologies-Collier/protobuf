@@ -23,7 +23,16 @@ SV* PerlUpb_Message_ToText(pTHX_ SV* message_sv);
 // Serializes a Protobuf::Message wrapper into a JSON string SV.
 SV* PerlUpb_Message_ToJson(pTHX_ SV* message_sv);
 
+// Serializes a Protobuf::Message wrapper directly to a file handle as JSON.
+void PerlUpb_Message_JsonToHandle(pTHX_ SV* message_sv, SV* fh_sv);
+
 // Parses a JSON string SV into a new Protobuf::Message wrapper.
 SV* PerlUpb_Message_FromJson(pTHX_ SV* class_name, SV* json_sv);
+
+// Serializes a Protobuf::Message wrapper directly to a file handle.
+void PerlUpb_Message_ToHandle(pTHX_ SV* message_sv, SV* fh_sv, bool length_prefixed);
+
+// Parses a Protobuf::Message wrapper from a file handle.
+SV* PerlUpb_Message_FromHandle(pTHX_ SV* descriptor_sv, SV* fh_sv, bool length_prefixed);
 
 #endif // PERL_PROTOBUF_MESSAGE_SERIALIZE_H_

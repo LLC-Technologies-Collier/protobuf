@@ -426,6 +426,21 @@ sub to_json {
     return _xs_to_json($self);
 }
 
+sub to_handle {
+    my ($self, $fh, %options) = @_;
+    croak("Invalid file handle") unless defined $fh;
+    if (($options{format} || 'binary') eq 'json') {
+        return _xs_json_to_handle($self, $fh);
+    }
+    return _xs_to_handle($self, $fh, $options{length_prefixed} || 0);
+}
+
+sub from_handle {
+    my ($class, $fh, %options) = @_;
+    croak("Invalid file handle") unless defined $fh;
+    return _xs_from_handle($class, $fh, $options{length_prefixed} || 0);
+}
+
 sub to_json_streaming {
     my ($self) = @_;
     # TODO: Implement actual streaming
