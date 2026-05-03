@@ -2,7 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/protobuf/utils.h"
+#include "xs/protobuf/utils.h"
 #include "xs/protobuf/obj_cache.h"
 #include "upb/reflection/def.h"
 

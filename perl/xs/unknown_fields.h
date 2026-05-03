@@ -3,9 +3,9 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
-#include "perl/xs/unknown_fields/set.h"
+#include "xs/unknown_fields/set.h"
 
 // Top-level init
 bool PerlUpb_InitUnknownFields(pTHX_ SV* module);

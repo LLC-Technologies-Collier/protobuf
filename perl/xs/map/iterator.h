@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/map/map.h"
+#include "xs/map/map.h"
 
 // MapIterator provides iteration over a upb_Map.
 SV* PerlUpb_Map_GetIterator(pTHX_ SV* map_sv);

@@ -2,8 +2,8 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/protobuf/arena.h"
-#include "perl/xs/protobuf/registry.h"
+#include "xs/protobuf/arena.h"
+#include "xs/protobuf/registry.h"
 #include "upb/mem/arena.h"
 #include <unistd.h>
 #include <time.h>

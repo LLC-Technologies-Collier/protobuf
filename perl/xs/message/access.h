@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 #include "upb/reflection/def.h"
 
 SV* PerlUpb_Message_GetField(pTHX_ SV* message_sv, const upb_FieldDef* f);

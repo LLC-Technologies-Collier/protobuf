@@ -2,7 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/map.h"
+#include "xs/map.h"
 
 bool PerlUpb_InitMap(pTHX_ SV* module) {
     // Initialization logic for Map component

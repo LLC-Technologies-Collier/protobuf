@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/descriptor/base.h"
+#include "xs/descriptor/base.h"
 #include "upb/reflection/def.h"
 
 const upb_FieldDef* PerlUpb_MessageDef_FindFieldByNameWithSize(pTHX_ const upb_MessageDef *m, const char *name, size_t len);

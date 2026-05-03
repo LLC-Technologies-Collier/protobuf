@@ -3,8 +3,8 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
-#include "perl/xs/protobuf/utils.h"
+#include "xs/protobuf.h"
+#include "xs/protobuf/utils.h"
 
 // Common functions for all descriptor types
 #define RETURN_CACHED_OR_CREATE_BLESSED(ptr, class_name) \

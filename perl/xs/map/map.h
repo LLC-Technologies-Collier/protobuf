@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 #include "upb/message/map.h"
 #include "upb/reflection/def.h"
 

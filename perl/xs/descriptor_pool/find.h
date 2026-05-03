@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 #include "upb/reflection/def.h"
 
 SV* PerlUpb_DescriptorPool_FindFileByName(pTHX_ SV* self, const char* name);

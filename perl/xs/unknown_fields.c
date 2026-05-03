@@ -2,7 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/unknown_fields.h"
+#include "xs/unknown_fields.h"
 
 bool PerlUpb_InitUnknownFields(pTHX_ SV* module) {
     // Initialization logic for UnknownFields component

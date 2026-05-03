@@ -2,7 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/convert.h"
+#include "xs/convert.h"
 
 // This file can remain mostly empty, as the logic
 // has been moved to the subfiles.

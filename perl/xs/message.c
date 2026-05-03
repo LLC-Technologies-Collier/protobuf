@@ -2,7 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/message.h"
+#include "xs/message.h"
 
 bool PerlUpb_InitMessage(pTHX_ SV* module) {
     // Initialization logic for Message component

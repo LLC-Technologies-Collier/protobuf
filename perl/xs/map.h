@@ -3,10 +3,10 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
-#include "perl/xs/map/map.h"
-#include "perl/xs/map/iterator.h"
+#include "xs/map/map.h"
+#include "xs/map/iterator.h"
 
 // Top-level init
 bool PerlUpb_InitMap(pTHX_ SV* module);

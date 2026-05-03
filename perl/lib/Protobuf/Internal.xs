@@ -2,10 +2,10 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/protobuf.h"
-#include "perl/xs/protobuf/utils.h"
-#include "perl/xs/protobuf/registry.h"
-#include "perl/xs/descriptor/message.h"
+#include "xs/protobuf.h"
+#include "xs/protobuf/utils.h"
+#include "xs/protobuf/registry.h"
+#include "xs/descriptor/message.h"
 
 MODULE = Protobuf::Internal  PACKAGE = Protobuf::Internal
 

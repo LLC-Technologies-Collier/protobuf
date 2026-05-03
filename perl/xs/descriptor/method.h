@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/descriptor/base.h"
+#include "xs/descriptor/base.h"
 #include "upb/reflection/def.h"
 
 const char* PerlUpb_MethodDef_FullName(pTHX_ const upb_MethodDef *m);

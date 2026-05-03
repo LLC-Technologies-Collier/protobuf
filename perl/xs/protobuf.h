@@ -6,9 +6,9 @@
 #include "upb/reflection/def.h" // Keep for now, might be needed by other components
 #include "upb/wire/types.h"
 
-#include "perl/xs/protobuf/arena.h"
-#include "perl/xs/protobuf/obj_cache.h"
-#include "perl/xs/protobuf/utils.h"
+#include "xs/protobuf/arena.h"
+#include "xs/protobuf/obj_cache.h"
+#include "xs/protobuf/utils.h"
 
 // Top-level module initialization
 void PerlUpb_Protobuf_InitModule(pTHX);

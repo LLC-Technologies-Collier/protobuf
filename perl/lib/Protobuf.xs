@@ -2,7 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
 MODULE = Protobuf  PACKAGE = Protobuf
 

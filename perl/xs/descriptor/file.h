@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/descriptor/base.h"
+#include "xs/descriptor/base.h"
 #include "upb/reflection/def.h"
 
 SV* PerlUpb_FileDef_GetWrapper(pTHX_ const upb_FileDef *f);

@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
 // ExtensionDict wraps the extension fields of a message.
 // It acts as a lazy map from FieldDescriptor (extensions) to their values.

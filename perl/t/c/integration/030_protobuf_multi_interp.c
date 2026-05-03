@@ -1,6 +1,6 @@
-#include "perl/t/c/upb-perl-test.h"
-#include "perl/xs/protobuf/registry.h"
-#include "perl/xs/protobuf/obj_cache.h"
+#include "t/c/upb-perl-test.h"
+#include "xs/protobuf/registry.h"
+#include "xs/protobuf/obj_cache.h"
 
 static void test_multi_interp(void) {
     plan(4);

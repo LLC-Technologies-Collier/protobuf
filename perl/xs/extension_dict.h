@@ -3,10 +3,10 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
-#include "perl/xs/extension_dict/dict.h"
-#include "perl/xs/extension_dict/iterator.h"
+#include "xs/extension_dict/dict.h"
+#include "xs/extension_dict/iterator.h"
 
 // Top-level init
 bool PerlUpb_InitExtensionDict(pTHX_ SV* module);

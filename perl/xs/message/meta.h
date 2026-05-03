@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
 // Returns the descriptor for a message wrapper
 SV* PerlUpb_Message_GetDescriptor(pTHX_ SV* message_sv);

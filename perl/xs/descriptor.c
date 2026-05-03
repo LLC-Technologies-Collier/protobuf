@@ -2,7 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/descriptor.h"
+#include "xs/descriptor.h"
 
 bool PerlUpb_InitDescriptor(pTHX_ SV* module) {
     // Initialization logic for all descriptor types

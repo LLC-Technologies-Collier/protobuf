@@ -16,9 +16,15 @@ use Sideload::Build::FileLists qw(
 );
 
 # --- Path Macros ---
-our $perl_dir = Cwd::abs_path(File::Spec->curdir());
-our $project_root = Cwd::abs_path(File::Spec->catdir($perl_dir, '..'));
+use Cwd qw(abs_path getcwd);
+my $cwd = getcwd();
+
+# Determine the project root, favoring 'vendor' if it exists (for distributions)
+my $raw_root = -d 'vendor' ? 'vendor' : '..';
+our $project_root = File::Spec->abs2rel(abs_path($raw_root), $cwd);
+
 our $upb_dir = File::Spec->catdir($project_root, 'upb');
+our $upb_generator_dir = File::Spec->catdir($project_root, 'upb_generator');
 our $src_dir = File::Spec->catdir($project_root, 'src');
 our $third_party_dir = File::Spec->catdir($project_root, 'third_party');
 # --- End Path Macros ---
@@ -65,17 +71,17 @@ if (!$@) {
 }
 
 # Define your common C source files relative to perl/
-my @UPB_C_FILES = get_upb_c_files();
-my @UTF8_C_FILES = get_utf8_c_files();
-my @GENERATED_C_FILES = get_generated_c_files();
-my @XS_HELPER_C_FILES = get_xs_helper_c_files();
+my @UPB_C_FILES = get_upb_c_files($project_root);
+my @UTF8_C_FILES = get_utf8_c_files($project_root);
+my @GENERATED_C_FILES = get_generated_c_files($project_root);
+my @XS_HELPER_C_FILES = get_xs_helper_c_files($project_root);
 
 my @COMMON_C_FILES = (@UPB_C_FILES, @UTF8_C_FILES, @GENERATED_C_FILES, @XS_HELPER_C_FILES);
 
 # Pure UPB object files for the protoc plugin (no Perl dependencies)
-my @PURE_UPB_O_FILES = map {
+my @PURE_UPB_O_FILES = grep { $_ !~ /plugin\.upb/ } map {
     my $o = $_;
-    $o =~ s{^\.\./}{};
+    $o =~ s{^\Q$project_root\E[\\/]}{};
     $o =~ s/\.cc?$/$Config{obj_ext}/;
     $o;
 } (@UPB_C_FILES, @UTF8_C_FILES, @GENERATED_C_FILES);
@@ -84,7 +90,7 @@ my $PURE_UPB_O_STRING = join(' ', @PURE_UPB_O_FILES);
 # Mangle object file names to avoid collisions and place them in the current dir (perl/)
 my @COMMON_O_FILES = map {
     my $o = $_;
-    $o =~ s{^\.\./}{}; # Remove ../
+    $o =~ s{^\Q$project_root\E[\\/]}{}; # Remove the relative root prefix
     $o =~ s/\.cc?$/$Config{obj_ext}/;
     $o;
 } @COMMON_C_FILES;
@@ -145,13 +151,14 @@ sub MY::postamble {
         my $o_file = $pair->{o};
         next if $done_o{$o_file}++;
         my $compiler = '$(CC)';
-        my $bazel_gen_include = File::Spec->catfile("..", "upb", "reflection", "stage0");
-        my $cmake_gen_include = File::Spec->catfile("..", "upb", "reflection", "cmake");
-        my $base_flags = "-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I$bazel_gen_include -I$cmake_gen_include -DUPB_BOOTSTRAP_STAGE=0";
+        my $bazel_gen_include = File::Spec->catdir($upb_dir, "reflection", "stage0");
+        my $cmake_gen_include = File::Spec->catdir($upb_dir, "reflection", "cmake");
+        my $base_flags = "-I. -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I$bazel_gen_include -I$cmake_gen_include -DUPB_BOOTSTRAP_STAGE=0";
+
         my $cflags = "";
         if ($c_file =~ /\.cc$/) {
             $compiler = '$(CXX)';
-            $cflags = "-Wno-error=attributes -I../third_party/abseil-cpp";
+            $cflags = "-Wno-error=attributes -I" . File::Spec->catdir($third_party_dir, 'abseil-cpp');
         } else {
             $cflags = "-D_GNU_SOURCE -Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes";
         }
@@ -183,8 +190,21 @@ sub MY::postamble {
     my $archlibexp = $Config{archlibexp};
 
     my $config_file = File::Spec->catfile('t', 'c', 'c_test_config.json');
-    my $json_text = path($config_file)->slurp_utf8;
+    my $json_text = Path::Tiny::path($config_file)->slurp_utf8;
+
+    # Replace hardcoded monorepo paths with dynamic path macros
+    $json_text =~ s{\.\./upb/}{\$upb_dir/}g;
+    $json_text =~ s{\.\./src/}{\$src_dir/}g;
+    $json_text =~ s{\.\./third_party/}{\$third_party_dir/}g;
+
+    # Actually, it's better to just replace them with the actual paths 
+    # because we are about to decode the JSON.
+    $json_text =~ s{\$upb_dir}{$upb_dir}g;
+    $json_text =~ s{\$src_dir}{$src_dir}g;
+    $json_text =~ s{\$third_party_dir}{$third_party_dir}g;
+
     my $c_test_config = decode_json($json_text);
+
 
     my @c_test_targets;
     my $c_test_rules = "# c test rules$/";
@@ -300,7 +320,9 @@ sub MY::postamble {
     });
 
     # Rule to generate test_descriptor.bin
-    $make_frag .= main::_render_tt('test_descriptor_bin.mk.tt', {});
+    $make_frag .= main::_render_tt('test_descriptor_bin.mk.tt', {
+        project_root => $project_root,
+    });
 
     # Target to build all C tests & benchmarks
     $make_frag .= main::_render_tt('build_aggregator_targets.mk.tt', {
@@ -326,13 +348,13 @@ sub MY::postamble {
     my $protoc_plugin_src = "protoc/protoc-gen-perl-pb.cc";
     my $protoc_plugin_obj = "protoc/protoc-gen-perl-pb.o";
     my $protoc_plugin_exe = "protoc-gen-perl-pb";
-    my $plugin_upb_c = "../upb_generator/stage0/google/protobuf/compiler/plugin.upb.c";
+    my $plugin_upb_c = File::Spec->catfile($upb_generator_dir, "stage0", "google", "protobuf", "compiler", "plugin.upb.c");
     my $plugin_upb_o = "protoc/plugin.upb.o";
-    my $descriptor_upb_c = "../upb/reflection/stage0/google/protobuf/descriptor.upb.c";
+    my $descriptor_upb_c = File::Spec->catfile($upb_dir, "reflection", "stage0", "google", "protobuf", "descriptor.upb.c");
     my $descriptor_upb_o = "protoc/descriptor.upb.o";
     
     my $protoc_cflags = "-g -D_GNU_SOURCE -std=c++17 -Wall -DUPB_BOOTSTRAP_STAGE=0";
-    my $protoc_inc = "-I. -I./protoc -I.. -I../upb -I../src -I../third_party/utf8_range -I../upb/reflection/stage0 -I../upb/reflection/cmake -I../upb_generator/stage0 -I$Config{archlibexp}/CORE";
+    my $protoc_inc = "-I. -I./protoc -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'stage0') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'cmake') . " -I" . File::Spec->catdir($upb_generator_dir, 'stage0') . " -I$Config{archlibexp}/CORE";
 
     $make_frag .= main::_render_tt('protoc_plugin_compile.mk.tt', {
         src => $protoc_plugin_src,
@@ -343,7 +365,7 @@ sub MY::postamble {
     $make_frag .= $/;
 
     # Rules for upb plugin objects
-    $make_frag .= "$plugin_upb_o: $plugin_upb_c\n\t\$(CC) -I. -I.. -I../upb -I../upb_generator/stage0 -I../upb/reflection/stage0 -O2 -c $plugin_upb_c -o $plugin_upb_o\n\n";
+    $make_frag .= "$plugin_upb_o: $plugin_upb_c\n\t\$(CC) -I. -I$project_root -I$upb_dir -I" . File::Spec->catdir($upb_generator_dir, 'stage0') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'stage0') . " -O2 -c $plugin_upb_c -o $plugin_upb_o\n\n";
 
     $make_frag .= main::_render_tt('protoc_plugin_link.mk.tt', {
         exe => $protoc_plugin_exe,
@@ -407,15 +429,27 @@ foreach my $t (glob("t/c/benchmark/*.c")) {
 my @clean_files = sort keys %clean_files_map;
 
 WriteMakefile(
-
-
     NAME              => 'Protobuf',
     VERSION           => '0.01',
+    ABSTRACT          => 'High-performance Protocol Buffers implementation using upb',
     PREREQ_PM         => {
       'Moo'             => 0,
       'Type::Tiny'      => 0,
       'Types::Standard' => 0,
       'JSON::MaybeXS'   => 0,
+      'Const::Fast'     => 0,
+      'Math::BigInt'    => 0,
+      'MIME::Base64'    => 0,
+    },
+    META_MERGE => {
+        'meta-spec' => { version => 2 },
+        resources => {
+            repository => {
+                type => 'git',
+                url  => 'https://github.com/LLC-Technologies-Collier/protobuf.git',
+                web  => 'https://github.com/LLC-Technologies-Collier/protobuf',
+            },
+        },
     },
     TEST_REQUIRES => {
       'Test::More'       => 0,
@@ -441,7 +475,7 @@ WriteMakefile(
     AUTHOR            => 'C.J. Collier <cjac@colliertech.org>',
     LICENSE           => 'apache_2_0',
     DEFINE            => '-DUPB_BOOTSTRAP_STAGE=0',
-    INC               => '-I. -I.. -I../upb -I../src -I../third_party/utf8_range -I../upb/reflection/stage0 -I../upb/reflection/cmake -I$(PERL_INC)',
+    INC               => "-I. -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'stage0') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'cmake') . " -I\$(PERL_INC)",
     MYEXTLIB          => 'libprotobufperl.$(DLEXT)',
     CCFLAGS           => "-g $Config{ccflags} -fPIC $sanitizer_flags",
     XSMULTI           => 1,

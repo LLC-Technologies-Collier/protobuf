@@ -2,9 +2,9 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/protobuf/arena.h"
-#include "perl/xs/protobuf/message.h"
-#include "perl/xs/descriptor_pool/pool.h"
+#include "xs/protobuf/arena.h"
+#include "xs/protobuf/message.h"
+#include "xs/descriptor_pool/pool.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/alloc.h"
 

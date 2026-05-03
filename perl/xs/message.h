@@ -3,13 +3,13 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
-#include "perl/xs/message/message.h"
-#include "perl/xs/message/meta.h"
-#include "perl/xs/message/access.h"
-#include "perl/xs/message/serialize.h"
-#include "perl/xs/message/compare.h"
+#include "xs/message/message.h"
+#include "xs/message/meta.h"
+#include "xs/message/access.h"
+#include "xs/message/serialize.h"
+#include "xs/message/compare.h"
 
 // Top-level init
 bool PerlUpb_InitMessage(pTHX_ SV* module);

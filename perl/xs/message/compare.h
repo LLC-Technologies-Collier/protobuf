@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
 bool PerlUpb_Message_IsEqual(pTHX_ SV* message1_sv, SV* message2_sv);
 

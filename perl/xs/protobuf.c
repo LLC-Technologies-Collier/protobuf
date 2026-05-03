@@ -2,10 +2,10 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/protobuf.h"
-#include "perl/xs/protobuf/registry.h"
+#include "xs/protobuf.h"
+#include "xs/protobuf/registry.h"
 
-#include "perl/xs/protobuf/utils.h"
+#include "xs/protobuf/utils.h"
 
 XS(XS_Protobuf_Internal_get_cache_audit_log) {
     dXSARGS;

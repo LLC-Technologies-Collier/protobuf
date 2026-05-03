@@ -2,7 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "perl/xs/protobuf/registry.h"
+#include "xs/protobuf/registry.h"
 
 #define REGISTRY_KEY "Protobuf::Registry"
 

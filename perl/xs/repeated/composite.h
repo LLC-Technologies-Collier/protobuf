@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/repeated/repeated.h"
+#include "xs/repeated/repeated.h"
 
 // Adds a new message to a repeated field of message types and returns it.
 SV* PerlUpb_Repeated_Add(pTHX_ SV* self);

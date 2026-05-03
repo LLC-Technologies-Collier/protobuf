@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
 // Creates a new Protobuf::Message wrapper, allocating a new upb_Message
 // and upb_Arena internally.

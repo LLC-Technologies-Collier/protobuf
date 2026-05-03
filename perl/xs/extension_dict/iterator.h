@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
 // Iterator for ExtensionDict
 SV* PerlUpb_ExtensionDict_GetIterator(pTHX_ SV* dict_sv);

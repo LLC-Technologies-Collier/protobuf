@@ -1,5 +1,5 @@
-#include "perl/t/c/upb-perl-test.h"
-#include "perl/xs/protobuf/port.h"
+#include "t/c/upb-perl-test.h"
+#include "xs/protobuf/port.h"
 
 static void test_croak_recovery(void) {
     plan(2);

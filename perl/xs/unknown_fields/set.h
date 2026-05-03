@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
 // Wraps the unknown fields of a message.
 SV* PerlUpb_UnknownFieldSet_New(pTHX_ SV* message_sv);

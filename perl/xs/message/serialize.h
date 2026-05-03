@@ -3,7 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
-#include "perl/xs/protobuf.h"
+#include "xs/protobuf.h"
 
 // Parses a serialized string into a new Protobuf::Message wrapper.
 SV* PerlUpb_Message_Parse(pTHX_ SV* descriptor_sv, SV* data_sv);
