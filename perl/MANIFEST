@@ -103,6 +103,7 @@ doc/plan/295_Enum_Fields.md
 doc/plan/296_Repeated_Scalar_Fields.md
 doc/plan/297_Repeated_Message_Fields.md
 doc/plan/298_Map_Fields.md
+doc/plan/299_B_Compat_Testing.md
 doc/plan/299_Integration_and_Unknowns.md
 doc/plan/299_Message_Serialization.md
 doc/plan/300_Integration_Perl_Message.md
@@ -231,6 +232,7 @@ perlobject.map
 protoc/protoc-gen-perl-pb.cc
 protoc/string_utils.cc
 README.md
+stderr.txt
 t/001_arena.t
 t/002_descriptor_pool.t
 t/003_descriptors.t
@@ -512,6 +514,7 @@ t/lib/Protobuf/Internal/Test.pm
 t/lib/Protobuf/Internal/Test.xs
 t/lib/TestHelpers.pm
 test_c.log
+THANKS.md
 typemap
 xs/all_descriptors.h
 xs/convert.c
