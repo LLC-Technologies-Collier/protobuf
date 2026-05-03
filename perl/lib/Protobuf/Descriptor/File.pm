@@ -101,6 +101,16 @@ sub get_top_level_message {
     return _xs_top_level_message($self, $index);
 }
 
+sub top_level_enum_count {
+    my ($self) = @_;
+    return _xs_top_level_enum_count($self);
+}
+
+sub get_top_level_enum {
+    my ($self, $index) = @_;
+    return _xs_top_level_enum($self, $index);
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;

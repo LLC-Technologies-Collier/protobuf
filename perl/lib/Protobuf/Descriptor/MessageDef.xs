@@ -133,3 +133,27 @@ _xs_nested_message(self, index)
     OUTPUT:
         RETVAL
 
+
+int
+_xs_nested_enum_count(self)
+    SV* self
+    CODE:
+        const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
+        RETVAL = m ? upb_MessageDef_NestedEnumCount(m) : 0;
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_nested_enum(self, index)
+    SV* self
+    int index
+    CODE:
+        const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
+        if (m && index >= 0 && index < upb_MessageDef_NestedEnumCount(m)) {
+            RETVAL = PerlUpb_EnumDef_GetWrapper(aTHX_ upb_MessageDef_NestedEnum(m, index));
+        } else {
+            RETVAL = &PL_sv_undef;
+        }
+    OUTPUT:
+        RETVAL
+

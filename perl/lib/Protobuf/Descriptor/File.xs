@@ -52,3 +52,27 @@ _xs_top_level_message(self, index)
     OUTPUT:
         RETVAL
 
+
+int
+_xs_top_level_enum_count(self)
+    SV* self
+    CODE:
+        const upb_FileDef* file = PerlUpb_FileDef_GetFile(aTHX_ self);
+        RETVAL = file ? upb_FileDef_TopLevelEnumCount(file) : 0;
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_top_level_enum(self, index)
+    SV* self
+    int index
+    CODE:
+        const upb_FileDef* file = PerlUpb_FileDef_GetFile(aTHX_ self);
+        if (file && index >= 0 && index < upb_FileDef_TopLevelEnumCount(file)) {
+            RETVAL = PerlUpb_EnumDef_GetWrapper(aTHX_ upb_FileDef_TopLevelEnum(file, index));
+        } else {
+            RETVAL = &PL_sv_undef;
+        }
+    OUTPUT:
+        RETVAL
+

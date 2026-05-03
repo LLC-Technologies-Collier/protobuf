@@ -165,6 +165,8 @@ lib/Protobuf/ClassGenerator.pm
 lib/Protobuf/Descriptor/Enum.c
 lib/Protobuf/Descriptor/Enum.pm
 lib/Protobuf/Descriptor/Enum.xs
+lib/Protobuf/Descriptor/EnumValue.pm
+lib/Protobuf/Descriptor/EnumValue.xs
 lib/Protobuf/Descriptor/Field.c
 lib/Protobuf/Descriptor/Field.pm
 lib/Protobuf/Descriptor/Field.xs
@@ -501,6 +503,11 @@ t/c/upb-perl-test.h
 t/c/upb_descriptor_load.c
 t/integration/260_descriptor_pool.t
 t/integration/280_descriptor.t
+t/integration/299_1_string_bytes.t
+t/integration/299_2_types.t
+t/integration/299_3_error.t
+t/integration/299_4_package.t
+t/integration/299_5_embedded.t
 t/integration/300_message.t
 t/integration/320_repeated_field.t
 t/integration/340_map.t
@@ -513,6 +520,11 @@ t/integration/430_release.t
 t/lib/Protobuf/Internal/Test.pm
 t/lib/Protobuf/Internal/Test.xs
 t/lib/TestHelpers.pm
+t/protos/embedded_error.proto
+t/protos/error.proto
+t/protos/messages.proto
+t/protos/string_bytes.proto
+t/protos/types.proto
 test_c.log
 THANKS.md
 typemap

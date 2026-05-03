@@ -230,7 +230,13 @@ use Protobuf::Internal::Repeated;
 use Protobuf::Internal::Map;
 
 sub new {
-    my ($class, %args) = @_;
+    my $class = shift;
+    my $args;
+    if (@_ == 1 && ref($_[0]) eq 'HASH') {
+        $args = $_[0];
+    } else {
+        $args = { @_ };
+    }
 
     croak("Protobuf::Message->new cannot be called directly. Use a generated subclass.")
         if $class eq 'Protobuf::Message';
@@ -238,14 +244,15 @@ sub new {
     my $mdef = $class->descriptor;
     croak("Class $class does not have a descriptor") unless $mdef;
 
-    # TODO: Initialize fields from %args
     my $self;
-    if ($args{arena}) {
-        $self = _xs_new_from_def_in_arena($mdef, $args{arena});
+    if ($args->{arena}) {
+        $self = _xs_new_from_def_in_arena($mdef, delete $args->{arena});
     } else {
         $self = _xs_new_from_def($mdef);
     }
-    # $self->from_perl(\%args);
+    
+    $self->from_perl($args) if keys %$args;
+    
     return $self;
 }
 
@@ -348,6 +355,11 @@ sub to_perl {
     my ($self) = @_;
     # WKTs like Struct have their own to_perl in Protobuf::WKT::Struct
     return _xs_to_perl($self);
+}
+
+sub to_hashref {
+    my ($self) = @_;
+    return $self->to_perl();
 }
 
 sub from_perl {

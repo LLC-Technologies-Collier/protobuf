@@ -158,6 +158,16 @@ sub get_nested_message {
     return _xs_nested_message($self, $index);
 }
 
+sub nested_enum_count {
+    my ($self) = @_;
+    return _xs_nested_enum_count($self);
+}
+
+sub get_nested_enum {
+    my ($self, $index) = @_;
+    return _xs_nested_enum($self, $index);
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;

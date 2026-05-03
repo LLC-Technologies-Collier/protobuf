@@ -3,6 +3,11 @@ t/data/test_descriptor.bin: t/c/test.proto
 	@mkdir -p t/data
 	protoc --descriptor_set_out=t/data/test_descriptor.bin --include_imports --proto_path=t/c --proto_path=.. t/c/test.proto
 
+t/data/compat_descriptor.bin: $(wildcard t/protos/*.proto)
+	@echo "Generating t/data/compat_descriptor.bin"
+	@mkdir -p t/data
+	protoc --descriptor_set_out=t/data/compat_descriptor.bin --include_imports --proto_path=t/protos --proto_path=.. t/protos/*.proto
+
 t/data/wkt_descriptor.bin:
 	@echo "Generating t/data/wkt_descriptor.bin"
 	@mkdir -p t/data

@@ -65,9 +65,12 @@ SV* PerlUpb_Message_Serialize(pTHX_ SV* message_sv) {
     char* buf = NULL;
     size_t size = 0;
 
-    upb_EncodeStatus status = upb_Encode(msg, mt, 0, enc_arena, &buf, &size);
+    upb_EncodeStatus status = upb_Encode(msg, mt, kUpb_EncodeOption_CheckRequired, enc_arena, &buf, &size);
     if (status != kUpb_EncodeStatus_Ok) {
         PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
+        if (status == kUpb_EncodeStatus_MissingRequired) {
+            croak("Failed to serialize message: Missing required fields");
+        }
         croak("Failed to serialize message: %d", status);
     }
 
@@ -90,9 +93,12 @@ SV* PerlUpb_Message_Serialize_Deterministic(pTHX_ SV* message_sv) {
     char* buf = NULL;
     size_t size = 0;
 
-    upb_EncodeStatus status = upb_Encode(msg, mt, kUpb_EncodeOption_Deterministic, enc_arena, &buf, &size);
+    upb_EncodeStatus status = upb_Encode(msg, mt, kUpb_EncodeOption_Deterministic | kUpb_EncodeOption_CheckRequired, enc_arena, &buf, &size);
     if (status != kUpb_EncodeStatus_Ok) {
         PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
+        if (status == kUpb_EncodeStatus_MissingRequired) {
+            croak("Failed to serialize message deterministically: Missing required fields");
+        }
         croak("Failed to serialize message deterministically: %d", status);
     }
 

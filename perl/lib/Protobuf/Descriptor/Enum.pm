@@ -96,6 +96,11 @@ sub value_name {
     return _xs_value_name($self, $index);
 }
 
+sub get_value {
+    my ($self, $index) = @_;
+    return _xs_get_value($self, $index);
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;

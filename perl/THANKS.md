@@ -10,6 +10,8 @@ We would like to especially thank:
 
 *   **Leon Timmermans** ([@Leont](https://github.com/Leont)) - For expressing interest and willingness to contribute.
 
+*   **Brad Fitzpatrick** ([@bradfitz](https://github.com/bradfitz)) - For the original 2008 `protobuf-perlxs` implementation. His comprehensive test suite and API design goals for high-performance Protocol Buffers in Perl continue to serve as the benchmark and foundation for this modern, UPB-based extension.
+
 *   The **p5p community** - For their engagement and suggestions.
 
 *   The authors and maintainers of the **upb** library.

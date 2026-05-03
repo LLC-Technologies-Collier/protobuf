@@ -35,7 +35,7 @@ _xs_value_count(self)
     OUTPUT:
         RETVAL
 
-const char*
+SV*
 _xs_value_name(self, index)
     SV* self
     int index
@@ -43,9 +43,24 @@ _xs_value_name(self, index)
         const upb_EnumDef* e = PerlUpb_EnumDef_GetEnum(aTHX_ self);
         if (e && index >= 0 && index < upb_EnumDef_ValueCount(e)) {
             const upb_EnumValueDef* ev = upb_EnumDef_Value(e, index);
-            RETVAL = upb_EnumValueDef_Name(ev);
+            RETVAL = newSVpv(upb_EnumValueDef_Name(ev), 0);
         } else {
-            RETVAL = NULL;
+            RETVAL = &PL_sv_undef;
+        }
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_get_value(self, index)
+    SV* self
+    int index
+    CODE:
+        const upb_EnumDef* e = PerlUpb_EnumDef_GetEnum(aTHX_ self);
+        if (e && index >= 0 && index < upb_EnumDef_ValueCount(e)) {
+            const upb_EnumValueDef* ev = upb_EnumDef_Value(e, index);
+            RETVAL = PerlUpb_EnumValueDef_GetWrapper(aTHX_ ev);
+        } else {
+            RETVAL = &PL_sv_undef;
         }
     OUTPUT:
         RETVAL

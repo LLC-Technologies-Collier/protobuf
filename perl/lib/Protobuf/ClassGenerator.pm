@@ -89,7 +89,9 @@ package Protobuf::ClassGenerator;
 
 use strict;
 use warnings;
+use Carp qw(croak);
 use Log::Any qw($log);
+use Protobuf::Descriptor::EnumValue;
 
 our %DESCRIPTOR_REGISTRY;
 our %FIELD_REGISTRY;
@@ -97,11 +99,38 @@ our %FIELD_REGISTRY;
 sub generate_for_file {
     my ($class, $file) = @_;
     return unless $file;
+    $log->debugf("Generating classes for file: %s", $file->name);
     
     my $count = $file->top_level_message_count;
     for my $i (0 .. $count - 1) {
         my $mdef = $file->get_top_level_message($i);
         _generate_recursively($mdef);
+    }
+    
+    my $enum_count = $file->top_level_enum_count;
+    for my $i (0 .. $enum_count - 1) {
+        my $edef = $file->get_top_level_enum($i);
+        my $full_name = $edef->full_name;
+        my $normalized = $full_name;
+        $normalized =~ s/^\.//;
+        my $perl_class = $normalized;
+        $perl_class =~ s/\./::/g;
+        $log->debugf("Generating top-level enum: %s", $perl_class);
+        
+        my $code = "package $perl_class;\n";
+        my $val_count = $edef->value_count;
+        for my $j (0 .. $val_count - 1) {
+            my $vdef = $edef->get_value($j);
+            my $vname = $vdef->name;
+            my $vnumber = $vdef->number;
+            $code .= "sub $vname { $vnumber }\n";
+        }
+        $code .= "1;\n";
+        {
+            no strict 'refs';
+            eval $code;
+        }
+        die "Failed to generate enum $perl_class: $@" if $@;
     }
     return;
 }
@@ -234,6 +263,7 @@ sub _generate_for_message {
     }
     
     $DESCRIPTOR_REGISTRY{$perl_class} = $mdef;
+    $log->debugf("Generating class: %s", $perl_class);
 
     # Generate the class using string eval
     my $code = '';
@@ -242,6 +272,27 @@ package $perl_class;
 use Moo;
 extends 'Protobuf::Message';
 sub descriptor { return \$Protobuf::ClassGenerator::DESCRIPTOR_REGISTRY{'$perl_class'}; }
+EOC
+
+    # Generate enums nested in this message
+    my $enum_count = $mdef->nested_enum_count;
+    for my $i (0 .. $enum_count - 1) {
+        my $edef = $mdef->get_nested_enum($i);
+        my $enum_name = $edef->name;
+        my $enum_pkg = "${perl_class}::$enum_name";
+        $log->debugf("Generating enum: %s", $enum_pkg);
+        $code .= "package $enum_pkg;\n";
+        my $val_count = $edef->value_count;
+        for my $j (0 .. $val_count - 1) {
+            my $vdef = $edef->get_value($j);
+            my $vname = $vdef->name;
+            my $vnumber = $vdef->number;
+            $code .= "sub $vname { $vnumber }\n";
+        }
+    }
+    $code .= "package $perl_class;\n";
+
+    $code .= <<"EOC";
 sub validate {
     my \$self = shift;
     my \$c_func = '_xs_validate_' . '$normalized';
@@ -283,6 +334,20 @@ sub set_$name {
     my (\$self, \$value) = \@_;
     return \$self->_xs_set_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'}, \$value);
 }
+EOC
+
+        if ($fdef->is_repeated) {
+            $code .= <<"EOC";
+sub add_$name {
+    my \$self = shift;
+    my \$arr = \$self->$name();
+    push \@\$arr, \@_;
+    return \$arr;
+}
+EOC
+        }
+
+        $code .= <<"EOC";
 sub has_$name {
     my \$self = shift;
     return \$self->_xs_has_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'});
