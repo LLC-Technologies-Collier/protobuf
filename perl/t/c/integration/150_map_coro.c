@@ -94,8 +94,6 @@ int main(int argc, char** argv) {
         ok(0, "Arena expansion and map resizing are thread-safe in the C layer");
     }
 
-    extern void PerlUpb_Map_Free(pTHX_ SV* sv);
-    PerlUpb_Map_Free(aTHX_ map_sv);
     SvREFCNT_dec(map_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
 

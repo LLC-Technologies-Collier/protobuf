@@ -25,6 +25,15 @@ void PerlUpb_Repeated_Delete(pTHX_ SV* self, int index, int count);
 // Returns the number of items in the array.
 int PerlUpb_Repeated_Size(pTHX_ SV* self);
 
+// Returns the associated arena SV.
+SV* PerlUpb_Repeated_GetArenaSV(pTHX_ SV* self);
+
+// Inserts a value at a given index.
+void PerlUpb_Repeated_Insert(pTHX_ SV* self, int index, SV* val_sv);
+
+// Resizes the array.
+void PerlUpb_Repeated_Resize(pTHX_ SV* self, int size);
+
 // Clears the array.
 void PerlUpb_Repeated_Clear(pTHX_ SV* self);
 

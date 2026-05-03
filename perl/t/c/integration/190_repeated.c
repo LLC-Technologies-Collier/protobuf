@@ -95,8 +95,6 @@ int main(int argc, char** argv) {
     // Cleanup
     SvREFCNT_dec(av_ref);
     SvREFCNT_dec(sub1);
-    extern void PerlUpb_Repeated_Free(pTHX_ SV* sv);
-    PerlUpb_Repeated_Free(aTHX_ rep_wrapper);
     SvREFCNT_dec(rep_wrapper);
 
     TODO("Implement high-performance cross-arena repeated field deep-copy") {

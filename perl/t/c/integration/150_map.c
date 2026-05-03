@@ -78,8 +78,6 @@ int main(int argc, char** argv) {
     
     SvREFCNT_dec(ret_ss);
     SvREFCNT_dec(val_ss);
-    extern void PerlUpb_Map_Free(pTHX_ SV* sv);
-    PerlUpb_Map_Free(aTHX_ map_ss_sv);
     SvREFCNT_dec(map_ss_sv);
 
     // 3. Test Iterator for map<int32, int32>
@@ -91,8 +89,6 @@ int main(int argc, char** argv) {
     
     SvREFCNT_dec(k);
     SvREFCNT_dec(v);
-    extern void PerlUpb_MapIterator_Free(pTHX_ SV* sv);
-    PerlUpb_MapIterator_Free(aTHX_ iter_sv);
     SvREFCNT_dec(iter_sv);
 
     test_map_as_hash(aTHX_ map_ii_sv);
@@ -118,8 +114,6 @@ int main(int argc, char** argv) {
     }
 
     // Cleanup
-    extern void PerlUpb_Map_Free(pTHX_ SV* sv);
-    PerlUpb_Map_Free(aTHX_ map_ii_sv);
     SvREFCNT_dec(map_ii_sv);
 
     SvREFCNT_dec(key_ii);

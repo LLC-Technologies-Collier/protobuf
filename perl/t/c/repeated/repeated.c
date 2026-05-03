@@ -12,8 +12,6 @@ static void test_repeated_creation(pTHX) {
     ok(sv_derived_from(rep_sv, "Protobuf::Internal::Repeated"), "Repeated SV has correct class");
     is(PerlUpb_Repeated_Size(aTHX_ rep_sv), 0, "Initial repeated size is 0");
     
-    extern void PerlUpb_Repeated_Free(pTHX_ SV* sv);
-    PerlUpb_Repeated_Free(aTHX_ rep_sv);
     SvREFCNT_dec(rep_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
 }

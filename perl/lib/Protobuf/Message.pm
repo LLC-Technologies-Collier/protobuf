@@ -295,17 +295,21 @@ sub CLONE {
 
 sub get {
     my ($self, $field_name) = @_;
+    return $self->{_wrappers}{$field_name} if exists $self->{_wrappers}{$field_name};
+
     my $val = _xs_get($self, $field_name);
 
-    if (ref($val) eq 'Protobuf::Internal::Repeated') {
-        my @arr;
-        tie @arr, 'Protobuf::Internal::Repeated', $val;
-        return bless \@arr, 'Protobuf::Internal::Repeated::Public';
-    }
-    if (ref($val) eq 'Protobuf::Internal::Map') {
-        my %hash;
-        tie %hash, 'Protobuf::Internal::Map', $val;
-        return bless \%hash, 'Protobuf::Internal::Map::Public';
+    if (ref($val) && ref($val) =~ /^Protobuf::Internal::(?:Repeated|Map)$/) {
+        my $public_class = ref($val) . '::Public';
+        my $proxy;
+        if (ref($val) eq 'Protobuf::Internal::Repeated') {
+            tie @$proxy, 'Protobuf::Internal::Repeated', $val;
+            return $self->{_wrappers}{$field_name} = bless $proxy, $public_class;
+        }
+        if (ref($val) eq 'Protobuf::Internal::Map') {
+            tie %$proxy, 'Protobuf::Internal::Map', $val;
+            return $self->{_wrappers}{$field_name} = bless $proxy, $public_class;
+        }
     }
 
     return $val;

@@ -5,33 +5,33 @@
 #include "xs/map/map.h"
 #include "xs/protobuf/obj_cache.h"
 #include "xs/protobuf/arena.h"
+#include "xs/protobuf/utils.h"
 #include "xs/convert.h"
 #include "upb/message/map.h"
 #include "upb/reflection/def.h"
 
-typedef struct {
-    upb_Map* map;
-    const upb_FieldDef* f;
-    SV* arena_sv;
-} PerlUpb_Map;
-
 SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv) {
-    PerlUpb_Map* m = (PerlUpb_Map*)malloc(sizeof(PerlUpb_Map));
-    m->map = map;
-    m->f = f;
-    m->arena_sv = newSVsv(arena_sv);
+    if (!map) return &PL_sv_undef;
 
-    SV* sv = newSViv((IV)m);
-    SV* obj = newRV_noinc(sv);
-    sv_bless(obj, gv_stashpv("Protobuf::Internal::Map", GV_ADD));
-    return obj;
+    SV* cached = PerlUpb_ObjCache_Get(aTHX_ map);
+    if (cached) return cached;
+
+    SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ map, arena_sv, "Protobuf::Internal::Map");
+    HV* hv = (HV*)SvRV(self);
+    hv_store(hv, "_fdef", 5, newSViv(PTR2IV(f)), 0);
+    
+    return self;
 }
 
-static PerlUpb_Map* GetMap(pTHX_ SV* sv) {
-    if (!sv || !SvROK(sv) || !sv_derived_from(sv, "Protobuf::Internal::Map")) {
-        return NULL;
-    }
-    return (PerlUpb_Map*)SvIV(SvRV(sv));
+static upb_Map* GetMap(pTHX_ SV* sv) {
+    return (upb_Map*)PerlUpb_GetArenaBoundObject(aTHX_ sv, "Protobuf::Internal::Map");
+}
+
+static const upb_FieldDef* GetFieldDef(pTHX_ SV* sv) {
+    if (!sv || !SvROK(sv)) return NULL;
+    HV* hv = (HV*)SvRV(sv);
+    SV** svp = hv_fetch(hv, "_fdef", 5, 0);
+    return svp ? (const upb_FieldDef*)SvIV(*svp) : NULL;
 }
 
 static void GetMapEntryDefs(const upb_FieldDef* f, const upb_FieldDef** key_f, const upb_FieldDef** val_f) {
@@ -41,34 +41,38 @@ static void GetMapEntryDefs(const upb_FieldDef* f, const upb_FieldDef** key_f, c
 }
 
 SV* PerlUpb_Map_GetItem(pTHX_ SV* self, SV* key_sv) {
-    PerlUpb_Map* m = GetMap(aTHX_ self);
-    if (!m || !m->map) return &PL_sv_undef;
+    upb_Map* map = GetMap(aTHX_ self);
+    const upb_FieldDef* f = GetFieldDef(aTHX_ self);
+    if (!map || !f) return &PL_sv_undef;
 
     const upb_FieldDef *key_f, *val_f;
-    GetMapEntryDefs(m->f, &key_f, &val_f);
+    GetMapEntryDefs(f, &key_f, &val_f);
 
-    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ m->arena_sv);
+    SV* arena_sv = PerlUpb_GetArenaFromObject(aTHX_ self);
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
     upb_MessageValue key_val;
     if (!PerlUpb_SvToUpb_Element(aTHX_ key_sv, key_f, &key_val, arena)) {
         croak("Invalid map key type");
     }
 
     upb_MessageValue val;
-    if (upb_Map_Get(m->map, key_val, &val)) {
-        return PerlUpb_UpbToSv_Element(aTHX_ &val, val_f, m->arena_sv);
+    if (upb_Map_Get(map, key_val, &val)) {
+        return PerlUpb_UpbToSv_Element(aTHX_ &val, val_f, arena_sv);
     }
 
     return &PL_sv_undef;
 }
 
 void PerlUpb_Map_SetItem(pTHX_ SV* self, SV* key_sv, SV* value_sv) {
-    PerlUpb_Map* m = GetMap(aTHX_ self);
-    if (!m || !m->map) return;
+    upb_Map* map = GetMap(aTHX_ self);
+    const upb_FieldDef* f = GetFieldDef(aTHX_ self);
+    if (!map || !f) return;
 
     const upb_FieldDef *key_f, *val_f;
-    GetMapEntryDefs(m->f, &key_f, &val_f);
+    GetMapEntryDefs(f, &key_f, &val_f);
 
-    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ m->arena_sv);
+    SV* arena_sv = PerlUpb_GetArenaFromObject(aTHX_ self);
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
     upb_MessageValue key_val, val;
 
     if (!PerlUpb_SvToUpb_Element(aTHX_ key_sv, key_f, &key_val, arena)) {
@@ -78,57 +82,60 @@ void PerlUpb_Map_SetItem(pTHX_ SV* self, SV* key_sv, SV* value_sv) {
         croak("Invalid map value type");
     }
 
-    upb_Map_Set(m->map, key_val, val, arena);
+    upb_Map_Set(map, key_val, val, arena);
 }
 
 void PerlUpb_Map_DeleteItem(pTHX_ SV* self, SV* key_sv) {
-    PerlUpb_Map* m = GetMap(aTHX_ self);
-    if (!m || !m->map) return;
+    upb_Map* map = GetMap(aTHX_ self);
+    const upb_FieldDef* f = GetFieldDef(aTHX_ self);
+    if (!map || !f) return;
 
     const upb_FieldDef *key_f, *val_f;
-    GetMapEntryDefs(m->f, &key_f, &val_f);
+    GetMapEntryDefs(f, &key_f, &val_f);
 
-    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ m->arena_sv);
+    SV* arena_sv = PerlUpb_GetArenaFromObject(aTHX_ self);
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
     upb_MessageValue key_val;
     if (!PerlUpb_SvToUpb_Element(aTHX_ key_sv, key_f, &key_val, arena)) {
         croak("Invalid map key type");
     }
 
-    upb_Map_Delete(m->map, key_val, NULL);
+    upb_Map_Delete(map, key_val, NULL);
 }
 
 void PerlUpb_Map_Clear(pTHX_ SV* self) {
-    PerlUpb_Map* m = GetMap(aTHX_ self);
-    if (m && m->map) {
-        upb_Map_Clear(m->map);
+    upb_Map* map = GetMap(aTHX_ self);
+    if (map) {
+        upb_Map_Clear(map);
     }
 }
 
 int PerlUpb_Map_Size(pTHX_ SV* self) {
-    PerlUpb_Map* m = GetMap(aTHX_ self);
-    return (m && m->map) ? upb_Map_Size(m->map) : 0;
+    upb_Map* map = GetMap(aTHX_ self);
+    return map ? upb_Map_Size(map) : 0;
 }
 
 SV* PerlUpb_Map_AsHash(pTHX_ SV* self) {
-    PerlUpb_Map* m = GetMap(aTHX_ self);
-    if (!m || !m->map) return &PL_sv_undef;
+    upb_Map* map = GetMap(aTHX_ self);
+    const upb_FieldDef* f = GetFieldDef(aTHX_ self);
+    if (!map || !f) return &PL_sv_undef;
 
     HV* hv = newHV();
     const upb_FieldDef *key_f, *val_f;
-    GetMapEntryDefs(m->f, &key_f, &val_f);
+    GetMapEntryDefs(f, &key_f, &val_f);
 
+    SV* arena_sv = PerlUpb_GetArenaFromObject(aTHX_ self);
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue k, v;
-    while (upb_Map_Next(m->map, &k, &v, &iter)) {
-        SV* k_sv = PerlUpb_UpbToSv_Element(aTHX_ &k, key_f, m->arena_sv);
-        SV* v_sv = PerlUpb_UpbToSv_Element(aTHX_ &v, val_f, m->arena_sv);
+    while (upb_Map_Next(map, &k, &v, &iter)) {
+        SV* k_sv = PerlUpb_UpbToSv_Element(aTHX_ &k, key_f, arena_sv);
+        SV* v_sv = PerlUpb_UpbToSv_Element(aTHX_ &v, val_f, arena_sv);
         
         STRLEN len;
         char* key_str;
         if (upb_FieldDef_Type(key_f) == kUpb_FieldType_String) {
             key_str = SvPVutf8(k_sv, len);
         } else {
-            // Integer types are already stringified by PerlUpb_UpbToSv_Element
             key_str = SvPVbyte(k_sv, len);
         }
         hv_store(hv, key_str, len, v_sv, 0);
@@ -139,26 +146,17 @@ SV* PerlUpb_Map_AsHash(pTHX_ SV* self) {
 }
 
 void PerlUpb_Map_Free(pTHX_ SV* sv) {
-    PerlUpb_Map* m = GetMap(aTHX_ sv);
-    if (m) {
-        SvREFCNT_dec(m->arena_sv);
-        free(m);
-        sv_setiv(SvRV(sv), 0);
-    }
+    // No-op, handled by magic wrapper_cleanup
 }
 
-// Internal helper for iterator
 const upb_FieldDef* PerlUpb_Map_GetFieldDef(pTHX_ SV* self) {
-    PerlUpb_Map* m = GetMap(aTHX_ self);
-    return m ? m->f : NULL;
+    return GetFieldDef(aTHX_ self);
 }
 
 upb_Map* PerlUpb_Map_GetMapPtr(pTHX_ SV* self) {
-    PerlUpb_Map* m = GetMap(aTHX_ self);
-    return m ? m->map : NULL;
+    return GetMap(aTHX_ self);
 }
 
 SV* PerlUpb_Map_GetArenaSV(pTHX_ SV* self) {
-    PerlUpb_Map* m = GetMap(aTHX_ self);
-    return m ? m->arena_sv : NULL;
+    return PerlUpb_GetArenaFromObject(aTHX_ self);
 }

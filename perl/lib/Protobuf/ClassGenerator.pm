@@ -368,18 +368,20 @@ sub $name {
     if (\@_) {
         my \$val_to_set = (\$type_$name && \$type_$name->has_coercion) ? \$type_$name->coerce(\$_[0]) : \$_[0];
         \$type_$name->assert_valid(\$val_to_set) if \$type_$name;
+        delete \$self->{_wrappers}{'$name'};
         return \$self->_xs_set_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'}, \$val_to_set);
     }
+    return \$self->{_wrappers}{'$name'} if exists \$self->{_wrappers}{'$name'};
     my \$val = \$self->_xs_get_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'});
     if (ref(\$val) && ref(\$val) =~ /^Protobuf::Internal::(?:Repeated|Map)\$/) {
          my \$public_class = ref(\$val) . '::Public';
          my \$proxy;
          if (ref(\$val) eq 'Protobuf::Internal::Repeated') {
              tie \@\$proxy, 'Protobuf::Internal::Repeated', \$val;
-             return bless \\@\$proxy, \$public_class;
+             return \$self->{_wrappers}{'$name'} = bless \\@\$proxy, \$public_class;
          } else {
              tie %\$proxy, 'Protobuf::Internal::Map', \$val;
-             return bless \\%\$proxy, \$public_class;
+             return \$self->{_wrappers}{'$name'} = bless \\%\$proxy, \$public_class;
          }
     }
     return \$val;
@@ -388,6 +390,7 @@ sub set_$name {
     my (\$self, \$value) = \@_;
     my \$val_to_set = (\$type_$name && \$type_$name->has_coercion) ? \$type_$name->coerce(\$value) : \$value;
     \$type_$name->assert_valid(\$val_to_set) if \$type_$name;
+    delete \$self->{_wrappers}{'$name'};
     return \$self->_xs_set_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'}, \$val_to_set);
 }
 EOC

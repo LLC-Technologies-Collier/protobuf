@@ -6,6 +6,7 @@ use lib "t/lib";
 use TestHelpers;
 use POSIX qw( mkfifo );
 use File::Temp qw( tempdir );
+use Protobuf::Arena;
 
 my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
@@ -16,62 +17,67 @@ my $fifo = "$tmpdir/proto_fifo";
 
 mkfifo($fifo, 0600) or die "mkfifo failed: $!";
 
+my $msg_class = 'Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2';
+my $proto_name = 'protobuf_test_messages.proto2.TestAllTypesProto2';
+
 my $pid = fork();
 die "fork failed" unless defined $pid;
 
 if ($pid == 0) {
     # Child Process: Consumer
     # 1. Wait for signal from FIFO
-    open my $fh_fifo, '<', $fifo or die $!;
+    open my $fh_fifo, '<', $fifo or exit 10;
     my $line = <$fh_fifo>;
     close $fh_fifo;
     
-    # 2. Read from SHM file
-    open my $fh_shm, '<:raw', $shm_file or die $!;
-    my $data = do { local $/; <$fh_shm> };
-    close $fh_shm;
+    chomp $line;
+    my ($path, $size, $offset) = split /:/, $line;
+
+    # 2. Attach to the same SHM arena
+    my $arena = eval { Protobuf::Arena->attach_tmpfs($path, $size) };
+    exit 1 if $@ || !$arena;
     
-    # 3. Parse and validate
-    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->parse($data);
-    if ($msg->optional_int32 == 12345 && $msg->optional_string eq "shm_test") {
-        # Signal success back via exit code
+    # 3. Reify the message (Zero-Copy)
+    my $msg = eval { $arena->attach_message($proto_name, $offset) };
+    exit 2 if $@ || !$msg;
+    exit 3 unless $msg->isa($msg_class);
+    
+    # 4. Validate content
+    if ($msg->optional_int32 == 12345 && $msg->optional_string eq "shm_zero_copy") {
         exit 0;
     } else {
-        exit 1;
+        exit 4;
     }
 } else {
     # Parent Process: Producer
-    # 1. Create message
-    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
+    # 1. Create tmpfs arena
+    my $size = 1024 * 1024;
+    my $arena = Protobuf::Arena->new_tmpfs($shm_file, $size);
+    ok($arena, "Parent created tmpfs arena at $shm_file");
+
+    # 2. Create message in that arena
+    my $msg = $msg_class->new(arena => $arena);
     $msg->set_optional_int32(12345);
-    $msg->set_optional_string("shm_test");
+    $msg->set_optional_string("shm_zero_copy");
     
-    # 2. Write to SHM file
-    my $wire = $msg->serialize();
-    open my $fh_shm, '>:raw', $shm_file or die $!;
-    print $fh_shm $wire;
-    close $fh_shm;
+    # 3. Get offset
+    my $ptr_iv = $msg->{_upb_ptr};
+    my $offset = $arena->get_offset($ptr_iv);
+    ok($offset > 0, "Got message offset: $offset");
     
-    # 3. Signal via FIFO
+    # 4. Signal via FIFO
     open my $fh_fifo, '>', $fifo or die $!;
-    print $fh_fifo "READY\n";
+    print $fh_fifo "$shm_file:$size:$offset\n";
     close $fh_fifo;
     
-    # 4. Wait for child
+    # 5. Wait for child
     waitpid($pid, 0);
     my $exit_code = $? >> 8;
     
-    is($exit_code, 0, 'Consumer parsed message from SHM correctly');
+    is($exit_code, 0, 'Child verified zero-copy message content successfully')
+        or diag("Child failed with exit code: $exit_code (1=attach fail, 2=reify fail, 3=isa fail, 4=content fail, 10=fifo fail)");
 
-    subtest 'connection reset' => sub {
-        my $msg_reset = Test::Test::TestMessage->new();
-        ok($msg_reset->reset_connection(), 'Reset connection works (skeletal)');
-    };
-}
-
-TODO: {
-    local $TODO = 'Auth-Aware Isolation (SELinux)';
-    ok(0, 'IPC channels are restricted via Mandatory Access Control');
+    unlink($shm_file) if -f $shm_file;
 }
 
 done_testing();

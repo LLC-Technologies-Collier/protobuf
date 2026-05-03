@@ -551,7 +551,7 @@ void PerlCodeGenerator::print_enum_types(const google_protobuf_EnumDescriptorPro
     // std::string full_enum_name = current_package + "::" + enum_name;
 
     ss << "declare '" << enum_name << "'," << std::endl;
-    ss << "    as Int;" << std::endl << std::endl;
+    ss << "    as (Int | Str);" << std::endl << std::endl;
 }
 
 // -- main --

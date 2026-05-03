@@ -94,8 +94,6 @@ int main(int argc, char** argv) {
     is(SvIV(p_map_val), 200, "Parsed map value matches");
     SvREFCNT_dec(p_map_val);
     SvREFCNT_dec(key_sv);
-    extern void PerlUpb_Map_Free(pTHX_ SV* sv);
-    PerlUpb_Map_Free(aTHX_ p_map_ref);
     SvREFCNT_dec(p_map_ref);
 
     SV* p_unk_set = PerlUpb_UnknownFieldSet_New(aTHX_ parsed_sv);
@@ -117,12 +115,8 @@ int main(int argc, char** argv) {
 
     // Cleanup
     SvREFCNT_dec(submsg1);
-    extern void PerlUpb_Repeated_Free(pTHX_ SV* sv);
-    PerlUpb_Repeated_Free(aTHX_ rep_wrapper);
     SvREFCNT_dec(rep_wrapper);
 
-    extern void PerlUpb_Map_Free(pTHX_ SV* sv);
-    PerlUpb_Map_Free(aTHX_ map_wrapper);
     SvREFCNT_dec(map_wrapper);
 
     PerlUpb_UnknownFieldSet_Free(aTHX_ unk_set);

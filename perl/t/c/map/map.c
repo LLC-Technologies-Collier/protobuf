@@ -14,8 +14,6 @@ static void test_map_creation(pTHX) {
     ok(sv_derived_from(map_sv, "Protobuf::Internal::Map"), "Map SV has correct class");
     is(PerlUpb_Map_Size(aTHX_ map_sv), 0, "Initial map size is 0");
     
-    extern void PerlUpb_Map_Free(pTHX_ SV* sv);
-    PerlUpb_Map_Free(aTHX_ map_sv);
     SvREFCNT_dec(map_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
 }

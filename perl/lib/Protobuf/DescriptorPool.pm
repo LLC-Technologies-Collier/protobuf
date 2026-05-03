@@ -201,16 +201,19 @@ sub find_file_by_name {
 
 sub find_message_by_name {
     my ($self, $name) = @_;
+    $name =~ s/::/./g;
     return _xs_find_message_by_name($self, $name);
 }
 
 sub find_enum_by_name {
     my ($self, $name) = @_;
+    $name =~ s/::/./g;
     return _xs_find_enum_by_name($self, $name);
 }
 
 sub find_service_by_name {
     my ($self, $name) = @_;
+    $name =~ s/::/./g;
     return _xs_find_service_by_name($self, $name);
 }
 
