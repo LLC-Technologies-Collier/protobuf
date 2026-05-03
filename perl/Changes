@@ -5,6 +5,11 @@ Revision history for Protobuf
         - Support for Core, Descriptors, Messages, Repeated, Maps, and Unknowns.
         - Integration with Well-Known Types (WKT).
         - JSON and Text Format support.
+        - Direct Handle IO (binary/JSON) with length-prefixed streaming support.
+        - Hardened AOT generation with Type::Tiny Repeated/Map constraints.
+        - Recursive HashRef coercion for nested message instantiation.
+        - Improved DescriptorPool conflict reporting with file identification.
+        - Exhaustive boundary and overflow validation for all numeric types.
         - VPP-inspired thread-local arena caching.
         - SIMD-accelerated name conversion and validation.
         - Striped mutexes for lock-free object caching.

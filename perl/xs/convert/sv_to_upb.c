@@ -26,6 +26,27 @@ static void verify_limits(pTHX_ SV* sv, const upb_FieldDef* f, double min, doubl
     }
 }
 
+static void verify_limits_64(pTHX_ SV* sv, const upb_FieldDef* f, bool is_signed) {
+    if (SvROK(sv) && sv_derived_from(sv, "Math::BigInt")) {
+        return;
+    }
+    if (!is_signed) {
+        if (SvUOK(sv)) {
+            // Unsigned integer OK - it's by definition >= 0
+            return;
+        }
+        if (SvNOK(sv)) {
+            if (SvNV(sv) < 0) {
+                croak("Value %f out of range for unsigned field '%s'", SvNV(sv), upb_FieldDef_Name(f));
+            }
+        } else if (SvIOK(sv)) {
+            if (SvIV(sv) < 0) {
+                croak("Value %" IVdf " out of range for unsigned field '%s'", SvIV(sv), upb_FieldDef_Name(f));
+            }
+        }
+    }
+}
+
 static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val, upb_Arena *arena) {
     upb_FieldType type = upb_FieldDef_Type(f);
     switch (type) {
@@ -66,6 +87,7 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
             return true;
         case kUpb_FieldType_Float:
             if (SvNOK(sv) || SvIOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                verify_limits(aTHX_ sv, f, -3.402823466e+38, 3.402823466e+38);
                 val->float_val = (float)SvNV(sv);
                 return true;
             }
@@ -73,6 +95,7 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
             return false;
         case kUpb_FieldType_Double:
             if (SvNOK(sv) || SvIOK(sv) || (SvPOK(sv) && looks_like_number(sv))) {
+                // Double has huge range, but let's be consistent.
                 val->double_val = SvNV(sv);
                 return true;
             }
@@ -92,10 +115,12 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
         case kUpb_FieldType_Int64:
         case kUpb_FieldType_SInt64:
         case kUpb_FieldType_SFixed64:
+            verify_limits_64(aTHX_ sv, f, true);
             val->int64_val = PerlUpb_SVToI64(aTHX_ sv);
             return true;
         case kUpb_FieldType_UInt64:
         case kUpb_FieldType_Fixed64: {
+            verify_limits_64(aTHX_ sv, f, false);
             val->uint64_val = PerlUpb_SVToU64(aTHX_ sv);
             return true;
         }

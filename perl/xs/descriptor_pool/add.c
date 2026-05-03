@@ -36,7 +36,21 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
     PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
 
     if (!file) {
-        croak("Failed to add file to pool: %s", upb_Status_ErrorMessage(&status));
+        const char* msg = upb_Status_ErrorMessage(&status);
+        if (strstr(msg, "duplicate symbol")) {
+            // Try to find WHICH symbol and WHERE it is
+            const char* symbol = strrchr(msg, ' ');
+            if (symbol) {
+                symbol++; // Skip space
+                const upb_MessageDef* existing = upb_DefPool_FindMessageByName(pool, symbol);
+                if (existing) {
+                    const upb_FileDef* existing_file = upb_MessageDef_File(existing);
+                    croak("Failed to add file to pool: %s (already defined in %s)", 
+                          msg, upb_FileDef_Name(existing_file));
+                }
+            }
+        }
+        croak("Failed to add file to pool: %s", msg);
     }
     
     return PerlUpb_FileDef_GetWrapper(aTHX_ file);
@@ -69,9 +83,22 @@ SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* se
         upb_Status_Clear(&status);
         const upb_FileDef* file = upb_DefPool_AddFile((upb_DefPool*)pool, files[i], &status);
         if (!file) {
+            const char* msg = upb_Status_ErrorMessage(&status);
             PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
             SvREFCNT_dec(av);
-            croak("Failed to add file %zu to pool: %s", i, upb_Status_ErrorMessage(&status));
+            if (strstr(msg, "duplicate symbol")) {
+                const char* symbol = strrchr(msg, ' ');
+                if (symbol) {
+                    symbol++;
+                    const upb_MessageDef* existing = upb_DefPool_FindMessageByName(pool, symbol);
+                    if (existing) {
+                        const upb_FileDef* existing_file = upb_MessageDef_File(existing);
+                        croak("Failed to add file %zu to pool: %s (already defined in %s)", 
+                              i, msg, upb_FileDef_Name(existing_file));
+                    }
+                }
+            }
+            croak("Failed to add file %zu to pool: %s", i, msg);
         }
         av_push(av, PerlUpb_FileDef_GetWrapper(aTHX_ file));
     }
