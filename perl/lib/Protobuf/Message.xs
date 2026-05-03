@@ -244,6 +244,35 @@ _xs_parse(class_name, data)
     OUTPUT:
         RETVAL
 
+void
+_xs_parse_from(self, data)
+    SV* self
+    SV* data
+    CODE:
+        PerlUpb_Message_ParseFrom(aTHX_ self, data);
+
+void
+_xs_merge_from(self, other)
+    SV* self
+    SV* other
+    CODE:
+        PerlUpb_Message_MergeFrom(aTHX_ self, other);
+
+void
+_xs_copy_from(self, other)
+    SV* self
+    SV* other
+    CODE:
+        PerlUpb_Message_CopyFrom(aTHX_ self, other);
+
+SV*
+_xs_fields(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_Fields(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
 bool
 _xs_audit_integrity(self)
     SV* self

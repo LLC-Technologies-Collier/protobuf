@@ -448,13 +448,3 @@ sub test {
 
 package main;
 1;
-
-
-# Modify the MY::test subroutine
-sub test {
-    my $self = shift;
-    return main::_render_tt('my_test.mk.tt', {});
-}
-
-package main;
-1;

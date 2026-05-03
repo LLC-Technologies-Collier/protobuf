@@ -9,4 +9,7 @@
 // and upb_Arena internally.
 SV* PerlUpb_Message_NewMessage(pTHX_ SV* descriptor_sv);
 
+void PerlUpb_Message_MergeFrom(pTHX_ SV* dst_sv, SV* src_sv);
+void PerlUpb_Message_CopyFrom(pTHX_ SV* dst_sv, SV* src_sv);
+
 #endif // PERL_PROTOBUF_MESSAGE_MESSAGE_H_

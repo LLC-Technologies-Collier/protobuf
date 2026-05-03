@@ -13,5 +13,6 @@ void PerlUpb_Message_ClearField(pTHX_ SV* message_sv, const upb_FieldDef* f);
 const char* PerlUpb_Message_WhichOneof(pTHX_ SV* message_sv, const upb_OneofDef* o);
 void PerlUpb_Message_Clear(pTHX_ SV* message_sv);
 SV* PerlUpb_Message_ToPerl(pTHX_ SV* message_sv);
+SV* PerlUpb_Message_Fields(pTHX_ SV* message_sv);
 
 #endif // PERL_PROTOBUF_MESSAGE_ACCESS_H_

@@ -51,6 +51,26 @@ SV* PerlUpb_Message_Parse(pTHX_ SV* descriptor_sv, SV* data_sv) {
     return msg_sv;
 }
 
+void PerlUpb_Message_ParseFrom(pTHX_ SV* message_sv, SV* data_sv) {
+    upb_Message* msg = (upb_Message*)PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);
+    if (!msg || !mdef) croak("Invalid message object");
+
+    STRLEN len;
+    const char* data = SvPVbyte(data_sv, len);
+
+    SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ message_sv);
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+
+    const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
+    
+    // upb_Decode merges into the existing message
+    upb_DecodeStatus status = upb_Decode(data, len, msg, mt, NULL, 0, arena);
+    if (status != kUpb_DecodeStatus_Ok) {
+        croak("Failed to parse and merge message: %d", status);
+    }
+}
+
 SV* PerlUpb_Message_Serialize(pTHX_ SV* message_sv) {
     const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
     const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);

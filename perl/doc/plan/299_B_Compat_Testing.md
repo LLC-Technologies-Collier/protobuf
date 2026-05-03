@@ -41,11 +41,11 @@ To ensure our UPB-based Protobuf implementation covers key use cases and feature
     *   [x] Create `perl/t/integration/299_5_embedded.t`.
     *   [x] Focus tests on deep nesting and HashRef constructor.
 
-6.  **[ ] Implement Missing Methods:**
-    *   [ ] Add `fields()` method to `Protobuf::Message` (or generator).
-    *   [ ] Implement `copy_from()` and `merge_from()` from HashRef in `Protobuf::Message` XS.
-    *   [ ] Implement constructor from scalar binary in `Protobuf::Message` XS. (Partially covered by `parse()`)
-    *   [ ] Add tests for these methods in the relevant new `.t` files.
+6.  **[x] Implement Missing Methods:**
+    *   [x] Add `fields()` method to `Protobuf::Message` (or generator).
+    *   [x] Implement `copy_from()` and `merge_from()` from HashRef in `Protobuf::Message` XS.
+    *   [x] Implement constructor from scalar binary in `Protobuf::Message` XS. (Implemented as `parse` and `parse_from`)
+    *   [x] Add tests for these methods in the relevant new `.t` files. (Added `t/014_message_methods.t`)
 
 7.  **[ ] Documentation:**
     *   [ ] Update relevant architecture documents if any new design decisions are made.

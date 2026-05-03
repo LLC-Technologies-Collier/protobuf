@@ -58,6 +58,24 @@ This method cannot be called on C<Protobuf::Message> directly; it must be called
 
 Parses a binary string (wire format) and returns a new message instance.$/
 
+=head2 parse_from($binary_data)
+
+    $msg->parse_from($binary_string);
+
+Parses a binary string and merges its fields into the existing message instance.$/
+
+=head2 merge_from($other_msg)
+
+    $msg->merge_from($other_msg);
+
+Deep-merges the fields from C<$other_msg> into the current message. C<$other_msg> must be of the same type.$/
+
+=head2 copy_from($other_msg)
+
+    $msg->copy_from($other_msg);
+
+Deep-copies the fields from C<$other_msg> into the current message, clearing any existing fields first.$/
+
 =head2 from_json($json_string)
 
     my $msg = MyGeneratedMessage->from_json($json_string);
@@ -112,6 +130,12 @@ Converts the message to its JSON representation.$/
 =head2 unknown_fields()
 
 Returns a L<Protobuf::UnknownFieldSet> object representing any fields encountered during parsing that were not defined in the message's descriptor.$/
+
+=head2 fields()
+
+    my @fields = $msg->fields;
+
+Returns a list of L<Protobuf::Descriptor::Field> objects for all fields that are currently set in the message.$/
 
 =head2 CLONE()
 
@@ -442,6 +466,31 @@ sub reset_connection {
 sub parse {
     my ($class, $data) = @_;
     return _xs_parse($class, $data);
+}
+
+sub parse_from {
+    my ($self, $data) = @_;
+    return _xs_parse_from($self, $data);
+}
+
+sub merge_from {
+    my ($self, $other) = @_;
+    croak("Argument to merge_from must be a Protobuf::Message")
+        unless eval { $other->isa('Protobuf::Message') };
+    return _xs_merge_from($self, $other);
+}
+
+sub copy_from {
+    my ($self, $other) = @_;
+    croak("Argument to copy_from must be a Protobuf::Message")
+        unless eval { $other->isa('Protobuf::Message') };
+    return _xs_copy_from($self, $other);
+}
+
+sub fields {
+    my ($self) = @_;
+    my $fields_rv = _xs_fields($self);
+    return wantarray ? @$fields_rv : $fields_rv;
 }
 
 sub freeze_to_shared {

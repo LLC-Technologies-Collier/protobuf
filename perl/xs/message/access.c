@@ -79,3 +79,22 @@ void PerlUpb_Message_Clear(pTHX_ SV* message_sv) {
     upb_Message_ClearByDef(msg, mdef);
 }
 
+#include "xs/descriptor/field.h"
+
+SV* PerlUpb_Message_Fields(pTHX_ SV* message_sv) {
+    const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);
+    if (!msg || !mdef) croak("Invalid message object");
+
+    AV* av = newAV();
+    const upb_FieldDef* f;
+    upb_MessageValue val;
+    size_t iter = kUpb_Message_Begin;
+
+    while (upb_Message_Next(msg, mdef, NULL, &f, &val, &iter)) {
+        av_push(av, PerlUpb_FieldDef_GetWrapper(aTHX_ f));
+    }
+
+    return newRV_noinc((SV*)av);
+}
+

@@ -8,6 +8,9 @@
 // Parses a serialized string into a new Protobuf::Message wrapper.
 SV* PerlUpb_Message_Parse(pTHX_ SV* descriptor_sv, SV* data_sv);
 
+// Parses a serialized string and merges it into an existing Protobuf::Message wrapper.
+void PerlUpb_Message_ParseFrom(pTHX_ SV* message_sv, SV* data_sv);
+
 // Serializes a Protobuf::Message wrapper into a string SV.
 SV* PerlUpb_Message_Serialize(pTHX_ SV* message_sv);
 
