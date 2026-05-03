@@ -10,7 +10,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'repeated message field accessors' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     ok($msg->can('repeated_message'), 'Generated getter for repeated_message');
     my $arr = $msg->repeated_message;
@@ -19,10 +19,10 @@ subtest 'repeated message field accessors' => sub {
     is(scalar(@$arr), 0, 'Initial size is 0');
     
     # Create sub-messages
-    my $sub1 = test::NestedMessage->new();
+    my $sub1 = Test::Test::NestedMessage->new();
     $sub1->set_nested_string("val1");
     
-    my $sub2 = test::NestedMessage->new();
+    my $sub2 = Test::Test::NestedMessage->new();
     $sub2->set_nested_string("val2");
     
     # Push elements
@@ -30,7 +30,7 @@ subtest 'repeated message field accessors' => sub {
     is(scalar(@$arr), 2, 'Size after push is 2');
     
     my $got1 = $arr->[0];
-    isa_ok($got1, 'test::NestedMessage');
+    isa_ok($got1, 'Test::Test::NestedMessage');
     is($got1->nested_string, "val1", 'Index 0 has correct data');
     
     my $got2 = $arr->[1];
@@ -42,16 +42,16 @@ subtest 'repeated message field accessors' => sub {
 };
 
 subtest 'assignment by index with sub-messages' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     my $arr = $msg->repeated_message;
     
-    my $sub = test::NestedMessage->new();
+    my $sub = Test::Test::NestedMessage->new();
     $sub->set_nested_string("orig");
     
     push @$arr, $sub;
     is($arr->[0]->nested_string, "orig", 'Initial value');
     
-    my $sub2 = test::NestedMessage->new();
+    my $sub2 = Test::Test::NestedMessage->new();
     $sub2->set_nested_string("new");
     
     $arr->[0] = $sub2;
@@ -59,11 +59,11 @@ subtest 'assignment by index with sub-messages' => sub {
 };
 
 subtest 'pop and shift with sub-messages' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     my $arr = $msg->repeated_message;
     
     foreach my $val ("a", "b") {
-        my $sub = test::NestedMessage->new();
+        my $sub = Test::Test::NestedMessage->new();
         $sub->set_nested_string($val);
         push @$arr, $sub;
     }

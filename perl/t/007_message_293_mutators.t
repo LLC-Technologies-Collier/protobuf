@@ -10,7 +10,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'scalar field mutators (setters)' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     ok($msg->can('set_value'), 'Generated setter for value');
     $msg->set_value(42);
@@ -22,7 +22,7 @@ subtest 'scalar field mutators (setters)' => sub {
 };
 
 subtest 'scalar field has_ methods' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     ok($msg->can('has_optional_uint32'), 'Generated has_ method for optional_uint32');
     ok(!$msg->has_optional_uint32, 'has_ returns false initially');
@@ -32,7 +32,7 @@ subtest 'scalar field has_ methods' => sub {
 };
 
 subtest 'scalar field clear_ methods' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     $msg->set_optional_uint32(789);
     ok($msg->has_optional_uint32, 'Field is set');

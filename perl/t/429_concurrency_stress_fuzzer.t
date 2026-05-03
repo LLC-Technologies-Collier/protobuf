@@ -43,26 +43,26 @@ subtest 'concurrency stress fuzzer (Coro)' => sub {
                         }
                         elsif ($op == 1) {
                             # Message Lifecycle
-                            my $msg = test::TestMessage->new();
+                            my $msg = Test::Test::TestMessage->new();
                             $msg->set_value(int(rand(1000)));
                             my $perl = $msg->to_perl();
                         }
                         elsif ($op == 2) {
                             # Serialization
-                            my $msg = test::TestMessage->new();
+                            my $msg = Test::Test::TestMessage->new();
                             $msg->set_name("fuzz_" . int(rand(100)));
                             my $wire = $msg->serialize();
-                            my $msg2 = test::TestMessage->parse($wire);
+                            my $msg2 = Test::Test::TestMessage->parse($wire);
                         }
                         elsif ($op == 3) {
                             # Oneof Coercion
-                            my $msg = test::TestMessage->new();
+                            my $msg = Test::Test::TestMessage->new();
                             my $val = (rand() > 0.5) ? "str" . rand() : int(rand(1000));
                             $msg->set_oneof('test_oneof', $val);
                         }
                         elsif ($op == 4) {
                             # Repeated field batch conversion
-                            my $msg = test::TestMessage->new();
+                            my $msg = Test::Test::TestMessage->new();
                             my @data = map { int(rand(1000)) } (1..100);
                             $msg->repeated_int(\@data);
                             my $got = $msg->repeated_int();

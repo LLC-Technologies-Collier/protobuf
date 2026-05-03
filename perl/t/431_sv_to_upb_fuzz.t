@@ -9,26 +9,26 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'Type-Fuzzing: SV to Upb' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     # 1. CodeRef
     eval { $msg->set_value(sub { 123 }) };
     ok($@, "Setting field to CodeRef croaks");
-    like($@, qr/Expected an Integer/, "Correct error for CodeRef");
+    like($@, qr/did not pass type constraint "Int"/, "Correct error for CodeRef");
 
     # 2. Glob
     eval { $msg->set_value(*STDIN) };
     ok($@, "Setting field to Glob croaks");
-    like($@, qr/Expected an Integer/, "Correct error for Glob");
+    like($@, qr/did not pass type constraint "Int"/, "Correct error for Glob");
 
     # 3. HashRef for scalar field
     eval { $msg->set_value({ a => 1 }) };
     ok($@, "Setting field to HashRef croaks");
-    like($@, qr/Expected an Integer/, "Correct error for HashRef");
+    like($@, qr/did not pass type constraint "Int"/, "Correct error for HashRef");
 };
 
 subtest 'Range-checks for narrow integers' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     # Int32 overflow
     eval { $msg->set_value(2**31) };

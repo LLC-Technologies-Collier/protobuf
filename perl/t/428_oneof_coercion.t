@@ -11,8 +11,8 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 TestHelpers->generate_classes($pool);
 
 subtest 'intelligent oneof coercion' => sub {
-    my $msg = test::TestMessage->new();
-    ok($msg->isa('Protobuf::Message'), "test::TestMessage inherits from Protobuf::Message");
+    my $msg = Test::Test::TestMessage->new();
+    ok($msg->isa('Protobuf::Message'), "Test::Test::TestMessage inherits from Protobuf::Message");
     
     # 1. Coerce to int branch
     my $branch = $msg->set_oneof('test_oneof', 42);
@@ -27,7 +27,7 @@ subtest 'intelligent oneof coercion' => sub {
     is($msg->which_oneof('test_oneof'), 'oneof_string', "which_oneof agrees");
     
     # 3. Coerce to message branch
-    my $sub = test::NestedMessage->new();
+    my $sub = Test::Test::NestedMessage->new();
     $sub->nested_string("nested");
     $branch = $msg->set_oneof('test_oneof', $sub);
     is($branch, 'oneof_msg', "Coerced to oneof_msg");

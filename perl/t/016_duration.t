@@ -8,7 +8,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/wkt_descriptor.bin');
 
 subtest 'duration operations' => sub {
-    my $dur = google::protobuf::Duration->new();
+    my $dur = Google::Protobuf::Duration::Duration->new();
     $dur->from_seconds(123.456);
     
     is($dur->seconds, 123, 'Seconds part correct');

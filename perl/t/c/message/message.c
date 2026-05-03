@@ -20,7 +20,7 @@ static void test_message_wrapping(pTHX) {
     SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_wrapper);
     
     ok(msg_sv != NULL, "PerlUpb_WrapMessage returns non-NULL");
-    ok(sv_derived_from(msg_sv, "test::TestMessage"), "Blessed into test::TestMessage");
+    ok(sv_derived_from(msg_sv, "Test::Test::TestMessage"), "Blessed into Test::Test::TestMessage");
     
     is(PerlUpb_Message_GetDef(aTHX_ msg_sv), mdef, "GetDef matches original");
     is(PerlUpb_Message_GetMsg(aTHX_ msg_sv), msg, "GetMsg matches original");

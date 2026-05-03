@@ -31,3 +31,8 @@ const upb_MethodDef* PerlUpb_ServiceDef_FindMethodByName(pTHX_ const upb_Service
 const upb_FileDef* PerlUpb_ServiceDef_File(pTHX_ const upb_ServiceDef *s) {
     return upb_ServiceDef_File(s);
 }
+
+SV* PerlUpb_ServiceDef_GetWrapper(pTHX_ const upb_ServiceDef *s) {
+    if (!s) return &PL_sv_undef;
+    RETURN_CACHED_OR_CREATE_BLESSED(s, "Protobuf::Descriptor::Service");
+}

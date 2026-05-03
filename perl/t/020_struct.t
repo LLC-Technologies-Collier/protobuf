@@ -15,7 +15,7 @@ subtest 'struct and value operations' => sub {
         sub => { x => 1 }
     };
     
-    my $struct = google::protobuf::Struct->new();
+    my $struct = Google::Protobuf::Struct::Struct->new();
     $struct->from_perl($data);
     
     my $out = $struct->to_perl();

@@ -95,16 +95,34 @@ use Protobuf::Descriptor::EnumValue;
 
 our %DESCRIPTOR_REGISTRY;
 our %FIELD_REGISTRY;
+our %EXTENSION_RANGES;
+
+sub register_extension_range {
+    my ($class, $full_msg_name, $start, $end) = @_;
+    push @{$EXTENSION_RANGES{$full_msg_name}}, { start => $start, end => $end };
+    return;
+}
 
 sub generate_for_file {
     my ($class, $file) = @_;
     return unless $file;
-    $log->debugf("Generating classes for file: %s", $file->name);
+    
+    my $proto_file = $file->name;
+    $proto_file =~ s/.*\///; # Basename
+    $proto_file =~ s/\..*//; # Remove extension
+    my $file_module = join('', map { ucfirst($_) } split(/_/, $proto_file));
+
+    my $pkg = $file->get_package;
+    my $base_module = join('::', map { ucfirst($_) } split(/\./, $pkg));
+    $base_module .= "::$file_module" if $base_module;
+    $base_module ||= $file_module;
+
+    $log->debugf("Generating classes for file: %s (Base: %s)", $file->name, $base_module);
     
     my $count = $file->top_level_message_count;
     for my $i (0 .. $count - 1) {
         my $mdef = $file->get_top_level_message($i);
-        _generate_recursively($mdef);
+        _generate_recursively($mdef, $base_module);
     }
     
     my $enum_count = $file->top_level_enum_count;
@@ -113,13 +131,22 @@ sub generate_for_file {
         my $full_name = $edef->full_name;
         my $normalized = $full_name;
         $normalized =~ s/^\.//;
-        my $perl_class = $normalized;
-        $perl_class =~ s/\./::/g;
+        
+        my $perl_class = "${base_module}::" . $edef->name;
         $log->debugf("Generating top-level enum: %s", $perl_class);
         
+        my $vcount = $edef->value_count;
+        if ($vcount > 0) {
+            my $first_val = $edef->get_value(0)->name;
+            no strict 'refs';
+            if (defined &{"${perl_class}::$first_val"}) {
+                $log->debugf("Enum %s already generated, skipping", $perl_class);
+                next;
+            }
+        }
+
         my $code = "package $perl_class;\n";
-        my $val_count = $edef->value_count;
-        for my $j (0 .. $val_count - 1) {
+        for my $j (0 .. $vcount - 1) {
             my $vdef = $edef->get_value($j);
             my $vname = $vdef->name;
             my $vnumber = $vdef->number;
@@ -136,22 +163,30 @@ sub generate_for_file {
 }
 
 sub _generate_recursively {
-    my ($mdef) = @_;
-    _generate_for_message($mdef);
+    my ($mdef, $current_ns) = @_;
+    _generate_for_message($mdef, $current_ns);
     
     my $nested_count = $mdef->nested_message_count;
     for my $i (0 .. $nested_count - 1) {
-        _generate_recursively($mdef->get_nested_message($i));
+        my $subm = $mdef->get_nested_message($i);
+        _generate_recursively($subm, "${current_ns}::" . $mdef->name);
     }
 }
 
 sub generate_type_library {
     my ($class, $file) = @_;
+    
+    my $proto_file = $file->name;
+    $proto_file =~ s/.*\///;
+    $proto_file =~ s/\..*//;
+    my $file_module = join('', map { ucfirst($_) } split(/_/, $proto_file));
+
     my $pkg = $file->get_package;
-    my $lib_name = $pkg;
-    $lib_name =~ s/^\.//;
-    $lib_name =~ s/\./::/g;
-    $lib_name = "Protobuf::Types::$lib_name";
+    my $base_module = join('::', map { ucfirst($_) } split(/\./, $pkg));
+    $base_module .= "::$file_module" if $base_module;
+    $base_module ||= $file_module;
+
+    my $lib_name = "${base_module}::Types";
 
     my $code = "package $lib_name;\n";
     $code .= "use Type::Library -base;\n";
@@ -179,8 +214,7 @@ sub _generate_types_recursively {
     my $full_name = $mdef->full_name;
     my $normalized = $full_name;
     $normalized =~ s/^\.//;
-    my $perl_class = $normalized;
-    $perl_class =~ s/\./::/g;
+    my $perl_class = join('::', map { ucfirst($_) } split(/\./, $normalized));
     
     my $type_name = $mdef->name;
     
@@ -206,11 +240,10 @@ sub generate_docs {
 sub generate_validator_xs {
     my ($class, $mdef) = @_;
     my $full_name = $mdef->full_name;
+    my $perl_class = $mdef->perl_class_name();
+
     my $normalized = $full_name;
     $normalized =~ s/^\.//;
-    my $perl_class = $normalized;
-    $perl_class =~ s/\./::/g;
-
     my $c_func = "validate_" . $normalized;
     $c_func =~ s/[:\.]/_/g;
     
@@ -236,18 +269,25 @@ sub generate_validator_xs {
 
 sub generate_for_message {
     my ($class, $mdef) = @_;
-    return _generate_for_message($mdef);
+    my $full_name = $mdef->full_name;
+    my $normalized = $full_name;
+    $normalized =~ s/^\.//;
+    my $perl_class = join('::', map { ucfirst($_) } split(/\./, $normalized));
+    return _generate_for_message($mdef, $perl_class);
 }
 
 sub _generate_for_message {
-    my ($mdef) = @_;
+    my ($mdef, $current_ns) = @_;
     
     my $full_name = $mdef->full_name;
     my $normalized = $full_name;
     $normalized =~ s/^\.//;
     
-    my $perl_class = $normalized;
-    $perl_class =~ s/\./::/g;
+    my $perl_class = "${current_ns}::" . $mdef->name;
+    # If current_ns already ends with message name, don't append it again
+    if ($current_ns =~ /::$mdef->name$/) {
+        $perl_class = $current_ns;
+    }
 
     # Special handling for Well-Known Types
     require Protobuf::WKT;
@@ -263,36 +303,17 @@ sub _generate_for_message {
     }
     
     $DESCRIPTOR_REGISTRY{$perl_class} = $mdef;
-    $log->debugf("Generating class: %s", $perl_class);
+    $log->debugf("GENERATING CLASS: %s", $perl_class);
 
     # Generate the class using string eval
     my $code = '';
     $code .= <<"EOC";
 package $perl_class;
 use Moo;
+use Types::Standard qw( Int Str Num Bool InstanceOf ArrayRef HashRef Any );
 extends 'Protobuf::Message';
 sub descriptor { return \$Protobuf::ClassGenerator::DESCRIPTOR_REGISTRY{'$perl_class'}; }
-EOC
 
-    # Generate enums nested in this message
-    my $enum_count = $mdef->nested_enum_count;
-    for my $i (0 .. $enum_count - 1) {
-        my $edef = $mdef->get_nested_enum($i);
-        my $enum_name = $edef->name;
-        my $enum_pkg = "${perl_class}::$enum_name";
-        $log->debugf("Generating enum: %s", $enum_pkg);
-        $code .= "package $enum_pkg;\n";
-        my $val_count = $edef->value_count;
-        for my $j (0 .. $val_count - 1) {
-            my $vdef = $edef->get_value($j);
-            my $vname = $vdef->name;
-            my $vnumber = $vdef->number;
-            $code .= "sub $vname { $vnumber }\n";
-        }
-    }
-    $code .= "package $perl_class;\n";
-
-    $code .= <<"EOC";
 sub validate {
     my \$self = shift;
     my \$c_func = '_xs_validate_' . '$normalized';
@@ -303,18 +324,51 @@ sub validate {
     return \$self->SUPER::validate();
 }
 EOC
+
+    # Generate enums nested in this message
+    my $enum_count = $mdef->nested_enum_count;
+    for my $i (0 .. $enum_count - 1) {
+        my $edef = $mdef->get_nested_enum($i);
+        my $enum_name = $edef->name;
+        my $enum_pkg = "${perl_class}::$enum_name";
+        
+        my $val_count = $edef->value_count;
+        if ($val_count > 0) {
+            my $first_val = $edef->get_value(0)->name;
+            no strict 'refs';
+            if (defined &{"${enum_pkg}::$first_val"}) {
+                $log->debugf("Nested enum %s already generated, skipping", $enum_pkg);
+                next;
+            }
+        }
+
+        $log->debugf("Generating nested enum: %s", $enum_pkg);
+        $code .= "package $enum_pkg;\n";
+        for my $j (0 .. $val_count - 1) {
+            my $vdef = $edef->get_value($j);
+            my $vname = $vdef->name;
+            my $vnumber = $vdef->number;
+            $code .= "sub $vname { $vnumber }\n";
+        }
+    }
+    $code .= "package $perl_class;\n";
     
     my $field_count = $mdef->field_count;
     for my $i (0 .. $field_count - 1) {
         my $fdef = $mdef->get_field($i);
         my $name = $fdef->name;
         $FIELD_REGISTRY{$perl_class}{$name} = $fdef;
+        
+        my $type_check_code = _get_type_tiny_code($fdef);
 
         $code .= <<"EOC";
+my \$type_$name = $type_check_code;
 sub $name {
     my \$self = shift;
     if (\@_) {
-        return \$self->_xs_set_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'}, \$_[0]);
+        my \$val_to_set = (\$type_$name && \$type_$name->has_coercion) ? \$type_$name->coerce(\$_[0]) : \$_[0];
+        \$type_$name->assert_valid(\$val_to_set) if \$type_$name;
+        return \$self->_xs_set_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'}, \$val_to_set);
     }
     my \$val = \$self->_xs_get_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'});
     if (ref(\$val) && ref(\$val) =~ /^Protobuf::Internal::(?:Repeated|Map)\$/) {
@@ -332,7 +386,9 @@ sub $name {
 }
 sub set_$name {
     my (\$self, \$value) = \@_;
-    return \$self->_xs_set_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'}, \$value);
+    my \$val_to_set = (\$type_$name && \$type_$name->has_coercion) ? \$type_$name->coerce(\$value) : \$value;
+    \$type_$name->assert_valid(\$val_to_set) if \$type_$name;
+    return \$self->_xs_set_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'}, \$val_to_set);
 }
 EOC
 
@@ -383,11 +439,6 @@ EOC
         _inject_wkt($perl_class, $ext_class);
     }
     
-    # Recursively generate nested messages
-    my $nested_count = $mdef->nested_message_count;
-    for my $i (0 .. $nested_count - 1) {
-        _generate_for_message($mdef->get_nested_message($i));
-    }
     return;
 }
 
@@ -400,6 +451,76 @@ sub _inject_wkt {
             *$full_sym = \&{"${ext_class}::$method"};
         }
     }
+}
+
+sub _get_type_tiny_code {
+    my ($fdef) = @_;
+    my $type = $fdef->type;
+    my $base_type;
+
+    if ($type == 1 || $type == 2) { # DOUBLE, FLOAT
+        $base_type = "Num";
+    } elsif ($type == 3 || $type == 4 || $type == 16 || $type == 18) {
+        # INT64, UINT64, SFIXED64, SINT64
+        # Allow Int or Math::BigInt objects
+        $base_type = "(Int | InstanceOf['Math::BigInt'])";
+    } elsif ($type == 5 || $type == 7 || $type == 13 || $type == 15 || $type == 17) {
+        # INT32, FIXED32, UINT32, SFIXED32, SINT32
+        $base_type = "Int";
+    } elsif ($type == 8) { # BOOL
+        $base_type = "Bool";
+    } elsif ($type == 9 || $type == 12) { # STRING, BYTES
+        $base_type = "Str";
+    } elsif ($type == 14) { # ENUM
+        $base_type = "(Int | Str)";
+    } elsif ($type == 11) { # MESSAGE
+        my $subm = $fdef->message_type;
+        
+        # We need the filename for the correct module name if we follow Package::File::Message
+        my $f = $subm->file;
+        my $perl_class;
+        if ($f) {
+            my $proto_file = $f->name;
+            $proto_file =~ s/.*\///;
+            $proto_file =~ s/\..*//;
+            my $file_module = join('', map { ucfirst($_) } split(/_/, $proto_file));
+            
+            my $pkg = $f->get_package;
+            my $base_module = join('::', map { ucfirst($_) } split(/\./, $pkg));
+            $base_module .= "::$file_module" if $base_module;
+            $base_module ||= $file_module;
+            
+            # Now we need the path from the package to the message
+            my $full_name = $subm->full_name;
+            $full_name =~ s/^\.//;
+            if ($pkg) {
+                $full_name =~ s/^\Q$pkg\E\.//;
+            }
+            my $msg_path = join('::', map { ucfirst($_) } split(/\./, $full_name));
+            $perl_class = "${base_module}::${msg_path}";
+            $log->debugf("Derived perl_class for %s: %s (Base: %s, Path: %s)", $subm->full_name, $perl_class, $base_module, $msg_path);
+        } else {
+            my $full_name = $subm->full_name;
+            $full_name =~ s/^\.//;
+            $perl_class = join('::', map { ucfirst($_) } split(/\./, $full_name));
+        }
+        
+        $base_type = "InstanceOf['$perl_class']";
+        # Add coercion from HashRef
+        $base_type = "($base_type)->plus_coercions(HashRef, sub { my \$m = '$perl_class'->new; \$m->from_perl(\$_); \$m })";
+    } else {
+        return "Any";
+    }
+
+    if ($fdef->is_map) {
+        # Protobuf maps have restricted key types (usually Str or Int)
+        # For simplicity, we just use HashRef for now
+        return "HashRef";
+    } elsif ($fdef->is_repeated) {
+        return "ArrayRef[$base_type]";
+    }
+
+    return $base_type;
 }
 
 1;

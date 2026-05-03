@@ -167,7 +167,7 @@ sub from_perl {
     my $fields = $self->fields;
     %$fields = ();
     foreach my $key (keys %$data) {
-        my $val = 'google::protobuf::Value'->new();
+        my $val = 'Google::Protobuf::Struct::Value'->new();
         $val->from_perl($data->{$key});
         $fields->{$key} = $val;
     }
@@ -212,12 +212,12 @@ sub get_injected_methods {
         my $rt = reftype($val) || '';
         if (!defined $val) { $self->null_value(0); }
         elsif ($rt eq 'HASH') {
-            my $s = 'google::protobuf::Struct'->new();
+            my $s = 'Google::Protobuf::Struct::Struct'->new();
             $s->from_perl($val);
             $self->struct_value($s);
         }
         elsif ($rt eq 'ARRAY') {
-            my $l = 'google::protobuf::ListValue'->new();
+            my $l = 'Google::Protobuf::Struct::ListValue'->new();
             $l->from_perl($val);
             $self->list_value($l);
         }
@@ -260,7 +260,7 @@ sub get_injected_methods {
         my $values = $self->values;
         @$values = ();
         foreach my $v (@$data) {
-            my $val = 'google::protobuf::Value'->new();
+            my $val = 'Google::Protobuf::Struct::Value'->new();
             $val->from_perl($v);
             push @$values, $val;
         }

@@ -18,7 +18,7 @@ static void test_message_def(pTHX) {
     ok(wrapper != NULL, "Got wrapper SV");
     ok(sv_isobject(wrapper) && sv_derived_from(wrapper, "Protobuf::Descriptor::MessageDef"), "Wrapper is blessed correctly");
     
-    SV *name_sv = PerlUpb_MessageDef_FullName(aTHX_ mdef);
+    SV *name_sv = PerlUpb_Message_FullName(aTHX_ mdef);
     is_string(SvPV_nolen(name_sv), "test.TestMessage", "FullName matches");
     SvREFCNT_dec(name_sv);
     

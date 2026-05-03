@@ -13,13 +13,13 @@ my $file = TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 ok($file, 'Added file descriptor set');
 
 # Check if classes were generated
-ok(test::TestMessage->can('new'), 'test::TestMessage class was generated and can new()');
-ok(test::NestedMessage->can('new'), 'test::NestedMessage class was generated and can new()');
+ok(Test::Test::TestMessage->can('new'), 'Test::Test::TestMessage class was generated and can new()');
+ok(Test::Test::NestedMessage->can('new'), 'Test::Test::NestedMessage class was generated and can new()');
 
 # Instantiate
-my $msg = test::TestMessage->new();
-ok($msg, 'Instantiated test::TestMessage');
-isa_ok($msg, 'test::TestMessage');
+my $msg = Test::Test::TestMessage->new();
+ok($msg, 'Instantiated Test::Test::TestMessage');
+isa_ok($msg, 'Test::Test::TestMessage');
 isa_ok($msg, 'Protobuf::Message');
 
 done_testing();

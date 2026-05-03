@@ -3,6 +3,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
+#include "upb/reflection/def.h"
 
 struct upb_MessageDef;
 typedef struct upb_MessageDef upb_MessageDef;
@@ -20,6 +21,10 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name);
 // Converts a Protobuf full name (A.B) to a Perl class name (A::B).
 // Caller is responsible for Safefree()ing the returned string.
 char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name);
+
+// Derives a Perl class name (Package::File::Message) from a descriptor.
+// Caller is responsible for Safefree()ing the returned string.
+char* PerlUpb_DeriveClassName(pTHX_ const upb_MessageDef* mdef);
 
 // Logs a message and dies with Perl context
 void PerlUpb_Error_Die(pTHX_ const char* fmt, ...);

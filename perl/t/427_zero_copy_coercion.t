@@ -13,11 +13,11 @@ TestHelpers->generate_classes($pool);
 {
     package test::CoercedMessage;
     use Moo;
-    extends 'test::TestMessage';
+    extends 'Test::Test::TestMessage';
 }
 
 subtest 'zero-copy type coercion' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->set_value(42);
     
     # 1. Coerce to sibling

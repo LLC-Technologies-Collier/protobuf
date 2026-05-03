@@ -32,7 +32,7 @@ if ($pid == 0) {
     close $fh_shm;
     
     # 3. Parse and validate
-    my $msg = protobuf_test_messages::proto2::TestAllTypesProto2->parse($data);
+    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->parse($data);
     if ($msg->optional_int32 == 12345 && $msg->optional_string eq "shm_test") {
         # Signal success back via exit code
         exit 0;
@@ -42,7 +42,7 @@ if ($pid == 0) {
 } else {
     # Parent Process: Producer
     # 1. Create message
-    my $msg = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg->set_optional_int32(12345);
     $msg->set_optional_string("shm_test");
     
@@ -64,7 +64,7 @@ if ($pid == 0) {
     is($exit_code, 0, 'Consumer parsed message from SHM correctly');
 
     subtest 'connection reset' => sub {
-        my $msg_reset = test::TestMessage->new();
+        my $msg_reset = Test::Test::TestMessage->new();
         ok($msg_reset->reset_connection(), 'Reset connection works (skeletal)');
     };
 }

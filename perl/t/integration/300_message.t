@@ -16,7 +16,7 @@ subtest 'message and descriptor pool integration' => sub {
     TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
     subtest 'class identity and descriptors' => sub {
-        my $msg = test::TestMessage->new();
+        my $msg = Test::Test::TestMessage->new();
         ok($msg, 'Created TestMessage');
         
         my $mdef = $msg->descriptor();
@@ -28,9 +28,9 @@ subtest 'message and descriptor pool integration' => sub {
     };
 
     subtest 'nested message integration' => sub {
-        my $msg = test::TestMessage->new();
+        my $msg = Test::Test::TestMessage->new();
         
-        my $sub = test::NestedMessage->new();
+        my $sub = Test::Test::NestedMessage->new();
         $sub->set_nested_string("integration-test");
         
         $msg->set_nested_message($sub);
@@ -45,7 +45,7 @@ subtest 'message and descriptor pool integration' => sub {
     };
 
     subtest 'arena sharing and persistence' => sub {
-        my $msg = test::TestMessage->new();
+        my $msg = Test::Test::TestMessage->new();
         my $arr = $msg->repeated_int;
         push @$arr, 1, 2, 3;
         
@@ -59,10 +59,10 @@ subtest 'message and descriptor pool integration' => sub {
     };
 
     subtest 'dependency graph' => sub {
-        my $msg = test::TestMessage->new();
+        my $msg = Test::Test::TestMessage->new();
         my $graph = $msg->dependency_graph();
         ok($graph, 'Got dependency graph');
-        is($graph->{root}, 'test::TestMessage', 'Root matches class');
+        is($graph->{root}, 'Test::Test::TestMessage', 'Root matches class');
     };
 };
 

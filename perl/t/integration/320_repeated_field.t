@@ -10,10 +10,10 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'repeated field cross-message interaction' => sub {
-    my $msg1 = test::TestMessage->new();
+    my $msg1 = Test::Test::TestMessage->new();
     push @{$msg1->repeated_int}, 10, 20, 30;
     
-    my $msg2 = test::TestMessage->new();
+    my $msg2 = Test::Test::TestMessage->new();
     # This should copy elements
     $msg2->set('repeated_int', $msg1->repeated_int);
     
@@ -25,12 +25,12 @@ subtest 'repeated field cross-message interaction' => sub {
 };
 
 subtest 'repeated message cross-message interaction' => sub {
-    my $msg1 = test::TestMessage->new();
-    my $sub = test::NestedMessage->new();
+    my $msg1 = Test::Test::TestMessage->new();
+    my $sub = Test::Test::NestedMessage->new();
     $sub->set_nested_string("orig");
     push @{$msg1->repeated_message}, $sub;
     
-    my $msg2 = test::TestMessage->new();
+    my $msg2 = Test::Test::TestMessage->new();
     $msg2->set('repeated_message', $msg1->repeated_message);
     
     is($msg2->repeated_message->[0]->nested_string, "orig", 'Repeated messages copied');
@@ -41,7 +41,7 @@ subtest 'repeated message cross-message interaction' => sub {
 };
 
 subtest 'array slicing' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     my $arr = $msg->repeated_int;
     push @$arr, 1, 2, 3;
     

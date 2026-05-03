@@ -10,10 +10,10 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 TestHelpers->generate_classes($pool);
 
 subtest 'self-healing integrity audit' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     # 1. Healthy state
-    my $sub = test::NestedMessage->new();
+    my $sub = Test::Test::NestedMessage->new();
     $sub->nested_string("hello");
     $msg->nested_message($sub);
     
@@ -25,7 +25,7 @@ subtest 'self-healing integrity audit' => sub {
     ok($reified, "Got reified submessage");
     
     # Manually tamper with the Perl hash (simulating bad user code or bug)
-    my $fake = test::NestedMessage->new();
+    my $fake = Test::Test::NestedMessage->new();
     $msg->{nested_message} = $fake;
     
     ok(!$msg->audit_integrity(), "Audit correctly detects identity mismatch (corruption)");
@@ -36,11 +36,11 @@ subtest 'self-healing integrity audit' => sub {
 };
 
 subtest 'self-healing repeated integrity audit' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     my $rep = $msg->repeated_message;
     
     # 1. Healthy state
-    my $sub = test::NestedMessage->new();
+    my $sub = Test::Test::NestedMessage->new();
     $sub->nested_string("item1");
     push @$rep, $sub;
     

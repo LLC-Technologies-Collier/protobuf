@@ -16,10 +16,7 @@ cc_library(
 [% INCLUDE bazel_src_list.tt files = common_c_files %]
     ],
     hdrs = glob([
-        "perl/xs/**/*.h",
-        "upb/**/*.h",
-        "src/**/*.h",
-        "third_party/utf8_range/*.h",
+        "xs/**/*.h",
     ]),
     copts = [
         "-I.",

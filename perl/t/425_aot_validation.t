@@ -17,7 +17,7 @@ subtest 'AOT validator generation' => sub {
     vdiag("Generated XS Validator:\n$xs");
     
     like($xs, qr/bool validate_test_TestMessage\(pTHX_ SV\* sv\)/, "Generated correct function signature");
-    like($xs, qr/sv_derived_from\(sv, "test::TestMessage"\)/, "Includes class check");
+    like($xs, qr/sv_derived_from\(sv, "Test::Test::TestMessage"\)/, "Includes class check");
     
     # Check if it includes required fields (if any in TestMessage)
     # TestMessage has no required fields in proto2 by default unless specified.

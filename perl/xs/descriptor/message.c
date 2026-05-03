@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "xs/descriptor/message.h"
+#include "xs/descriptor/file.h"
 
 const upb_FieldDef* PerlUpb_MessageDef_FindFieldByNameWithSize(pTHX_ const upb_MessageDef *m, const char *name, size_t len) {
     // Manual iteration to debug UPB lookup
@@ -81,11 +82,26 @@ const upb_MessageDef* PerlUpb_MessageDef_GetMessage(pTHX_ SV *sv) {
     EXTRACT_CACHED_DESCRIPTOR(upb_MessageDef, sv, "Protobuf::Descriptor::MessageDef");
 }
 
-SV* PerlUpb_MessageDef_FullName(pTHX_ const upb_MessageDef *m) {
+SV* PerlUpb_Message_FullName(pTHX_ const upb_MessageDef *m) {
     if (!m) return newSV(0);
     const char* full_name = upb_MessageDef_FullName(m);
     return full_name ? newSVpv(full_name, 0) : newSV(0);
 }
+
+SV* PerlUpb_Message_File(pTHX_ const upb_MessageDef *m) {
+    if (!m) return &PL_sv_undef;
+    const upb_FileDef* f = upb_MessageDef_File(m);
+    return PerlUpb_FileDef_GetWrapper(aTHX_ f);
+}
+
+SV* PerlUpb_MessageDef_PerlClassName(pTHX_ const upb_MessageDef *m) {
+    if (!m) return &PL_sv_undef;
+    char* class_name = PerlUpb_DeriveClassName(aTHX_ m);
+    SV* res = newSVpv(class_name, 0);
+    safefree(class_name);
+    return res;
+}
+
 
 void PerlUpb_MessageDef_AuditIdentity(pTHX_ SV* self) {
     const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);

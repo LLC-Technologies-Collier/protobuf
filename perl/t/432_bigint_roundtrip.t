@@ -10,7 +10,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'Math::BigInt Roundtrip in Integrated Message' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     # Use a large positive int64 value.
     # On many 64-bit systems, 9223372036854775807 (INT64_MAX) fits in a native IV
@@ -37,7 +37,7 @@ subtest 'Math::BigInt Roundtrip in Integrated Message' => sub {
     
     # Serialization roundtrip
     my $data = $msg->serialize();
-    my $msg2 = test::TestMessage->parse($data);
+    my $msg2 = Test::Test::TestMessage->parse($data);
     my $got2 = $msg2->optional_int64;
     
     if (ref($got2)) {
@@ -48,7 +48,7 @@ subtest 'Math::BigInt Roundtrip in Integrated Message' => sub {
 };
 
 subtest 'Math::BigInt Small Value Optimization' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     # Small value that fits in IV should NOT be a BigInt on retrieval
     $msg->set_optional_int64(Math::BigInt->new(12345));

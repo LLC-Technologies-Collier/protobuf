@@ -11,14 +11,14 @@ subtest 'base message functionality' => sub {
     TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
     
     subtest 'creation' => sub {
-        my $msg = test::TestMessage->new();
-        ok($msg, 'Created test::TestMessage');
-        isa_ok($msg, 'test::TestMessage');
+        my $msg = Test::Test::TestMessage->new();
+        ok($msg, 'Created Test::Test::TestMessage');
+        isa_ok($msg, 'Test::Test::TestMessage');
         isa_ok($msg, 'Protobuf::Message');
     };
 
     subtest 'get and set' => sub {
-        my $msg = test::TestMessage->new();
+        my $msg = Test::Test::TestMessage->new();
         
         # Test scalar field
         $msg->set('value', 42);
@@ -30,16 +30,16 @@ subtest 'base message functionality' => sub {
     };
     
     subtest 'serialization and parsing' => sub {
-        my $msg = test::TestMessage->new();
+        my $msg = Test::Test::TestMessage->new();
         $msg->set('value', 100);
         $msg->set('optional_uint32', 200);
         
         my $data = $msg->serialize();
         ok($data, 'Serialized message');
         
-        my $msg2 = test::TestMessage->parse($data);
+        my $msg2 = Test::Test::TestMessage->parse($data);
         ok($msg2, 'Parsed message');
-        isa_ok($msg2, 'test::TestMessage');
+        isa_ok($msg2, 'Test::Test::TestMessage');
         is($msg2->get('value'), 100, 'Correct value after parse');
         is($msg2->get('optional_uint32'), 200, 'Correct optional_uint32 after parse');
     };

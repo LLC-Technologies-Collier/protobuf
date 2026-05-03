@@ -12,11 +12,11 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/compat_descriptor.bin');
 
 subtest 'embedded messages and enums' => sub {
-    my $severity = Apache2::Protobuf::Error::Severity->WARN;
+    my $severity = Apache2::Protobuf::EmbeddedError::Error::Severity->WARN;
     my $message  = 'Here is a warning';
 
     my $now   = [gettimeofday];
-    my $error = Apache2::Protobuf::Error->new;
+    my $error = Apache2::Protobuf::EmbeddedError::Error->new;
 
     $error->set_datetime(time());
     $error->set_severity($severity);
@@ -29,7 +29,7 @@ subtest 'embedded messages and enums' => sub {
         my ($pack, $file, $line) = caller($i);
         last unless $pack;
         
-        my $frame = Apache2::Protobuf::Error::StackFrame->new;
+        my $frame = Apache2::Protobuf::EmbeddedError::Error::StackFrame->new;
         $frame->set_file($file);
         $frame->set_line($line);
         $error->add_trace($frame);
@@ -38,7 +38,7 @@ subtest 'embedded messages and enums' => sub {
     my $packed  = $error->serialize();
     ok(length($packed) > 0, 'Serialized embedded error');
     
-    my $u = Apache2::Protobuf::Error->parse($packed);
+    my $u = Apache2::Protobuf::EmbeddedError::Error->parse($packed);
     ok($u, 'Parsed embedded error');
     
     is($u->severity, $severity, 'Severity preserved');
@@ -48,9 +48,9 @@ subtest 'embedded messages and enums' => sub {
 };
 
 subtest 'constructor with nested structures' => sub {
-    my $error = Apache2::Protobuf::Error->new({
+    my $error = Apache2::Protobuf::EmbeddedError::Error->new({
         datetime => time(),
-        severity => Apache2::Protobuf::Error::Severity->ERROR,
+        severity => Apache2::Protobuf::EmbeddedError::Error::Severity->ERROR,
         message  => 'Fatal crash',
         hostname => 'localhost',
         pid      => 1234,
@@ -65,7 +65,7 @@ subtest 'constructor with nested structures' => sub {
     is($error->trace->[1]->line, 20, 'Nested trace data ok');
     
     my $p = $error->serialize();
-    my $u = Apache2::Protobuf::Error->parse($p);
+    my $u = Apache2::Protobuf::EmbeddedError::Error->parse($p);
     is($u->trace->[0]->file, 'foo.pl', 'Roundtrip with nested structures ok');
 };
 

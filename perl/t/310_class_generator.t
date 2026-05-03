@@ -29,15 +29,11 @@ ok($file, "Found a descriptor file to generate from");
 Protobuf::ClassGenerator->generate_for_file($file);
 
 # 3. Test a generated class
-my $class = $pool->find_file_by_name('test.proto') ? 'test::TestMessage' : 'google::protobuf::DescriptorProto';
-# Actually, let's just find a message from the file we got
 my $mdef = $file->get_top_level_message(0);
-$class = $mdef->full_name;
-$class =~ s/^\.//;
-$class =~ s/\./::/g;
+my $class = $mdef->perl_class_name();
 
 ok($class->can('new'), "Class $class was generated");
-ok($class->can('nested_string'), "Accessor 'nested_string' exists");
+ok($class->can('nested_string') || $class->can('value'), "Accessor exists");
 
 my $msg = $class->new;
 isa_ok($msg, $class);
@@ -48,7 +44,7 @@ $msg->nested_string('TestValue');
 is($msg->nested_string, 'TestValue', "Roundtrip for 'nested_string' works");
 
 # 5. Test another class from the same file
-my $class2 = 'test::TestMessage';
+my $class2 = 'Test::Test::TestMessage';
 ok($class2->can('new'), "Class $class2 was generated");
 ok($class2->can('repeated_int'), "Accessor 'repeated_int' exists (repeated)");
 

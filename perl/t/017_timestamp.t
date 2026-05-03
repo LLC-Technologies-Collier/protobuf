@@ -9,7 +9,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/wkt_descriptor.bin');
 
 subtest 'timestamp operations' => sub {
-    my $ts = google::protobuf::Timestamp->new();
+    my $ts = Google::Protobuf::Timestamp::Timestamp->new();
     my $now = gmtime();
     
     $ts->from_time_piece($now);

@@ -168,6 +168,16 @@ sub get_nested_enum {
     return _xs_nested_enum($self, $index);
 }
 
+sub file {
+    my ($self) = @_;
+    return _xs_file($self);
+}
+
+sub perl_class_name {
+    my ($self) = @_;
+    return _xs_perl_class_name($self);
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;

@@ -165,6 +165,7 @@ lib/Protobuf/ClassGenerator.pm
 lib/Protobuf/Descriptor/Enum.c
 lib/Protobuf/Descriptor/Enum.pm
 lib/Protobuf/Descriptor/Enum.xs
+lib/Protobuf/Descriptor/EnumValue.c
 lib/Protobuf/Descriptor/EnumValue.pm
 lib/Protobuf/Descriptor/EnumValue.xs
 lib/Protobuf/Descriptor/Field.c
@@ -250,6 +251,7 @@ t/011_message_297_repeated_message.t
 t/012_message_298_map.t
 t/013_message_299_integration.t
 t/014_message_base.t
+t/014_message_methods.t
 t/015_any.t
 t/016_duration.t
 t/017_timestamp.t

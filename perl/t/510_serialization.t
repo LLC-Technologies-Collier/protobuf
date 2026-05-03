@@ -16,12 +16,12 @@ $pool->add_serialized_file_descriptor_set($serialized);
 
 # 2. Test to_perl
 subtest 'to_perl conversion' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->value(42);
     $msg->test_string("hello");
     push @{$msg->repeated_int}, 1, 2, 3;
     
-    my $nested = test::NestedMessage->new();
+    my $nested = Test::Test::NestedMessage->new();
     $nested->nested_string("deep");
     $msg->nested_message($nested);
 
@@ -37,7 +37,7 @@ subtest 'to_perl conversion' => sub {
 
 # 3. Test to_json / from_json
 subtest 'JSON serialization' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->value(100);
     $msg->test_string("json test");
     
@@ -45,14 +45,14 @@ subtest 'JSON serialization' => sub {
     like($json, qr/"value":\s*100/, "JSON contains value");
     like($json, qr/"testString":\s*"json test"/, "JSON contains string (camelCase check)");
 
-    my $msg2 = test::TestMessage->from_json($json);
+    my $msg2 = Test::Test::TestMessage->from_json($json);
     is($msg2->value, 100, "from_json restored value");
     is($msg2->test_string, "json test", "from_json restored string");
 };
 
 # 4. Test to_text
 subtest 'Text format serialization' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->value(7);
     
     my $text = $msg->to_text();

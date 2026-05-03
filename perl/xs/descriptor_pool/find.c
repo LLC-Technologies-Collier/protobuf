@@ -8,6 +8,7 @@
 #include "xs/descriptor/message.h"
 #include "xs/descriptor/enum.h"
 #include "xs/descriptor/field.h"
+#include "xs/descriptor/service.h"
 #include "upb/reflection/def.h"
 
 SV* PerlUpb_DescriptorPool_FindFileByName(pTHX_ SV* self, const char* name) {
@@ -29,6 +30,13 @@ SV* PerlUpb_DescriptorPool_FindEnumByName(pTHX_ SV* self, const char* name) {
     if (!pool) return &PL_sv_undef;
     const upb_EnumDef* enm = upb_DefPool_FindEnumByName(pool, name);
     return PerlUpb_EnumDef_GetWrapper(aTHX_ enm);
+}
+
+SV* PerlUpb_DescriptorPool_FindServiceByName(pTHX_ SV* self, const char* name) {
+    const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ self);
+    if (!pool) return &PL_sv_undef;
+    const upb_ServiceDef* svc = upb_DefPool_FindServiceByName(pool, name);
+    return PerlUpb_ServiceDef_GetWrapper(aTHX_ svc);
 }
 
 SV* PerlUpb_DescriptorPool_FindExtensionByName(pTHX_ SV* self, const char* name) {

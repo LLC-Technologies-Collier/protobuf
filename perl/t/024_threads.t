@@ -23,7 +23,7 @@ use TestHelpers;
 my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
-my $msg = test::TestMessage->new();
+my $msg = Test::Test::TestMessage->new();
 $msg->set_value(123);
 
 # This should crash the process due to CLONE dying

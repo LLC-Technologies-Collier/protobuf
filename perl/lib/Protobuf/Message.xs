@@ -191,7 +191,28 @@ _xs_from_json(class_name, json_data)
     SV* class_name
     SV* json_data
     CODE:
-        RETVAL = PerlUpb_Message_FromJson(aTHX_ class_name, json_data);
+        // Use the descriptor() method on the class to get the mdef
+        dSP;
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs(class_name);
+        PUTBACK;
+        int count = call_method("descriptor", G_SCALAR);
+        SPAGAIN;
+        if (count != 1) {
+            PUTBACK; FREETMPS; LEAVE;
+            croak("Failed to get descriptor for class %s", SvPV_nolen(class_name));
+        }
+        SV* descriptor_sv = POPs;
+        // Keep a copy because we're about to free temps
+        SV* mdef_sv = newSVsv(descriptor_sv);
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+
+        RETVAL = PerlUpb_Message_FromJson(aTHX_ mdef_sv, json_data);
+        SvREFCNT_dec(mdef_sv);
     OUTPUT:
         RETVAL
 
@@ -208,12 +229,26 @@ _xs_parse(class_name, data)
     const char* class_name
     SV* data
     CODE:
-        char* full_name = PerlUpb_ClassNameToFullName(aTHX_ class_name);
-        
-        SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
-        const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ pool_sv);
-        const upb_MessageDef* mdef = upb_DefPool_FindMessageByName(pool, full_name);
-        Safefree(full_name);
+        // Use the descriptor() method on the class to get the mdef
+        dSP;
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs(sv_2mortal(newSVpv(class_name, 0)));
+        PUTBACK;
+        int count = call_method("descriptor", G_SCALAR);
+        SPAGAIN;
+        if (count != 1) {
+            PUTBACK; FREETMPS; LEAVE;
+            croak("Failed to get descriptor for class %s", class_name);
+        }
+        SV* descriptor_sv = POPs;
+        const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ descriptor_sv);
+        PUTBACK;
+        // Don't FREETMPS/LEAVE yet because descriptor_sv might be used
+        // Wait, mdef is a C pointer into the pool, it's safe.
+        FREETMPS;
+        LEAVE;
 
         if (!mdef) {
             croak("Could not find descriptor for message class %s", class_name);

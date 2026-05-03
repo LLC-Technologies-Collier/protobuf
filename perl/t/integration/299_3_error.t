@@ -11,7 +11,7 @@ TestHelpers->load_test_protos($pool, 't/data/compat_descriptor.bin');
 
 subtest 'required fields error handling' => sub {
     foreach (1 .. 3) {
-        my $msg = Error->new({ field3 => 'foo' });
+        my $msg = Error::Error->new({ field3 => 'foo' });
         eval {
             my $p = $msg->serialize();
         };
@@ -21,7 +21,7 @@ subtest 'required fields error handling' => sub {
 };
 
 subtest 'partial initialization error' => sub {
-    my $msg = Error->new({ field1 => 123 });
+    my $msg = Error::Error->new({ field1 => 123 });
     eval { $msg->serialize() };
     ok($@, "Missing field2 throws exception");
     

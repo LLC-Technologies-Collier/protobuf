@@ -77,6 +77,15 @@ _xs_find_enum_by_name(self, name)
         RETVAL
 
 SV*
+_xs_find_service_by_name(self, name)
+    SV* self
+    const char* name
+    CODE:
+        RETVAL = PerlUpb_DescriptorPool_FindServiceByName(aTHX_ self, name);
+    OUTPUT:
+        RETVAL
+
+SV*
 _xs_find_extension_by_name(self, name)
     SV* self
     const char* name

@@ -16,10 +16,10 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin', 't/data/wkt_d
     use Type::Utils qw( coerce );
 
     # Define a coercion from HashRef to our Message class
-    my $TestMsgType = InstanceOf['protobuf_test_messages::proto2::TestAllTypesProto2'];
+    my $TestMsgType = InstanceOf['Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2'];
     my $CoercedTestMsg = $TestMsgType->plus_coercions(
         HashRef, sub {
-            my $msg = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+            my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
             $msg->from_perl($_);
             return $msg;
         }
@@ -33,19 +33,19 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin', 't/data/wkt_d
 }
 
 subtest 'Moo InstanceOf constraint' => sub {
-    my $msg = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg->set_optional_int32(42);
     
     my $app = My::App->new(message => $msg);
     ok($app, 'App created with Protobuf object');
     is($app->message->optional_int32, 42, 'Message object preserved');
-    isa_ok($app->message, 'protobuf_test_messages::proto2::TestAllTypesProto2');
+    isa_ok($app->message, 'Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2');
 };
 
 subtest 'Type::Tiny coercion from HashRef' => sub {
     my $app = My::App->new(message => { optional_int32 => 99, optional_string => "coerced" });
     ok($app, 'App created with HashRef (coerced)');
-    isa_ok($app->message, 'protobuf_test_messages::proto2::TestAllTypesProto2');
+    isa_ok($app->message, 'Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2');
     is($app->message->optional_int32, 99, 'Coerced value correct');
     is($app->message->optional_string, 'coerced', 'Coerced string correct');
 };
@@ -63,13 +63,13 @@ subtest 'Nested HashRef support' => sub {
 };
 
 subtest 'to_perl deep conversion' => sub {
-    my $msg = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg->set_optional_int32(123);
     $msg->set_optional_string("deep");
     push @{$msg->repeated_int32}, 1, 2, 3;
     $msg->map_int32_int32->{5} = 10;
     
-    my $sub = protobuf_test_messages::proto2::TestAllTypesProto2::NestedMessage->new();
+    my $sub = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2::NestedMessage->new();
     $sub->set_a(999);
     $msg->set_optional_nested_message($sub);
     
@@ -87,21 +87,21 @@ subtest 'to_perl deep conversion' => sub {
 
 subtest 'WKT integration with Type::Tiny' => sub {
     # 1. google.protobuf.Struct
-    my $struct = google::protobuf::Struct->new();
+    my $struct = Google::Protobuf::Struct::Struct->new();
     $struct->from_perl({ a => 1, b => { c => 3 } });
     
     my $perl = $struct->to_perl();
     is_deeply($perl, { a => 1, b => { c => 3 } }, 'Struct deep conversion matches');
     
     # 2. google.protobuf.Any
-    my $msg = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg->set_optional_int32(42);
     
-    my $any = google::protobuf::Any->new();
+    my $any = Google::Protobuf::Any::Any->new();
     $any->pack($msg);
     
     my $unpacked = $any->unpack();
-    isa_ok($unpacked, 'protobuf_test_messages::proto2::TestAllTypesProto2');
+    isa_ok($unpacked, 'Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2');
     is($unpacked->optional_int32, 42, 'Any unpacked correctly');
 };
 
@@ -141,7 +141,7 @@ subtest 'type library generation' => sub {
     vdiag("Generated Type Library:\n$lib_code");
     
     ok($lib_code, 'Got type library code');
-    like($lib_code, qr/package Protobuf::Types::test;/, 'Correct package name');
+    like($lib_code, qr/package Test::Test::Types;/, 'Correct package name');
     like($lib_code, qr/use Type::Library/, 'Code contains Type::Library usage');
     like($lib_code, qr/declare 'TestMessage'/, 'Defines TestMessage type');
     like($lib_code, qr/where \{ \$_->validate \}/, 'Includes native validation check');

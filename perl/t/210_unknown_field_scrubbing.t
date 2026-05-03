@@ -11,7 +11,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'Selective Tag Scrubbing' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     # Manually add some unknown fields with specific tags
     # Tag 100, wire type 0 (varint), value 1: 0xA0 0x06 0x01 -> wait, tag is (field_num << 3) | wire_type

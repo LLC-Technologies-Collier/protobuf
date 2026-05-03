@@ -1,4 +1,3 @@
-
 #include "xs/protobuf/message.h"
 #include "xs/protobuf.h"
 #include "upb/reflection/def.h"
@@ -13,10 +12,6 @@ static int descriptor_cleanup(pTHX_ SV* sv, MAGIC* mg) {
     return 0;
 }
 
-static MGVTBL descriptor_vtbl = {
-    NULL, NULL, NULL, NULL, descriptor_cleanup
-};
-
 SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv) {
     if (!msg) {
         return newSV(0); // Undef
@@ -25,27 +20,7 @@ SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ msg);
     if (cached) return cached;
 
-    const char *full_name = upb_MessageDef_FullName(mdef);
-    char *class_name = NULL;
-    
-    // Convert dot to ::
-    if (full_name) {
-        size_t dot_count = 0;
-        for (const char *p = full_name; *p; p++) if (*p == '.') dot_count++;
-        class_name = (char*)safemalloc(strlen(full_name) + dot_count + 1);
-        char *dst = class_name;
-        for (const char *src = full_name; *src; src++) {
-            if (*src == '.') {
-                *dst++ = ':';
-                *dst++ = ':';
-            } else {
-                *dst++ = *src;
-            }
-        }
-        *dst = '\0';
-    } else {
-        class_name = savepv("Protobuf::Message");
-    }
+    char* class_name = PerlUpb_DeriveClassName(aTHX_ mdef);
 
     SV *self = PerlUpb_WrapArenaBoundObject(aTHX_ msg, arena_sv, class_name);
     safefree(class_name);
@@ -116,4 +91,3 @@ SV* PerlUpb_Message_GetFingerprint(pTHX_ SV* message_sv) {
         return newSVpv(buf, 0);
     }
 }
-

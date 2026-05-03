@@ -14,4 +14,6 @@ const upb_MethodDef* PerlUpb_ServiceDef_Method(pTHX_ const upb_ServiceDef *s, in
 const upb_MethodDef* PerlUpb_ServiceDef_FindMethodByName(pTHX_ const upb_ServiceDef *s, const char *name);
 const upb_FileDef* PerlUpb_ServiceDef_File(pTHX_ const upb_ServiceDef *s);
 
+SV* PerlUpb_ServiceDef_GetWrapper(pTHX_ const upb_ServiceDef *s);
+
 #endif // PERL_PROTOBUF_DESCRIPTOR_SERVICE_H_

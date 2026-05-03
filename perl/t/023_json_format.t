@@ -8,11 +8,11 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'json format encoding' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->set_value(12345);
     $msg->set_name("hello json");
     
-    my $sub = test::NestedMessage->new();
+    my $sub = Test::Test::NestedMessage->new();
     $sub->set_nested_string("inner_json");
     $msg->set_nested_message($sub);
     
@@ -25,7 +25,7 @@ subtest 'json format encoding' => sub {
 
 subtest 'json format decoding' => sub {
     my $json = '{"value":999,"name":"parsed","nestedMessage":{"nestedString":"nested_parsed"}}';
-    my $msg = test::TestMessage->from_json($json);
+    my $msg = Test::Test::TestMessage->from_json($json);
     
     ok(defined $msg, 'Parsed from JSON');
     is($msg->value, 999, 'Parsed value correctly');
@@ -34,7 +34,7 @@ subtest 'json format decoding' => sub {
 };
 
 subtest 'json streaming' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     my $json = $msg->to_json_streaming();
     ok($json, 'Got JSON from streaming bridge');
 };

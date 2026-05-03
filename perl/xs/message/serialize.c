@@ -174,22 +174,14 @@ SV* PerlUpb_Message_ToJson(pTHX_ SV* message_sv) {
     return result;
 }
 
-SV* PerlUpb_Message_FromJson(pTHX_ SV* class_name, SV* json_sv) {
+SV* PerlUpb_Message_FromJson(pTHX_ SV* descriptor_sv, SV* json_sv) {
+    const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ descriptor_sv);
+    if (!mdef) {
+        croak("descriptor_sv must be a Protobuf::MessageDescriptor");
+    }
+
     STRLEN len;
     const char* json_str = SvPVutf8(json_sv, len);
-    STRLEN class_len;
-    const char* class_str = SvPVutf8(class_name, class_len);
-
-    char* full_name = PerlUpb_ClassNameToFullName(aTHX_ class_str);
-
-    SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
-    const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX_ pool_sv);
-    const upb_MessageDef* mdef = upb_DefPool_FindMessageByName(pool, full_name);
-    Safefree(full_name);
-
-    if (!mdef) {
-        croak("Could not find descriptor for message class %s", class_str);
-    }
 
     SV *arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena *arena = PerlUpb_Arena_Get(aTHX_ arena_sv);

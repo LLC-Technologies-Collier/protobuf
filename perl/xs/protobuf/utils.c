@@ -144,6 +144,90 @@ char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name) {
     return class_name;
 }
 
+static char* capitalize_path(pTHX_ const char* s) {
+    if (!s || !*s) return NULL;
+    char* res = (char*)safemalloc(strlen(s) * 2 + 1);
+    char* d = res;
+    bool first = true;
+    while (*s) {
+        if (first || *(s-1) == '.') {
+            if (*s >= 'a' && *s <= 'z') *d++ = *s - 32;
+            else *d++ = *s;
+        } else if (*s == '.') {
+            *d++ = ':'; *d++ = ':';
+        } else {
+            *d++ = *s;
+        }
+        first = false;
+        s++;
+    }
+    *d = '\0';
+    return res;
+}
+
+static char* get_file_module(pTHX_ const char* proto_file) {
+    const char* last_slash = strrchr(proto_file, '/');
+    const char* start = last_slash ? last_slash + 1 : proto_file;
+    char* base = savepv(start);
+    char* dot = strchr(base, '.');
+    if (dot) *dot = '\0';
+    
+    // CamelCase by splitting on _
+    char* res = (char*)safemalloc(strlen(base) + 1);
+    char* d = res;
+    bool first = true;
+    for (char* s = base; *s; s++) {
+        if (first || *(s-1) == '_') {
+            if (*s == '_') continue;
+            if (*s >= 'a' && *s <= 'z') *d++ = *s - 32;
+            else *d++ = *s;
+        } else if (*s == '_') {
+            // skip
+        } else {
+            *d++ = *s;
+        }
+        first = false;
+    }
+    *d = '\0';
+    safefree(base);
+    return res;
+}
+
+char* PerlUpb_DeriveClassName(pTHX_ const upb_MessageDef* mdef) {
+    if (!mdef) return savepv("Protobuf::Message");
+
+    const char *full_name = upb_MessageDef_FullName(mdef);
+    const upb_FileDef *file = upb_MessageDef_File(mdef);
+    const char *proto_file = upb_FileDef_Name(file);
+    const char *pkg = upb_FileDef_Package(file);
+    
+    char* file_mod = get_file_module(aTHX_ proto_file);
+    char* pkg_mod = capitalize_path(aTHX_ pkg);
+    
+    const char* rel_name = full_name;
+    if (rel_name[0] == '.') rel_name++;
+    if (pkg && strlen(pkg) > 0) {
+        if (strncmp(rel_name, pkg, strlen(pkg)) == 0) {
+            rel_name += strlen(pkg);
+            if (rel_name[0] == '.') rel_name++;
+        }
+    }
+    char* msg_path = capitalize_path(aTHX_ rel_name);
+    
+    size_t total_len = (pkg_mod ? strlen(pkg_mod) + 2 : 0) + strlen(file_mod) + 2 + strlen(msg_path) + 1;
+    char* class_name = (char*)safemalloc(total_len);
+    if (pkg_mod) {
+        sprintf(class_name, "%s::%s::%s", pkg_mod, file_mod, msg_path);
+        safefree(pkg_mod);
+    } else {
+        sprintf(class_name, "%s::%s", file_mod, msg_path);
+    }
+    safefree(file_mod);
+    safefree(msg_path);
+    
+    return class_name;
+}
+
 void PerlUpb_Error_Die(pTHX_ const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);

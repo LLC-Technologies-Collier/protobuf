@@ -82,6 +82,7 @@ EOF
         "--perl-pb_out=$out_dir",
         "--perl-pb_opt=embed_descriptors,generate_services",
         "test.proto",
+        "dep.proto",
     );
 
     my ($stdout, $stderr, $exit) = capture { system(@protoc_args) };
@@ -96,8 +97,11 @@ $stderr" if $stderr;
     my $expected_pm = "$out_dir/Mypackage/Test.pm";
     ok(-f $expected_pm, "Generated file $expected_pm exists");
 
-    my $expected_dep_pm = "$out_dir/Mypackage/Dep.pm";
+    my $expected_dep_pm = "$out_dir/Mypackage/Dep/Dep.pm";
     ok(-f $expected_dep_pm, "Generated dep file $expected_dep_pm exists");
+
+    my $expected_types_pm = "$out_dir/Mypackage/Test/Types.pm";
+    ok(-f $expected_types_pm, "Generated types file $expected_types_pm exists");
 
     # Add generated lib to @INC
     eval { unshift @INC, $out_dir; };
@@ -109,36 +113,36 @@ $stderr" if $stderr;
     subtest 'Test Generated Code' => sub {
         eval {
             require Mypackage::Test;
-            require Mypackage::Dep;
+            require Mypackage::Dep::Dep;
         };
         ok(!$@, 'Successfully loaded generated modules') or diag $@;
         return if $@;
 
-        is($Mypackage::Test::MY_ENUM_VALUE_A, 1, 'Enum MY_ENUM_VALUE_A ok');
-        is($Mypackage::Test::MY_ENUM_VALUE_B, 2, 'Enum MY_ENUM_VALUE_B ok');
+        is(Mypackage::Test::MyEnum::MY_ENUM_VALUE_A(), 1, 'Enum MY_ENUM_VALUE_A ok');
+        is(Mypackage::Test::MyEnum::MY_ENUM_VALUE_B(), 2, 'Enum MY_ENUM_VALUE_B ok');
 
         my $msg;
         eval {
-            $msg = Mypackage::Test::MyMessage->new();
+            $msg = Mypackage::Test::MyMessage->new(
+                my_field   => 'hello',
+                my_enum    => 'MY_ENUM_VALUE_B',
+                nested_msg => { nested_field => 123 },
+                dep_msg    => { dep_field    => 456 },
+            );
         };
-        ok(!$@, 'Mypackage::Test::MyMessage instantiated ok') or diag $@;
+        ok(!$@, 'Mypackage::Test::MyMessage instantiated with nested HashRefs ok') or diag $@;
         return if $@;
 
-        $msg->my_field('hello');
-        is($msg->my_field(), 'hello', 'my_field set/get ok');
-
-        $msg->my_enum('MY_ENUM_VALUE_B');
-        is($msg->my_enum(), $Mypackage::Test::MY_ENUM_VALUE_B, 'my_enum set/get ok');
+        is($msg->my_field(), 'hello', 'my_field ok');
+        is($msg->my_enum(), Mypackage::Test::MyEnum::MY_ENUM_VALUE_B(), 'my_enum ok');
 
         my $nested = $msg->nested_msg;
         isa_ok($nested, 'Mypackage::Test::MyMessage::NestedMessage', 'nested_msg is correct type');
-        $nested->nested_field(123);
-        is($nested->nested_field(), 123, 'nested_field set/get ok');
+        is($nested->nested_field(), 123, 'nested_field ok');
 
         my $dep = $msg->dep_msg;
-        isa_ok($dep, 'Mypackage::Dep::DepMessage', 'dep_msg is correct type');
-        $dep->dep_field(456);
-        is($dep->dep_field(), 456, 'dep_field set/get ok');
+        isa_ok($dep, 'Mypackage::Dep::Dep::DepMessage', 'dep_msg is correct type');
+        is($dep->dep_field(), 456, 'dep_field ok');
 
         # Check for service stubs in content
         open my $pm_fh, '<', $expected_pm or die "Could not open $expected_pm: $!";
@@ -151,7 +155,7 @@ $stderr" if $stderr;
     subtest 'Descriptor Pool Check' => sub {
         eval {
             require Protobuf::DescriptorPool;
-            my $pool = Protobuf::DescriptorPool::get_generated_pool();
+            my $pool = Protobuf::DescriptorPool->generated_pool();
             ok($pool->find_message_by_name('mypackage.MyMessage'), 'Found MyMessage in pool');
             ok($pool->find_message_by_name('mypackage.MyMessage.NestedMessage'), 'Found NestedMessage in pool');
             ok($pool->find_message_by_name('mypackage.dep.DepMessage'), 'Found DepMessage in pool');

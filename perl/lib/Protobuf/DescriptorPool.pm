@@ -209,6 +209,11 @@ sub find_enum_by_name {
     return _xs_find_enum_by_name($self, $name);
 }
 
+sub find_service_by_name {
+    my ($self, $name) = @_;
+    return _xs_find_service_by_name($self, $name);
+}
+
 sub find_extension_by_name {
     my ($self, $name) = @_;
     return _xs_find_extension_by_name($self, $name);

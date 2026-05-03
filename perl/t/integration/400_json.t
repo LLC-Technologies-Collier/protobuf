@@ -9,20 +9,20 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'json integration' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->set_value(123);
     $msg->set_name("integration");
     
     my $json = $msg->to_json();
     
-    my $msg2 = test::TestMessage->from_json($json);
+    my $msg2 = Test::Test::TestMessage->from_json($json);
     
     is($msg2->value, 123, 'Value matches after json roundtrip');
     is($msg2->name, 'integration', 'Name matches after json roundtrip');
 };
 
 subtest 'json compact bridge' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->set_value(10);
     my $json = $msg->to_json_compact();
     ok($json, 'Got compact JSON from message');

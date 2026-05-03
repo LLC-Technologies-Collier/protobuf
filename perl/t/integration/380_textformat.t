@@ -9,7 +9,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'text format encoding integration' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->set_value(12345);
     $msg->set_name("integration test");
     
@@ -18,7 +18,7 @@ subtest 'text format encoding integration' => sub {
     like($text, qr/value: 12345/, 'Contains value');
     
     # Test text formatting doesn't corrupt message or arena
-    my $msg2 = test::TestMessage->new();
+    my $msg2 = Test::Test::TestMessage->new();
     $msg2->set_value(999);
     $msg2->to_text();
     
@@ -26,7 +26,7 @@ subtest 'text format encoding integration' => sub {
 };
 
 subtest 'text to wire bridge' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->set_value(10);
     my $wire = $msg->to_wire();
     ok($wire, 'Got wire from message (via bridge)');

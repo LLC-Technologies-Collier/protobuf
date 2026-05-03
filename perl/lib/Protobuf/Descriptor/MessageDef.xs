@@ -157,3 +157,21 @@ _xs_nested_enum(self, index)
     OUTPUT:
         RETVAL
 
+SV*
+_xs_file(self)
+    SV* self
+    CODE:
+        const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
+        RETVAL = m ? PerlUpb_Message_File(aTHX_ m) : &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_perl_class_name(self)
+    SV* self
+    CODE:
+        const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
+        RETVAL = m ? PerlUpb_MessageDef_PerlClassName(aTHX_ m) : &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+

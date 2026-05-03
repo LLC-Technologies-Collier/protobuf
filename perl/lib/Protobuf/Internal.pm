@@ -170,8 +170,33 @@ package Protobuf::Internal;
 
 use strict;
 use warnings;
+use Exporter qw(import);
 
 our $VERSION = '0.01';
+
+our @EXPORT_OK = qw(
+    class_name_to_full_name
+    clear_cache
+    delete_cache_entry
+    delete_cache_ptr
+    find_by_fingerprint
+    full_name_to_class_name
+    get_cache_audit_log
+    get_cache_capacity
+    get_contention_stats
+    get_cpu_features
+    get_fingerprint
+    preallocate_arena
+    register_fingerprint
+    set_cache_capacity
+    set_chaos_enabled
+    set_chaos_params
+    verify_binary_diff
+);
+
+our %EXPORT_TAGS = (
+    all => \@EXPORT_OK,
+);
 
 require XSLoader;
 XSLoader::load(__PACKAGE__, $VERSION);

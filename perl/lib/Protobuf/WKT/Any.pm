@@ -110,8 +110,7 @@ sub unpack { ## no critic (Subroutines::ProhibitBuiltinHomonyms)
         if (!$mdef) {
             die "Cannot unpack Any: type $full_name not found in pool";
         }
-        $class = $full_name;
-        $class =~ s/\./::/g;
+        $class = $mdef->perl_class_name();
     }
     
     return $class->parse($self->get('value'));

@@ -17,8 +17,8 @@ close $fh;
 $pool->add_serialized_file_descriptor_set($serialized);
 
 # 2. Test Timestamp
-my $ts = google::protobuf::Timestamp->new();
-isa_ok($ts, 'google::protobuf::Timestamp');
+my $ts = Google::Protobuf::Timestamp::Timestamp->new();
+isa_ok($ts, 'Google::Protobuf::Timestamp::Timestamp');
 can_ok($ts, qw(seconds nanos to_iso8601 from_time_piece));
 
 $ts->seconds(1234567890);
@@ -26,14 +26,14 @@ $ts->nanos(0);
 is($ts->to_iso8601, '2009-02-13T23:31:30Z', "Timestamp to_iso8601 works");
 
 # 3. Test Duration
-my $dur = google::protobuf::Duration->new();
+my $dur = Google::Protobuf::Duration::Duration->new();
 $dur->from_seconds(123.456);
 is($dur->seconds, 123, "Duration seconds correct");
 is($dur->nanos, 456_000_000, "Duration nanos correct");
 is($dur->to_seconds, 123.456, "Duration to_seconds roundtrip works");
 
 # 4. Test Struct/Value/ListValue
-my $struct = google::protobuf::Struct->new();
+my $struct = Google::Protobuf::Struct::Struct->new();
 $struct->from_perl({
     a => 1,
     b => "hello",

@@ -10,7 +10,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/compat_descriptor.bin');
 
 subtest 'types roundtrip' => sub {
-    my $msg1 = Protobuf::Types->new(
+    my $msg1 = Protobuf::Types::Types->new(
         {
             req_double   => 1.01,
             req_float    => 2.06,
@@ -27,14 +27,14 @@ subtest 'types roundtrip' => sub {
             req_bool     => 1,
             req_string   => "Hello, world!",
             req_bytes    => "Byte array",
-            req_enum     => Protobuf::Types::Enum->value1,
+            req_enum     => Protobuf::Types::Types::Enum->value1,
             req_message  => { t_string => "embedded message" }
         });
 
     my $p = $msg1->serialize();
     ok(length($p) > 0, 'Serialized types message');
     
-    my $msg2 = Protobuf::Types->parse($p);
+    my $msg2 = Protobuf::Types::Types->parse($p);
     ok($msg2, 'Parsed types message');
     
     my $h = $msg2->to_hashref;
@@ -54,7 +54,7 @@ subtest 'types roundtrip' => sub {
     is($h->{req_bool}, 1, 'req_bool');
     is($h->{req_string}, "Hello, world!", 'req_string');
     is($h->{req_bytes}, "Byte array", 'req_bytes');
-    is($h->{req_enum}, Protobuf::Types::Enum->value1, 'req_enum');
+    is($h->{req_enum}, Protobuf::Types::Types::Enum->value1, 'req_enum');
     is($h->{req_message}->{t_string}, "embedded message", 'req_message');
 };
 

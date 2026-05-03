@@ -10,7 +10,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'enum field accessors' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     # Test Enum: test.TestEnum { FOO = 0, BAR = 1, BAZ = 2 }
     ok($msg->can('enum_field'), 'Generated getter for enum_field');

@@ -10,7 +10,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'scalar map field accessors' => sub {
-    my $msg = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     
     ok($msg->can('map_int32_int32'), 'Generated getter for map_int32_int32');
     my $map = $msg->map_int32_int32;
@@ -48,7 +48,7 @@ subtest 'scalar map field accessors' => sub {
 };
 
 subtest 'string map field accessors' => sub {
-    my $msg = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     my $map = $msg->map_string_string;
     
     $map->{foo} = "bar";
@@ -65,17 +65,17 @@ subtest 'string map field accessors' => sub {
 };
 
 subtest 'message map field accessors' => sub {
-    my $msg = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     my $map = $msg->map_string_nested_message;
     
-    my $sub1 = protobuf_test_messages::proto2::TestAllTypesProto2::NestedMessage->new();
+    my $sub1 = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2::NestedMessage->new();
     $sub1->set_a(123);
     
     $map->{m1} = $sub1;
     
     my $got = $map->{m1};
     ok($got, 'Got message from map');
-    isa_ok($got, 'protobuf_test_messages::proto2::TestAllTypesProto2::NestedMessage');
+    isa_ok($got, 'Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2::NestedMessage');
     is($got->a, 123, 'Message data correct');
     
     # Update through retrieved object

@@ -72,6 +72,15 @@ my @XS_HELPER_C_FILES = get_xs_helper_c_files();
 
 my @COMMON_C_FILES = (@UPB_C_FILES, @UTF8_C_FILES, @GENERATED_C_FILES, @XS_HELPER_C_FILES);
 
+# Pure UPB object files for the protoc plugin (no Perl dependencies)
+my @PURE_UPB_O_FILES = map {
+    my $o = $_;
+    $o =~ s{^\.\./}{};
+    $o =~ s/\.cc?$/$Config{obj_ext}/;
+    $o;
+} (@UPB_C_FILES, @UTF8_C_FILES, @GENERATED_C_FILES);
+my $PURE_UPB_O_STRING = join(' ', @PURE_UPB_O_FILES);
+
 # Mangle object file names to avoid collisions and place them in the current dir (perl/)
 my @COMMON_O_FILES = map {
     my $o = $_;
@@ -317,8 +326,13 @@ sub MY::postamble {
     my $protoc_plugin_src = "protoc/protoc-gen-perl-pb.cc";
     my $protoc_plugin_obj = "protoc/protoc-gen-perl-pb.o";
     my $protoc_plugin_exe = "protoc-gen-perl-pb";
+    my $plugin_upb_c = "../upb_generator/stage0/google/protobuf/compiler/plugin.upb.c";
+    my $plugin_upb_o = "protoc/plugin.upb.o";
+    my $descriptor_upb_c = "../upb/reflection/stage0/google/protobuf/descriptor.upb.c";
+    my $descriptor_upb_o = "protoc/descriptor.upb.o";
+    
     my $protoc_cflags = "-g -D_GNU_SOURCE -std=c++17 -Wall -DUPB_BOOTSTRAP_STAGE=0";
-    my $protoc_inc = "-I. -I./protoc -I.. -I../upb -I../src -I../third_party/utf8_range -I../upb/reflection/stage0 -I../upb/reflection/cmake -I$Config{archlibexp}/CORE";
+    my $protoc_inc = "-I. -I./protoc -I.. -I../upb -I../src -I../third_party/utf8_range -I../upb/reflection/stage0 -I../upb/reflection/cmake -I../upb_generator/stage0 -I$Config{archlibexp}/CORE";
 
     $make_frag .= main::_render_tt('protoc_plugin_compile.mk.tt', {
         src => $protoc_plugin_src,
@@ -328,11 +342,14 @@ sub MY::postamble {
     });
     $make_frag .= $/;
 
+    # Rules for upb plugin objects
+    $make_frag .= "$plugin_upb_o: $plugin_upb_c\n\t\$(CC) -I. -I.. -I../upb -I../upb_generator/stage0 -I../upb/reflection/stage0 -O2 -c $plugin_upb_c -o $plugin_upb_o\n\n";
+
     $make_frag .= main::_render_tt('protoc_plugin_link.mk.tt', {
         exe => $protoc_plugin_exe,
-        obj => $protoc_plugin_obj,
+        obj => "$protoc_plugin_obj $plugin_upb_o",
         common_lib => $COMMON_LIB,
-        common_o => $COMMON_O_STRING,
+        common_o => $PURE_UPB_O_STRING,
         sanitizer_flags => $sanitizer_flags,
     });
     $make_frag .= $/;

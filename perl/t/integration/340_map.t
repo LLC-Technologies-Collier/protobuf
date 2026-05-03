@@ -10,11 +10,11 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'map cross-message copy' => sub {
-    my $msg1 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg1 = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg1->map_string_string->{a} = "A";
     $msg1->map_string_string->{b} = "B";
     
-    my $msg2 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg2 = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg2->set('map_string_string', $msg1->map_string_string);
     
     is(scalar(keys %{$msg2->map_string_string}), 2, 'Map copied to another message');
@@ -26,12 +26,12 @@ subtest 'map cross-message copy' => sub {
 };
 
 subtest 'message map cross-message copy' => sub {
-    my $msg1 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
-    my $sub = protobuf_test_messages::proto2::TestAllTypesProto2::NestedMessage->new();
+    my $msg1 = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
+    my $sub = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2::NestedMessage->new();
     $sub->set_a(100);
     $msg1->map_string_nested_message->{key} = $sub;
     
-    my $msg2 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg2 = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg2->set('map_string_nested_message', $msg1->map_string_nested_message);
     
     is($msg2->map_string_nested_message->{key}->a, 100, 'Message map copied');
@@ -42,11 +42,11 @@ subtest 'message map cross-message copy' => sub {
 };
 
 subtest 'map copy_from' => sub {
-    my $msg1 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg1 = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     my $map1 = $msg1->map_int32_int32;
     $map1->{1} = 10;
 
-    my $msg2 = protobuf_test_messages::proto2::TestAllTypesProto2->new();
+    my $msg2 = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     my $map2 = $msg2->map_int32_int32;
 
     $map2->copy_from($map1);
