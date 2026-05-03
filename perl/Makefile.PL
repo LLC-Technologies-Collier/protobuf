@@ -350,7 +350,46 @@ sub MY::postamble {
     return '';
     }
 
-    WriteMakefile(
+# --- Clean list generation ---
+my %clean_files_map = map { $_ => 1 } (
+    'blib',
+    'ppport.h',
+    'libprotobufperl.$(DLEXT)',
+    'protoc/protoc-gen-perl-pb.o',
+    'protoc-gen-perl-pb',
+    @COMMON_O_FILES,
+    't/c/upb-perl-test.o',
+);
+
+# Add C test binaries and their objects
+if (-f 't/c/c_test_config.json') {
+    require JSON::MaybeXS;
+    require Path::Tiny;
+    my $c_test_config = JSON::MaybeXS::decode_json(Path::Tiny::path('t/c/c_test_config.json')->slurp_utf8);
+    foreach my $test_key (keys %$c_test_config) {
+        $clean_files_map{"t/c/$test_key"} = 1;
+        $clean_files_map{"t/c/$test_key.o"} = 1;
+        my $config = $c_test_config->{$test_key} || {};
+        if (my $extra_src = $config->{extra_src}) {
+            my @extras = ref $extra_src eq 'ARRAY' ? @$extra_src : ($extra_src);
+            foreach my $src (@extras) {
+                my $obj = $src;
+                $obj =~ s/\.cc?$/.o/;
+                $clean_files_map{$obj} = 1;
+            }
+        }
+    }
+}
+# Add benchmark binaries
+foreach my $t (glob("t/c/benchmark/*.c")) {
+    $t =~ s/\.c$//;
+    $clean_files_map{$t} = 1;
+    $clean_files_map{"$t.o"} = 1;
+}
+
+my @clean_files = sort keys %clean_files_map;
+
+WriteMakefile(
 
 
     NAME              => 'Protobuf',
@@ -394,7 +433,7 @@ sub MY::postamble {
     LDFLAGS           => "$Config{ldflags} $sanitizer_flags",
     
     # Clean the generated object files and the static library
-    clean             => { FILES => join(' ', 'blib', 'protoc/protoc-gen-perl-pb.o', 'protoc-gen-perl-pb', 'ppport.h') },
+    clean             => { FILES => join(' ', sort @clean_files) },
 
 
 );

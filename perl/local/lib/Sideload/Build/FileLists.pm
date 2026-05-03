@@ -34,7 +34,7 @@ sub get_upb_c_files {
 sub get_utf8_c_files {
     my ($third_party_root) = @_;
     $third_party_root //= File::Spec->catfile("..", "third_party");
-    return grep { !m{/(lemire|range)-/} }
+    return grep { !m{/(lemire|range|main)} }
       glob(File::Spec->catfile($third_party_root, "utf8_range", "*.c"));
 }
 

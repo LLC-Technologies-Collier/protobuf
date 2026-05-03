@@ -50,6 +50,7 @@ int main(int argc, char** argv) {
     // 1. Test map<int32, int32>
     const upb_FieldDef *map_ii_field = upb_MessageDef_FindFieldByName(mdef, "map_int32_int32");
     ok(map_ii_field != NULL, "Found map_int32_int32");
+    
     upb_Map* map_ii = upb_Message_Mutable(msg, map_ii_field, arena).map;
     SV* map_ii_sv = PerlUpb_Map_New(aTHX_ map_ii, map_ii_field, arena_sv);
 
