@@ -28,11 +28,11 @@ _FLAGS = {
         default = "off",
     ),
     "cc_proto_library_header_suffixes": struct(
-        native = lambda ctx: getattr(ctx.fragments.proto, "cc_proto_library_header_suffixes"),
+        native = lambda ctx: _get_native_suffixes(ctx, "cc_proto_library_header_suffixes", [".pb.h"]),
         default = [".pb.h"],
     ),
     "cc_proto_library_source_suffixes": struct(
-        native = lambda ctx: getattr(ctx.fragments.proto, "cc_proto_library_source_suffixes"),
+        native = lambda ctx: _get_native_suffixes(ctx, "cc_proto_library_source_suffixes", [".pb.cc"]),
         default = [".pb.cc"],
     ),
     "_proto_toolchain_for_java": struct(
@@ -48,6 +48,16 @@ _FLAGS = {
         default = "//:cc_toolchain",
     ),
 }
+
+def _get_native_suffixes(ctx, attr, default):
+    if not hasattr(ctx.fragments.proto, attr):
+        return default
+    suffixes = getattr(ctx.fragments.proto, attr)
+    if type(suffixes) == "list":
+        return suffixes
+    # If it's a method/function, we are likely not allowed to call it (private API).
+    # Return the default suffixes which are standard for Protobuf.
+    return default
 
 def get_flag_value(ctx, flag_name):
     """Returns the value of the given flag in Starlark if it's set, otherwise reads the Java flag value, if the proto fragment exists.

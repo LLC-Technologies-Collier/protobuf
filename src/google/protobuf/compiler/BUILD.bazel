@@ -39,7 +39,10 @@ cc_proto_library(
 
 upb_c_proto_library(
     name = "plugin_upb_c_proto",
-    visibility = ["//upb_generator:__subpackages__"],
+    visibility = [
+        "//perl:__subpackages__",
+        "//upb_generator:__subpackages__",
+    ],
     deps = [":plugin_proto"],
 )
 

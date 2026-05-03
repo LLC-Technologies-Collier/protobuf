@@ -227,7 +227,7 @@ message TestAllTypesProto2 {
   message MessageSetCorrect {
     option message_set_wire_format = true;
 
-    extensions 4 to max;
+    extensions 4 to 536870911;
   }
 
   message MessageSetCorrectExtension1 {
@@ -387,7 +387,7 @@ message TestAllRequiredTypesProto2 {
   message MessageSetCorrect {
     option message_set_wire_format = true;
 
-    extensions 4 to max;
+    extensions 4 to 536870911;
   }
 
   message MessageSetCorrectExtension1 {
