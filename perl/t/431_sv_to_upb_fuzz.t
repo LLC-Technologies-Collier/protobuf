@@ -14,17 +14,20 @@ subtest 'Type-Fuzzing: SV to Upb' => sub {
     # 1. CodeRef
     eval { $msg->set_value(sub { 123 }) };
     ok($@, "Setting field to CodeRef croaks");
-    like($@, qr/did not pass type constraint "Int"/, "Correct error for CodeRef");
+    like($@, qr/Expected an Integer|did not pass type constraint "Int"/, 
+ "Correct error for CodeRef");
 
     # 2. Glob
     eval { $msg->set_value(*STDIN) };
     ok($@, "Setting field to Glob croaks");
-    like($@, qr/did not pass type constraint "Int"/, "Correct error for Glob");
+    like($@, qr/Expected an Integer|did not pass type constraint "Int"/, 
+ "Correct error for Glob");
 
     # 3. HashRef for scalar field
     eval { $msg->set_value({ a => 1 }) };
     ok($@, "Setting field to HashRef croaks");
-    like($@, qr/did not pass type constraint "Int"/, "Correct error for HashRef");
+    like($@, qr/Expected an Integer|did not pass type constraint "Int"/, 
+ "Correct error for HashRef");
 };
 
 subtest 'Range-checks for narrow integers' => sub {

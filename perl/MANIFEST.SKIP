@@ -16,3 +16,9 @@
 ^pcre2/
 \.log$
 ^t/data/.*\.bin$
+^Protobuf-[\d\.]+/
+^lib/.*\.c$
+^maint/.*\.pl~
+^Bench/
+^tmp_check_use
+^stderr\.txt$

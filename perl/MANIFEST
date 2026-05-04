@@ -222,10 +222,11 @@ pcre2.BUILD
 perlobject.map
 .perltidyrc
 ppport.h
+Protobuf-0.01.tar
+Protobuf-0.01.tar.gz
 protoc/protoc-gen-perl-pb.cc
 protoc/string_utils.cc
 README.md
-stderr.txt
 t/001_arena.t
 t/002_descriptor_pool.t
 t/003_descriptors.t
@@ -917,6 +918,7 @@ xs/protobuf/arena.c
 xs/protobuf/arena.h
 xs/protobuf/arena_tmpfs.c
 xs/protobuf.c
+xs/protobuf/fast_accessors.c
 xs/protobuf.h
 xs/protobuf/message.c
 xs/protobuf/message.h
@@ -943,6 +945,7 @@ xt/98-pod_coverage.t
 xt/98-pod.t
 xt/author/perlcritic.t
 xt/author/pod.t
+xt/benchmark/bench.proto
 xt/benchmark/core.t
 xt/benchmark/head_to_head.t
 xt/benchmark/performance_guard.t

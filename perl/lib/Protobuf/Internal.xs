@@ -6,6 +6,7 @@
 #include "xs/protobuf/utils.h"
 #include "xs/protobuf/registry.h"
 #include "xs/descriptor/message.h"
+#include "xs/protobuf/message.h"
 
 MODULE = Protobuf::Internal  PACKAGE = Protobuf::Internal
 

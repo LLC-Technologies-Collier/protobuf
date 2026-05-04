@@ -17,4 +17,7 @@ SV* PerlUpb_Message_GetArena(pTHX_ SV* message_sv);
 // Cross-process fingerprint for object identity
 SV* PerlUpb_Message_GetFingerprint(pTHX_ SV* message_sv);
 
+// Runtime XSUB generation for performance
+void PerlUpb_InstallFastAccessors(pTHX_ const char* perl_class, const upb_MessageDef* mdef);
+
 #endif // PERL_PROTOBUF_MESSAGE_H_

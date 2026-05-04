@@ -81,13 +81,13 @@ SV* PerlUpb_Message_Serialize(pTHX_ SV* message_sv) {
     const upb_MiniTable *mt = upb_MessageDef_MiniTable(mdef);
     if (!mt) croak("Failed to get MiniTable");
 
-    upb_Arena* enc_arena = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
+    upb_Arena* enc_arena = upb_Arena_New();
     char* buf = NULL;
     size_t size = 0;
 
     upb_EncodeStatus status = upb_Encode(msg, mt, kUpb_EncodeOption_CheckRequired, enc_arena, &buf, &size);
     if (status != kUpb_EncodeStatus_Ok) {
-        PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
+        upb_Arena_Free(enc_arena);
         if (status == kUpb_EncodeStatus_MissingRequired) {
             croak("Failed to serialize message: Missing required fields");
         }
@@ -95,7 +95,7 @@ SV* PerlUpb_Message_Serialize(pTHX_ SV* message_sv) {
     }
 
     SV* result = newSVpvn(buf, size);
-    PerlUpb_Arena_Release(aTHX_ enc_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
+    upb_Arena_Free(enc_arena);
     return result;
 }
 

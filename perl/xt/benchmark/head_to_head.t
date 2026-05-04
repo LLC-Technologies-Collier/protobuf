@@ -12,6 +12,8 @@ use Path::Tiny;
 use File::Spec;
 use Cwd;
 
+note("Setting up benchmark...");
+
 # Use proto2 for maximum compatibility
 my $proto_content = <<'EOF';
 syntax = "proto2";
@@ -24,6 +26,7 @@ message BenchMessage {
 EOF
 
 # 1. Setup our library
+note("Setting up our library...");
 my $pool = TestHelpers->get_generated_pool();
 my $tmpdir = tempdir(CLEANUP => 1);
 my $proto_file = "bench.proto";
@@ -38,16 +41,20 @@ $pool->add_serialized_file_descriptor_set($descriptor_bin);
 my $our_class = "Bench::Bench::BenchMessage";
 
 # 2. Setup G::PB::Dynamic
+note("Setting up G::PB::Dynamic...");
 my $dynamic = Google::ProtocolBuffers::Dynamic->new;
 $dynamic->load_serialized_string($descriptor_bin);
 $dynamic->map_message("bench.BenchMessage", "DynamicMessage");
 $dynamic->resolve_references();
 
 # 3. Setup G::PB (Pure Perl)
+note("Setting up G::PB (Pure Perl)...");
 my @pp_classes = Google::ProtocolBuffers->parse($proto_content,
     { create_objects => 1, create_accessors => 1 }
 );
 my $pp_class = $pp_classes[0];
+
+note("Setup complete. Starting subtests...");
 
 subtest 'Head-to-Head Benchmarking' => sub {
     my $id = 12345;
@@ -55,13 +62,14 @@ subtest 'Head-to-Head Benchmarking' => sub {
     my @tags = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
     # warmup
+    note("Warmup...");
     my $m_our = $our_class->new;
     $m_our->set_id($id);
     $m_our->set_name($name);
     $m_our->set_tags(\@tags);
     my $data = $m_our->serialize;
 
-    diag("--- Accessor Performance (Existing Object) ---");
+    note("--- Accessor Performance (Existing Object) ---");
     my $m_our_a = $our_class->new;
     $m_our_a->set_id($id); $m_our_a->set_name($name);
     my $m_dyn_a = DynamicMessage->new;
@@ -84,7 +92,7 @@ subtest 'Head-to-Head Benchmarking' => sub {
         },
     });
 
-    diag("--- Setter Performance (Existing Object) ---");
+    note("--- Setter Performance (Existing Object) ---");
     my $counter = 0;
     cmpthese(-3, {
         '01_ours_set' => sub {
@@ -101,7 +109,7 @@ subtest 'Head-to-Head Benchmarking' => sub {
         },
     });
 
-    diag("--- Serialization Performance (Bypassing Cache) ---");
+    note("--- Serialization Performance (Bypassing Cache) ---");
     cmpthese(-3, {
         '01_ours_ser' => sub {
             $m_our_a->set_id(++$counter); # Force dirty
@@ -117,7 +125,7 @@ subtest 'Head-to-Head Benchmarking' => sub {
         },
     });
 
-    diag("--- Parsing Performance ---");
+    note("--- Parsing Performance ---");
     cmpthese(-3, {
         '01_ours_parse' => sub {
             my $m = $our_class->parse($data);

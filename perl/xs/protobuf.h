@@ -9,6 +9,8 @@
 #include "xs/protobuf/arena.h"
 #include "xs/protobuf/obj_cache.h"
 #include "xs/protobuf/utils.h"
+#include "xs/descriptor/message.h"
+#include "xs/protobuf/message.h"
 
 // Top-level module initialization
 void PerlUpb_Protobuf_InitModule(pTHX);

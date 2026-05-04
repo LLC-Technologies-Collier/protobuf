@@ -54,16 +54,26 @@ sub get_generated_c_files {
 sub get_xs_helper_c_files {
     my ($project_root) = @_;
     my @files;
-    my $dir = File::Spec->catdir($project_root, 'perl', 'xs', 'helpers');
-    if (!-d $dir) {
-        $dir = File::Spec->catdir($project_root, 'xs', 'helpers');
+    my @dirs = (
+        File::Spec->catdir($project_root, 'perl', 'xs', 'helpers'),
+        File::Spec->catdir($project_root, 'perl', 'xs', 'protobuf'),
+    );
+    # If we are in the vendored dir, perl/xs might not exist at that level
+    if (!-d $dirs[0]) {
+        @dirs = (
+            File::Spec->catdir($project_root, 'xs', 'helpers'),
+            File::Spec->catdir($project_root, 'xs', 'protobuf'),
+        );
     }
-    return unless -d $dir;
-    find(sub {
-        if (/\.c$/) {
-            push @files, $File::Find::name;
-        }
-    }, $dir);
+    
+    foreach my $dir (@dirs) {
+        next unless -d $dir;
+        find(sub {
+            if (/\.c$/) {
+                push @files, $File::Find::name;
+            }
+        }, $dir);
+    }
     return @files;
 }
 

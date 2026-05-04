@@ -201,6 +201,23 @@ our %EXPORT_TAGS = (
 require XSLoader;
 XSLoader::load(__PACKAGE__, $VERSION);
 
-# init_registry() is called from Protobuf.pm
+# wrap_repeated and wrap_map are used by XS to provide Public wrappers
+sub wrap_repeated {
+    my ($val) = @_;
+    return $val unless ref($val) eq 'Protobuf::Internal::Repeated';
+    return $val->{_public} if $val->{_public};
+    my $proxy;
+    tie @$proxy, 'Protobuf::Internal::Repeated', $val;
+    return $val->{_public} = bless \@$proxy, 'Protobuf::Internal::Repeated::Public';
+}
+
+sub wrap_map {
+    my ($val) = @_;
+    return $val unless ref($val) eq 'Protobuf::Internal::Map';
+    return $val->{_public} if $val->{_public};
+    my $proxy;
+    tie %$proxy, 'Protobuf::Internal::Map', $val;
+    return $val->{_public} = bless \%$proxy, 'Protobuf::Internal::Map::Public';
+}
 
 1;

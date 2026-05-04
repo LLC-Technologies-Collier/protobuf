@@ -89,6 +89,8 @@ package Protobuf::ClassGenerator;
 
 use strict;
 use warnings;
+use Protobuf;
+use Protobuf::Internal qw(:all);
 use Carp qw(croak);
 use Log::Any qw($log);
 use Protobuf::Descriptor::EnumValue;
@@ -96,6 +98,7 @@ use Protobuf::Descriptor::EnumValue;
 our %DESCRIPTOR_REGISTRY;
 our %FIELD_REGISTRY;
 our %EXTENSION_RANGES;
+our %GENERATED;
 
 sub register_extension_range {
     my ($class, $full_msg_name, $start, $end) = @_;
@@ -296,11 +299,10 @@ sub _generate_for_message {
         eval "require $ext_class";
     }
 
-    # Check if already generated
-    if ($perl_class->can('new')) {
-        _inject_wkt($perl_class, $ext_class) if $ext_class;
-        return;
-    }
+    # Guard against double-generation
+    return if $GENERATED{$perl_class}++;
+
+    # Special handling for Well-Known Types
     
     $DESCRIPTOR_REGISTRY{$perl_class} = $mdef;
     $log->debugf("GENERATING CLASS: %s", $perl_class);
@@ -359,42 +361,11 @@ EOC
         my $name = $fdef->name;
         $FIELD_REGISTRY{$perl_class}{$name} = $fdef;
         
-        my $type_check_code = _get_type_tiny_code($fdef);
-
-        $code .= <<"EOC";
-my \$type_$name = $type_check_code;
-sub $name {
-    my \$self = shift;
-    if (\@_) {
-        my \$val_to_set = (\$type_$name && \$type_$name->has_coercion) ? \$type_$name->coerce(\$_[0]) : \$_[0];
-        \$type_$name->assert_valid(\$val_to_set) if \$type_$name;
-        delete \$self->{_wrappers}{'$name'};
-        return \$self->_xs_set_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'}, \$val_to_set);
-    }
-    return \$self->{_wrappers}{'$name'} if exists \$self->{_wrappers}{'$name'};
-    my \$val = \$self->_xs_get_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'});
-    if (ref(\$val) && ref(\$val) =~ /^Protobuf::Internal::(?:Repeated|Map)\$/) {
-         my \$public_class = ref(\$val) . '::Public';
-         my \$proxy;
-         if (ref(\$val) eq 'Protobuf::Internal::Repeated') {
-             tie \@\$proxy, 'Protobuf::Internal::Repeated', \$val;
-             return \$self->{_wrappers}{'$name'} = bless \\@\$proxy, \$public_class;
-         } else {
-             tie %\$proxy, 'Protobuf::Internal::Map', \$val;
-             return \$self->{_wrappers}{'$name'} = bless \\%\$proxy, \$public_class;
-         }
-    }
-    return \$val;
-}
-sub set_$name {
-    my (\$self, \$value) = \@_;
-    my \$val_to_set = (\$type_$name && \$type_$name->has_coercion) ? \$type_$name->coerce(\$value) : \$value;
-    \$type_$name->assert_valid(\$val_to_set) if \$type_$name;
-    delete \$self->{_wrappers}{'$name'};
-    return \$self->_xs_set_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'}, \$val_to_set);
-}
-EOC
-
+        # We now use Fast Accessors (XSUBs) installed at the end of this sub.
+        # We only generate these Moo placeholders if we want to support 
+        # Type::Tiny validation or if XSUBs are disabled.
+        # For now, we skip generating them to avoid 'redefined' warnings.
+        
         if ($fdef->is_repeated) {
             $code .= <<"EOC";
 sub add_$name {
@@ -405,17 +376,6 @@ sub add_$name {
 }
 EOC
         }
-
-        $code .= <<"EOC";
-sub has_$name {
-    my \$self = shift;
-    return \$self->_xs_has_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'});
-}
-sub clear_$name {
-    my \$self = shift;
-    return \$self->_xs_clear_by_fdef(\$Protobuf::ClassGenerator::FIELD_REGISTRY{'$perl_class'}{'$name'});
-}
-EOC
     }
 
     my $oneof_count = $mdef->oneof_count;
@@ -437,6 +397,9 @@ EOC
         eval $code;
     }
     die "Failed to generate class $perl_class: $@" if $@;
+
+    # Install Fast Accessors (XSUBs) to overwrite the slow Moo-based ones
+    Protobuf::_install_fast_accessors($perl_class, $mdef);
 
     if ($ext_class) {
         _inject_wkt($perl_class, $ext_class);

@@ -133,13 +133,35 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
     if (upb_FieldDef_IsMap(f)) {
         upb_Map *map = (upb_Map*)val->map_val;
         if (!map) return newSV(0); 
-        return PerlUpb_Map_New(aTHX_ map, f, parent_arena_sv);
+        SV* internal = PerlUpb_Map_New(aTHX_ map, f, parent_arena_sv);
+        
+        if (get_cv("Protobuf::Internal::wrap_map", 0)) {
+            dSP; ENTER; SAVETMPS;
+            PUSHMARK(SP); XPUSHs(sv_2mortal(internal)); PUTBACK;
+            int count = call_pv("Protobuf::Internal::wrap_map", G_SCALAR);
+            SPAGAIN;
+            SV* wrapped = (count == 1) ? SvREFCNT_inc(POPs) : &PL_sv_undef;
+            PUTBACK; FREETMPS; LEAVE;
+            return wrapped;
+        }
+        return internal;
     }
 
     if (upb_FieldDef_IsRepeated(f)) {
         upb_Array *arr = (upb_Array*)val->array_val;
         if (!arr) return newSV(0); 
-        return PerlUpb_Repeated_New(aTHX_ arr, f, parent_arena_sv);
+        SV* internal = PerlUpb_Repeated_New(aTHX_ arr, f, parent_arena_sv);
+
+        if (get_cv("Protobuf::Internal::wrap_repeated", 0)) {
+            dSP; ENTER; SAVETMPS;
+            PUSHMARK(SP); XPUSHs(sv_2mortal(internal)); PUTBACK;
+            int count = call_pv("Protobuf::Internal::wrap_repeated", G_SCALAR);
+            SPAGAIN;
+            SV* wrapped = (count == 1) ? SvREFCNT_inc(POPs) : &PL_sv_undef;
+            PUTBACK; FREETMPS; LEAVE;
+            return wrapped;
+        }
+        return internal;
     } else {
         return convert_singular_upb_to_sv(aTHX_ val, f, parent_arena_sv);
     }

@@ -24,7 +24,7 @@ subtest 'Type::Tiny validation in setters' => sub {
     # Let's try a HashRef where a string is expected.
     eval { $msg->v_string({ a => 1 }) };
     ok($@, 'Invalid set (HashRef to Str) fails') or diag("Should have failed but didn't");
-    like($@, qr/did not pass type constraint "Str"/, 'Error message is correct');
+    like($@, qr/Expected a String|did not pass type constraint "Str"/, 'Error message is correct');
 };
 
 subtest 'Type::Tiny coercion in setters (sub-messages)' => sub {

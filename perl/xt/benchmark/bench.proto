@@ -1,0 +1,7 @@
+syntax = "proto2";
+package bench;
+message BenchMessage {
+  optional int32 id = 1;
+  optional string name = 2;
+  repeated int32 tags = 3;
+}
