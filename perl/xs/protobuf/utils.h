@@ -28,6 +28,10 @@ HV* PerlUpb_GetMessageStash(pTHX_ const upb_MessageDef* mdef);
 // Logs a message and dies with Perl context
 void PerlUpb_Error_Die(pTHX_ const char* fmt, ...);
 
+// Maps upb_DecodeStatus to a descriptive Perl croak message and dies.
+#include "upb/wire/decode.h"
+void PerlUpb_DecodeStatus_Die(pTHX_ upb_DecodeStatus status, const char* context);
+
 // Wraps a C pointer into a Perl object, optionally keeping another Perl object (the arena) alive.
 SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash, uint16_t flags);
 

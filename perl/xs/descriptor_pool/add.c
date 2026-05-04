@@ -42,13 +42,31 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
             const char* symbol = strrchr(msg, ' ');
             if (symbol) {
                 symbol++; // Skip space
-                const upb_MessageDef* existing = upb_DefPool_FindMessageByName(pool, symbol);
-                if (existing) {
-                    const upb_FileDef* existing_file = upb_MessageDef_File(existing);
-                    croak("Failed to add file to pool: %s (already defined in %s)", 
-                          msg, upb_FileDef_Name(existing_file));
+                const char* existing_file_name = "unknown file";
+                const char* type_str = "symbol";
+
+                const upb_MessageDef* m = upb_DefPool_FindMessageByName(pool, symbol);
+                if (m) {
+                    existing_file_name = upb_FileDef_Name(upb_MessageDef_File(m));
+                    type_str = "message";
+                } else {
+                    const upb_EnumDef* e = upb_DefPool_FindEnumByName(pool, symbol);
+                    if (e) {
+                        existing_file_name = upb_FileDef_Name(upb_EnumDef_File(e));
+                        type_str = "enum";
+                    } else {
+                        const upb_ServiceDef* s = upb_DefPool_FindServiceByName(pool, symbol);
+                        if (s) {
+                            existing_file_name = upb_FileDef_Name(upb_ServiceDef_File(s));
+                            type_str = "service";
+                        }
+                    }
                 }
+                croak("Failed to add file to pool: %s (duplicate %s '%s' already defined in %s)", 
+                      msg, type_str, symbol, existing_file_name);
             }
+        } else if (strstr(msg, "duplicate file name")) {
+            croak("Failed to add file to pool: %s (already defined in this DescriptorPool)", msg);
         }
         croak("Failed to add file to pool: %s", msg);
     }
@@ -90,13 +108,31 @@ SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* se
                 const char* symbol = strrchr(msg, ' ');
                 if (symbol) {
                     symbol++;
-                    const upb_MessageDef* existing = upb_DefPool_FindMessageByName(pool, symbol);
-                    if (existing) {
-                        const upb_FileDef* existing_file = upb_MessageDef_File(existing);
-                        croak("Failed to add file %zu to pool: %s (already defined in %s)", 
-                              i, msg, upb_FileDef_Name(existing_file));
+                    const char* existing_file_name = "unknown file";
+                    const char* type_str = "symbol";
+
+                    const upb_MessageDef* m = upb_DefPool_FindMessageByName(pool, symbol);
+                    if (m) {
+                        existing_file_name = upb_FileDef_Name(upb_MessageDef_File(m));
+                        type_str = "message";
+                    } else {
+                        const upb_EnumDef* e = upb_DefPool_FindEnumByName(pool, symbol);
+                        if (e) {
+                            existing_file_name = upb_FileDef_Name(upb_EnumDef_File(e));
+                            type_str = "enum";
+                        } else {
+                            const upb_ServiceDef* s = upb_DefPool_FindServiceByName(pool, symbol);
+                            if (s) {
+                                existing_file_name = upb_FileDef_Name(upb_ServiceDef_File(s));
+                                type_str = "service";
+                            }
+                        }
                     }
+                    croak("Failed to add file %zu to pool: %s (duplicate %s '%s' already defined in %s)", 
+                          i, msg, type_str, symbol, existing_file_name);
                 }
+            } else if (strstr(msg, "duplicate file name")) {
+                croak("Failed to add file %zu to pool: %s (already defined in this DescriptorPool)", i, msg);
             }
             croak("Failed to add file %zu to pool: %s", i, msg);
         }

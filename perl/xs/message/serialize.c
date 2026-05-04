@@ -42,7 +42,7 @@ SV* PerlUpb_Message_Parse(pTHX_ SV* descriptor_sv, SV* data_sv) {
     upb_DecodeStatus status = upb_Decode(data, len, msg, mt, NULL, 0, arena);
     if (status != kUpb_DecodeStatus_Ok) {
         SvREFCNT_dec(arena_sv);
-        croak("Failed to parse message: %d", status);
+        PerlUpb_DecodeStatus_Die(aTHX_ status, "parse message");
     }
 
     SV *msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
@@ -67,7 +67,7 @@ void PerlUpb_Message_ParseFrom(pTHX_ SV* message_sv, SV* data_sv) {
     // upb_Decode merges into the existing message
     upb_DecodeStatus status = upb_Decode(data, len, msg, mt, NULL, 0, arena);
     if (status != kUpb_DecodeStatus_Ok) {
-        croak("Failed to parse and merge message: %d", status);
+        PerlUpb_DecodeStatus_Die(aTHX_ status, "parse and merge message");
     }
 }
 
@@ -368,7 +368,7 @@ SV* PerlUpb_Message_FromHandle(pTHX_ SV* descriptor_sv, SV* fh_sv, bool length_p
     upb_DecodeStatus status = upb_Decode(buf, total_to_read, msg, mt, NULL, 0, arena);
     if (status != kUpb_DecodeStatus_Ok) {
         SvREFCNT_dec(arena_sv);
-        croak("Failed to parse message from handle: %d", status);
+        PerlUpb_DecodeStatus_Die(aTHX_ status, "parse message from handle");
     }
 
     SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);

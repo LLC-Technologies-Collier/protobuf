@@ -273,6 +273,37 @@ void PerlUpb_Error_Die(pTHX_ const char* fmt, ...) {
     va_end(args);
 }
 
+void PerlUpb_DecodeStatus_Die(pTHX_ upb_DecodeStatus status, const char* context) {
+    const char* status_str = upb_DecodeStatus_String(status);
+    const char* description = "Unknown error";
+
+    switch (status) {
+        case kUpb_DecodeStatus_Ok:
+            return; // Should not happen if this function is called
+        case kUpb_DecodeStatus_Malformed:
+            description = "Protobuf wire format is malformed or corrupt";
+            break;
+        case kUpb_DecodeStatus_OutOfMemory:
+            description = "Out of memory during decoding (Arena allocation failed)";
+            break;
+        case kUpb_DecodeStatus_BadUtf8:
+            description = "String field contains invalid UTF-8 data";
+            break;
+        case kUpb_DecodeStatus_MaxDepthExceeded:
+            description = "Message nesting depth exceeds the configured limit";
+            break;
+        case kUpb_DecodeStatus_MissingRequired:
+            description = "Message is missing required fields (proto2 only)";
+            break;
+    }
+
+    if (context) {
+        croak("Failed to %s: %s (%s)", context, description, status_str);
+    } else {
+        croak("Protobuf decode error: %s (%s)", description, status_str);
+    }
+}
+
 static int wrapper_cleanup(pTHX_ SV* sv, MAGIC* mg) {
     if (PL_dirty) return 0;
     void* ptr = (void*)mg->mg_ptr;

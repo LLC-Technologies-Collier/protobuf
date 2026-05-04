@@ -336,7 +336,7 @@ _xs_parse(class_name, data, options_sv = &PL_sv_undef)
         upb_DecodeStatus status = upb_Decode(buf, len, msg, mt, NULL, decode_options, arena);
         if (status != kUpb_DecodeStatus_Ok) {
             SvREFCNT_dec(arena_sv);
-            croak("Failed to parse message: %d", status);
+            PerlUpb_DecodeStatus_Die(aTHX_ status, "parse message");
         }
         
         RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, flags);
