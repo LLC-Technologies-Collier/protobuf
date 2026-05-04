@@ -49,14 +49,31 @@ package Protobuf;
 
 use strict;
 use warnings;
+use Log::Any qw($log);
 
-our $VERSION = '0.01';
+our $VERSION;
+BEGIN { $VERSION = '0.01'; }
 
 require XSLoader;
-XSLoader::load('Protobuf', $VERSION);
+our $HAS_XS;
+BEGIN {
+    eval {
+        require XSLoader;
+        XSLoader::load('Protobuf', $VERSION);
+        $HAS_XS = 1;
+        
+    };
+    if ($@) {
+        $HAS_XS = 0;
+        
+        $log->debugf('Protobuf XS not loaded: %s', $@) if $ENV{PROTOBUF_DEBUG};
+    }
+}
 
-use Protobuf::Internal;
-Protobuf::Internal::init_registry();
+if ($HAS_XS) {
+    require Protobuf::Internal;
+    Protobuf::Internal::init_registry();
+}
 
 our $ENGINE;
 my %engines;
@@ -72,10 +89,15 @@ sub get_engine {
         $name = $class_or_name;
     }
     
-    $name ||= $ENV{PROTOBUF_ENGINE} || 'xs';
+    $name ||= $ENV{PROTOBUF_ENGINE} || ($HAS_XS ? 'xs' : 'pure_perl');
     
     # Map high-level profiles to implementation engines
     my $engine_key = ($name =~ /^(?:xs|balanced|write_heavy|read_heavy|zero_copy)$/) ? 'xs' : 'pure_perl';
+    
+    # If we requested XS but don't have it, fallback to PurePerl
+    if ($engine_key eq 'xs' && !$HAS_XS) {
+        $engine_key = 'pure_perl';
+    }
     
     return $engines{$engine_key} if $engines{$engine_key};
     

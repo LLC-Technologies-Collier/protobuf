@@ -28,6 +28,9 @@ static struct {
 static PERL_PROTOBUF_MUTEX_T cache_mutexes[NUM_CACHE_STRIPES];
 static PERL_PROTOBUF_MUTEX_T lru_mutex;
 static int cache_mutexes_init = 0;
+#ifdef USE_ITHREADS
+static pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 
 typedef struct {
     uint64_t acquisitions;
@@ -42,7 +45,7 @@ static struct {
 
 static void LOCK_AND_PROFILE(PERL_PROTOBUF_MUTEX_T* m, contention_stat_t* s) {
 #ifdef USE_ITHREADS
-    if (pthread_mutex_trylock(m) == 0) {
+    if (PERL_PROTOBUF_MUTEX_TRYLOCK(m)) {
         s->acquisitions++;
     } else {
         s->contentions++;
@@ -56,6 +59,13 @@ static void LOCK_AND_PROFILE(PERL_PROTOBUF_MUTEX_T* m, contention_stat_t* s) {
 
 static void ensure_mutexes_init(void) {
     if (cache_mutexes_init) return;
+#ifdef USE_ITHREADS
+    pthread_mutex_lock(&init_mutex);
+    if (cache_mutexes_init) {
+        pthread_mutex_unlock(&init_mutex);
+        return;
+    }
+#endif
     for (int i = 0; i < NUM_CACHE_STRIPES; i++) {
         PERL_PROTOBUF_MUTEX_INIT(&cache_mutexes[i]);
     }
@@ -64,6 +74,9 @@ static void ensure_mutexes_init(void) {
     memset(&contention_stats, 0, sizeof(contention_stats));
     global_audit_log.init = 1;
     cache_mutexes_init = 1;
+#ifdef USE_ITHREADS
+    pthread_mutex_unlock(&init_mutex);
+#endif
 }
 
 static inline int get_stripe(const void* ptr) {

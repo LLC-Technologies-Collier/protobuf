@@ -973,3 +973,11 @@ lib/Protobuf/Engine.pm
 lib/Protobuf/Engine/XS.pm
 lib/Protobuf/Engine/PurePerl.pm
 lib/Protobuf/Engine/PurePerl/DescriptorParser.pm
+lib/Protobuf/DescriptorPool/PurePerl.pm
+lib/Protobuf/Descriptor/Base/PurePerl.pm
+lib/Protobuf/Descriptor/File/PurePerl.pm
+lib/Protobuf/Descriptor/MessageDef/PurePerl.pm
+lib/Protobuf/Descriptor/FieldDef/PurePerl.pm
+lib/Protobuf/Descriptor/EnumDef/PurePerl.pm
+lib/Protobuf/Descriptor/EnumValueDef/PurePerl.pm
+lib/Protobuf/Descriptor/OneofDef/PurePerl.pm

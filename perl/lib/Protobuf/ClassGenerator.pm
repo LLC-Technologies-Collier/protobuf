@@ -90,7 +90,11 @@ package Protobuf::ClassGenerator;
 use strict;
 use warnings;
 use Protobuf;
-use Protobuf::Internal qw(:all);
+# Protobuf::Internal is only needed for XS features
+if ($Protobuf::HAS_XS) {
+    require Protobuf::Internal;
+    Protobuf::Internal->import(':all');
+}
 use Carp qw(croak);
 use Log::Any qw($log);
 use Protobuf::Descriptor::EnumValue;
@@ -167,7 +171,7 @@ sub generate_for_file {
 
 sub _generate_recursively {
     my ($mdef, $current_ns) = @_;
-    return unless $mdef->isa('Protobuf::Descriptor::MessageDef');
+    return unless $mdef->isa('Protobuf::Descriptor::MessageDef') || $mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl');
     _generate_for_message($mdef, $current_ns);
     
     my $nested_count = $mdef->nested_message_count;
@@ -282,7 +286,7 @@ sub generate_for_message {
 
 sub _generate_for_message {
     my ($mdef, $current_ns) = @_;
-    return unless $mdef->isa('Protobuf::Descriptor::MessageDef');
+    return unless $mdef->isa('Protobuf::Descriptor::MessageDef') || $mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl');
     
     my $full_name = $mdef->full_name;
     my $normalized = $full_name;
@@ -307,6 +311,9 @@ sub _generate_for_message {
     # Special handling for Well-Known Types
     
     $DESCRIPTOR_REGISTRY{$perl_class} = $mdef;
+    if ($mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl')) {
+        $mdef->{_data}{perl_class} = $perl_class;
+    }
     $log->debugf("GENERATING CLASS: %s", $perl_class);
 
     # Generate the class using string eval
@@ -362,10 +369,31 @@ EOC
         my $name = $fdef->name;
         $FIELD_REGISTRY{$perl_class}{$name} = $fdef;
         
-        # We now use Fast Accessors (XSUBs) installed at the end of this sub.
-        # We only generate these Moo placeholders if we want to support 
-        # Type::Tiny validation or if XSUBs are disabled.
-        # For now, we skip generating them to avoid 'redefined' warnings.
+        # Perl-level accessors that delegate to the engine
+        $code .= <<"EOC";
+sub $name {
+    my \$self = shift;
+    if (\@_) {
+        return \$self->set('$name', \$_[0]);
+    }
+    return \$self->get('$name');
+}
+
+sub set_$name {
+    my (\$self, \$val) = \@_;
+    return \$self->set('$name', \$val);
+}
+
+sub has_$name {
+    my \$self = shift;
+    return \$self->has('$name');
+}
+
+sub clear_$name {
+    my \$self = shift;
+    return \$self->clear('$name');
+}
+EOC
         
         if ($fdef->is_repeated) {
             $code .= <<"EOC";
@@ -395,12 +423,16 @@ EOC
 
     {
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
+        no warnings 'redefine';
         eval $code;
     }
     die "Failed to generate class $perl_class: $@" if $@;
 
-    # Install Fast Accessors (XSUBs) to overwrite the slow Moo-based ones
-    Protobuf::_install_fast_accessors($perl_class, $mdef);
+    # Install Fast Accessors (XSUBs) to overwrite the slow Perl-based ones
+    if ($Protobuf::HAS_XS) {
+        no warnings 'redefine';
+        Protobuf::_install_fast_accessors($perl_class, $mdef);
+    }
 
     if ($ext_class) {
         _inject_wkt($perl_class, $ext_class);
@@ -413,6 +445,7 @@ sub _inject_wkt {
     my ($perl_class, $ext_class) = @_;
     no strict 'refs';
     if ($ext_class->can('get_injected_methods')) {
+        no warnings 'redefine';
         foreach my $method ($ext_class->get_injected_methods()) {
             my $full_sym = "${perl_class}::$method";
             *$full_sym = \&{"${ext_class}::$method"};

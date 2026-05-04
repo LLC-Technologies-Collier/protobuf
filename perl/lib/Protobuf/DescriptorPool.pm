@@ -141,22 +141,28 @@ use Log::Any qw($log);
 
 our $VERSION = '0.01';
 
-
 use Protobuf::Descriptor::File;
 use Protobuf::Descriptor::MessageDef;
 use Protobuf::Descriptor::Enum;
 use Protobuf::Descriptor::Field;
 use Protobuf::Descriptor::OneofDef;
 use Protobuf::ClassGenerator;
+use Protobuf::DescriptorPool::PurePerl;
+
+has '_pp_pool' => (
+    is => 'ro',
+    lazy => 1,
+    default => sub { Protobuf::DescriptorPool::PurePerl->new() },
+);
 
 has '_pool_ptr' => (
     is       => 'ro',
-    default  => sub { _xs_create_raw() },
+    default  => sub { $Protobuf::HAS_XS ? _xs_create_raw() : undef },
 );
 
 sub DEMOLISH {
     my $self = shift;
-    if (exists $self->{_pool_ptr} && $self->{_pool_ptr}) {
+    if ($Protobuf::HAS_XS && exists $self->{_pool_ptr} && $self->{_pool_ptr}) {
         _xs_destroy_raw($self->{_pool_ptr});
     }
     return;
@@ -167,13 +173,21 @@ sub CLONE {
 }
 
 sub generated_pool {
-    return _xs_generated_pool();
+    return $Protobuf::HAS_XS ? _xs_generated_pool() : __PACKAGE__->new();
 }
 
 sub add_serialized_file {
     my ($self, $serialized) = @_;
     croak('Serialized descriptor data is required') unless defined $serialized;
-    my $file = _xs_add_serialized_file($self, $serialized);
+    
+    my $file;
+    if ($Protobuf::HAS_XS) {
+        $file = _xs_add_serialized_file($self, $serialized);
+    } else {
+        my $files = $self->add_serialized_file_descriptor_set($serialized);
+        $file = $files->[0] if $files && @$files;
+    }
+
     if ($file) {
         Protobuf::ClassGenerator->generate_for_file($file);
     }
@@ -183,7 +197,14 @@ sub add_serialized_file {
 sub add_serialized_file_descriptor_set {
     my ($self, $serialized) = @_;
     croak('Serialized descriptor set data is required') unless defined $serialized;
-    my $files = _xs_add_serialized_file_descriptor_set($self, $serialized);
+
+    my $files;
+    if ($Protobuf::HAS_XS) {
+        $files = _xs_add_serialized_file_descriptor_set($self, $serialized);
+    } else {
+        $files = $self->_pp_pool->add_serialized_file_descriptor_set($serialized);
+    }
+
     if ($files && ref($files) eq 'ARRAY') {
         $log->debug('Added ' . scalar(@$files) . ' files from descriptor set');
         foreach my $file (@$files) {
@@ -195,41 +216,41 @@ sub add_serialized_file_descriptor_set {
 
 sub find_file_by_name {
     my ($self, $name) = @_;
-    return _xs_find_file_by_name($self, $name);
+    return $Protobuf::HAS_XS ? _xs_find_file_by_name($self, $name) : $self->_pp_pool->find_file_by_name($name);
 }
 
 sub find_message_by_name {
     my ($self, $name) = @_;
     $name =~ s/::/./g;
-    return _xs_find_message_by_name($self, $name);
+    return $Protobuf::HAS_XS ? _xs_find_message_by_name($self, $name) : $self->_pp_pool->find_message_by_name($name);
 }
 
 sub find_enum_by_name {
     my ($self, $name) = @_;
     $name =~ s/::/./g;
-    return _xs_find_enum_by_name($self, $name);
+    return $Protobuf::HAS_XS ? _xs_find_enum_by_name($self, $name) : $self->_pp_pool->find_enum_by_name($name);
 }
 
 sub find_service_by_name {
     my ($self, $name) = @_;
     $name =~ s/::/./g;
-    return _xs_find_service_by_name($self, $name);
+    return $Protobuf::HAS_XS ? _xs_find_service_by_name($self, $name) : undef; # TODO PP services
 }
 
 sub find_extension_by_name {
     my ($self, $name) = @_;
-    return _xs_find_extension_by_name($self, $name);
+    return $Protobuf::HAS_XS ? _xs_find_extension_by_name($self, $name) : undef; # TODO PP extensions
 }
 
 sub freeze {
     my ($self) = @_;
-    $self->_xs_freeze();
+    $self->_xs_freeze() if $Protobuf::HAS_XS;
     return 1;
 }
 
 sub is_frozen {
     my ($self) = @_;
-    return $self->_xs_is_frozen();
+    return $Protobuf::HAS_XS ? $self->_xs_is_frozen() : 0;
 }
 
 __PACKAGE__->meta->make_immutable;

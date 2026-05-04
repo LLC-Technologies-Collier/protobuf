@@ -141,7 +141,18 @@ sub serialize {
     
     # Get fields from mdef (handle both XS and PurePerl mdef)
     my @field_defs;
-    if (ref($mdef) eq 'HASH') {
+    if ($mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl')) {
+        my $count = $mdef->field_count;
+        for (0..$count-1) {
+            my $f = $mdef->get_field($_);
+            push @field_defs, {
+                name => $f->name,
+                number => $f->number,
+                type => $f->type,
+                label => $f->label,
+            };
+        }
+    } elsif (ref($mdef) eq 'HASH') {
         @field_defs = @{$mdef->{field} || []};
     } else {
         my $count = $mdef->field_count;
@@ -213,7 +224,18 @@ sub parse {
     
     # Pre-index fields by number for fast lookup
     my %fields_by_num;
-    if (ref($mdef) eq 'HASH') {
+    if ($mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl')) {
+        my $count = $mdef->field_count;
+        for (0..$count-1) {
+            my $f = $mdef->get_field($_);
+            $fields_by_num{$f->number} = {
+                name => $f->name,
+                type => $f->type,
+                label => $f->label,
+                message_type => ($f->type == 11) ? $f->message_type : undef,
+            };
+        }
+    } elsif (ref($mdef) eq 'HASH') {
         %fields_by_num = map { $_->{number} => $_ } @{$mdef->{field} || []};
     } else {
         my $count = $mdef->field_count;
@@ -284,11 +306,16 @@ sub _decode_field {
 
 sub _get_perl_class_for_mdef {
     my ($self, $mdef) = @_;
-    # This is a bit tricky. We need to map mdef to Perl class.
-    # For now, let's assume we can use the same logic as ClassGenerator
-    # or look it up in some registry.
-    # In XS, mdef->perl_class_name() exists.
+    return undef unless $mdef;
+    
+    # XS mdef
     return $mdef->perl_class_name() if $mdef->can('perl_class_name');
+    
+    # PurePerl mdef (Class)
+    if ($mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl')) {
+        return $mdef->perl_class_name();
+    }
+    
     # Fallback for PurePerl mdef (HashRef)
     return $mdef->{perl_class};
 }
@@ -332,8 +359,31 @@ sub from_json {
 
 sub to_perl {
     my ($self, $msg) = @_;
-    # For PurePerl, it might already be close to the internal format
-    return { %{$msg->{_fields}} };
+    my $fields = $msg->{_fields};
+    my $res = {};
+    
+    foreach my $name (keys %$fields) {
+        my $val = $fields->{$name};
+        if (ref($val)) {
+            if ($val->isa('Protobuf::Message')) {
+                $res->{$name} = $val->to_perl();
+            } elsif (ref($val) eq 'ARRAY') {
+                $res->{$name} = [ map { ref($_) && $_->isa('Protobuf::Message') ? $_->to_perl() : $_ } @$val ];
+            } elsif (ref($val) eq 'HASH') {
+                # Map
+                my $map_res = {};
+                while (my ($k, $v) = each %$val) {
+                    $map_res->{$k} = (ref($v) && $v->isa('Protobuf::Message')) ? $v->to_perl() : $v;
+                }
+                $res->{$name} = $map_res;
+            } else {
+                $res->{$name} = $val;
+            }
+        } else {
+            $res->{$name} = $val;
+        }
+    }
+    return $res;
 }
 
 sub to_text {
