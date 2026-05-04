@@ -6,7 +6,7 @@
 static void test_repeated_creation(pTHX) {
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
     // Passing NULL for upb_Array and FieldDef is fine for GetRepeated check and Size(0)
-    SV* rep_sv = PerlUpb_Repeated_New(aTHX_ NULL, NULL, arena_sv);
+    SV* rep_sv = PerlUpb_Repeated_New(aTHX_ NULL, NULL, arena_sv, 0);
     
     ok(rep_sv != NULL, "PerlUpb_Repeated_New returns non-NULL");
     ok(sv_derived_from(rep_sv, "Protobuf::Internal::Repeated"), "Repeated SV has correct class");

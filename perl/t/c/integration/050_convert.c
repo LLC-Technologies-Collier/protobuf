@@ -88,8 +88,8 @@ static void test_cache_identity(pTHX_ upb_Arena *arena, SV *arena_sv) {
 
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
 
-    SV *sv1 = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv);
-    SV *sv2 = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv);
+    SV *sv1 = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv, 0);
+    SV *sv2 = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv, 0);
 
     ok(sv1 != NULL, "Cache/identity: sv1 is not NULL");
     ok(SvRV(sv1) == SvRV(sv2), "Cache/identity: Same message pointer returns same underlying SV");

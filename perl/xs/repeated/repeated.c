@@ -11,7 +11,7 @@
 #include "upb/message/array.h"
 #include "upb/reflection/def.h"
 
-SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_sv) {
+SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_sv, uint16_t flags) {
     if (!arr) return &PL_sv_undef;
 
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ arr);
@@ -19,7 +19,7 @@ SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_
 
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
     HV* stash = (reg && reg->stash_repeated) ? reg->stash_repeated : gv_stashpv("Protobuf::Internal::Repeated", GV_ADD);
-    SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ arr, arena_sv, stash);
+    SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ arr, arena_sv, stash, flags);
     HV* hv = (HV*)SvRV(self);
     hv_store(hv, "_fdef", 5, newSViv(PTR2IV(f)), 0);
     

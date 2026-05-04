@@ -8,7 +8,7 @@
 static void test_map_creation(pTHX) {
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
     // Passing NULL for upb_Map and FieldDef is fine for GetMap check and Size(0)
-    SV* map_sv = PerlUpb_Map_New(aTHX_ NULL, NULL, arena_sv);
+    SV* map_sv = PerlUpb_Map_New(aTHX_ NULL, NULL, arena_sv, 0);
     
     ok(map_sv != NULL, "PerlUpb_Map_New returns non-NULL");
     ok(sv_derived_from(map_sv, "Protobuf::Internal::Map"), "Map SV has correct class");

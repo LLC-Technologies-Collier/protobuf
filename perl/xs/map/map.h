@@ -10,7 +10,7 @@
 // Map wraps a upb_Map.
 // It acts as a lazy map from keys to values.
 
-SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv);
+SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv, uint16_t flags);
 
 // Returns the value for a given key.
 SV* PerlUpb_Map_GetItem(pTHX_ SV* self, SV* key_sv);

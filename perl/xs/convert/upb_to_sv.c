@@ -47,7 +47,7 @@ static SV* convert_singular_upb_to_sv(pTHX_ const upb_MessageValue *val, const u
                 const char *field_name = upb_FieldDef_Name(f);
                 croak("PerlUpb_UpbToSv: Could not get MessageDef for field %s", field_name);
             }
-            return PerlUpb_WrapMessage(aTHX_ val->msg_val, mdef, parent_arena_sv);
+            return PerlUpb_WrapMessage(aTHX_ val->msg_val, mdef, parent_arena_sv, 0);
         }
         default:
             croak("Unknown upb field type: %d", type);
@@ -157,7 +157,7 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
     if (upb_FieldDef_IsMap(f)) {
         upb_Map *map = (upb_Map*)val->map_val;
         if (!map) return newSV(0); 
-        SV* internal = PerlUpb_Map_New(aTHX_ map, f, parent_arena_sv);
+        SV* internal = PerlUpb_Map_New(aTHX_ map, f, parent_arena_sv, 0);
         
         if (reg && reg->stash_map_public) {
             return wrap_container_native(aTHX_ internal, reg->stash_map_public, "Protobuf::Internal::wrap_map");
@@ -168,7 +168,7 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
     if (upb_FieldDef_IsRepeated(f)) {
         upb_Array *arr = (upb_Array*)val->array_val;
         if (!arr) return newSV(0); 
-        SV* internal = PerlUpb_Repeated_New(aTHX_ arr, f, parent_arena_sv);
+        SV* internal = PerlUpb_Repeated_New(aTHX_ arr, f, parent_arena_sv, 0);
 
         if (reg && reg->stash_repeated_public) {
             return wrap_container_native(aTHX_ internal, reg->stash_repeated_public, "Protobuf::Internal::wrap_repeated");

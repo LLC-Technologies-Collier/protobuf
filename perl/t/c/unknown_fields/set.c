@@ -17,7 +17,7 @@ static void test_set_creation(pTHX) {
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
     
     SV* arena_wrapper = PerlUpb_Arena_New(aTHX);
-    SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_wrapper);
+    SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_wrapper, 0);
     
     SV* set_sv = PerlUpb_UnknownFieldSet_New(aTHX_ msg_sv);
     ok(set_sv != NULL, "PerlUpb_UnknownFieldSet_New returns non-NULL");

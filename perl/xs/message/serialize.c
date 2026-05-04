@@ -45,7 +45,7 @@ SV* PerlUpb_Message_Parse(pTHX_ SV* descriptor_sv, SV* data_sv) {
         croak("Failed to parse message: %d", status);
     }
 
-    SV *msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+    SV *msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
     SvREFCNT_dec(arena_sv);
 
     return msg_sv;
@@ -240,7 +240,7 @@ SV* PerlUpb_Message_FromJson(pTHX_ SV* descriptor_sv, SV* json_sv) {
         croak("Failed to parse JSON: %s", upb_Status_ErrorMessage(&status));
     }
 
-    SV *msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+    SV *msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
     SvREFCNT_dec(arena_sv);
 
     return msg_sv;
@@ -371,7 +371,7 @@ SV* PerlUpb_Message_FromHandle(pTHX_ SV* descriptor_sv, SV* fh_sv, bool length_p
         croak("Failed to parse message from handle: %d", status);
     }
 
-    SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+    SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
     SvREFCNT_dec(arena_sv);
     return msg_sv;
 }

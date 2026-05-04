@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     const upb_FieldDef *ext_field = upb_DefPool_FindExtensionByName(test_pool, "test.extension_string");
     
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
-    SV* message_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+    SV* message_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
     
     SV* dict_sv = PerlUpb_ExtensionDict_New(aTHX_ message_sv);
     ok(dict_sv != NULL, "Created ExtensionDict");

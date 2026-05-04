@@ -1,4 +1,6 @@
 #include "t/c/upb-perl-test.h"
+#include "xs/protobuf/registry.h"
+#include "xs/protobuf/obj_cache.h"
 
 int test_num = 0;
 int indent_level = 0;
@@ -19,6 +21,13 @@ PerlInterpreter* test_perl_init(int argc, char** argv) {
     char *embedding[] = { (char*)"", (char*)"-e", "0", NULL };
     perl_parse(my_perl, NULL, 3, embedding, NULL);
     perl_run(my_perl);
+
+    {
+        dTHX;
+        PerlUpb_Registry_Init(aTHX);
+        PerlUpb_ObjCache_Init(aTHX);
+    }
+
     return my_perl;
 }
 

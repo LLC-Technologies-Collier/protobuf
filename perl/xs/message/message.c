@@ -10,7 +10,7 @@
 #include "upb/message/copy.h"
 #include "upb/reflection/message.h"
 
-SV* PerlUpb_Message_NewMessage(pTHX_ SV* descriptor_sv) {
+SV* PerlUpb_Message_NewMessage(pTHX_ SV* descriptor_sv, uint16_t flags) {
     const upb_MessageDef *mdef = PerlUpb_MessageDef_GetMessage(aTHX_ descriptor_sv);
     if (!mdef) {
         croak("descriptor_sv must be a Protobuf::MessageDescriptor");
@@ -31,8 +31,8 @@ SV* PerlUpb_Message_NewMessage(pTHX_ SV* descriptor_sv) {
         croak("Failed to allocate upb_Message");
     }
 
-    SV *msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
-    SvREFCNT_dec(arena_sv); // PerlUpb_WrapMessage stores a copy (refcnt inc'd or similar, wait)
+    SV *msg_sv = PerlUpb_WrapMessage_NoCache(aTHX_ msg, mdef, arena_sv, flags);
+    SvREFCNT_dec(arena_sv);
 
     return msg_sv;
 }

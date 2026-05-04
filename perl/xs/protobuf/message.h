@@ -4,8 +4,11 @@
 #include "xs/protobuf.h"
 #include "upb/reflection/def.h"
 
-// TODO: Implement these functions
-SV* PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv);
+// Wraps a raw upb_Message into a Perl object of the appropriate generated class.
+SV* PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv, uint16_t flags);
+
+// Wraps a raw upb_Message WITHOUT checking the cache first (used for new messages).
+SV* PerlUpb_WrapMessage_NoCache(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv, uint16_t flags);
 SV* PerlUpb_MaybeGetMessage(pTHX_ const upb_Message *msg);
 void PerlUpb_Message_Free(pTHX_ SV *message_sv);
 

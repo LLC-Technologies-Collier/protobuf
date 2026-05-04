@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     ok(map_ii_field != NULL, "Found map_int32_int32");
     
     upb_Map* map_ii = upb_Message_Mutable(msg, map_ii_field, arena).map;
-    SV* map_ii_sv = PerlUpb_Map_New(aTHX_ map_ii, map_ii_field, arena_sv);
+    SV* map_ii_sv = PerlUpb_Map_New(aTHX_ map_ii, map_ii_field, arena_sv, 0);
 
     SV* key_ii = newSViv(10);
     SV* val_ii = newSViv(42);
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     const upb_FieldDef *map_ss_field = upb_MessageDef_FindFieldByName(mdef, "map_string_string");
     ok(map_ss_field != NULL, "Found map_string_string");
     upb_Map* map_ss = upb_Message_Mutable(msg, map_ss_field, arena).map;
-    SV* map_ss_sv = PerlUpb_Map_New(aTHX_ map_ss, map_ss_field, arena_sv);
+    SV* map_ss_sv = PerlUpb_Map_New(aTHX_ map_ss, map_ss_field, arena_sv, 0);
 
     SV* key_ss = newSVpv("key2", 0);
     SV* val_ss = newSVpv("value2", 0);

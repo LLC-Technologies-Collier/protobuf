@@ -319,5 +319,5 @@ SV* PerlUpb_Arena_AttachMessage(pTHX_ SV* arena_sv, const char* name, size_t off
     const upb_MessageDef* mdef = upb_DefPool_FindMessageByName(pool, name);
     if (!mdef) croak("Message definition not found: %s", name);
     upb_Message* msg = (upb_Message*)((char*)wrapper->alloc->region + offset);
-    return PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+    return PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
 }

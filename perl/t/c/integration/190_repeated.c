@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
     const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_test_messages.proto2.TestAllTypesProto2");
     SV* mdef_sv = PerlUpb_MessageDef_GetWrapper(aTHX_ mdef);
-    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ mdef_sv);
+    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ mdef_sv, 0);
 
     // 1. Test repeated int32
     const upb_FieldDef *f_rep_int32 = upb_MessageDef_FindFieldByName(mdef, "repeated_int32");
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     // 3. Test repeated nested message
     const upb_FieldDef *f_rep_msg = upb_MessageDef_FindFieldByName(mdef, "repeated_nested_message");
     upb_Array* arr = upb_Message_Mutable((upb_Message*)PerlUpb_Message_GetMsg(aTHX_ msg_sv), f_rep_msg, arena).array;
-    SV* rep_wrapper = PerlUpb_Repeated_New(aTHX_ arr, f_rep_msg, PerlUpb_Message_GetArena(aTHX_ msg_sv));
+    SV* rep_wrapper = PerlUpb_Repeated_New(aTHX_ arr, f_rep_msg, PerlUpb_Message_GetArena(aTHX_ msg_sv), 0);
     
     SV* sub1 = PerlUpb_Repeated_Add(aTHX_ rep_wrapper);
     const upb_MessageDef* sub_mdef = upb_FieldDef_MessageSubDef(f_rep_msg);

@@ -29,7 +29,7 @@ HV* PerlUpb_GetMessageStash(pTHX_ const upb_MessageDef* mdef);
 void PerlUpb_Error_Die(pTHX_ const char* fmt, ...);
 
 // Wraps a C pointer into a Perl object, optionally keeping another Perl object (the arena) alive.
-SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash);
+SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash, uint16_t flags);
 
 // Extracts the C pointer from a wrapped object, verifying the class name.
 const void* PerlUpb_GetArenaBoundObject(pTHX_ SV* sv, const char* class_name);
@@ -77,5 +77,14 @@ bool PerlUpb_ValidateStrings_AVX2(const char** strings, const size_t* lens, size
 
 // Instrumentation & Verification
 void PerlUpb_VerifyBinaryDiff(pTHX_ const char* a, size_t a_len, const char* b, size_t b_len, const char* name);
+
+// Magic Management
+#define PERL_UPB_MG_CACHE_DIRTY 0x01
+#define PERL_UPB_MG_PROFILE_MASK 0x0E
+#define PERL_UPB_MG_PROFILE_BALANCED 0x00
+#define PERL_UPB_MG_PROFILE_WRITE_HEAVY 0x02
+#define PERL_UPB_MG_PROFILE_READ_HEAVY 0x04
+#define PERL_UPB_MG_PROFILE_ZERO_COPY 0x08
+MAGIC* PerlUpb_GetMagic(pTHX_ SV* sv);
 
 #endif // PERL_PROTOBUF_UTILS_H_

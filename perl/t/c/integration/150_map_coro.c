@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     const upb_FieldDef *map_field = upb_MessageDef_FindFieldByName(mdef, "map_int32_int32");
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
     upb_Map* map_ptr = upb_Message_Mutable(msg, map_field, arena).map;
-    SV* map_sv = PerlUpb_Map_New(aTHX_ map_ptr, map_field, arena_sv);
+    SV* map_sv = PerlUpb_Map_New(aTHX_ map_ptr, map_field, arena_sv, 0);
 
     coro_arg_t args[NUM_COROS];
     for (int i = 0; i < NUM_COROS; i++) {

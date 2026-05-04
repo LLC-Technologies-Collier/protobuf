@@ -35,5 +35,5 @@ SV* PerlUpb_Repeated_Add(pTHX_ SV* self) {
         croak("Failed to append new message to array");
     }
 
-    return PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+    return PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
 }

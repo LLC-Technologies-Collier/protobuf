@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 
     const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_test_messages.proto2.TestAllTypesProto2");
     SV* mdef_sv = PerlUpb_MessageDef_GetWrapper(aTHX_ mdef);
-    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ mdef_sv);
+    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ mdef_sv, 0);
 
     // 1. Scalars
     const upb_FieldDef *f_int32 = upb_MessageDef_FindFieldByName(mdef, "optional_int32");
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     // 3. Repeated Message
     const upb_FieldDef *f_rep_msg = upb_MessageDef_FindFieldByName(mdef, "repeated_nested_message");
     upb_Array* arr = upb_Message_Mutable((upb_Message*)PerlUpb_Message_GetMsg(aTHX_ msg_sv), f_rep_msg, arena).array;
-    SV* rep_wrapper = PerlUpb_Repeated_New(aTHX_ arr, f_rep_msg, PerlUpb_Message_GetArena(aTHX_ msg_sv));
+    SV* rep_wrapper = PerlUpb_Repeated_New(aTHX_ arr, f_rep_msg, PerlUpb_Message_GetArena(aTHX_ msg_sv), 0);
     SV* submsg1 = PerlUpb_Repeated_Add(aTHX_ rep_wrapper);
     const upb_MessageDef* sub_mdef = upb_FieldDef_MessageSubDef(f_rep_msg);
     const upb_FieldDef* f_a = upb_MessageDef_FindFieldByName(sub_mdef, "a");
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     // 4. Map
     const upb_FieldDef *f_map = upb_MessageDef_FindFieldByName(mdef, "map_int32_int32");
     upb_Map* map_ptr = upb_Message_Mutable((upb_Message*)PerlUpb_Message_GetMsg(aTHX_ msg_sv), f_map, arena).map;
-    SV* map_wrapper = PerlUpb_Map_New(aTHX_ map_ptr, f_map, PerlUpb_Message_GetArena(aTHX_ msg_sv));
+    SV* map_wrapper = PerlUpb_Map_New(aTHX_ map_ptr, f_map, PerlUpb_Message_GetArena(aTHX_ msg_sv), 0);
     PerlUpb_Map_SetItem(aTHX_ map_wrapper, newSViv(100), newSViv(200));
 
     // 5. Unknown Fields

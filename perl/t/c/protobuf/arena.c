@@ -69,9 +69,9 @@ int main(int argc, char** argv) {
     subtest("Implement PerlUpb_Arena_Free tests", {
         SV* a_sv = PerlUpb_Arena_New(aTHX);
         PerlUpb_Arena_Free(aTHX, a_sv);
-        // Pointer should be cleared
+        // Key should be deleted
         SV** svp = hv_fetch((HV*)SvRV(a_sv), "_arena_ptr", 10, 0);
-        is(SvIV(*svp), 0, "Arena pointer cleared after Free");
+        ok(svp == NULL, "Arena pointer key deleted after Free");
         SvREFCNT_dec(a_sv);
     });
 

@@ -60,6 +60,7 @@ upb_Arena* PerlUpb_Arena_Acquire(pTHX_ PerlUpb_ArenaLifecycle lifecycle);
 void       PerlUpb_Arena_Release(pTHX_ upb_Arena* arena, PerlUpb_ArenaLifecycle lifecycle);
 
 SV *PerlUpb_Arena_New(pTHX);
+SV *PerlUpb_Arena_WrapRaw(pTHX_ upb_Arena* arena);
 SV *PerlUpb_Arena_NewTmpfs(pTHX_ const char* path, size_t size);
 SV *PerlUpb_Arena_AttachTmpfs(pTHX_ const char* path, size_t size);
 upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv);

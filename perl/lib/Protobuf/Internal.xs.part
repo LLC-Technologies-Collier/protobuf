@@ -1,5 +1,12 @@
 MODULE = Protobuf::Internal  PACKAGE = Protobuf::Internal
 
+BOOT:
+    HV* stash = gv_stashpv("Protobuf::Internal", GV_ADD);
+    newCONSTSUB(stash, "PROFILE_BALANCED", newSViv(PERL_UPB_MG_PROFILE_BALANCED));
+    newCONSTSUB(stash, "PROFILE_WRITE_HEAVY", newSViv(PERL_UPB_MG_PROFILE_WRITE_HEAVY));
+    newCONSTSUB(stash, "PROFILE_READ_HEAVY", newSViv(PERL_UPB_MG_PROFILE_READ_HEAVY));
+    newCONSTSUB(stash, "PROFILE_ZERO_COPY", newSViv(PERL_UPB_MG_PROFILE_ZERO_COPY));
+
 void
 init_registry()
     CODE:

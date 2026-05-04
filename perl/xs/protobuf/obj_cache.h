@@ -42,7 +42,7 @@ size_t PerlUpb_ObjCache_GetCapacity(pTHX);
 #define ALLOC_EVENT_FREE       11
 #define ALLOC_EVENT_REALLOC    12
 
-void PerlUpb_ObjCache_LogEvent(pTHX_ int type, const void* ptr);
+void PerlUpb_ObjCache_LogEvent(int type, const void* ptr);
 
 // Returns the audit log as a Perl array reference.
 SV* PerlUpb_ObjCache_GetAuditLog(pTHX);

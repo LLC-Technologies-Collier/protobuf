@@ -33,7 +33,7 @@ typedef struct {
 
 void test_message_ops(pTHX_ coro_arg_t *carg) {
     // 1. Create message
-    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ carg->mdef_sv);
+    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ carg->mdef_sv, 0);
     if (!msg_sv || !sv_isobject(msg_sv)) {
         carg->errors++;
         return;

@@ -11,7 +11,7 @@
 #include "upb/message/map.h"
 #include "upb/reflection/def.h"
 
-SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv) {
+SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv, uint16_t flags) {
     if (!map) return &PL_sv_undef;
 
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ map);
@@ -19,7 +19,7 @@ SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv) {
 
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
     HV* stash = (reg && reg->stash_map) ? reg->stash_map : gv_stashpv("Protobuf::Internal::Map", GV_ADD);
-    SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ map, arena_sv, stash);
+    SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ map, arena_sv, stash, flags);
     HV* hv = (HV*)SvRV(self);
     hv_store(hv, "_fdef", 5, newSViv(PTR2IV(f)), 0);
     

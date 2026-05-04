@@ -35,7 +35,7 @@ typedef struct {
 } coro_arg_t;
 
 void test_all_ops(pTHX_ coro_arg_t *carg) {
-    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ carg->mdef_sv);
+    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ carg->mdef_sv, 0);
     const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ carg->mdef_sv);
     const upb_FieldDef* f_int32 = upb_MessageDef_FindFieldByName(mdef, "optional_int32");
 

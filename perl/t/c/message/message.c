@@ -17,7 +17,7 @@ static void test_message_wrapping(pTHX) {
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
     
     SV* arena_wrapper = PerlUpb_Arena_New(aTHX);
-    SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_wrapper);
+    SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_wrapper, 0);
     
     ok(msg_sv != NULL, "PerlUpb_WrapMessage returns non-NULL");
     ok(sv_derived_from(msg_sv, "Test::Test::TestMessage"), "Blessed into Test::Test::TestMessage");

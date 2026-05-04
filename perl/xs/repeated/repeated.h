@@ -8,7 +8,7 @@
 #include "upb/reflection/def.h"
 
 // PerlUpb_Repeated wraps a upb_Array.
-SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_sv);
+SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_sv, uint16_t flags);
 
 // Returns the value at a given index.
 SV* PerlUpb_Repeated_GetItem(pTHX_ SV* self, int index);

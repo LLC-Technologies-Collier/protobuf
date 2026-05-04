@@ -30,7 +30,7 @@ typedef struct {
 } coro_arg_t;
 
 void test_unknown_fields_ops(pTHX_ coro_arg_t *carg) {
-    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ carg->mdef_sv);
+    SV* msg_sv = PerlUpb_Message_NewMessage(aTHX_ carg->mdef_sv, 0);
     SV* set_sv = PerlUpb_UnknownFieldSet_New(aTHX_ msg_sv);
 
     for (int i = 0; i < NUM_OPS; i++) {

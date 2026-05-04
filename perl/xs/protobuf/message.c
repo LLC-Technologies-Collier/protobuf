@@ -12,24 +12,29 @@ static int descriptor_cleanup(pTHX_ SV* sv, MAGIC* mg) {
     return 0;
 }
 
-SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv) {
-    if (!msg) {
-        return newSV(0); // Undef
-    }
+static SV* wrap_message_internal(pTHX_ const upb_Message* msg, const upb_MessageDef* mdef, SV* arena_sv, uint16_t flags) {
+    HV* stash = PerlUpb_GetMessageStash(aTHX_ mdef);
+    SV *self = PerlUpb_WrapArenaBoundObject(aTHX_ msg, arena_sv, stash, flags);
+
+    // Store the descriptor C pointer in the HV.
+    HV* hv = (HV*)SvRV(self);
+    hv_store(hv, "_mdef_ptr", 9, newSViv(PTR2IV(mdef)), 0);
+
+    return self;
+}
+
+SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv, uint16_t flags) {
+    if (!msg) return &PL_sv_undef;
 
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ msg);
     if (cached) return cached;
 
-    HV* stash = PerlUpb_GetMessageStash(aTHX_ mdef);
+    return wrap_message_internal(aTHX_ msg, mdef, arena_sv, flags);
+}
 
-    SV *self = PerlUpb_WrapArenaBoundObject(aTHX_ msg, arena_sv, stash);
-
-    // Store the descriptor C pointer in the HV.
-    // We don't use magic here anymore to reduce "unreferenced scalar" noise.
-    HV* hv = (HV*)SvRV(self);
-    hv_store(hv, "_descriptor", 11, newSViv(PTR2IV(mdef)), 0);
-
-    return self;
+SV *PerlUpb_WrapMessage_NoCache(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef, SV *arena_sv, uint16_t flags) {
+    if (!msg) return &PL_sv_undef;
+    return wrap_message_internal(aTHX_ msg, mdef, arena_sv, flags);
 }
 
 SV* PerlUpb_MaybeGetMessage(pTHX_ const upb_Message *msg) {
@@ -39,54 +44,24 @@ SV* PerlUpb_MaybeGetMessage(pTHX_ const upb_Message *msg) {
 
 void PerlUpb_Message_Free(pTHX_ SV *message_sv) {
     if (PL_dirty) return; // Let Perl handle cleanup during global destruction
-
-    // We don't call PerlUpb_ObjCache_Delete here because it's handled
-    // by the magic wrapper_cleanup in utils.c. Calling it here causes
-    // double-deletion and "unreferenced scalar" warnings during eval cleanup.
     
-    // The upb_Message is freed when the arena is freed.
-    // We just clear the internal pointers in the Perl object.
-    HV* hv = (HV*)SvRV(message_sv);
-    if (hv_exists(hv, "_upb_ptr", 8)) {
-        hv_delete(hv, "_upb_ptr", 8, G_DISCARD);
+    const upb_Message *msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    if (msg) {
+        PerlUpb_ObjCache_Delete(aTHX_ msg);
     }
 }
 
-
 const upb_Message* PerlUpb_Message_GetMsg(pTHX_ SV* message_sv) {
-    if (!message_sv || !SvROK(message_sv) || SvTYPE(SvRV(message_sv)) != SVt_PVHV) return NULL;
-    HV* hv = (HV*)SvRV(message_sv);
-    SV** svp = hv_fetch(hv, "_upb_ptr", 8, 0);
-    return svp ? (const upb_Message*)SvIV(*svp) : NULL;
+    return (const upb_Message*)PerlUpb_GetArenaBoundObject(aTHX_ message_sv, "Protobuf::Message");
 }
 
 const upb_MessageDef* PerlUpb_Message_GetDef(pTHX_ SV* message_sv) {
-    if (!message_sv || !SvROK(message_sv) || SvTYPE(SvRV(message_sv)) != SVt_PVHV) return NULL;
+    if (!message_sv || !SvROK(message_sv)) return NULL;
     HV* hv = (HV*)SvRV(message_sv);
-    SV** svp = hv_fetch(hv, "_descriptor", 11, 0);
-    return svp ? (const upb_MessageDef*)SvIV(*svp) : NULL;
+    SV** svp = hv_fetch(hv, "_mdef_ptr", 9, 0);
+    return (svp && SvIOK(*svp)) ? INT2PTR(const upb_MessageDef*, SvIV(*svp)) : NULL;
 }
 
 SV* PerlUpb_Message_GetArena(pTHX_ SV* message_sv) {
     return PerlUpb_GetArenaFromObject(aTHX_ message_sv);
-}
-
-SV* PerlUpb_Message_GetFingerprint(pTHX_ SV* message_sv) {
-    SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ message_sv);
-    const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
-    
-    if (!msg) return &PL_sv_undef;
-
-    if (arena_sv && PerlUpb_Arena_IsTmpfs(aTHX_ arena_sv)) {
-        const char* path = PerlUpb_Arena_GetPath(aTHX_ arena_sv);
-        size_t offset = PerlUpb_Arena_GetOffset(aTHX_ arena_sv, (void*)msg);
-        char buf[256];
-        snprintf(buf, sizeof(buf), "%s:%zu", path ? path : "anon", offset);
-        return newSVpv(buf, 0);
-    } else {
-        // Fallback for standard arenas: just use memory address as local fingerprint
-        char buf[32];
-        snprintf(buf, sizeof(buf), "mem:%p", msg);
-        return newSVpv(buf, 0);
-    }
 }

@@ -1,23 +1,25 @@
 MODULE = Protobuf::Message  PACKAGE = Protobuf::Message
 
 SV*
-_xs_new_from_def(mdef_sv)
+_xs_new_from_def(mdef_sv, flags)
     SV* mdef_sv
+    U16 flags
     CODE:
         const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
         if (!mdef) {
             croak("Invalid MessageDef provided to new()");
         }
-        RETVAL = PerlUpb_Message_NewMessage(aTHX_ mdef_sv);
+        RETVAL = PerlUpb_Message_NewMessage(aTHX_ mdef_sv, flags);
 
     OUTPUT:
         RETVAL
 
 
 SV*
-_xs_new_from_def_in_arena(mdef_sv, arena_sv)
+_xs_new_from_def_in_arena(mdef_sv, arena_sv, flags)
     SV* mdef_sv
     SV* arena_sv
+    U16 flags
     CODE:
         const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ mdef_sv);
         if (!mdef) croak("Invalid MessageDef provided");
@@ -25,7 +27,7 @@ _xs_new_from_def_in_arena(mdef_sv, arena_sv)
         const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
         upb_Message* msg = upb_Message_New(mt, arena);
         if (!msg) croak("Failed to allocate upb_Message in provided arena");
-        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, flags);
 
     OUTPUT:
         RETVAL
@@ -272,14 +274,29 @@ _xs_unknown_fields(self)
 
 
 SV*
-_xs_parse(class_name, data)
+_xs_parse(class_name, data, options_sv = &PL_sv_undef)
     const char* class_name
     SV* data
+    SV* options_sv
     CODE:
+        uint16_t flags = 0;
+        if (SvROK(options_sv) && SvTYPE(SvRV(options_sv)) == SVt_PVHV) {
+            HV* options = (HV*)SvRV(options_sv);
+            SV** profile_svp = hv_fetch(options, "profile", 7, 0);
+            if (profile_svp && SvOK(*profile_svp)) {
+                const char* profile_str = SvPV_nolen(*profile_svp);
+                if (strEQ(profile_str, "write_heavy")) {
+                    flags = PERL_UPB_MG_PROFILE_WRITE_HEAVY;
+                } else if (strEQ(profile_str, "read_heavy")) {
+                    flags = PERL_UPB_MG_PROFILE_READ_HEAVY;
+                } else if (strEQ(profile_str, "zero_copy")) {
+                    flags = PERL_UPB_MG_PROFILE_ZERO_COPY;
+                }
+            }
+        }
+
         // Use the descriptor() method on the class to get the mdef
-        dSP;
-        ENTER;
-        SAVETMPS;
+        dSP; ENTER; SAVETMPS;
         PUSHMARK(SP);
         XPUSHs(sv_2mortal(newSVpv(class_name, 0)));
         PUTBACK;
@@ -291,30 +308,44 @@ _xs_parse(class_name, data)
         }
         SV* descriptor_sv = POPs;
         const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ descriptor_sv);
-        PUTBACK;
-        // Don't FREETMPS/LEAVE yet because descriptor_sv might be used
-        // Wait, mdef is a C pointer into the pool, it's safe.
-        FREETMPS;
-        LEAVE;
+        PUTBACK; FREETMPS; LEAVE;
+
         if (!mdef) {
             croak("Could not find descriptor for message class %s", class_name);
         }
+
         STRLEN len;
         const char* buf = SvPV(data, len);
+        
         SV* arena_sv = PerlUpb_Arena_New(aTHX);
         upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+        
         const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
         upb_Message* msg = upb_Message_New(mt, arena);
+        
         if (!msg) {
             SvREFCNT_dec(arena_sv);
             croak("Failed to allocate upb_Message");
         }
-        upb_DecodeStatus status = upb_Decode(buf, len, msg, mt, NULL, 0, arena);
+        
+        int decode_options = 0;
+        if (flags & PERL_UPB_MG_PROFILE_ZERO_COPY) {
+            decode_options |= kUpb_DecodeOption_AliasString;
+        }
+
+        upb_DecodeStatus status = upb_Decode(buf, len, msg, mt, NULL, decode_options, arena);
         if (status != kUpb_DecodeStatus_Ok) {
             SvREFCNT_dec(arena_sv);
             croak("Failed to parse message: %d", status);
         }
-        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv);
+        
+        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, flags);
+
+        // If zero-copy was used, we MUST keep the input data SV alive
+        if (flags & PERL_UPB_MG_PROFILE_ZERO_COPY) {
+            HV* hv = (HV*)SvRV(RETVAL);
+            hv_store(hv, "_input_data_sv", 11, newSVsv(data), 0);
+        }
 
         SvREFCNT_dec(arena_sv);
     OUTPUT:
@@ -392,7 +423,7 @@ _xs_migrate_to_arena(self, arena_sv)
         }
         */
         croak("Message migration requires upb_Message_DeepCopy (not available in current upb)");
-        RETVAL = PerlUpb_WrapMessage(aTHX_ dst_msg, mdef, arena_sv);
+        RETVAL = PerlUpb_WrapMessage(aTHX_ dst_msg, mdef, arena_sv, 0);
 
     OUTPUT:
         RETVAL
@@ -408,7 +439,7 @@ _xs_coerce_to(self, target_class_name)
         SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ self);
         // Identity check: target class must agree with current underlying descriptor
         // (This is a shallow coercion, we just bless into a new class with the same memory)
-        RETVAL = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv);
+        RETVAL = PerlUpb_WrapMessage(aTHX_ (upb_Message*)msg, mdef, arena_sv, 0);
 
         sv_bless(RETVAL, gv_stashpv(target_class_name, GV_ADD));
 
@@ -421,8 +452,16 @@ _xs_get_fingerprint(self)
     SV* self
     CODE:
         RETVAL = PerlUpb_Message_GetFingerprint(aTHX_ self);
-
     OUTPUT:
         RETVAL
+
+
+void
+_xs_clear_memoization_cache(self)
+    SV* self
+    CODE:
+        HV* hv = (HV*)SvRV(self);
+        hv_delete(hv, "_cache", 6, G_DISCARD);
+
 
 

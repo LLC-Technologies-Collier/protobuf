@@ -23,12 +23,70 @@ static XS(PerlUpb_FastAccessor) {
     if (items > 1) {
         // Setter mode
         PerlUpb_Message_SetField(aTHX_ self, f, ST(1));
+        
+        // Mark cache as dirty for coarse invalidation
+        MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
+        if (mg) {
+            // Bypass invalidation if WRITE_HEAVY (since we never use the cache)
+            if (!(mg->mg_private & PERL_UPB_MG_PROFILE_WRITE_HEAVY)) {
+                mg->mg_private |= PERL_UPB_MG_CACHE_DIRTY;
+            }
+        }
+        
         XSRETURN_EMPTY;
     } else {
         // Getter mode
+        MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
+        
+        // 0. Quick path for WRITE_HEAVY: bypass cache entirely
+        if (mg && (mg->mg_private & PERL_UPB_MG_PROFILE_WRITE_HEAVY)) {
+            ST(0) = PerlUpb_Message_GetField(aTHX_ self, f);
+            XSRETURN(1);
+        }
+
+        HV* hv = (HV*)SvRV(self);
+        
+        // 1. Check for coarse invalidation
+        if (mg && (mg->mg_private & PERL_UPB_MG_CACHE_DIRTY)) {
+            hv_delete(hv, "_cache", 6, G_DISCARD);
+            mg->mg_private &= ~PERL_UPB_MG_CACHE_DIRTY;
+        }
+
+        const char* name = upb_FieldDef_Name(f);
+        STRLEN name_len = strlen(name);
+        
+        // 1. Fetch or create the nested _cache hash
+        HV* cache_hv = NULL;
+        SV** cache_svp = hv_fetch(hv, "_cache", 6, 0);
+        if (cache_svp && SvROK(*cache_svp) && SvTYPE(SvRV(*cache_svp)) == SVt_PVHV) {
+            cache_hv = (HV*)SvRV(*cache_svp);
+        } else {
+            cache_hv = newHV();
+            SV* cache_rv = newRV_noinc((SV*)cache_hv);
+            if (!hv_store(hv, "_cache", 6, cache_rv, 0)) {
+                SvREFCNT_dec(cache_rv);
+                // Fallback to non-cached path if store fails (unlikely)
+                ST(0) = PerlUpb_Message_GetField(aTHX_ self, f);
+                XSRETURN(1);
+            }
+        }
+
+        // 2. Check memoization cache
+        SV** cached = hv_fetch(cache_hv, name, name_len, 0);
+        if (cached && SvOK(*cached)) {
+            ST(0) = *cached;
+            XSRETURN(1);
+        }
+
         SV* result = PerlUpb_Message_GetField(aTHX_ self, f);
+        
+        // 3. Store in memoization cache
+        SvREFCNT_inc(result);
+        if (!hv_store(cache_hv, name, name_len, result, 0)) {
+            SvREFCNT_dec(result);
+        }
+
         ST(0) = result;
-        // Result is already mortal if it came from PerlUpb_UpbToSv
         XSRETURN(1);
     }
 }
@@ -38,7 +96,17 @@ static XS(PerlUpb_FastSetter) {
     dXSARGS;
     const upb_FieldDef* f = (const upb_FieldDef*)CvXSUBANY(cv).any_ptr;
     if (items != 2) croak("Usage: $msg->set_field(value)");
-    PerlUpb_Message_SetField(aTHX_ ST(0), f, ST(1));
+    SV* self = ST(0);
+    PerlUpb_Message_SetField(aTHX_ self, f, ST(1));
+    
+    // Mark cache as dirty for coarse invalidation
+    MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
+    if (mg) {
+        if (!(mg->mg_private & PERL_UPB_MG_PROFILE_WRITE_HEAVY)) {
+            mg->mg_private |= PERL_UPB_MG_CACHE_DIRTY;
+        }
+    }
+    
     XSRETURN_EMPTY;
 }
 
@@ -57,7 +125,17 @@ static XS(PerlUpb_FastClear) {
     dXSARGS;
     const upb_FieldDef* f = (const upb_FieldDef*)CvXSUBANY(cv).any_ptr;
     if (items != 1) croak("Usage: $msg->clear_field()");
-    PerlUpb_Message_ClearField(aTHX_ ST(0), f);
+    SV* self = ST(0);
+    PerlUpb_Message_ClearField(aTHX_ self, f);
+    
+    // Mark cache as dirty for coarse invalidation
+    MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
+    if (mg) {
+        if (!(mg->mg_private & PERL_UPB_MG_PROFILE_WRITE_HEAVY)) {
+            mg->mg_private |= PERL_UPB_MG_CACHE_DIRTY;
+        }
+    }
+    
     XSRETURN_EMPTY;
 }
 

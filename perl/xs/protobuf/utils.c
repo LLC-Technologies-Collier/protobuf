@@ -238,6 +238,25 @@ HV* PerlUpb_GetMessageStash(pTHX_ const upb_MessageDef* mdef) {
     safefree(msg_path);
     
     HV* stash = gv_stashpv(class_name, GV_ADD);
+
+    // Set up inheritance: push "Protobuf::Message" to @ISA if not already present
+    {
+        char isa_name[1024];
+        snprintf(isa_name, sizeof(isa_name), "%s::ISA", class_name);
+        AV* isa = get_av(isa_name, GV_ADD);
+        bool found = false;
+        for (int i = 0; i <= av_len(isa); i++) {
+            SV** svp = av_fetch(isa, i, 0);
+            if (svp && SvPOK(*svp) && strEQ(SvPV_nolen(*svp), "Protobuf::Message")) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            av_push(isa, newSVpv("Protobuf::Message", 0));
+        }
+    }
+
     safefree(class_name);
 
     if (reg && reg->stash_cache) {
@@ -267,7 +286,12 @@ static MGVTBL wrapper_vtbl = {
     NULL, NULL, NULL, NULL, wrapper_cleanup
 };
 
-SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash) {
+MAGIC* PerlUpb_GetMagic(pTHX_ SV* sv) {
+    if (!sv || !SvROK(sv)) return NULL;
+    return mg_findext(SvRV(sv), PERL_MAGIC_ext, &wrapper_vtbl);
+}
+
+SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash, uint16_t flags) {
     if (!ptr) return &PL_sv_undef;
 
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ ptr);
@@ -286,7 +310,10 @@ SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash)
 
     // Add magic for cache cleanup. We don't use MGf_COPY because
     // we only want the primary owner to handle detachment.
-    sv_magicext((SV*)hv, NULL, PERL_MAGIC_ext, &wrapper_vtbl, (const char*)ptr, 0);
+    MAGIC* mg = sv_magicext((SV*)hv, NULL, PERL_MAGIC_ext, &wrapper_vtbl, (const char*)ptr, 0);
+    if (mg) {
+        mg->mg_private = flags;
+    }
 
     PerlUpb_ObjCache_Add(aTHX_ ptr, self);
     return self;

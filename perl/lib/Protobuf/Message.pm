@@ -265,11 +265,21 @@ sub new {
     my $mdef = $class->descriptor;
     croak("Class $class does not have a descriptor") unless $mdef;
 
+    my $profile_str = delete $args->{profile} || 'balanced';
+    my $flags = 0;
+    if ($profile_str eq 'write_heavy') {
+        $flags = Protobuf::Internal::PROFILE_WRITE_HEAVY();
+    } elsif ($profile_str eq 'read_heavy') {
+        $flags = Protobuf::Internal::PROFILE_READ_HEAVY();
+    } elsif ($profile_str eq 'zero_copy') {
+        $flags = Protobuf::Internal::PROFILE_ZERO_COPY();
+    }
+
     my $self;
     if ($args->{arena}) {
-        $self = _xs_new_from_def_in_arena($mdef, delete $args->{arena});
+        $self = _xs_new_from_def_in_arena($mdef, delete $args->{arena}, $flags);
     } else {
-        $self = _xs_new_from_def($mdef);
+        $self = _xs_new_from_def($mdef, $flags);
     }
     
     $self->from_perl($args) if keys %$args;
@@ -356,6 +366,8 @@ sub serialize {
     return _xs_serialize($self);
 }
 
+sub encode { shift->serialize(@_) }
+
 sub audit_integrity {
     my ($self) = @_;
     return _xs_audit_integrity($self);
@@ -423,6 +435,8 @@ sub to_json {
     return _xs_to_json($self);
 }
 
+sub toJSON { shift->to_json(@_) }
+
 sub to_handle {
     my ($self, $fh, %options) = @_;
     croak("Invalid file handle") unless defined $fh;
@@ -456,6 +470,8 @@ sub from_json {
     return _xs_from_json($class, $json_data);
 }
 
+sub fromJSON { shift->from_json(@_) }
+
 sub unknown_fields {
     my ($self) = @_;
     return _xs_unknown_fields($self);
@@ -484,8 +500,11 @@ sub parse {
     return _xs_parse($class, $data);
 }
 
+sub decode { shift->parse(@_) }
+
 sub parse_from {
     my ($self, $data) = @_;
+    _xs_clear_memoization_cache($self);
     return _xs_parse_from($self, $data);
 }
 
@@ -493,6 +512,7 @@ sub merge_from {
     my ($self, $other) = @_;
     croak("Argument to merge_from must be a Protobuf::Message")
         unless eval { $other->isa('Protobuf::Message') };
+    _xs_clear_memoization_cache($self);
     return _xs_merge_from($self, $other);
 }
 
@@ -500,6 +520,7 @@ sub copy_from {
     my ($self, $other) = @_;
     croak("Argument to copy_from must be a Protobuf::Message")
         unless eval { $other->isa('Protobuf::Message') };
+    _xs_clear_memoization_cache($self);
     return _xs_copy_from($self, $other);
 }
 
