@@ -252,13 +252,13 @@ _xs_from_json(class_name, json_data)
         }
         SV* descriptor_sv = POPs;
         // Keep a copy because we're about to free temps
-        SV* mdef_sv = newSVsv(descriptor_sv);
+        SV* mdef_sv = sv_2mortal(newSVsv(descriptor_sv));
         PUTBACK;
-        FREETMPS;
-        LEAVE;
+        
         RETVAL = PerlUpb_Message_FromJson(aTHX_ mdef_sv, json_data);
 
-        SvREFCNT_dec(mdef_sv);
+        FREETMPS;
+        LEAVE;
     OUTPUT:
         RETVAL
 

@@ -148,8 +148,8 @@ sub serialize {
             push @field_defs, {
                 name => $f->name,
                 number => $f->number,
-                type => $f->type,
-                label => $f->label,
+                type => $f->type_number,
+                label => $f->label_number,
             };
         }
     } elsif (ref($mdef) eq 'HASH') {
@@ -161,8 +161,8 @@ sub serialize {
             push @field_defs, {
                 name => $f->name,
                 number => $f->number,
-                type => $f->type,
-                label => $f->label, # 1: optional, 2: required, 3: repeated
+                type => $f->type_number,
+                label => $f->label_number, # 1: optional, 2: required, 3: repeated
             };
         }
     }
@@ -230,9 +230,9 @@ sub parse {
             my $f = $mdef->get_field($_);
             $fields_by_num{$f->number} = {
                 name => $f->name,
-                type => $f->type,
-                label => $f->label,
-                message_type => ($f->type == 11) ? $f->message_type : undef,
+                type => $f->type_number,
+                label => $f->label_number,
+                message_type => ($f->type_number == 11) ? $f->message_type : undef,
             };
         }
     } elsif (ref($mdef) eq 'HASH') {
@@ -243,9 +243,9 @@ sub parse {
             my $f = $mdef->get_field($_);
             $fields_by_num{$f->number} = {
                 name => $f->name,
-                type => $f->type,
-                label => $f->label,
-                message_type => ($f->type == 11) ? $f->message_type : undef,
+                type => $f->type_number,
+                label => $f->label_number,
+                message_type => ($f->type_number == 11) ? $f->message_type : undef,
             };
         }
     }

@@ -18,12 +18,44 @@ sub number {
 
 sub type {
     my ($self) = @_;
+    my $type = $self->{_data}{type};
+    my %types = (
+        1 => 'double', 2 => 'float', 3 => 'int64', 4 => 'uint64',
+        5 => 'int32', 6 => 'fixed64', 7 => 'fixed32', 8 => 'bool',
+        9 => 'string', 10 => 'group', 11 => 'message', 12 => 'bytes',
+        13 => 'uint32', 14 => 'enum', 15 => 'sfixed32', 16 => 'sfixed64',
+        17 => 'sint32', 18 => 'sint64',
+    );
+    return $types{$type} || 'unknown';
+}
+
+sub type_number {
+    my ($self) = @_;
     return $self->{_data}{type};
 }
 
 sub label {
     my ($self) = @_;
+    my $label = $self->{_data}{label};
+    my %labels = (
+        1 => 'optional', 2 => 'required', 3 => 'repeated',
+    );
+    return $labels{$label} || 'unknown';
+}
+
+sub label_number {
+    my ($self) = @_;
     return $self->{_data}{label};
+}
+
+sub is_extension {
+    my ($self) = @_;
+    return $self->{_data}{is_extension} || 0;
+}
+
+sub is_packed {
+    my ($self) = @_;
+    return $self->{_data}{is_packed} || 0;
 }
 
 sub is_repeated {

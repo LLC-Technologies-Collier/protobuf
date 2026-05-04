@@ -30,7 +30,7 @@ subtest 'Pure-Perl Pool Creation and Loading' => sub {
     my $f = $mdef->find_field_by_name('value');
     ok($f, 'Found "value" field');
     is($f->number, 1, 'Field number matches');
-    is($f->type, 5, 'Field type is INT32');
+    is($f->type, 'int32', 'Field type is INT32');
 };
 
 subtest 'Pure-Perl Enum Lookup' => sub {

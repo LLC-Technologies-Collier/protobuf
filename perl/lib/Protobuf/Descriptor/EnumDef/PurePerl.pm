@@ -11,6 +11,16 @@ sub name {
     return $self->{_data}{name};
 }
 
+sub full_name {
+    my ($self) = @_;
+    return $self->{_data}{full_name};
+}
+
+sub file {
+    my ($self) = @_;
+    return $self->{_data}{file};
+}
+
 sub value_count {
     my ($self) = @_;
     return scalar @{$self->{_data}{values} || []};

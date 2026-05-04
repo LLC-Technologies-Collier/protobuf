@@ -119,10 +119,20 @@ sub number {
 
 sub type {
     my ($self) = @_;
+    return _xs_type_name($self);
+}
+
+sub type_number {
+    my ($self) = @_;
     return _xs_type($self);
 }
 
 sub label {
+    my ($self) = @_;
+    return _xs_label_name($self);
+}
+
+sub label_number {
     my ($self) = @_;
     return _xs_label($self);
 }
@@ -140,6 +150,16 @@ sub is_map {
 sub is_required {
     my ($self) = @_;
     return _xs_is_required($self);
+}
+
+sub is_extension {
+    my ($self) = @_;
+    return _xs_is_extension($self);
+}
+
+sub is_packed {
+    my ($self) = @_;
+    return _xs_is_packed($self);
 }
 
 sub message_type {

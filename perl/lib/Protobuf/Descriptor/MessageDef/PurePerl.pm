@@ -16,6 +16,11 @@ sub full_name {
     return $self->{_data}{full_name};
 }
 
+sub file {
+    my ($self) = @_;
+    return $self->{_data}{file};
+}
+
 sub perl_class_name {
     my ($self) = @_;
     return $self->{_data}{perl_class} if $self->{_data}{perl_class};

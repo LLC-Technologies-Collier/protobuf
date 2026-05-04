@@ -21,7 +21,7 @@ subtest 'load and explore descriptors' => sub {
         my $f = $mdef->find_field_by_name('value');
         ok($f, 'Found field by name');
         is($f->number, 1, 'Correct number');
-        is($f->type, 5, 'Type is int32 (5)'); # upb_CType_Int32
+        is($f->type, 'int32', 'Type is int32');
     };
     
     subtest 'enum descriptors' => sub {

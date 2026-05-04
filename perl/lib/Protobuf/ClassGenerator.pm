@@ -374,11 +374,17 @@ EOC
         $FIELD_REGISTRY{$perl_class}{$name} = $fdef;
         
         my $type_code = _get_type_tiny_code($fdef);
+        my $coercion_code = '';
+        if ($fdef->type_number == 11 && !$fdef->is_repeated && !$fdef->is_map) {
+            my $m_type = $fdef->message_type;
+            my $m_class = _get_perl_class_for_mdef($m_type);
+            $coercion_code = "->plus_coercions(HashRef, sub { my \$m = '$m_class'->new; \$m->from_perl(\$_); \$m })";
+        }
 
         # Perl-level accessors that delegate to the engine
         $code .= <<"EOC";
 {
-    my \$type = dwim_type("$type_code");
+    my \$type = dwim_type("$type_code")$coercion_code;
     my \$check = \$type->compiled_check;
     my \$coercion = \$type->coercion;
 
@@ -474,9 +480,40 @@ sub _inject_wkt {
     }
 }
 
+sub _get_perl_class_for_mdef {
+    my ($mdef) = @_;
+    my $f = $mdef->file;
+    my $perl_class;
+    if ($f) {
+        my $proto_file = $f->name;
+        $proto_file =~ s/.*\///;
+        $proto_file =~ s/\..*//;
+        my $file_module = join('', map { ucfirst($_) } split(/_/, $proto_file));
+        
+        my $pkg = $f->get_package;
+        my $base_module = join('::', map { ucfirst($_) } split(/\./, $pkg));
+        $base_module .= "::$file_module" if $base_module;
+        $base_module ||= $file_module;
+        
+        # Now we need the path from the package to the message
+        my $full_name = $mdef->full_name;
+        $full_name =~ s/^\.//;
+        if ($pkg) {
+            $full_name =~ s/^\Q$pkg\E\.//;
+        }
+        my $msg_path = join('::', map { ucfirst($_) } split(/\./, $full_name));
+        $perl_class = "${base_module}::${msg_path}";
+    } else {
+        my $full_name = $mdef->full_name;
+        $full_name =~ s/^\.//;
+        $perl_class = join('::', map { ucfirst($_) } split(/\./, $full_name));
+    }
+    return $perl_class;
+}
+
 sub _get_type_tiny_code {
     my ($fdef) = @_;
-    my $type = $fdef->type;
+    my $type = $fdef->type_number;
     my $base_type;
 
     if ($type == 1 || $type == 2) { # DOUBLE, FLOAT
@@ -496,39 +533,7 @@ sub _get_type_tiny_code {
         $base_type = "(Int | Str)";
     } elsif ($type == 11) { # MESSAGE
         my $subm = $fdef->message_type;
-        
-        # We need the filename for the correct module name if we follow Package::File::Message
-        my $f = $subm->file;
-        my $perl_class;
-        if ($f) {
-            my $proto_file = $f->name;
-            $proto_file =~ s/.*\///;
-            $proto_file =~ s/\..*//;
-            my $file_module = join('', map { ucfirst($_) } split(/_/, $proto_file));
-            
-            my $pkg = $f->get_package;
-            my $base_module = join('::', map { ucfirst($_) } split(/\./, $pkg));
-            $base_module .= "::$file_module" if $base_module;
-            $base_module ||= $file_module;
-            
-            # Now we need the path from the package to the message
-            my $full_name = $subm->full_name;
-            $full_name =~ s/^\.//;
-            if ($pkg) {
-                $full_name =~ s/^\Q$pkg\E\.//;
-            }
-            my $msg_path = join('::', map { ucfirst($_) } split(/\./, $full_name));
-            $perl_class = "${base_module}::${msg_path}";
-            $log->debugf("Derived perl_class for %s: %s (Base: %s, Path: %s)", $subm->full_name, $perl_class, $base_module, $msg_path);
-        } else {
-            my $full_name = $subm->full_name;
-            $full_name =~ s/^\.//;
-            $perl_class = join('::', map { ucfirst($_) } split(/\./, $full_name));
-        }
-        
-        $base_type = "InstanceOf['$perl_class']";
-        # Add coercion from HashRef
-        $base_type = "($base_type)->plus_coercions(HashRef, sub { my \$m = '$perl_class'->new; \$m->from_perl(\$_); \$m })";
+        $base_type = "InstanceOf['" . _get_perl_class_for_mdef($subm) . "']";
     } else {
         return "Any";
     }
