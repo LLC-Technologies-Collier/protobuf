@@ -76,12 +76,11 @@ package Protobuf::Descriptor::OneofDef;
 
 use Moo;
 use strict;
+require Protobuf;
 use warnings;
 
 our $VERSION = '0.01';
 
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 sub full_name {
     my ($self) = @_;

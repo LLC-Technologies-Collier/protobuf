@@ -1,22 +1,13 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "ppport.h"
-
-#include "xs/protobuf/arena.h"
-
-// -- Arena --
 MODULE = Protobuf::Arena  PACKAGE = Protobuf::Arena
-PROTOTYPES: ENABLE
-
 
 IV
 _xs_create_raw()
     CODE:
         RETVAL = PTR2IV(PerlUpb_Arena_CreateRaw(aTHX));
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_create_tmpfs_raw(path, size)
@@ -24,8 +15,10 @@ _xs_create_tmpfs_raw(path, size)
     size_t size
     CODE:
         RETVAL = PerlUpb_Arena_NewTmpfs(aTHX_ path, size);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_attach_tmpfs_raw(path, size)
@@ -33,8 +26,10 @@ _xs_attach_tmpfs_raw(path, size)
     size_t size
     CODE:
         RETVAL = PerlUpb_Arena_AttachTmpfs(aTHX_ path, size);
+
     OUTPUT:
         RETVAL
+
 
 void
 _xs_destroy_raw(ptr_iv)
@@ -53,16 +48,20 @@ _xs_space_allocated(self)
     SV* self
     CODE:
         RETVAL = (UV)PerlUpb_Arena_SpaceAllocated(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 UV
 _xs_space_reserved(self)
     SV* self
     CODE:
         RETVAL = (UV)PerlUpb_Arena_SpaceReserved(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_stats(self)
@@ -76,8 +75,10 @@ _xs_stats(self)
         hv_store(hv, "reserved", 8, newSVuv(stats.reserved), 0);
         hv_store(hv, "blocks", 6, newSVuv(stats.blocks), 0);
         RETVAL = newRV_noinc((SV*)hv);
+
     OUTPUT:
         RETVAL
+
 
 void
 _xs_test_canary_corruption(self)
@@ -160,8 +161,10 @@ _xs_is_tmpfs(self)
     SV* self
     CODE:
         RETVAL = PerlUpb_Arena_IsTmpfs(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_get_path(self)
@@ -169,16 +172,20 @@ _xs_get_path(self)
     CODE:
         const char* path = PerlUpb_Arena_GetPath(aTHX_ self);
         RETVAL = path ? newSVpv(path, 0) : &PL_sv_undef;
+
     OUTPUT:
         RETVAL
+
 
 bool
 _xs_verify_selinux(self)
     SV* self
     CODE:
         RETVAL = PerlUpb_Arena_VerifySELinux(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 size_t
 _xs_get_offset(self, ptr_iv)
@@ -186,8 +193,10 @@ _xs_get_offset(self, ptr_iv)
     IV ptr_iv
     CODE:
         RETVAL = PerlUpb_Arena_GetOffset(aTHX_ self, INT2PTR(void*, ptr_iv));
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_attach_message(self, name, offset)
@@ -196,6 +205,8 @@ _xs_attach_message(self, name, offset)
     size_t offset
     CODE:
         RETVAL = PerlUpb_Arena_AttachMessage(aTHX_ self, name, offset);
+
     OUTPUT:
         RETVAL
+
 

@@ -32,12 +32,11 @@ Returns the next value in the map iteration.$/
 package Protobuf::Internal::MapIterator;
 
 use strict;
+require Protobuf;
 use warnings;
 
 our $VERSION = '0.01';
 
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 sub next_key {
     my ($self) = @_;

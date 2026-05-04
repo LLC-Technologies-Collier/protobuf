@@ -135,12 +135,10 @@ use strict;
 use warnings;
 
 use Protobuf::Internal; # Ensure audit logging is available
+require Protobuf;
 use Carp qw(croak);
 
 our $VERSION = '0.01';
-
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 has '_arena_ptr' => (
     is       => 'ro',

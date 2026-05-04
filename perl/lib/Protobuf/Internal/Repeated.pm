@@ -36,6 +36,7 @@ Sorts the repeated field in place.$/
 package Protobuf::Internal::Repeated;
 
 use strict;
+require Protobuf;
 use warnings;
 use Tie::Array;
 use Protobuf::Internal::Proxy;
@@ -43,8 +44,6 @@ our @ISA = qw(Tie::Array Protobuf::Internal::Proxy);
 
 our $VERSION = '0.01';
 
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 sub TIEARRAY {
     my ($class, $xs_obj) = @_;

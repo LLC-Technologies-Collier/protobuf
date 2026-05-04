@@ -134,14 +134,13 @@ package Protobuf::DescriptorPool;
 
 use Moo;
 use strict;
+require Protobuf;
 use warnings;
 use Carp qw(croak);
 use Log::Any qw($log);
 
 our $VERSION = '0.01';
 
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 use Protobuf::Descriptor::File;
 use Protobuf::Descriptor::MessageDef;

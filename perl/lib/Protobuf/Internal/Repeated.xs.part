@@ -1,13 +1,4 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "ppport.h"
-
-#include "xs/repeated/repeated.h"
-
 MODULE = Protobuf::Internal::Repeated  PACKAGE = Protobuf::Internal::Repeated
-PROTOTYPES: ENABLE
 
 SV*
 FETCH(self, index)
@@ -15,8 +6,10 @@ FETCH(self, index)
     int index
     CODE:
         RETVAL = PerlUpb_Repeated_GetItem(aTHX_ self, index);
+
     OUTPUT:
         RETVAL
+
 
 void
 STORE(self, index, value)
@@ -31,8 +24,10 @@ FETCHSIZE(self)
     SV* self
     CODE:
         RETVAL = (I32)PerlUpb_Repeated_Size(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_get_item(self, index)
@@ -40,8 +35,10 @@ _xs_get_item(self, index)
     int index
     CODE:
         RETVAL = PerlUpb_Repeated_GetItem(aTHX_ self, index);
+
     OUTPUT:
         RETVAL
+
 
 void
 _xs_set_item(self, index, value)
@@ -71,8 +68,10 @@ _xs_size(self)
     SV* self
     CODE:
         RETVAL = PerlUpb_Repeated_Size(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 void
 _xs_insert(self, index, value)
@@ -102,8 +101,10 @@ _xs_audit_integrity(self)
     SV* self
     CODE:
         RETVAL = PerlUpb_Repeated_AuditIntegrity(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 void
 DESTROY(self)

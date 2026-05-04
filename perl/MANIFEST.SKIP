@@ -22,3 +22,6 @@
 ^Bench/
 ^tmp_check_use
 ^stderr\.txt$
+^Protobuf\.xs$
+^Protobuf\.c$
+^Protobuf\.c\.test$

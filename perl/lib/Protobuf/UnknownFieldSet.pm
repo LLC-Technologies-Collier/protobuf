@@ -66,12 +66,11 @@ the same terms as the Perl 5 programming language system itself.$/
 package Protobuf::UnknownFieldSet;
 
 use strict;
+require Protobuf;
 use warnings;
 
 our $VERSION = '0.01';
 
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 sub get_data {
     my ($self) = @_;

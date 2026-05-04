@@ -1,15 +1,4 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "ppport.h"
-
-#include "xs/all_descriptors.h"
-
-// -- Descriptor::Field --
 MODULE = Protobuf::Descriptor::Field  PACKAGE = Protobuf::Descriptor::Field
-PROTOTYPES: ENABLE
-
 
 const char*
 _xs_name(self)
@@ -27,6 +16,7 @@ _xs_full_name(self)
     OUTPUT:
         RETVAL
 
+
 uint32_t
 _xs_number(self)
     SV* self
@@ -34,6 +24,7 @@ _xs_number(self)
         XS_INT_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Number, 0)
     OUTPUT:
         RETVAL
+
 
 int
 _xs_type(self)
@@ -43,6 +34,7 @@ _xs_type(self)
     OUTPUT:
         RETVAL
 
+
 int
 _xs_label(self)
     SV* self
@@ -50,6 +42,7 @@ _xs_label(self)
         XS_INT_ACCESSOR_BODY(upb_FieldDef, PerlUpb_FieldDef_GetField, upb_FieldDef_Label, 0)
     OUTPUT:
         RETVAL
+
 
 bool
 _xs_is_repeated(self)
@@ -59,6 +52,7 @@ _xs_is_repeated(self)
     OUTPUT:
         RETVAL
 
+
 bool
 _xs_is_map(self)
     SV* self
@@ -67,14 +61,17 @@ _xs_is_map(self)
     OUTPUT:
         RETVAL
 
+
 bool
 _xs_is_required(self)
     SV* self
     CODE:
         const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
         RETVAL = f ? upb_FieldDef_IsRequired(f) : false;
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_message_type(self)
@@ -83,8 +80,10 @@ _xs_message_type(self)
         const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
         const upb_MessageDef* m = f ? upb_FieldDef_MessageSubDef(f) : NULL;
         RETVAL = m ? PerlUpb_MessageDef_GetWrapper(aTHX_ m) : &PL_sv_undef;
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_enum_type(self)
@@ -93,6 +92,6 @@ _xs_enum_type(self)
         const upb_FieldDef* f = PerlUpb_FieldDef_GetField(aTHX_ self);
         const upb_EnumDef* e = f ? upb_FieldDef_EnumSubDef(f) : NULL;
         RETVAL = e ? PerlUpb_EnumDef_GetWrapper(aTHX_ e) : &PL_sv_undef;
+
     OUTPUT:
         RETVAL
-

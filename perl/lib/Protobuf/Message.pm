@@ -241,13 +241,11 @@ the same terms as the Perl 5 programming language system itself.$/
 package Protobuf::Message;
 
 use strict;
+require Protobuf;
 use warnings;
 use Carp qw(croak);
 
 our $VERSION = '0.01';
-
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 use Protobuf::Internal::Repeated;
 use Protobuf::Internal::Map;

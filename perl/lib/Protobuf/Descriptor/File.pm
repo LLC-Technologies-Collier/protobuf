@@ -70,12 +70,11 @@ package Protobuf::Descriptor::File;
 
 use Moo;
 use strict;
+require Protobuf;
 use warnings;
 
 our $VERSION = '0.01';
 
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 # The object is a blessed IV (the pointer itself) from the C layer,
 # but Moo can still work with it if we're careful.

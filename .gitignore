@@ -220,3 +220,12 @@ compile_commands.json
 
 # Ignore Bzlmod lock file until it is more stable
 MODULE.bazel.lock
+
+# Session and Development Artifacts
+/chatlogs-ingest.sh
+/chatlogs-processed/
+/chatlogs/
+/project/
+/prompts/
+/tmp/
+/work-narrative/

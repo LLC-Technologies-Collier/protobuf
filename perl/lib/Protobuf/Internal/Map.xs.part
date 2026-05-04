@@ -1,14 +1,4 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "ppport.h"
-
-#include "xs/map/map.h"
-#include "xs/map/iterator.h"
-
 MODULE = Protobuf::Internal::Map  PACKAGE = Protobuf::Internal::Map
-PROTOTYPES: ENABLE
 
 SV*
 FETCH(self, key)
@@ -16,8 +6,10 @@ FETCH(self, key)
     SV* key
     CODE:
         RETVAL = PerlUpb_Map_GetItem(aTHX_ self, key);
+
     OUTPUT:
         RETVAL
+
 
 void
 STORE(self, key, value)
@@ -33,8 +25,10 @@ EXISTS(self, key)
     SV* key
     CODE:
         RETVAL = PerlUpb_Map_Exists(aTHX_ self, key);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 DELETE(self, key)
@@ -43,9 +37,11 @@ DELETE(self, key)
     CODE:
         // FETCH the value first, as upb_Map_Delete doesn't return it
         RETVAL = PerlUpb_Map_GetItem(aTHX_ self, key);
+
         PerlUpb_Map_DeleteItem(aTHX_ self, key);
     OUTPUT:
         RETVAL
+
 
 void
 CLEAR(self)
@@ -58,8 +54,10 @@ SCALAR(self)
     SV* self
     CODE:
         RETVAL = (I32)PerlUpb_Map_Size(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_get_item(self, key)
@@ -67,8 +65,10 @@ _xs_get_item(self, key)
     SV* key
     CODE:
         RETVAL = PerlUpb_Map_GetItem(aTHX_ self, key);
+
     OUTPUT:
         RETVAL
+
 
 void
 _xs_set_item(self, key, value)
@@ -90,8 +90,10 @@ _xs_size(self)
     SV* self
     CODE:
         RETVAL = PerlUpb_Map_Size(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 void
 _xs_clear(self)
@@ -104,12 +106,13 @@ _xs_new_iterator(self)
     SV* self
     CODE:
         RETVAL = PerlUpb_Map_GetIterator(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 
 void
 DESTROY(self)
     SV* self
     CODE:
         PerlUpb_Map_Free(aTHX_ self);
-

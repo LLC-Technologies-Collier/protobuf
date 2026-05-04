@@ -169,6 +169,7 @@ the same terms as the Perl 5 programming language system itself.$/
 package Protobuf::Internal;
 
 use strict;
+require Protobuf;
 use warnings;
 use Exporter qw(import);
 
@@ -198,8 +199,6 @@ our %EXPORT_TAGS = (
     all => \@EXPORT_OK,
 );
 
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 # wrap_repeated and wrap_map are used by XS to provide Public wrappers
 sub wrap_repeated {

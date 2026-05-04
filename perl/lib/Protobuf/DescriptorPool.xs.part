@@ -1,22 +1,13 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "ppport.h"
-
-#include "xs/all_descriptors.h"
-
-// -- DescriptorPool --
 MODULE = Protobuf::DescriptorPool  PACKAGE = Protobuf::DescriptorPool
-PROTOTYPES: ENABLE
-
 
 IV
 _xs_create_raw()
     CODE:
         RETVAL = PTR2IV(PerlUpb_DescriptorPool_CreateRaw(aTHX));
+
     OUTPUT:
         RETVAL
+
 
 void
 _xs_destroy_raw(ptr_iv)
@@ -28,8 +19,10 @@ SV*
 _xs_generated_pool()
     CODE:
         RETVAL = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_add_serialized_file(self, serialized)
@@ -37,8 +30,10 @@ _xs_add_serialized_file(self, serialized)
     SV* serialized
     CODE:
         RETVAL = PerlUpb_DescriptorPool_AddSerializedFile(aTHX_ self, serialized);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_add_serialized_file_descriptor_set(self, serialized)
@@ -46,8 +41,10 @@ _xs_add_serialized_file_descriptor_set(self, serialized)
     SV* serialized
     CODE:
         RETVAL = PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(aTHX_ self, serialized);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_find_file_by_name(self, name)
@@ -55,8 +52,10 @@ _xs_find_file_by_name(self, name)
     const char* name
     CODE:
         RETVAL = PerlUpb_DescriptorPool_FindFileByName(aTHX_ self, name);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_find_message_by_name(self, name)
@@ -64,8 +63,10 @@ _xs_find_message_by_name(self, name)
     const char* name
     CODE:
         RETVAL = PerlUpb_DescriptorPool_FindMessageByName(aTHX_ self, name);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_find_enum_by_name(self, name)
@@ -73,8 +74,10 @@ _xs_find_enum_by_name(self, name)
     const char* name
     CODE:
         RETVAL = PerlUpb_DescriptorPool_FindEnumByName(aTHX_ self, name);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_find_service_by_name(self, name)
@@ -82,8 +85,10 @@ _xs_find_service_by_name(self, name)
     const char* name
     CODE:
         RETVAL = PerlUpb_DescriptorPool_FindServiceByName(aTHX_ self, name);
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_find_extension_by_name(self, name)
@@ -91,8 +96,10 @@ _xs_find_extension_by_name(self, name)
     const char* name
     CODE:
         RETVAL = PerlUpb_DescriptorPool_FindExtensionByName(aTHX_ self, name);
+
     OUTPUT:
         RETVAL
+
 
 void
 _xs_freeze(self)
@@ -105,6 +112,8 @@ _xs_is_frozen(self)
     SV* self
     CODE:
         RETVAL = PerlUpb_DescriptorPool_IsFrozen(aTHX_ self);
+
     OUTPUT:
         RETVAL
+
 

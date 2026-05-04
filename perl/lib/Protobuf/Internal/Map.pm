@@ -22,12 +22,11 @@ This module provides the internal XS implementation for Protobuf map fields. It 
 package Protobuf::Internal::Map;
 
 use strict;
+require Protobuf;
 use warnings;
 
 our $VERSION = '0.01';
 
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 use Protobuf::Internal::MapIterator;
 

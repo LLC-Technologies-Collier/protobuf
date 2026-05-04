@@ -478,8 +478,7 @@ WriteMakefile(
     INC               => "-I. -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'stage0') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'cmake') . " -I\$(PERL_INC)",
     MYEXTLIB          => 'libprotobufperl.$(DLEXT)',
     CCFLAGS           => "-g $Config{ccflags} -fPIC $sanitizer_flags",
-    XSMULTI           => 1,
-    LIBS              => ['-L$(CURDIR) -lprotobufperl'], # Link the common shared library
+    LIBS              => ['-L$(CURDIR) -lprotobufperl'],
     LDDLFLAGS         => "$Config{lddlflags} $sanitizer_flags",
     LDFLAGS           => "$Config{ldflags} $sanitizer_flags",
     

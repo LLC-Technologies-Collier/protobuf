@@ -1,15 +1,4 @@
-#define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include "ppport.h"
-
-#include "xs/all_descriptors.h"
-
-// -- Descriptor::MessageDef --
 MODULE = Protobuf::Descriptor::MessageDef  PACKAGE = Protobuf::Descriptor::MessageDef
-PROTOTYPES: ENABLE
-
 
 const char*
 _xs_name(self)
@@ -34,8 +23,10 @@ _xs_field_count(self)
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         RETVAL = m ? upb_MessageDef_FieldCount(m) : 0;
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_field(self, index)
@@ -45,11 +36,14 @@ _xs_field(self, index)
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         if (m && index >= 0 && index < upb_MessageDef_FieldCount(m)) {
             RETVAL = PerlUpb_FieldDef_GetWrapper(aTHX_ upb_MessageDef_Field(m, index));
+
         } else {
             RETVAL = &PL_sv_undef;
+
         }
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_find_field_by_name(self, name)
@@ -61,8 +55,10 @@ _xs_find_field_by_name(self, name)
         const char* name_ptr = SvPV(name, len);
         const upb_FieldDef* f = m ? PerlUpb_MessageDef_FindFieldByNameWithSize(aTHX_ m, name_ptr, len) : NULL;
         RETVAL = f ? PerlUpb_FieldDef_GetWrapper(aTHX_ f) : &PL_sv_undef;
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_find_field_by_number(self, number)
@@ -72,8 +68,10 @@ _xs_find_field_by_number(self, number)
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         const upb_FieldDef* f = m ? upb_MessageDef_FindFieldByNumber(m, number) : NULL;
         RETVAL = f ? PerlUpb_FieldDef_GetWrapper(aTHX_ f) : &PL_sv_undef;
+
     OUTPUT:
         RETVAL
+
 
 int
 _xs_oneof_count(self)
@@ -81,8 +79,10 @@ _xs_oneof_count(self)
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         RETVAL = m ? upb_MessageDef_OneofCount(m) : 0;
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_oneof(self, index)
@@ -92,11 +92,14 @@ _xs_oneof(self, index)
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         if (m && index >= 0 && index < upb_MessageDef_OneofCount(m)) {
             RETVAL = PerlUpb_OneofDef_GetWrapper(aTHX_ upb_MessageDef_Oneof(m, index));
+
         } else {
             RETVAL = &PL_sv_undef;
+
         }
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_find_oneof_by_name(self, name)
@@ -106,6 +109,7 @@ _xs_find_oneof_by_name(self, name)
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         const upb_OneofDef* o = m ? upb_MessageDef_FindOneofByName(m, name) : NULL;
         RETVAL = o ? PerlUpb_OneofDef_GetWrapper(aTHX_ o) : &PL_sv_undef;
+
     OUTPUT:
         RETVAL
 
@@ -116,8 +120,10 @@ _xs_nested_message_count(self)
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         RETVAL = m ? upb_MessageDef_NestedMessageCount(m) : 0;
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_nested_message(self, index)
@@ -127,8 +133,10 @@ _xs_nested_message(self, index)
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         if (m && index >= 0 && index < upb_MessageDef_NestedMessageCount(m)) {
             RETVAL = PerlUpb_MessageDef_GetWrapper(aTHX_ upb_MessageDef_NestedMessage(m, index));
+
         } else {
             RETVAL = &PL_sv_undef;
+
         }
     OUTPUT:
         RETVAL
@@ -140,8 +148,10 @@ _xs_nested_enum_count(self)
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         RETVAL = m ? upb_MessageDef_NestedEnumCount(m) : 0;
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_nested_enum(self, index)
@@ -151,11 +161,14 @@ _xs_nested_enum(self, index)
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         if (m && index >= 0 && index < upb_MessageDef_NestedEnumCount(m)) {
             RETVAL = PerlUpb_EnumDef_GetWrapper(aTHX_ upb_MessageDef_NestedEnum(m, index));
+
         } else {
             RETVAL = &PL_sv_undef;
+
         }
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_file(self)
@@ -163,8 +176,10 @@ _xs_file(self)
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         RETVAL = m ? PerlUpb_Message_File(aTHX_ m) : &PL_sv_undef;
+
     OUTPUT:
         RETVAL
+
 
 SV*
 _xs_perl_class_name(self)
@@ -172,6 +187,6 @@ _xs_perl_class_name(self)
     CODE:
         const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
         RETVAL = m ? PerlUpb_MessageDef_PerlClassName(aTHX_ m) : &PL_sv_undef;
+
     OUTPUT:
         RETVAL
-
