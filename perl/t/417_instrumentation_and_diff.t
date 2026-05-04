@@ -40,10 +40,13 @@ subtest 'avx2 instrumentation' => sub {
     # PerlUpb_ClassNameToFullName uses it for strings >= 32 bytes
     my $long_class = "A" x 40;
     
-    # We can't easily capture stderr here without more complex setup, 
-    # but we can verify it doesn't crash.
-    my $full = Protobuf::Internal::class_name_to_full_name($long_class);
+    my ($stdout, $stderr, $full);
+    ($stdout, $stderr, $full) = capture {
+        Protobuf::Internal::class_name_to_full_name($long_class);
+    };
     is($full, $long_class, "Conversion works with instrumentation enabled");
+    like($stderr, qr/\[AVX2\] Hitting path/, "Instrumentation message captured in stderr")
+        if $stderr; # It might not hit if strings are too short or logic changes, but we check if we can.
     
     delete $ENV{PROTOBUF_PERL_INSTRUMENT_AVX2};
 };

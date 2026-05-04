@@ -17,7 +17,7 @@ my @data = (1..$count);
 
 # 2. Benchmark to_perl (UpbToSv) with VPP fast-path
 subtest 'VPP SIMD Benchmark: UpbToSv' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->repeated_int(\@data);
     
     my $t0 = [gettimeofday];
@@ -32,7 +32,7 @@ subtest 'VPP SIMD Benchmark: UpbToSv' => sub {
 
 # 3. Benchmark from_perl (SvToUpb) with VPP fast-path
 subtest 'VPP SIMD Benchmark: SvToUpb' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     my $t0 = [gettimeofday];
     for (1..100) {

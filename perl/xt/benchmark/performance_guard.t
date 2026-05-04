@@ -18,7 +18,7 @@ my $count = 10000;
 my @data = (1..$count);
 
 subtest 'performance guard: UpbToSv' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     $msg->repeated_int(\@data);
     
     my $t0 = [gettimeofday];
@@ -32,7 +32,7 @@ subtest 'performance guard: UpbToSv' => sub {
 };
 
 subtest 'performance guard: SvToUpb' => sub {
-    my $msg = test::TestMessage->new();
+    my $msg = Test::Test::TestMessage->new();
     
     my $t0 = [gettimeofday];
     for (1..100) {

@@ -20,10 +20,10 @@ my $features = Protobuf::Internal::get_cpu_features();
 ok(defined $features, "get_cpu_features returns a value ($features)");
 
 if ($features & 0x01) {
-    diag("CPU supports SSE4.1");
+    note("CPU supports SSE4.1");
 }
 if ($features & 0x02) {
-    diag("CPU supports AVX2");
+    note("CPU supports AVX2");
 }
 
 done_testing();
