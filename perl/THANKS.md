@@ -12,6 +12,10 @@ We would like to especially thank:
 
 *   **Brad Fitzpatrick** ([@bradfitz](https://github.com/bradfitz)) - For the original 2008 `protobuf-perlxs` implementation. His comprehensive test suite and API design goals for high-performance Protocol Buffers in Perl continue to serve as the benchmark and foundation for this modern, UPB-based extension.
 
+*   **Mattia Barbon** ([@mbarbon](https://github.com/mbarbon)) - For his work on `Google::ProtocolBuffers::Dynamic`. His implementation provided a vital performance target and architectural reference during the development of our "Fast Accessor" XSUB optimization layer.
+
+*   **Sergey Stryapukhin** ([@sergey-stryapukhin](https://github.com/sergey-stryapukhin)) - For maintaining the pure-Perl `Google::ProtocolBuffers` implementation, which served as an essential baseline for performance benchmarking and API compatibility.
+
 *   The **p5p community** - For their engagement and suggestions.
 
 *   The authors and maintainers of the **upb** library.
