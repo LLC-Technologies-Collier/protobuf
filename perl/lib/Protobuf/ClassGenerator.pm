@@ -321,6 +321,10 @@ sub _generate_for_message {
     $code .= <<"EOC";
 package $perl_class;
 use parent 'Protobuf::Message';
+use Types::Standard qw(Int Str Num Bool ArrayRef HashRef InstanceOf Any);
+use Type::Utils qw(dwim_type);
+use Carp qw(croak);
+
 sub descriptor { return \$Protobuf::ClassGenerator::DESCRIPTOR_REGISTRY{'$perl_class'}; }
 
 sub validate {
@@ -369,19 +373,36 @@ EOC
         my $name = $fdef->name;
         $FIELD_REGISTRY{$perl_class}{$name} = $fdef;
         
+        my $type_code = _get_type_tiny_code($fdef);
+
         # Perl-level accessors that delegate to the engine
         $code .= <<"EOC";
-sub $name {
-    my \$self = shift;
-    if (\@_) {
-        return \$self->set('$name', \$_[0]);
-    }
-    return \$self->get('$name');
-}
+{
+    my \$type = dwim_type("$type_code");
+    my \$check = \$type->compiled_check;
+    my \$coercion = \$type->coercion;
 
-sub set_$name {
-    my (\$self, \$val) = \@_;
-    return \$self->set('$name', \$val);
+    sub $name {
+        my \$self = shift;
+        if (\@_) {
+            my \$val = \$_[0];
+            if (\$coercion) {
+                \$val = \$coercion->coerce(\$val);
+            }
+            \$check->(\$val) or croak("Invalid value for field '$name' in message '$perl_class': " . \$type->get_message(\$val));
+            return \$self->set('$name', \$val);
+        }
+        return \$self->get('$name');
+    }
+
+    sub set_$name {
+        my (\$self, \$val) = \@_;
+        if (\$coercion) {
+            \$val = \$coercion->coerce(\$val);
+        }
+        \$check->(\$val) or croak("Invalid value for field '$name' in message '$perl_class': " . \$type->get_message(\$val));
+        return \$self->set('$name', \$val);
+    }
 }
 
 sub has_$name {
