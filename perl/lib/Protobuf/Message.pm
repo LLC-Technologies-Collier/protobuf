@@ -302,11 +302,7 @@ sub DESTROY {
     }
     return;
 }
-
-sub CLONE {
-    croak('Protobuf objects cannot be safely cloned across ithreads. Use pre-forking or an event loop (e.g. Coro, AnyEvent, Mojo) instead.');
-    return;
-}
+sub CLONE_SKIP { 1 }
 
 sub get {
     my ($self, $field_name) = @_;
@@ -543,6 +539,21 @@ sub thaw_from_shared {
     $size ||= 1024 * 1024;
     my $arena = Protobuf::Arena->attach_tmpfs($path, $size);
     return _xs_find_in_shared_arena($class, $arena);
+}
+
+sub detach {
+    my $self = shift;
+    return _xs_detach($self);
+}
+
+sub attach {
+    my ($class, $info, $arena) = @_;
+    return _xs_attach($class, $info, $arena);
+}
+
+sub arena {
+    my $self = shift;
+    return _xs_get_arena($self);
 }
 
 1;

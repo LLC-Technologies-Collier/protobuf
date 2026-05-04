@@ -379,6 +379,9 @@ EOC
             my $m_type = $fdef->message_type;
             my $m_class = _get_perl_class_for_mdef($m_type);
             $coercion_code = "->plus_coercions(HashRef, sub { my \$m = '$m_class'->new; \$m->from_perl(\$_); \$m })";
+        } elsif ($fdef->type_number == 3 || $fdef->type_number == 4 || $fdef->type_number == 16 || $fdef->type_number == 18) {
+            # INT64, UINT64, SFIXED64, SINT64
+            $coercion_code = "->plus_coercions(Str, sub { Math::BigInt->new(\$_) })";
         }
 
         # Perl-level accessors that delegate to the engine
@@ -520,8 +523,8 @@ sub _get_type_tiny_code {
         $base_type = "Num";
     } elsif ($type == 3 || $type == 4 || $type == 16 || $type == 18) {
         # INT64, UINT64, SFIXED64, SINT64
-        # Allow Int or Math::BigInt objects
-        $base_type = "(Int | InstanceOf['Math::BigInt'])";
+        # Allow Int, Str (for large values), or Math::BigInt objects
+        $base_type = "(Int | Str | InstanceOf['Math::BigInt'])";
     } elsif ($type == 5 || $type == 7 || $type == 13 || $type == 15 || $type == 17) {
         # INT32, FIXED32, UINT32, SFIXED32, SINT32
         $base_type = "Int";

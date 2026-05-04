@@ -212,6 +212,32 @@ void PerlUpb_Arena_Free(pTHX_ SV *sv) {
     PerlUpb_Arena_Destroy(aTHX_ sv);
 }
 
+void* PerlUpb_Arena_Detach(pTHX_ SV* sv) {
+    if (!sv || !SvROK(sv) || !sv_isa(sv, "Protobuf::Arena")) {
+        croak("Argument to detach() must be a Protobuf::Arena object");
+    }
+    HV* hv = (HV*)SvRV(sv);
+    SV** svp = hv_fetch(hv, "_arena_ptr", 10, 0);
+    if (!svp || !SvIOK(*svp)) {
+        return NULL;
+    }
+    void* raw = INT2PTR(void*, SvIV(*svp));
+
+    // Disable the original object
+    MAGIC* mg = mg_findext((SV*)hv, PERL_MAGIC_ext, &arena_vtbl);
+    if (mg) mg->mg_ptr = NULL;
+    (void)hv_delete(hv, "_arena_ptr", 10, G_DISCARD);
+
+    return raw;
+}
+
+SV* PerlUpb_Arena_Attach(pTHX_ void* raw) {
+    if (!raw) return &PL_sv_undef;
+    // We assume it's a managed arena for now. 
+    // In a full implementation, we might need to know if it was tmpfs.
+    return wrap_arena_internal(aTHX_ raw, false);
+}
+
 void PerlUpb_Arena_GetStats(pTHX_ SV *sv, PerlUpb_ArenaStats *stats) {
     if (!sv || !SvROK(sv) || !stats) return;
     memset(stats, 0, sizeof(PerlUpb_ArenaStats));

@@ -463,5 +463,63 @@ _xs_clear_memoization_cache(self)
         HV* hv = (HV*)SvRV(self);
         hv_delete(hv, "_cache", 6, G_DISCARD);
 
+SV*
+_xs_get_arena(self)
+    SV* self
+    CODE:
+        RETVAL = PerlUpb_Message_GetArena(aTHX_ self);
+        if (RETVAL) SvREFCNT_inc(RETVAL);
+        else RETVAL = &PL_sv_undef;
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_detach(self)
+    SV* self
+    CODE:
+    {
+        const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ self);
+        const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ self);
+        if (!msg || !mdef) croak("Cannot detach invalid message");
+
+        HV* hv = (HV*)SvRV(self);
+        
+        // Remove from cache and clear magic to prevent double-free/interference
+        PerlUpb_ObjCache_Delete(aTHX_ msg);
+        MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
+        if (mg) mg->mg_ptr = NULL;
+        
+        // Return info needed to re-attach
+        HV* res = newHV();
+        hv_store(res, "upb_ptr", 7, newSViv(PTR2IV(msg)), 0);
+        hv_store(res, "mdef_ptr", 8, newSViv(PTR2IV(mdef)), 0);
+        RETVAL = newRV_noinc((SV*)res);
+    }
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_attach(class_name, info_rv, arena_sv)
+    const char* class_name
+    SV* info_rv
+    SV* arena_sv
+    CODE:
+    {
+        if (!SvROK(info_rv) || SvTYPE(SvRV(info_rv)) != SVt_PVHV)
+            croak("attach() info must be a hash ref");
+        HV* info = (HV*)SvRV(info_rv);
+        
+        SV** p_upb = hv_fetch(info, "upb_ptr", 7, 0);
+        SV** p_mdef = hv_fetch(info, "mdef_ptr", 8, 0);
+        if (!p_upb || !p_mdef) croak("Invalid attach() info");
+        
+        const upb_Message* msg = INT2PTR(const upb_Message*, SvIV(*p_upb));
+        const upb_MessageDef* mdef = INT2PTR(const upb_MessageDef*, SvIV(*p_mdef));
+        
+        RETVAL = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
+    }
+    OUTPUT:
+        RETVAL
+
 
 

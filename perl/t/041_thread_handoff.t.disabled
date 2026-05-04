@@ -1,0 +1,71 @@
+use strict;
+use warnings;
+use Test::More;
+use lib 't/lib';
+use TestHelpers;
+use Protobuf;
+use Protobuf::Arena;
+
+# Check for threads support
+BEGIN {
+    use Config;
+    if (!$Config{useithreads}) {
+        plan skip_all => "Threads not supported on this Perl";
+    }
+}
+use threads;
+use Thread::Queue;
+
+my $pool = TestHelpers->get_generated_pool();
+TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
+TestHelpers->generate_classes($pool);
+
+subtest 'Cross-thread Message Handoff' => sub {
+    my $q = Thread::Queue->new();
+    
+    my $t = threads->create(sub {
+        my $msg = Test::Test::TestMessage->new();
+        $msg->set_value(456);
+        $msg->set_test_string("threaded");
+        
+        my $arena = $msg->arena();
+        ok($arena, "Got arena from message");
+        
+        # Handoff procedure:
+        # 1. Detach message
+        my $m_info = $msg->detach();
+        # 2. Detach arena
+        my $a_ptr = $arena->detach();
+        
+        $q->enqueue({
+            m_info => $m_info,
+            a_ptr  => $a_ptr,
+            class  => ref($msg) || 'Test::Test::TestMessage',
+        });
+        
+        # Explicitly drop references in the child thread
+        undef $msg;
+        undef $arena;
+        
+        return "success";
+    });
+    
+    my $data = $q->dequeue();
+    ok($data, "Received handoff data");
+    
+    # Re-attach procedure:
+    # 1. Attach arena
+    my $arena = Protobuf::Arena->attach($data->{a_ptr});
+    ok($arena, "Attached arena in main thread");
+    
+    # 2. Attach message to that arena
+    my $msg = $data->{class}->attach($data->{m_info}, $arena);
+    ok($msg, "Attached message in main thread");
+    
+    is($msg->value, 456, "Value preserved after handoff");
+    is($msg->test_string, "threaded", "String preserved after handoff");
+    
+    $t->join();
+};
+
+done_testing();

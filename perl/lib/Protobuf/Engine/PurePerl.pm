@@ -42,32 +42,29 @@ sub clear {
 
 sub _encode_varint {
     my ($val) = @_;
-    my $res = '';
-    # Handle negative numbers: they are always 10 bytes in PB varint
-    if ($val < 0) {
-        for (1..9) {
-            $res .= chr(($val & 0x7f) | 0x80);
-            $val >>= 7;
-        }
-        $res .= chr($val & 0x7f);
-        return $res;
+    my $v = Math::BigInt->new($val);
+    if ($v->is_negative) {
+        # Protobuf negative varints are always 10 bytes (unsigned 64-bit representation)
+        $v = Math::BigInt->new("18446744073709551616")->badd($v);
     }
     
-    while ($val >= 0x80) {
-        $res .= chr(($val & 0x7f) | 0x80);
-        $val >>= 7;
+    my $res = '';
+    while ($v->bcmp(128) >= 0) {
+        $res .= chr(($v->copy()->band(0x7f)->as_number) | 0x80);
+        $v->brsft(7);
     }
-    $res .= chr($val);
+    $res .= chr($v->as_number);
     return $res;
 }
 
 sub _decode_varint {
     my ($data_ref, $pos_ref) = @_;
-    my $val = 0;
+    my $val = Math::BigInt->new(0);
     my $shift = 0;
     while (1) {
         my $byte = ord(substr($$data_ref, $$pos_ref++, 1));
-        $val |= ($byte & 0x7f) << $shift;
+        my $part = Math::BigInt->new($byte & 0x7f)->blsft($shift);
+        $val->bior($part);
         last unless $byte & 0x80;
         $shift += 7;
         if ($shift >= 70) { croak "Varint too long"; }
@@ -100,15 +97,14 @@ sub _encode_zigzag64 {
     my ($val) = @_;
     my $v = Math::BigInt->new($val);
     my $res = ($v->copy()->blsft(1))->bxor($v->copy()->brsft(63));
-    return $res->as_hex(); # Return hex to avoid precision loss on large IVs
+    return $res;
 }
 
 sub _decode_zigzag64 {
     my ($val) = @_;
-    my $v = Math::BigInt->from_hex($val) if $val =~ /^0x/;
-    $v ||= Math::BigInt->new($val);
-    my $res = ($v->copy()->brsft(1))->bxor($v->copy()->band(1)->copy()->bneg());
-    return $res->as_number();
+    my $v = ref($val) ? $val->copy : Math::BigInt->new($val);
+    my $res = ($v->copy()->brsft(1))->bxor($v->copy()->band(1)->bneg());
+    return $res;
 }
 
 # --- Wire Format Implementation ---
@@ -198,7 +194,17 @@ sub _encode_field {
         $res .= _encode_varint($val);
     } elsif ($wire == 1) { # 64-bit
         if ($type == 1) { $res .= pack('d', $val); } # double
-        else { $res .= pack('Q', $val); } # fixed64, sfixed64
+        else {
+            # fixed64, sfixed64
+            my $v = Math::BigInt->new($val);
+            if ($v->is_negative) {
+                $v->badd("18446744073709551616");
+            }
+            my $hex = $v->as_hex();
+            $hex =~ s/^0x//;
+            $hex = '0' x (16 - length($hex)) . $hex;
+            $res .= reverse(pack('H*', $hex));
+        }
     } elsif ($wire == 2) { # Length-delimited
         if ($type == 11) { # Message
             my $inner = $val->serialize();
@@ -208,7 +214,14 @@ sub _encode_field {
         }
     } elsif ($wire == 5) { # 32-bit
         if ($type == 2) { $res .= pack('f', $val); } # float
-        else { $res .= pack('V', $val); } # fixed32, sfixed32
+        else {
+            # fixed32, sfixed32
+            my $v = Math::BigInt->new($val);
+            if ($v->is_negative) {
+                $v->badd("4294967296");
+            }
+            $res .= pack('V', $v->as_number & 0xFFFFFFFF);
+        }
     }
     return $res;
 }
@@ -252,6 +265,7 @@ sub parse {
 
     while ($pos < $len) {
         my $tag_wire = _decode_varint(\$data, \$pos);
+        $tag_wire = $tag_wire->as_number();
         my $tag = $tag_wire >> 3;
         my $wire = $tag_wire & 0x07;
         
@@ -279,16 +293,49 @@ sub _decode_field {
     
     if ($wire == 0) { # Varint
         my $val = _decode_varint($data_ref, $pos_ref);
-        if ($type == 17) { return _decode_zigzag32($val); }
-        if ($type == 18) { return _decode_zigzag64($val); }
+        if ($type == 17) { $val = _decode_zigzag32($val); }
+        elsif ($type == 18) { $val = _decode_zigzag64($val); }
+        elsif ($type == 5 || $type == 13 || $type == 8 || $type == 14) {
+            # 32-bit or bool or enum - convert to native if possible
+            if ($type == 5) {
+                # int32: if it's > 2^31-1, it's negative (it was encoded as 10-byte varint)
+                if ($val->bcmp("2147483647") > 0) {
+                     $val = $val->copy->bsub("18446744073709551616");
+                }
+                $val = $val->as_number();
+            } else {
+                $val = $val->as_number();
+            }
+        } elsif ($type == 3 || $type == 4) {
+             # int64/uint64
+             if ($type == 3 && $val->bcmp("9223372036854775807") > 0) {
+                 $val = $val->copy->bsub("18446744073709551616");
+             }
+             # Keep as BigInt if it's very large, otherwise as_number
+             if ($val->bcmp("9007199254740992") > 0 || $val->bcmp("-9007199254740992") < 0) {
+                 # Stay as BigInt
+             } else {
+                 $val = $val->as_number();
+             }
+        }
         return $val;
+
     } elsif ($wire == 1) { # 64-bit
         my $bytes = substr($$data_ref, $$pos_ref, 8);
         $$pos_ref += 8;
         if ($type == 1) { return unpack('d', $bytes); }
-        return unpack('Q', $bytes);
+        
+        my $val = Math::BigInt->from_hex('0x' . unpack('H*', reverse($bytes)));
+        if ($type == 16) { # sfixed64
+            if ($val->bcmp("9223372036854775807") > 0) {
+                $val->bsub("18446744073709551616");
+            }
+        }
+        return ($val->bcmp("9007199254740992") > 0 || $val->bcmp("-9007199254740992") < 0) ? $val : $val->as_number();
+        
     } elsif ($wire == 2) { # Length-delimited
         my $len = _decode_varint($data_ref, $pos_ref);
+        $len = $len->as_number();
         my $bytes = substr($$data_ref, $$pos_ref, $len);
         $$pos_ref += $len;
         if ($type == 11) { # Message
@@ -296,12 +343,16 @@ sub _decode_field {
             return $sub_class->parse($bytes);
         }
         return $bytes;
+
     } elsif ($wire == 5) { # 32-bit
         my $bytes = substr($$data_ref, $$pos_ref, 4);
         $$pos_ref += 4;
         if ($type == 2) { return unpack('f', $bytes); }
+        if ($type == 15) { return unpack('l', $bytes); } # sfixed32
         return unpack('V', $bytes);
     }
+    
+    return undef;
 }
 
 sub _get_perl_class_for_mdef {

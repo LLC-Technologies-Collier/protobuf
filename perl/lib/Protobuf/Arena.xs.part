@@ -43,6 +43,23 @@ _xs_destroy(self)
     CODE:
         PerlUpb_Arena_Destroy(aTHX_ self);
 
+IV
+_xs_detach(self)
+    SV* self
+    CODE:
+        RETVAL = PTR2IV(PerlUpb_Arena_Detach(aTHX_ self));
+    OUTPUT:
+        RETVAL
+
+SV*
+_xs_attach(class_name, ptr_iv)
+    const char* class_name
+    IV ptr_iv
+    CODE:
+        RETVAL = PerlUpb_Arena_Attach(aTHX_ INT2PTR(void*, ptr_iv));
+    OUTPUT:
+        RETVAL
+
 UV
 _xs_space_allocated(self)
     SV* self

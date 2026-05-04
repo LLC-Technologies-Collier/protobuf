@@ -162,6 +162,8 @@ sub set_numa_node {
     return $self->_xs_set_numa_node($node);
 }
 
+sub CLONE_SKIP { 1 }
+
 sub DEMOLISH {
     my $self = shift;
     $self->_xs_destroy();
@@ -233,6 +235,16 @@ sub get_offset {
 sub attach_message {
     my ($self, $name, $offset) = @_;
     return $self->_xs_attach_message($name, $offset);
+}
+
+sub detach {
+    my $self = shift;
+    return $self->_xs_detach();
+}
+
+sub attach {
+    my ($class, $ptr_iv) = @_;
+    return _xs_attach($class, $ptr_iv);
 }
 
 __PACKAGE__->meta->make_immutable;

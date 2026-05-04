@@ -12,7 +12,7 @@ BEGIN {
 
 use File::Temp qw(tempfile);
 
-subtest 'Protobuf objects croak on thread creation' => sub {
+subtest 'Protobuf objects skip cloning on thread creation' => sub {
     my $code = <<'EOF';
 use strict;
 use warnings;
@@ -26,9 +26,12 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 my $msg = Test::Test::TestMessage->new();
 $msg->set_value(123);
 
-# This should crash the process due to CLONE dying
-my $t = threads->create(sub { return 1; });
+# This should NOT crash the process now that we use CLONE_SKIP
+my $t = threads->create(sub { 
+    return 1; 
+});
 $t->join() if $t;
+print "SUCCESS\n";
 EOF
 
     my ($fh, $filename) = tempfile();
@@ -36,13 +39,13 @@ EOF
     close $fh;
 
     my $cmd = "$^X -Iblib/lib -Iblib/arch -Ilib $filename 2>&1";
-    my $err_output = `$cmd`;
+    my $output = `$cmd`;
     my $exit_code = $? >> 8;
     
     unlink $filename;
     
-    ok($exit_code != 0, "Process exited with non-zero code ($exit_code) due to CLONE exception");
-    like($err_output, qr/Protobuf objects cannot be safely cloned across ithreads/, 'Stderr contains the custom croak message');
+    is($exit_code, 0, "Process exited with zero code ($exit_code) - CLONE_SKIP worked");
+    like($output, qr/SUCCESS/, 'Output contains SUCCESS message');
 };
 
 subtest 'pool freeze' => sub {

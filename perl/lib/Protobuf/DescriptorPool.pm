@@ -168,9 +168,7 @@ sub DEMOLISH {
     return;
 }
 
-sub CLONE {
-    croak('Protobuf objects cannot be safely cloned across ithreads. Use pre-forking or an event loop (e.g. Coro, AnyEvent, Mojo) instead.');
-}
+sub CLONE_SKIP { 1 }
 
 sub generated_pool {
     return $Protobuf::HAS_XS ? _xs_generated_pool() : __PACKAGE__->new();

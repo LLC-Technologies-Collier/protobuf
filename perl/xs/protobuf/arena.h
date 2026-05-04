@@ -67,6 +67,9 @@ upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv);
 void PerlUpb_Arena_Free(pTHX_ SV *sv);
 void PerlUpb_Arena_Destroy(pTHX_ SV *sv);
 
+void* PerlUpb_Arena_Detach(pTHX_ SV* sv);
+SV* PerlUpb_Arena_Attach(pTHX_ void* raw);
+
 // Tmpfs IPC & Reification Helpers
 bool PerlUpb_Arena_IsTmpfs(pTHX_ SV* arena_sv);
 const char* PerlUpb_Arena_GetPath(pTHX_ SV* arena_sv);
