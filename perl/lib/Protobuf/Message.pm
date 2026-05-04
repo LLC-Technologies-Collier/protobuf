@@ -250,6 +250,15 @@ our $VERSION = '0.01';
 use Protobuf::Internal::Repeated;
 use Protobuf::Internal::Map;
 
+sub _engine {
+    my ($class_or_self, $profile) = @_;
+    if (ref($class_or_self)) {
+        return $class_or_self->{_engine} if $class_or_self->{_engine};
+    }
+    my $name = ($profile && $profile eq 'pure_perl') ? 'pure_perl' : undef;
+    return Protobuf->get_engine($name);
+}
+
 sub new {
     my $class = shift;
     my $args;
@@ -266,6 +275,8 @@ sub new {
     croak("Class $class does not have a descriptor") unless $mdef;
 
     my $profile_str = delete $args->{profile} || 'balanced';
+    my $engine = $class->_engine($profile_str);
+
     my $flags = 0;
     if ($profile_str eq 'write_heavy') {
         $flags = Protobuf::Internal::PROFILE_WRITE_HEAVY();
@@ -275,12 +286,8 @@ sub new {
         $flags = Protobuf::Internal::PROFILE_ZERO_COPY();
     }
 
-    my $self;
-    if ($args->{arena}) {
-        $self = _xs_new_from_def_in_arena($mdef, delete $args->{arena}, $flags);
-    } else {
-        $self = _xs_new_from_def($mdef, $flags);
-    }
+    my $self = $engine->create_message($class, $mdef, delete $args->{arena}, $flags);
+    $self->{_engine} = $engine;
     
     $self->from_perl($args) if keys %$args;
     
@@ -289,9 +296,10 @@ sub new {
 
 sub DESTROY {
     my ($self) = @_;
-    # Explicit _xs_free is only needed if not in global destruction.
-    # The magic cleanup in XS will handle the cache detachment safely.
-    _xs_free($self) unless ${^GLOBAL_PHASE} eq 'DESTRUCT';
+    # Only call XS free if it's an XS-backed object
+    if (exists $self->{_engine} && $self->{_engine}->isa('Protobuf::Engine::XS')) {
+        _xs_free($self) unless ${^GLOBAL_PHASE} eq 'DESTRUCT';
+    }
     return;
 }
 
@@ -302,29 +310,22 @@ sub CLONE {
 
 sub get {
     my ($self, $field_name) = @_;
-    return $self->{_wrappers}{$field_name} if exists $self->{_wrappers}{$field_name};
-
-    my $val = _xs_get($self, $field_name);
-
-    if (ref($val) && ref($val) =~ /^Protobuf::Internal::(?:Repeated|Map)$/) {
-        my $public_class = ref($val) . '::Public';
-        my $proxy;
-        if (ref($val) eq 'Protobuf::Internal::Repeated') {
-            tie @$proxy, 'Protobuf::Internal::Repeated', $val;
-            return $self->{_wrappers}{$field_name} = bless $proxy, $public_class;
-        }
-        if (ref($val) eq 'Protobuf::Internal::Map') {
-            tie %$proxy, 'Protobuf::Internal::Map', $val;
-            return $self->{_wrappers}{$field_name} = bless $proxy, $public_class;
-        }
-    }
-
-    return $val;
+    return $self->_engine->get($self, $field_name);
 }
 
 sub set {
     my ($self, $field_name, $value) = @_;
-    return _xs_set($self, $field_name, $value);
+    return $self->_engine->set($self, $field_name, $value);
+}
+
+sub has {
+    my ($self, $field_name) = @_;
+    return $self->_engine->has($self, $field_name);
+}
+
+sub clear {
+    my ($self, $field_name) = @_;
+    return $self->_engine->clear($self, $field_name);
 }
 
 sub set_oneof {
@@ -363,7 +364,7 @@ sub which_oneof {
 
 sub serialize {
     my ($self) = @_;
-    return _xs_serialize($self);
+    return $self->_engine->serialize($self);
 }
 
 sub encode { shift->serialize(@_) }
@@ -390,8 +391,7 @@ sub coerce_to {
 
 sub to_perl {
     my ($self) = @_;
-    # WKTs like Struct have their own to_perl in Protobuf::WKT::Struct
-    return _xs_to_perl($self);
+    return $self->_engine->to_perl($self);
 }
 
 sub to_hashref {
@@ -402,8 +402,6 @@ sub to_hashref {
 sub from_perl {
     my ($self, $data) = @_;
     croak('Message::from_perl expects a HASH ref') unless ref($data) eq 'HASH';
-    # This is a basic implementation. Generated classes might have more optimized
-    # per-field setters.
     foreach my $key (keys %$data) {
         if ($self->can($key)) {
             $self->$key($data->{$key});
@@ -416,12 +414,11 @@ sub from_perl {
 
 sub to_text {
     my ($self) = @_;
-    return _xs_to_text($self);
+    return $self->_engine->to_text($self);
 }
 
 sub to_text_with_unknowns {
     my ($self) = @_;
-    # TODO: Enhance to include unknown fields
     return $self->to_text();
 }
 
@@ -432,7 +429,7 @@ sub to_wire {
 
 sub to_json {
     my ($self) = @_;
-    return _xs_to_json($self);
+    return $self->_engine->to_json($self);
 }
 
 sub toJSON { shift->to_json(@_) }
@@ -440,6 +437,7 @@ sub toJSON { shift->to_json(@_) }
 sub to_handle {
     my ($self, $fh, %options) = @_;
     croak("Invalid file handle") unless defined $fh;
+    # TODO: Engine delegation for to_handle
     if (($options{format} || 'binary') eq 'json') {
         return _xs_json_to_handle($self, $fh);
     }
@@ -449,12 +447,12 @@ sub to_handle {
 sub from_handle {
     my ($class, $fh, %options) = @_;
     croak("Invalid file handle") unless defined $fh;
+    # TODO: Engine delegation for from_handle
     return _xs_from_handle($class, $fh, $options{length_prefixed} || 0);
 }
 
 sub to_json_streaming {
     my ($self) = @_;
-    # TODO: Implement actual streaming
     return $self->to_json();
 }
 
@@ -467,7 +465,7 @@ sub to_json_compact {
 
 sub from_json {
     my ($class, $json_data) = @_;
-    return _xs_from_json($class, $json_data);
+    return $class->_engine->from_json($class, $json_data);
 }
 
 sub fromJSON { shift->from_json(@_) }
@@ -479,32 +477,34 @@ sub unknown_fields {
 
 sub dependency_graph {
     my ($self) = @_;
-    # TODO: Implement
     return { root => ref($self), children => [] };
 }
 
 sub perf_profile {
     my ($self) = @_;
-    # TODO: Implement
     return { serialize_time => 0, deserialize_time => 0, field_access_avg => 0 };
 }
 
 sub reset_connection {
     my ($self) = @_;
-    # Placeholder
     return 1;
 }
 
 sub parse {
-    my ($class, $data) = @_;
-    return _xs_parse($class, $data);
+    my ($class, $data, $options) = @_;
+    my $profile = (ref($options) eq 'HASH') ? $options->{profile} : undef;
+    my $engine = $class->_engine($profile);
+    my $self = $engine->parse($class, $data, $options);
+    $self->{_engine} = $engine;
+    return $self;
 }
 
 sub decode { shift->parse(@_) }
 
 sub parse_from {
     my ($self, $data) = @_;
-    _xs_clear_memoization_cache($self);
+    _xs_clear_memoization_cache($self) if $self->_engine->isa('Protobuf::Engine::XS');
+    # TODO: PurePerl parse_from
     return _xs_parse_from($self, $data);
 }
 
@@ -512,16 +512,16 @@ sub merge_from {
     my ($self, $other) = @_;
     croak("Argument to merge_from must be a Protobuf::Message")
         unless eval { $other->isa('Protobuf::Message') };
-    _xs_clear_memoization_cache($self);
-    return _xs_merge_from($self, $other);
+    _xs_clear_memoization_cache($self) if $self->_engine->isa('Protobuf::Engine::XS');
+    return $self->_engine->merge($self, $other);
 }
 
 sub copy_from {
     my ($self, $other) = @_;
     croak("Argument to copy_from must be a Protobuf::Message")
         unless eval { $other->isa('Protobuf::Message') };
-    _xs_clear_memoization_cache($self);
-    return _xs_copy_from($self, $other);
+    _xs_clear_memoization_cache($self) if $self->_engine->isa('Protobuf::Engine::XS');
+    return $self->_engine->copy($self, $other);
 }
 
 sub fields {

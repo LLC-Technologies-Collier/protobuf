@@ -58,4 +58,40 @@ XSLoader::load('Protobuf', $VERSION);
 use Protobuf::Internal;
 Protobuf::Internal::init_registry();
 
+our $ENGINE;
+my %engines;
+
+sub get_engine {
+    my ($class_or_name, $name) = @_;
+    
+    # Handle method call vs function call
+    if (defined($class_or_name) && $class_or_name eq 'Protobuf') {
+        # Method call: Protobuf->get_engine($name)
+    } else {
+        # Function call: get_engine($name)
+        $name = $class_or_name;
+    }
+    
+    $name ||= $ENV{PROTOBUF_ENGINE} || 'xs';
+    
+    # Map high-level profiles to implementation engines
+    my $engine_key = ($name =~ /^(?:xs|balanced|write_heavy|read_heavy|zero_copy)$/) ? 'xs' : 'pure_perl';
+    
+    return $engines{$engine_key} if $engines{$engine_key};
+    
+    my $class = "Protobuf::Engine::" . ($engine_key eq 'xs' ? 'XS' : 'PurePerl');
+    (my $file = $class) =~ s/::/\//g;
+    require "$file.pm";
+    
+    return $engines{$engine_key} = $class->new();
+}
+
+sub engine {
+    my ($class, $name) = @_;
+    if ($name) {
+        $ENGINE = get_engine($name);
+    }
+    return $ENGINE ||= get_engine();
+}
+
 1;

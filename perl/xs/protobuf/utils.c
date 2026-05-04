@@ -320,6 +320,26 @@ SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash,
 }
 
 const void* PerlUpb_GetArenaBoundObject(pTHX_ SV* sv, const char* class_name) {
+    if (!sv || !SvOK(sv)) return NULL;
+    void* ptr = (void*)PerlUpb_GetArenaBoundObject_Silent(aTHX_ sv, class_name);
+    if (!ptr) {
+        if (!SvROK(sv)) {
+            croak("Invalid message object: SV is not a reference (expected %s, type %d)", class_name, (int)SvTYPE(sv));
+        }
+        if (!sv_derived_from(sv, class_name)) {
+            const char* actual_class = (SvOBJECT(SvRV(sv))) ? HvNAME(SvSTASH(SvRV(sv))) : "unblessed-ref";
+            croak("Invalid message object: expected %s, got %s", class_name, actual_class);
+        }
+        HV* hv = (HV*)SvRV(sv);
+        if (SvTYPE(hv) != SVt_PVHV) {
+            croak("Invalid message object: underlying SV is type %d, not HASH", (int)SvTYPE(hv));
+        }
+        croak("Invalid message object: _upb_ptr missing (expected %s)", class_name);
+    }
+    return ptr;
+}
+
+const void* PerlUpb_GetArenaBoundObject_Silent(pTHX_ SV* sv, const char* class_name) {
     if (!sv || !SvROK(sv) || !sv_derived_from(sv, class_name)) {
         return NULL;
     }
@@ -327,6 +347,13 @@ const void* PerlUpb_GetArenaBoundObject(pTHX_ SV* sv, const char* class_name) {
     if (SvTYPE(hv) != SVt_PVHV) return NULL;
     SV** svp = hv_fetch(hv, "_upb_ptr", 8, 0);
     return svp ? (const void*)SvIV(*svp) : NULL;
+}
+
+bool PerlUpb_IsXSBacked(pTHX_ SV* sv) {
+    if (!sv || !SvROK(sv)) return false;
+    HV* hv = (HV*)SvRV(sv);
+    if (SvTYPE(hv) != SVt_PVHV) return false;
+    return hv_exists(hv, "_upb_ptr", 8);
 }
 
 SV* PerlUpb_GetArenaFromObject(pTHX_ SV* sv) {

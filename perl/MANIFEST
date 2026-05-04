@@ -969,3 +969,7 @@ xt/mojo/340_map.t
 xt/mojo/360_wkt.t
 xt/mojo/380_textformat.t
 xt/mojo/400_json.t
+lib/Protobuf/Engine.pm
+lib/Protobuf/Engine/XS.pm
+lib/Protobuf/Engine/PurePerl.pm
+lib/Protobuf/Engine/PurePerl/DescriptorParser.pm

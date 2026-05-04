@@ -33,6 +33,8 @@ SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash,
 
 // Extracts the C pointer from a wrapped object, verifying the class name.
 const void* PerlUpb_GetArenaBoundObject(pTHX_ SV* sv, const char* class_name);
+const void* PerlUpb_GetArenaBoundObject_Silent(pTHX_ SV* sv, const char* class_name);
+bool PerlUpb_IsXSBacked(pTHX_ SV* sv);
 
 // Retrieves the arena SV associated with the wrapped object.
 SV* PerlUpb_GetArenaFromObject(pTHX_ SV* sv);

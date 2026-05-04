@@ -7,11 +7,17 @@
 
 static void test_map_creation(pTHX) {
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
-    // Passing NULL for upb_Map and FieldDef is fine for GetMap check and Size(0)
-    SV* map_sv = PerlUpb_Map_New(aTHX_ NULL, NULL, arena_sv, 0);
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+    
+    // We need a FieldDef to create a real map because upb_Map_New doesn't take types directly anymore,
+    // but PerlUpb_Map_New expects one to know the key/value types.
+    // However, for this basic creation test, we just want to verify the wrapper works.
+    
+    upb_Map* map = upb_Map_New(arena, kUpb_CType_Int32, kUpb_CType_Int32);
+    SV* map_sv = PerlUpb_Map_New(aTHX_ map, NULL, arena_sv, 0);
     
     ok(map_sv != NULL, "PerlUpb_Map_New returns non-NULL");
-    ok(sv_derived_from(map_sv, "Protobuf::Internal::Map"), "Map SV has correct class");
+    ok(SvOK(map_sv) && sv_derived_from(map_sv, "Protobuf::Internal::Map"), "Map SV has correct class");
     is(PerlUpb_Map_Size(aTHX_ map_sv), 0, "Initial map size is 0");
     
     SvREFCNT_dec(map_sv);

@@ -91,5 +91,5 @@ void PerlUpb_ExtensionDict_AuditIdentity(pTHX_ SV* self) {
     
     // Log a HIT event for the parent message to verify identity connection
     const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ dict->message_sv);
-    PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_HIT, msg);
+    PerlUpb_ObjCache_LogEvent(OBJ_CACHE_EVENT_HIT, msg);
 }

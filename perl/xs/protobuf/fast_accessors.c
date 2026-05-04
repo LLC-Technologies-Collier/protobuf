@@ -20,6 +20,31 @@ static XS(PerlUpb_FastAccessor) {
     if (items < 1) croak("Usage: $msg->field([value])");
     SV* self = ST(0);
 
+    if (!PerlUpb_IsXSBacked(aTHX_ self)) {
+        const char* name = upb_FieldDef_Name(f);
+        dSP;
+        PUSHMARK(SP);
+        XPUSHs(self);
+        if (items > 1) {
+            // Setter mode fallback: $msg->set('field', $val)
+            XPUSHs(sv_2mortal(newSVpv(name, 0)));
+            XPUSHs(ST(1));
+            PUTBACK;
+            call_method("set", G_DISCARD);
+            SPAGAIN;
+            XSRETURN_EMPTY;
+        } else {
+            // Getter mode fallback: $msg->get('field')
+            XPUSHs(sv_2mortal(newSVpv(name, 0)));
+            PUTBACK;
+            int count = call_method("get", G_SCALAR);
+            SPAGAIN;
+            if (count != 1) croak("get method failed");
+            ST(0) = POPs;
+            XSRETURN(1);
+        }
+    }
+
     if (items > 1) {
         // Setter mode
         PerlUpb_Message_SetField(aTHX_ self, f, ST(1));
@@ -97,6 +122,20 @@ static XS(PerlUpb_FastSetter) {
     const upb_FieldDef* f = (const upb_FieldDef*)CvXSUBANY(cv).any_ptr;
     if (items != 2) croak("Usage: $msg->set_field(value)");
     SV* self = ST(0);
+
+    if (!PerlUpb_IsXSBacked(aTHX_ self)) {
+        const char* name = upb_FieldDef_Name(f);
+        dSP;
+        PUSHMARK(SP);
+        XPUSHs(self);
+        XPUSHs(sv_2mortal(newSVpv(name, 0)));
+        XPUSHs(ST(1));
+        PUTBACK;
+        call_method("set", G_DISCARD);
+        SPAGAIN;
+        XSRETURN_EMPTY;
+    }
+
     PerlUpb_Message_SetField(aTHX_ self, f, ST(1));
     
     // Mark cache as dirty for coarse invalidation
@@ -115,7 +154,23 @@ static XS(PerlUpb_FastHas) {
     dXSARGS;
     const upb_FieldDef* f = (const upb_FieldDef*)CvXSUBANY(cv).any_ptr;
     if (items != 1) croak("Usage: $msg->has_field()");
-    bool has = PerlUpb_Message_HasField(aTHX_ ST(0), f);
+    SV* self = ST(0);
+
+    if (!PerlUpb_IsXSBacked(aTHX_ self)) {
+        const char* name = upb_FieldDef_Name(f);
+        dSP;
+        PUSHMARK(SP);
+        XPUSHs(self);
+        XPUSHs(sv_2mortal(newSVpv(name, 0)));
+        PUTBACK;
+        int count = call_method("has", G_SCALAR);
+        SPAGAIN;
+        if (count != 1) croak("has method failed");
+        ST(0) = POPs;
+        XSRETURN(1);
+    }
+
+    bool has = PerlUpb_Message_HasField(aTHX_ self, f);
     ST(0) = has ? &PL_sv_yes : &PL_sv_no;
     XSRETURN(1);
 }
@@ -126,6 +181,19 @@ static XS(PerlUpb_FastClear) {
     const upb_FieldDef* f = (const upb_FieldDef*)CvXSUBANY(cv).any_ptr;
     if (items != 1) croak("Usage: $msg->clear_field()");
     SV* self = ST(0);
+
+    if (!PerlUpb_IsXSBacked(aTHX_ self)) {
+        const char* name = upb_FieldDef_Name(f);
+        dSP;
+        PUSHMARK(SP);
+        XPUSHs(self);
+        XPUSHs(sv_2mortal(newSVpv(name, 0)));
+        PUTBACK;
+        call_method("clear", G_DISCARD);
+        SPAGAIN;
+        XSRETURN_EMPTY;
+    }
+
     PerlUpb_Message_ClearField(aTHX_ self, f);
     
     // Mark cache as dirty for coarse invalidation

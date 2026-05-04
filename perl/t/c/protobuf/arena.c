@@ -44,9 +44,9 @@ int main(int argc, char** argv) {
 
     // Test Free and Destroy
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
-    // Check that the wrapper pointer is cleared in the hash
+    // Check that the wrapper pointer is deleted from the hash
     SV** svp = hv_fetch((HV*)SvRV(arena_sv), "_arena_ptr", 10, 0);
-    ok(svp && SvIOK(*svp) && SvIV(*svp) == 0, "Wrapper pointer cleared after Destroy");
+    ok(svp == NULL, "Wrapper pointer deleted after Destroy");
 
     // Test SpaceAllocated
     SV *arena2_sv = PerlUpb_Arena_New(aTHX);

@@ -105,6 +105,6 @@ SV* PerlUpb_MessageDef_PerlClassName(pTHX_ const upb_MessageDef* mdef) {
 void PerlUpb_MessageDef_AuditIdentity(pTHX_ SV* self) {
     const upb_MessageDef* m = PerlUpb_MessageDef_GetMessage(aTHX_ self);
     if (m) {
-        PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_HIT, m);
+        PerlUpb_ObjCache_LogEvent(OBJ_CACHE_EVENT_HIT, m);
     }
 }
