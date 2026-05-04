@@ -20,10 +20,9 @@ SV *PerlUpb_WrapMessage(pTHX_ const upb_Message *msg, const upb_MessageDef *mdef
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ msg);
     if (cached) return cached;
 
-    char* class_name = PerlUpb_DeriveClassName(aTHX_ mdef);
+    HV* stash = PerlUpb_GetMessageStash(aTHX_ mdef);
 
-    SV *self = PerlUpb_WrapArenaBoundObject(aTHX_ msg, arena_sv, class_name);
-    safefree(class_name);
+    SV *self = PerlUpb_WrapArenaBoundObject(aTHX_ msg, arena_sv, stash);
 
     // Store the descriptor C pointer in the HV.
     // We don't use magic here anymore to reduce "unreferenced scalar" noise.

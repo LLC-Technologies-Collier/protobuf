@@ -7,6 +7,7 @@
 #include "xs/protobuf/obj_cache.h"
 #include "xs/protobuf/utils.h"
 #include "xs/convert.h"
+#include "xs/protobuf/registry.h"
 #include "upb/message/array.h"
 #include "upb/reflection/def.h"
 
@@ -16,7 +17,9 @@ SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ arr);
     if (cached) return cached;
 
-    SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ arr, arena_sv, "Protobuf::Internal::Repeated");
+    PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    HV* stash = (reg && reg->stash_repeated) ? reg->stash_repeated : gv_stashpv("Protobuf::Internal::Repeated", GV_ADD);
+    SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ arr, arena_sv, stash);
     HV* hv = (HV*)SvRV(self);
     hv_store(hv, "_fdef", 5, newSViv(PTR2IV(f)), 0);
     

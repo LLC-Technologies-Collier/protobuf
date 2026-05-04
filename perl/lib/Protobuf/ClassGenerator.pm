@@ -167,6 +167,7 @@ sub generate_for_file {
 
 sub _generate_recursively {
     my ($mdef, $current_ns) = @_;
+    return unless $mdef->isa('Protobuf::Descriptor::MessageDef');
     _generate_for_message($mdef, $current_ns);
     
     my $nested_count = $mdef->nested_message_count;
@@ -281,6 +282,7 @@ sub generate_for_message {
 
 sub _generate_for_message {
     my ($mdef, $current_ns) = @_;
+    return unless $mdef->isa('Protobuf::Descriptor::MessageDef');
     
     my $full_name = $mdef->full_name;
     my $normalized = $full_name;
@@ -311,9 +313,7 @@ sub _generate_for_message {
     my $code = '';
     $code .= <<"EOC";
 package $perl_class;
-use Moo;
-use Types::Standard qw( Int Str Num Bool InstanceOf ArrayRef HashRef Any );
-extends 'Protobuf::Message';
+use parent 'Protobuf::Message';
 sub descriptor { return \$Protobuf::ClassGenerator::DESCRIPTOR_REGISTRY{'$perl_class'}; }
 
 sub validate {
@@ -325,6 +325,7 @@ sub validate {
     }
     return \$self->SUPER::validate();
 }
+
 EOC
 
     # Generate enums nested in this message

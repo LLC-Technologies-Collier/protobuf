@@ -11,6 +11,57 @@ MODULE = Protobuf::Internal::Map  PACKAGE = Protobuf::Internal::Map
 PROTOTYPES: ENABLE
 
 SV*
+FETCH(self, key)
+    SV* self
+    SV* key
+    CODE:
+        RETVAL = PerlUpb_Map_GetItem(aTHX_ self, key);
+    OUTPUT:
+        RETVAL
+
+void
+STORE(self, key, value)
+    SV* self
+    SV* key
+    SV* value
+    CODE:
+        PerlUpb_Map_SetItem(aTHX_ self, key, value);
+
+bool
+EXISTS(self, key)
+    SV* self
+    SV* key
+    CODE:
+        RETVAL = PerlUpb_Map_Exists(aTHX_ self, key);
+    OUTPUT:
+        RETVAL
+
+SV*
+DELETE(self, key)
+    SV* self
+    SV* key
+    CODE:
+        // FETCH the value first, as upb_Map_Delete doesn't return it
+        RETVAL = PerlUpb_Map_GetItem(aTHX_ self, key);
+        PerlUpb_Map_DeleteItem(aTHX_ self, key);
+    OUTPUT:
+        RETVAL
+
+void
+CLEAR(self)
+    SV* self
+    CODE:
+        PerlUpb_Map_Clear(aTHX_ self);
+
+I32
+SCALAR(self)
+    SV* self
+    CODE:
+        RETVAL = (I32)PerlUpb_Map_Size(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+SV*
 _xs_get_item(self, key)
     SV* self
     SV* key

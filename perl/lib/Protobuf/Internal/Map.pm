@@ -33,84 +33,46 @@ use Protobuf::Internal::MapIterator;
 
 sub TIEHASH {
     my ($class, $xs_obj) = @_;
-    return bless { _xs => $xs_obj }, 'Protobuf::Internal::Map::Tied';
+    return $xs_obj;
 }
 
-{
-    package Protobuf::Internal::Map::Tied; ## no critic (Modules::ProhibitMultiplePackages)
-    use Tie::Hash;
-    use Protobuf::Internal::Proxy;
-    our @ISA = qw(Tie::Hash Protobuf::Internal::Proxy);
+# FETCH, STORE, DELETE, EXISTS, CLEAR, SCALAR are implemented in XS
 
-    sub FETCH {
-        my ($self, $key) = @_;
-        return $self->{_xs}->_xs_get_item($key);
-    }
+sub FIRSTKEY {
+    my ($self) = @_;
+    my $iter = $self->_xs_new_iterator();
+    $self->{_iter} = $iter;
+    return $iter->next_key();
+}
 
-    sub STORE {
-        my ($self, $key, $value) = @_;
-        return $self->{_xs}->_xs_set_item($key, $value);
-    }
+sub NEXTKEY {
+    my ($self, $lastkey) = @_;
+    my $iter = $self->{_iter};
+    return unless $iter;
+    my $key = $iter->next_key();
+    delete $self->{_iter} unless defined $key;
+    return $key;
+}
 
-    sub DELETE {
-        my ($self, $key) = @_;
-        my $val = $self->FETCH($key);
-        $self->{_xs}->_xs_delete_item($key);
-        return $val;
+sub as_hash {
+    my ($self) = @_;
+    my %hash;
+    my $iter = $self->_xs_new_iterator();
+    while (defined(my $key = $iter->next_key())) {
+        $hash{$key} = $self->FETCH($key);
     }
+    return \%hash;
+}
 
-    sub CLEAR {
-        my ($self) = @_;
-        $self->{_xs}->_xs_clear();
-        return;
+sub copy_from {
+    my ($self, $other) = @_;
+    # Clear then copy all from other
+    $self->CLEAR();
+    my $h = $other->as_hash();
+    foreach my $k (keys %$h) {
+        $self->STORE($k, $h->{$k});
     }
-
-    sub EXISTS {
-        my ($self, $key) = @_;
-        return defined $self->FETCH($key); # Good enough for now
-    }
-
-    sub FIRSTKEY {
-        my ($self) = @_;
-        my $iter = $self->{_xs}->_xs_new_iterator();
-        $self->{_iter} = $iter;
-        return $iter->next_key();
-    }
-
-    sub NEXTKEY {
-        my ($self, $lastkey) = @_;
-        my $iter = $self->{_iter};
-        return unless $iter;
-        my $key = $iter->next_key();
-        delete $self->{_iter} unless defined $key;
-        return $key;
-    }
-
-    sub SCALAR {
-        my ($self) = @_;
-        return $self->{_xs}->_xs_size();
-    }
-
-    sub as_hash {
-        my ($self) = @_;
-        my %hash;
-        my $iter = $self->{_xs}->_xs_new_iterator();
-        while (defined(my $key = $iter->next_key())) {
-            $hash{$key} = $self->{_xs}->_xs_get_item($key);
-        }
-        return \%hash;
-    }
-
-    sub copy_from {
-        my ($self, $other) = @_;
-        # Skeletal implementation: Clear then copy all from other
-        $self->CLEAR();
-        my $h = $other->as_hash();
-        foreach my $k (keys %$h) {
-            $self->STORE($k, $h->{$k});
-        }
-        return;
-    }
+    return;
 }
 
 package Protobuf::Internal::Map::Public;

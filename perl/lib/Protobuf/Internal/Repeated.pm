@@ -51,20 +51,7 @@ sub TIEARRAY {
     return $xs_obj; # The XS object itself is the tied object
 }
 
-sub FETCH {
-    my ($self, $index) = @_;
-    return $self->_xs_get_item($index);
-}
-
-sub STORE {
-    my ($self, $index, $value) = @_;
-    return $self->_xs_set_item($index, $value);
-}
-
-sub FETCHSIZE {
-    my ($self) = @_;
-    return $self->_xs_size();
-}
+# FETCH, STORE, FETCHSIZE are implemented in XS
 
 sub STORESIZE {
     my ($self, $count) = @_;

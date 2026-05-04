@@ -3,6 +3,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "xs/protobuf/utils.h"
+#include "xs/protobuf/registry.h"
 #include "xs/protobuf/obj_cache.h"
 #include "upb/reflection/def.h"
 
@@ -193,8 +194,16 @@ static char* get_file_module(pTHX_ const char* proto_file) {
     return res;
 }
 
-char* PerlUpb_DeriveClassName(pTHX_ const upb_MessageDef* mdef) {
-    if (!mdef) return savepv("Protobuf::Message");
+HV* PerlUpb_GetMessageStash(pTHX_ const upb_MessageDef* mdef) {
+    if (!mdef) return gv_stashpv("Protobuf::Message", GV_ADD);
+
+    PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    if (reg && reg->stash_cache) {
+        SV** svp = hv_fetch(reg->stash_cache, (const char*)&mdef, sizeof(mdef), 0);
+        if (svp && SvIOK(*svp)) {
+            return INT2PTR(HV*, SvIV(*svp));
+        }
+    }
 
     const char *full_name = upb_MessageDef_FullName(mdef);
     const upb_FileDef *file = upb_MessageDef_File(mdef);
@@ -214,6 +223,9 @@ char* PerlUpb_DeriveClassName(pTHX_ const upb_MessageDef* mdef) {
     }
     char* msg_path = capitalize_path(aTHX_ rel_name);
     
+    if (!file_mod) file_mod = savepv("UnknownFile");
+    if (!msg_path) msg_path = savepv("UnknownMessage");
+
     size_t total_len = (pkg_mod ? strlen(pkg_mod) + 2 : 0) + strlen(file_mod) + 2 + strlen(msg_path) + 1;
     char* class_name = (char*)safemalloc(total_len);
     if (pkg_mod) {
@@ -225,7 +237,14 @@ char* PerlUpb_DeriveClassName(pTHX_ const upb_MessageDef* mdef) {
     safefree(file_mod);
     safefree(msg_path);
     
-    return class_name;
+    HV* stash = gv_stashpv(class_name, GV_ADD);
+    safefree(class_name);
+
+    if (reg && reg->stash_cache) {
+        hv_store(reg->stash_cache, (const char*)&mdef, sizeof(mdef), newSViv(PTR2IV(stash)), 0);
+    }
+
+    return stash;
 }
 
 void PerlUpb_Error_Die(pTHX_ const char* fmt, ...) {
@@ -248,7 +267,7 @@ static MGVTBL wrapper_vtbl = {
     NULL, NULL, NULL, NULL, wrapper_cleanup
 };
 
-SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, const char* class_name) {
+SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash) {
     if (!ptr) return &PL_sv_undef;
 
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ ptr);
@@ -263,7 +282,7 @@ SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, const char
     }
 
     SV* self = newRV_noinc((SV*)hv);
-    sv_bless(self, gv_stashpv(class_name, GV_ADD));
+    sv_bless(self, stash);
 
     // Add magic for cache cleanup. We don't use MGf_COPY because
     // we only want the primary owner to handle detachment.

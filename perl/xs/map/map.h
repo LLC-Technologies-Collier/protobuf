@@ -15,6 +15,9 @@ SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv);
 // Returns the value for a given key.
 SV* PerlUpb_Map_GetItem(pTHX_ SV* self, SV* key_sv);
 
+// Returns true if the key exists in the map.
+bool PerlUpb_Map_Exists(pTHX_ SV* self, SV* key_sv);
+
 // Sets the value for a given key.
 void PerlUpb_Map_SetItem(pTHX_ SV* self, SV* key_sv, SV* value_sv);
 

@@ -7,6 +7,7 @@
 #include "xs/protobuf/arena.h"
 #include "xs/protobuf/utils.h"
 #include "xs/convert.h"
+#include "xs/protobuf/registry.h"
 #include "upb/message/map.h"
 #include "upb/reflection/def.h"
 
@@ -16,7 +17,9 @@ SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv) {
     SV* cached = PerlUpb_ObjCache_Get(aTHX_ map);
     if (cached) return cached;
 
-    SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ map, arena_sv, "Protobuf::Internal::Map");
+    PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    HV* stash = (reg && reg->stash_map) ? reg->stash_map : gv_stashpv("Protobuf::Internal::Map", GV_ADD);
+    SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ map, arena_sv, stash);
     HV* hv = (HV*)SvRV(self);
     hv_store(hv, "_fdef", 5, newSViv(PTR2IV(f)), 0);
     
@@ -61,6 +64,25 @@ SV* PerlUpb_Map_GetItem(pTHX_ SV* self, SV* key_sv) {
     }
 
     return &PL_sv_undef;
+}
+
+bool PerlUpb_Map_Exists(pTHX_ SV* self, SV* key_sv) {
+    upb_Map* map = GetMap(aTHX_ self);
+    const upb_FieldDef* f = GetFieldDef(aTHX_ self);
+    if (!map || !f) return false;
+
+    const upb_FieldDef *key_f, *val_f;
+    GetMapEntryDefs(f, &key_f, &val_f);
+
+    SV* arena_sv = PerlUpb_GetArenaFromObject(aTHX_ self);
+    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+    upb_MessageValue key_val;
+    if (!PerlUpb_SvToUpb_Element(aTHX_ key_sv, key_f, &key_val, arena)) {
+        return false;
+    }
+
+    upb_MessageValue val;
+    return upb_Map_Get(map, key_val, &val);
 }
 
 void PerlUpb_Map_SetItem(pTHX_ SV* self, SV* key_sv, SV* value_sv) {

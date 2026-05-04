@@ -94,13 +94,12 @@ SV* PerlUpb_Message_File(pTHX_ const upb_MessageDef *m) {
     return PerlUpb_FileDef_GetWrapper(aTHX_ f);
 }
 
-SV* PerlUpb_MessageDef_PerlClassName(pTHX_ const upb_MessageDef *m) {
-    if (!m) return &PL_sv_undef;
-    char* class_name = PerlUpb_DeriveClassName(aTHX_ m);
-    SV* res = newSVpv(class_name, 0);
-    safefree(class_name);
-    return res;
+SV* PerlUpb_MessageDef_PerlClassName(pTHX_ const upb_MessageDef* mdef) {
+    if (!mdef) return &PL_sv_undef;
+    HV* stash = PerlUpb_GetMessageStash(aTHX_ mdef);
+    return newSVpv(HvNAME(stash), 0);
 }
+
 
 
 void PerlUpb_MessageDef_AuditIdentity(pTHX_ SV* self) {

@@ -121,6 +121,28 @@ void PerlUpb_UpbToSv_BatchRaw(pTHX_ const void *data, upb_CType type, SV **out, 
     }
 }
 
+#include "xs/protobuf/registry.h"
+
+static SV* wrap_container_native(pTHX_ SV* internal_sv, HV* public_stash, const char* wrap_func) {
+    HV* internal_hv = (HV*)SvRV(internal_sv);
+    SV** public_svp = hv_fetch(internal_hv, "_public", 7, 0);
+    if (public_svp && SvOK(*public_svp)) {
+        return SvREFCNT_inc(*public_svp);
+    }
+
+    if (!get_cv(wrap_func, 0)) {
+        return SvREFCNT_inc(internal_sv);
+    }
+
+    dSP; ENTER; SAVETMPS;
+    PUSHMARK(SP); XPUSHs(sv_2mortal(internal_sv)); PUTBACK;
+    int count = call_pv(wrap_func, G_SCALAR);
+    SPAGAIN;
+    SV* wrapped = (count == 1) ? SvREFCNT_inc(POPs) : &PL_sv_undef;
+    PUTBACK; FREETMPS; LEAVE;
+    return wrapped;
+}
+
 SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV *parent_arena_sv) {
     if (!f) {
         croak("PerlUpb_UpbToSv: upb_FieldDef was NULL");
@@ -130,19 +152,15 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
         return newSV(0); // Return undef
     }
 
+    PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+
     if (upb_FieldDef_IsMap(f)) {
         upb_Map *map = (upb_Map*)val->map_val;
         if (!map) return newSV(0); 
         SV* internal = PerlUpb_Map_New(aTHX_ map, f, parent_arena_sv);
         
-        if (get_cv("Protobuf::Internal::wrap_map", 0)) {
-            dSP; ENTER; SAVETMPS;
-            PUSHMARK(SP); XPUSHs(sv_2mortal(internal)); PUTBACK;
-            int count = call_pv("Protobuf::Internal::wrap_map", G_SCALAR);
-            SPAGAIN;
-            SV* wrapped = (count == 1) ? SvREFCNT_inc(POPs) : &PL_sv_undef;
-            PUTBACK; FREETMPS; LEAVE;
-            return wrapped;
+        if (reg && reg->stash_map_public) {
+            return wrap_container_native(aTHX_ internal, reg->stash_map_public, "Protobuf::Internal::wrap_map");
         }
         return internal;
     }
@@ -152,14 +170,8 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
         if (!arr) return newSV(0); 
         SV* internal = PerlUpb_Repeated_New(aTHX_ arr, f, parent_arena_sv);
 
-        if (get_cv("Protobuf::Internal::wrap_repeated", 0)) {
-            dSP; ENTER; SAVETMPS;
-            PUSHMARK(SP); XPUSHs(sv_2mortal(internal)); PUTBACK;
-            int count = call_pv("Protobuf::Internal::wrap_repeated", G_SCALAR);
-            SPAGAIN;
-            SV* wrapped = (count == 1) ? SvREFCNT_inc(POPs) : &PL_sv_undef;
-            PUTBACK; FREETMPS; LEAVE;
-            return wrapped;
+        if (reg && reg->stash_repeated_public) {
+            return wrap_container_native(aTHX_ internal, reg->stash_repeated_public, "Protobuf::Internal::wrap_repeated");
         }
         return internal;
     } else {

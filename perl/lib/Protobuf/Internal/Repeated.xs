@@ -10,6 +10,31 @@ MODULE = Protobuf::Internal::Repeated  PACKAGE = Protobuf::Internal::Repeated
 PROTOTYPES: ENABLE
 
 SV*
+FETCH(self, index)
+    SV* self
+    int index
+    CODE:
+        RETVAL = PerlUpb_Repeated_GetItem(aTHX_ self, index);
+    OUTPUT:
+        RETVAL
+
+void
+STORE(self, index, value)
+    SV* self
+    int index
+    SV* value
+    CODE:
+        PerlUpb_Repeated_SetItem(aTHX_ self, index, value);
+
+I32
+FETCHSIZE(self)
+    SV* self
+    CODE:
+        RETVAL = (I32)PerlUpb_Repeated_Size(aTHX_ self);
+    OUTPUT:
+        RETVAL
+
+SV*
 _xs_get_item(self, index)
     SV* self
     int index

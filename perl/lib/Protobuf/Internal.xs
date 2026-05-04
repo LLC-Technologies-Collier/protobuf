@@ -47,7 +47,8 @@ void
 delete_cache_entry(key_str)
     const char* key_str
     CODE:
-        PerlUpb_ObjCache_DeleteEntry(aTHX, key_str);
+        PerlUpb_ObjCache_DeleteEntry(aTHX_ key_str, strlen(key_str));
+
 
 void
 delete_cache_ptr(ptr_str)

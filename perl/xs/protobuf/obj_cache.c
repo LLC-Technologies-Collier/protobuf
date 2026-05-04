@@ -131,9 +131,10 @@ void PerlUpb_ObjCache_Init(pTHX) {
     get_audit_log(aTHX, reg);
 }
 
-static void get_cache_key(const void* ptr, char* buf) {
-    sprintf(buf, "%p", ptr);
+static inline void get_cache_key(const void* ptr, char* buf) {
+    memcpy(buf, &ptr, sizeof(void*));
 }
+#define CACHE_KEY_LEN sizeof(void*)
 
 void PerlUpb_ObjCache_SetCapacity(pTHX_ size_t capacity) {
     ensure_mutexes_init();
@@ -157,16 +158,15 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
     LOCK_AND_PROFILE(&cache_mutexes[stripe], &contention_stats.stripes[stripe]);
 
     HV* cache = get_cache_hv(aTHX, reg);
-    char key[64];
+    char key[CACHE_KEY_LEN];
     get_cache_key(ptr, key);
-    // fprintf(stderr, "PerlUpb: Cache ADD ptr=%p key='%s'\n", ptr, key);
 
     // Create a NEW reference to the target object (the HV) and weaken it
     SV* target = SvRV(obj);
     SV* weak_rv = newRV_inc(target);
     sv_rvweaken(weak_rv);
 
-    if (!hv_store(cache, key, strlen(key), weak_rv, 0)) {
+    if (!hv_store(cache, key, CACHE_KEY_LEN, weak_rv, 0)) {
         SvREFCNT_dec(weak_rv);
     }
 
@@ -175,7 +175,7 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
 
     LOCK_AND_PROFILE(&lru_mutex, &contention_stats.lru);
     AV* lru = get_lru_av(aTHX, reg);
-    av_push(lru, newSVpv(key, 0));
+    av_push(lru, newSVpvn(key, CACHE_KEY_LEN));
 
     while ((size_t)av_len(lru) + 1 > reg->max_cache_capacity) {
         SV* oldest_key_sv = av_shift(lru);
@@ -183,7 +183,8 @@ void PerlUpb_ObjCache_Add(pTHX_ const void* ptr, SV* obj) {
             STRLEN len;
             const char* oldest_key = SvPVbyte(oldest_key_sv, len);
             void* evict_ptr;
-            if (sscanf(oldest_key, "%p", &evict_ptr) == 1) {
+            if (len == CACHE_KEY_LEN) {
+                memcpy(&evict_ptr, oldest_key, CACHE_KEY_LEN);
                 int evict_stripe = get_stripe(evict_ptr);
                 LOCK_AND_PROFILE(&cache_mutexes[evict_stripe], &contention_stats.stripes[evict_stripe]);
                 hv_delete(cache, oldest_key, len, G_DISCARD);
@@ -206,10 +207,10 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
     LOCK_AND_PROFILE(&cache_mutexes[stripe], &contention_stats.stripes[stripe]);
 
     HV* cache = get_cache_hv(aTHX, reg);
-    char key[64];
+    char key[CACHE_KEY_LEN];
     get_cache_key(ptr, key);
 
-    SV** svp = hv_fetch(cache, key, strlen(key), 0);
+    SV** svp = hv_fetch(cache, key, CACHE_KEY_LEN, 0);
     SV* result = NULL;
 
     if (svp) {
@@ -225,7 +226,7 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
         
         if (!result) {
             // Weak ref was collected or invalid, cleanup entry
-            hv_delete(cache, key, strlen(key), G_DISCARD);
+            hv_delete(cache, key, CACHE_KEY_LEN, G_DISCARD);
             PerlUpb_ObjCache_LogEvent(aTHX, OBJ_CACHE_EVENT_MISS, ptr);
         }
     } else {
@@ -238,22 +239,19 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr) {
 
 void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr) {
     if (!ptr) return;
-    char key[64];
+    char key[CACHE_KEY_LEN];
     get_cache_key(ptr, key);
-    PerlUpb_ObjCache_DeleteEntry(aTHX_ key);
+    PerlUpb_ObjCache_DeleteEntry(aTHX_ key, CACHE_KEY_LEN);
 }
 
-void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_str) {
-    if (!key_str) return;
+void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_bytes, STRLEN len) {
+    if (!key_bytes || len != CACHE_KEY_LEN) return;
     ensure_mutexes_init();
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
     if (!reg) return;
 
     void* target_ptr;
-    if (sscanf(key_str, "%p", &target_ptr) != 1) return;
-
-    char normalized_key[64];
-    get_cache_key(target_ptr, normalized_key);
+    memcpy(&target_ptr, key_bytes, CACHE_KEY_LEN);
 
     bool deleted = false;
     
@@ -261,8 +259,8 @@ void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_str) {
     int expected_stripe = get_stripe(target_ptr);
     LOCK_AND_PROFILE(&cache_mutexes[expected_stripe], &contention_stats.stripes[expected_stripe]);
     HV* cache = get_cache_hv(aTHX, reg);
-    if (hv_exists(cache, normalized_key, strlen(normalized_key))) {
-        hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD);
+    if (hv_exists(cache, key_bytes, CACHE_KEY_LEN)) {
+        hv_delete(cache, key_bytes, CACHE_KEY_LEN, G_DISCARD);
         deleted = true;
     }
     PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[expected_stripe]);
@@ -272,8 +270,8 @@ void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_str) {
         for (int i = 0; i < NUM_CACHE_STRIPES; i++) {
             if (i == expected_stripe) continue;
             LOCK_AND_PROFILE(&cache_mutexes[i], &contention_stats.stripes[i]);
-            if (hv_exists(cache, normalized_key, strlen(normalized_key))) {
-                hv_delete(cache, normalized_key, strlen(normalized_key), G_DISCARD);
+            if (hv_exists(cache, key_bytes, CACHE_KEY_LEN)) {
+                hv_delete(cache, key_bytes, CACHE_KEY_LEN, G_DISCARD);
                 deleted = true;
                 PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[i]);
                 break;

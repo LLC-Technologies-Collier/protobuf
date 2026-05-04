@@ -125,11 +125,9 @@ static void* PerlUpb_StatsAlloc_Func(upb_alloc* alloc, void* ptr, size_t oldsize
 
 // -- Arena Factory Implementation --
 
+// -- Arena Factory Implementation --
+
 void PerlUpb_Arena_Release(pTHX_ upb_Arena* arena, PerlUpb_ArenaLifecycle lifecycle) {
-    if (lifecycle == PERL_UPB_LIFECYCLE_TRANSIENT) {
-        // Cached arenas are kept alive until interpreter destruction
-        return;
-    }
     if (arena) upb_Arena_Free(arena);
 }
 
@@ -157,20 +155,16 @@ upb_Arena* PerlUpb_Arena_AcquireWithStats(pTHX_ PerlUpb_StatsAlloc* s) {
 }
 
 upb_Arena* PerlUpb_Arena_Acquire(pTHX_ PerlUpb_ArenaLifecycle lifecycle) {
-    PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
-    if (!reg) {
-        upb_Arena* arena = upb_Arena_New();
-        if (!arena) croak("Failed to acquire upb_Arena (Default)");
-        return arena;
-    }
     if (lifecycle == PERL_UPB_LIFECYCLE_TRANSIENT) {
-        if (reg->cached_transient_arena) {
-            PerlUpb_Arena_Release(aTHX_ reg->cached_transient_arena, PERL_UPB_LIFECYCLE_TRANSIENT);
-        }
-        reg->cached_transient_arena = PerlUpb_Arena_AcquireWithStats(aTHX_ &reg->stats_alloc);
-        return reg->cached_transient_arena;
+        // FAST PATH: bypass stats tracking for transient arenas
+        return upb_Arena_New();
     }
-    return PerlUpb_Arena_AcquireWithStats(aTHX_ &reg->stats_alloc);
+
+    PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    if (reg) {
+        return PerlUpb_Arena_AcquireWithStats(aTHX, &reg->stats_alloc);
+    }
+    return upb_Arena_New();
 }
 
 // -- Arena Wrapper Functions --
@@ -214,7 +208,11 @@ SV *PerlUpb_Arena_New(pTHX) {
     hv_store(hv, "_arena_ptr", 10, ptr_sv, 0);
 
     SV *rv = newRV_noinc((SV*)hv);
-    sv_bless(rv, gv_stashpv("Protobuf::Arena", GV_ADD));
+    
+    PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
+    HV* stash = (reg && reg->stash_arena) ? reg->stash_arena : gv_stashpv("Protobuf::Arena", GV_ADD);
+    sv_bless(rv, stash);
+
     return rv;
 }
 

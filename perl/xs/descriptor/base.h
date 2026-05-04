@@ -8,7 +8,7 @@
 
 // Common functions for all descriptor types
 #define RETURN_CACHED_OR_CREATE_BLESSED(ptr, class_name) \
-    return PerlUpb_WrapArenaBoundObject(aTHX_ (void*)(ptr), NULL, class_name)
+    return PerlUpb_WrapArenaBoundObject(aTHX_ (void*)(ptr), NULL, gv_stashpv(class_name, GV_ADD))
 
 #define EXTRACT_CACHED_DESCRIPTOR(ptr_type, sv, class_name) \
     return (const ptr_type *)PerlUpb_GetArenaBoundObject(aTHX_ sv, class_name)

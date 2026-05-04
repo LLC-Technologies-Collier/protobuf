@@ -22,15 +22,14 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name);
 // Caller is responsible for Safefree()ing the returned string.
 char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name);
 
-// Derives a Perl class name (Package::File::Message) from a descriptor.
-// Caller is responsible for Safefree()ing the returned string.
-char* PerlUpb_DeriveClassName(pTHX_ const upb_MessageDef* mdef);
+// Returns the Perl stash (HV*) for the given message definition, with caching.
+HV* PerlUpb_GetMessageStash(pTHX_ const upb_MessageDef* mdef);
 
 // Logs a message and dies with Perl context
 void PerlUpb_Error_Die(pTHX_ const char* fmt, ...);
 
 // Wraps a C pointer into a Perl object, optionally keeping another Perl object (the arena) alive.
-SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, const char* class_name);
+SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash);
 
 // Extracts the C pointer from a wrapped object, verifying the class name.
 const void* PerlUpb_GetArenaBoundObject(pTHX_ SV* sv, const char* class_name);

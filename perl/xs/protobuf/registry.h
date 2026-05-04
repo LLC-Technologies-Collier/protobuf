@@ -21,6 +21,14 @@ typedef struct {
     HV* obj_cache;
     AV* obj_lru;
     HV* descriptor_fingerprints; // Fingerprint (uint64) -> MessageDef (cached wrapper)
+    HV* stash_cache;            // MessageDef* (IV) -> Stash (HV*)
+    HV* stash_message;
+    HV* stash_repeated;
+    HV* stash_map;
+    HV* stash_arena;
+    HV* stash_unknown_fields;
+    HV* stash_repeated_public;
+    HV* stash_map_public;
     obj_cache_audit_log_t* audit_log;
     size_t max_cache_capacity;
     upb_Arena* cached_transient_arena;

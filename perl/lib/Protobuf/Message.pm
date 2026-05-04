@@ -240,7 +240,6 @@ the same terms as the Perl 5 programming language system itself.$/
 
 package Protobuf::Message;
 
-use Moo;
 use strict;
 use warnings;
 use Carp qw(croak);
@@ -526,7 +525,5 @@ sub thaw_from_shared {
     my $arena = Protobuf::Arena->attach_tmpfs($path, $size);
     return _xs_find_in_shared_arena($class, $arena);
 }
-
-__PACKAGE__->meta->make_immutable;
 
 1;

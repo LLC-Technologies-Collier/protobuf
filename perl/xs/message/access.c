@@ -9,25 +9,36 @@
 #include "upb/reflection/message.h"
 
 SV* PerlUpb_Message_GetField(pTHX_ SV* message_sv, const upb_FieldDef* f) {
-    upb_Message* msg = (upb_Message*)PerlUpb_Message_GetMsg(aTHX_ message_sv);
+    const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
     if (!msg) croak("Invalid message object");
 
-    SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ message_sv);
-    upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+    bool needs_arena = upb_FieldDef_IsSubMessage(f) || 
+                      upb_FieldDef_IsRepeated(f) || 
+                      upb_FieldDef_IsMap(f);
 
-    upb_MessageValue val;
-    if (upb_FieldDef_IsRepeated(f) || upb_FieldDef_IsMap(f)) {
-        upb_MutableMessageValue mutable_val = upb_Message_Mutable(msg, f, arena);
-        if (upb_FieldDef_IsMap(f)) {
-            val.map_val = mutable_val.map;
+    if (needs_arena) {
+        SV* arena_sv = PerlUpb_Message_GetArena(aTHX_ message_sv);
+        upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
+
+        if (upb_FieldDef_IsRepeated(f) || upb_FieldDef_IsMap(f)) {
+            upb_MutableMessageValue mutable_val = upb_Message_Mutable((upb_Message*)msg, f, arena);
+            upb_MessageValue val;
+            if (upb_FieldDef_IsMap(f)) {
+                val.map_val = mutable_val.map;
+            } else {
+                val.array_val = mutable_val.array;
+            }
+            return PerlUpb_UpbToSv(aTHX_ &val, f, arena_sv);
         } else {
-            val.array_val = mutable_val.array;
+            // Sub-message
+            upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
+            return PerlUpb_UpbToSv(aTHX_ &val, f, arena_sv);
         }
     } else {
-        val = upb_Message_GetFieldByDef(msg, f);
+        // Scalar path: Arena not needed for UpbToSv (including strings/bytes as they are copied to SV)
+        upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
+        return PerlUpb_UpbToSv(aTHX_ &val, f, NULL);
     }
-    
-    return PerlUpb_UpbToSv(aTHX_ &val, f, arena_sv);
 }
 
 void PerlUpb_Message_SetField(pTHX_ SV* message_sv, const upb_FieldDef* f, SV* val_sv) {

@@ -391,6 +391,10 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
         size_t num_elements = max_idx + 1;
 
         upb_CType ctype = upb_FieldDef_CType(f);
+        if (!arena) {
+            warn("PerlUpb_SvToUpb: arena is NULL but needed for repeated field '%s'\n", upb_FieldDef_Name(f));
+            return false;
+        }
         upb_Array *arr = upb_Array_New(arena, ctype);
         if (!arr) {
             croak("Failed to create upb_Array for field '%s'", upb_FieldDef_Name(f));

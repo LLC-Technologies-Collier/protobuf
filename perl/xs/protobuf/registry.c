@@ -37,6 +37,15 @@ void PerlUpb_Registry_Init(pTHX) {
         reg->max_cache_capacity = 100000;
         reg->cached_transient_arena = NULL;
         reg->descriptor_fingerprints = newHV();
+        reg->stash_cache = newHV();
+        
+        reg->stash_message = gv_stashpv("Protobuf::Message", GV_ADD);
+        reg->stash_repeated = gv_stashpv("Protobuf::Internal::Repeated", GV_ADD);
+        reg->stash_map = gv_stashpv("Protobuf::Internal::Map", GV_ADD);
+        reg->stash_arena = gv_stashpv("Protobuf::Arena", GV_ADD);
+        reg->stash_unknown_fields = gv_stashpv("Protobuf::UnknownFieldSet", GV_ADD);
+        reg->stash_repeated_public = gv_stashpv("Protobuf::Internal::Repeated::Public", GV_ADD);
+        reg->stash_map_public = gv_stashpv("Protobuf::Internal::Map::Public", GV_ADD);
         
         // Chaos defaults
         reg->chaos.enabled = false;

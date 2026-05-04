@@ -18,8 +18,8 @@ SV* PerlUpb_ObjCache_Get(pTHX_ const void* ptr);
 // Removes the entry for the given C pointer from the cache.
 void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr);
 
-// Removes an entry by its string key (address string)
-void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_str);
+// Removes an entry by its binary key (raw pointer bytes)
+void PerlUpb_ObjCache_DeleteEntry(pTHX_ const char* key_bytes, STRLEN len);
 
 // Clears the entire cache (during interpreter shutdown)
 void PerlUpb_ObjCache_Clear(pTHX);
