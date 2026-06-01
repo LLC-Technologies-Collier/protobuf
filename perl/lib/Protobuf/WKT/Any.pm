@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::WKT::Any - Mixin for google.protobuf.Any message$/
+Protobuf::WKT::Any - Mixin for google.protobuf.Any message
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -32,46 +32,46 @@ version 0.01$/
 
 =head1 DESCRIPTION
 
-This module provides helper methods (C<pack> and C<unpack>) for the generated class corresponding to the C<google.protobuf.Any> Well-Known Type. These methods are injected into the C<Protobuf::WKT::Any> class, which should be automatically used when C<google/protobuf/any.proto> is processed.$/
+This module provides helper methods (C<pack> and C<unpack>) for the generated class corresponding to the C<google.protobuf.Any> Well-Known Type. These methods are injected into the C<Protobuf::WKT::Any> class, which should be automatically used when C<google/protobuf/any.proto> is processed.
 
-The C<Any> type allows embedding a message of any type within it, along with a type URL to identify the embedded message type.$/
+The C<Any> type allows embedding a message of any type within it, along with a type URL to identify the embedded message type.
 
 =head1 METHODS
 
 =head2 pack($msg)
 
-Serializes the given C<$msg> (which must be a L<Protobuf::Message> instance) and stores it in the C<value> field. It also sets the C<type_url> field to C<type.googleapis.com/> followed by the full name of the message type.$/
+Serializes the given C<$msg> (which must be a L<Protobuf::Message> instance) and stores it in the C<value> field. It also sets the C<type_url> field to C<type.googleapis.com/> followed by the full name of the message type.
 
-Returns C<$self> for chaining.$/
+Returns C<$self> for chaining.
 
 =head2 unpack($expected_class)
 
-Deserializes the message stored in the C<value> field. It uses the C<type_url> to determine the message type. $/
+Deserializes the message stored in the C<value> field. It uses the C<type_url> to determine the message type. 
 
-If C<$expected_class> is provided, it is used as the Perl class to deserialize into. Otherwise, the class is derived from the C<type_url> and looked up in the C<generated_pool>.$/
+If C<$expected_class> is provided, it is used as the Perl class to deserialize into. Otherwise, the class is derived from the C<type_url> and looked up in the C<generated_pool>.
 
-Returns the deserialized message instance.$/
+Returns the deserialized message instance.
 
-Dies if the type from C<type_url> cannot be found in the descriptor pool.$/
+Dies if the type from C<type_url> cannot be found in the descriptor pool.
 
 =head2 get_injected_methods()
 
-Internal method used by the class generator to know which methods to inject. Returns C<< qw(pack unpack) >>.$/
+Internal method used by the class generator to know which methods to inject. Returns C<< qw(pack unpack) >>.
 
 =head1 SEE ALSO
 
-L<Protobuf>, L<Protobuf::Message>, L<Protobuf::DescriptorPool>$/
+L<Protobuf>, L<Protobuf::Message>, L<Protobuf::DescriptorPool>
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>$/
+C.J. Collier <cjac@google.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.$/
+This software is copyright (c) 2026 by Google LLC.
 
-This is free software; you can redistribute it and/or modify it under$/
-the same terms as the Perl 5 programming language system itself.$/
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 

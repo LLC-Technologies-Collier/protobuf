@@ -1,5 +1,18 @@
 Revision history for Protobuf
 
+0.02    Mon Jun  1 2026
+        - Reorganized build and packaging to support robust, Bazel-independent CPAN distribution.
+        - Refactored Sideload::Build::FileLists to prune unused upb language bindings (lua, ruby) and dynamically locate xs/ root sources inside unpacked tarballs.
+        - Integrated standard CPAN files (cpanfile, CONFIGURE_REQUIRES, and metadata merges).
+        - Decoupled Protobuf.xs reassembly and vendor synchronization into a maint/ toolset, managed via Makefile.PL dev-automation.
+        - Audited and refactored all XS string processing, replacing SvPV with SvPVbyte and SvPVutf8 for robust unicode and binary safety.
+        - Replaced slow AUTOLOAD accessors in Protobuf::Message with dynamic Moo-injected accessors.
+        - Re-architected XS layer as modular fragments (.xs.part) assembled cleanly into Protobuf.xs at build-time.
+        - Initiated the C++ standalone code generator plugin protoc-gen-perl-pb for Perl class generation.
+        - Consolidated test boilerplate in TestHelpers.pm and backfilled extensive C/XS/Perl unit tests.
+        - Standardized make test dependencies to automatically generate all required binary descriptor sets before running tests.
+        - Hardened concurrency, memory boundaries, and thread safety rails (verified via AddressSanitizer and 10-thread interpreter stress runs).
+
 0.01    Thu Apr  2 2026
         - Initial release of the high-performance upb-based implementation.
         - Support for Core, Descriptors, Messages, Repeated, Maps, and Unknowns.

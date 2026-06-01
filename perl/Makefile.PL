@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use lib 'local/lib';
+use lib 'xlib';
 use ExtUtils::MakeMaker;
 use Config;
 use File::Spec;
@@ -454,7 +455,7 @@ my @clean_files = sort keys %clean_files_map;
 
 WriteMakefile(
     NAME              => 'Protobuf',
-    VERSION           => '0.01',
+    VERSION           => '0.02',
     ABSTRACT          => 'High-performance Protocol Buffers implementation using upb',
     PREREQ_PM         => {
       'Moo'             => 0,
@@ -493,7 +494,6 @@ WriteMakefile(
         'Template'            => 0,
         'Path::Tiny'          => 0,
         'Cwd'                 => 0,
-        'Sideload::Build::FileLists' => 0,
         'Devel::PPPort'       => 0,
     },
     AUTHOR            => 'C.J. Collier <cjac@colliertech.org>',

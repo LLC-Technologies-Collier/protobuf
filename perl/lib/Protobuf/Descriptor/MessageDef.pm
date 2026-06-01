@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::Descriptor::MessageDef - Descriptor for a Protocol Buffer message$/
+Protobuf::Descriptor::MessageDef - Descriptor for a Protocol Buffer message
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -25,70 +25,70 @@ version 0.01$/
 
 =head1 DESCRIPTION
 
-This class represents the descriptor for a single Protocol Buffer message type. It provides methods to introspect the message's structure, including its fields, oneofs, and nested types.$/
+This class represents the descriptor for a single Protocol Buffer message type. It provides methods to introspect the message's structure, including its fields, oneofs, and nested types.
 
-Instances of this class are usually obtained from a L<Protobuf::DescriptorPool>.$/
+Instances of this class are usually obtained from a L<Protobuf::DescriptorPool>.
 
 =head1 METHODS
 
 =head2 full_name()
 
-Returns the fully qualified name of the message (e.g., C<my.package.MyMessage>).$/
+Returns the fully qualified name of the message (e.g., C<my.package.MyMessage>).
 
 =head2 name()
 
-Returns the short name of the message (e.g., C<MyMessage>).$/
+Returns the short name of the message (e.g., C<MyMessage>).
 
 =head2 field_count()
 
-Returns the number of fields defined in this message.$/
+Returns the number of fields defined in this message.
 
 =head2 get_field($index)
 
-Returns the L<Protobuf::Descriptor::Field> at the given C<$index> (0-based).$/
+Returns the L<Protobuf::Descriptor::Field> at the given C<$index> (0-based).
 
 =head2 find_field_by_name($name)
 
-Returns the L<Protobuf::Descriptor::Field> with the given C<$name>, or C<undef> if not found.$/
+Returns the L<Protobuf::Descriptor::Field> with the given C<$name>, or C<undef> if not found.
 
 =head2 find_field_by_number($number)
 
-Returns the L<Protobuf::Descriptor::Field> with the given tag C<$number>, or C<undef> if not found.$/
+Returns the L<Protobuf::Descriptor::Field> with the given tag C<$number>, or C<undef> if not found.
 
 =head2 oneof_count()
 
-Returns the number of C<oneof> declarations in this message.$/
+Returns the number of C<oneof> declarations in this message.
 
 =head2 get_oneof($index)
 
-Returns the L<Protobuf::Descriptor::OneofDef> at the given C<$index> (0-based).$/
+Returns the L<Protobuf::Descriptor::OneofDef> at the given C<$index> (0-based).
 
 =head2 find_oneof_by_name($name)
 
-Returns the L<Protobuf::Descriptor::OneofDef> with the given C<$name>, or C<undef> if not found.$/
+Returns the L<Protobuf::Descriptor::OneofDef> with the given C<$name>, or C<undef> if not found.
 
 =head2 nested_message_count()
 
-Returns the number of nested message types defined within this message.$/
+Returns the number of nested message types defined within this message.
 
 =head2 get_nested_message($index)
 
-Returns the L<Protobuf::Descriptor::MessageDef> for the nested message at the given C<$index> (0-based).$/
+Returns the L<Protobuf::Descriptor::MessageDef> for the nested message at the given C<$index> (0-based).
 
 =head1 SEE ALSO
 
-L<Protobuf>, L<Protobuf::DescriptorPool>, L<Protobuf::Descriptor>$/
+L<Protobuf>, L<Protobuf::DescriptorPool>, L<Protobuf::Descriptor>
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>$/
+C.J. Collier <cjac@google.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.$/
+This software is copyright (c) 2026 by Google LLC.
 
-This is free software; you can redistribute it and/or modify it under$/
-the same terms as the Perl 5 programming language system itself.$/
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 
@@ -99,7 +99,7 @@ use strict;
 require Protobuf;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 sub full_name {

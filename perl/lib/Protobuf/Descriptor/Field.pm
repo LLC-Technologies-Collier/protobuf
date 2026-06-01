@@ -2,93 +2,93 @@
 
 =head1 NAME
 
-Protobuf::Descriptor::Field - Descriptor for a field in a Protocol Buffer message$/
+Protobuf::Descriptor::Field - Descriptor for a field in a Protocol Buffer message
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
-    my $pool = Protobuf::DescriptorPool->generated_pool;$/
-    my $msg_def = $pool->find_message_by_name('my.package.MyMessage');$/
-    my $field_def = $msg_def->find_field_by_name('my_field');$/
+    my $pool = Protobuf::DescriptorPool->generated_pool;
+    my $msg_def = $pool->find_message_by_name('my.package.MyMessage');
+    my $field_def = $msg_def->find_field_by_name('my_field');
 
-    if ($field_def) {$/
+    if ($field_def) {
         print "Field Name: ", $field_def->name, "
-";$/
+";
         print "Type: ", $field_def->type, "
-";$/
+";
         print "Label: ", $field_def->label, "
-";$/
-        if ($field_def->message_type) {$/
+";
+        if ($field_def->message_type) {
             print "Message Type: ", $field_def->message_type->full_name, "
-";$/
-        }$/
-    }$/
+";
+        }
+    }
 
 =head1 DESCRIPTION
 
-This class represents the descriptor for a single field within a Protocol Buffer message. It provides methods to introspect the field's properties, such as its name, type, label (required, optional, repeated), and number.$/
+This class represents the descriptor for a single field within a Protocol Buffer message. It provides methods to introspect the field's properties, such as its name, type, label (required, optional, repeated), and number.
 
-Instances of this class are usually obtained from a L<Protobuf::Descriptor::MessageDef>.$/
+Instances of this class are usually obtained from a L<Protobuf::Descriptor::MessageDef>.
 
 =head1 METHODS
 
 =head2 name()
 
-Returns the name of the field.$/
+Returns the name of the field.
 
 =head2 full_name()
 
-Returns the fully qualified name of the field.$/
+Returns the fully qualified name of the field.
 
 =head2 number()
 
-Returns the tag number of the field.$/
+Returns the tag number of the field.
 
 =head2 type()
 
-Returns a string representing the field's type (e.g., 'double', 'int32', 'string', 'message', 'enum').$/
+Returns a string representing the field's type (e.g., 'double', 'int32', 'string', 'message', 'enum').
 
 =head2 label()
 
-Returns a string indicating the field's label: 'optional', 'required', or 'repeated'.$/
+Returns a string indicating the field's label: 'optional', 'required', or 'repeated'.
 
 =head2 is_repeated()
 
-Returns true if the field is a repeated field.$/
+Returns true if the field is a repeated field.
 
 =head2 is_map()
 
-Returns true if the field is a map field.$/
+Returns true if the field is a map field.
 
 =head2 is_required()
 
-Returns true if the field is a required field.$/
+Returns true if the field is a required field.
 
 =head2 message_type()
 
-If the field's type is 'message', returns the L<Protobuf::Descriptor::MessageDef> for that message type. Otherwise, returns C<undef>.$/
+If the field's type is 'message', returns the L<Protobuf::Descriptor::MessageDef> for that message type. Otherwise, returns C<undef>.
 
 =head2 enum_type()
 
-If the field's type is 'enum', returns the L<Protobuf::Descriptor::Enum> for that enum type. Otherwise, returns C<undef>.$/
+If the field's type is 'enum', returns the L<Protobuf::Descriptor::Enum> for that enum type. Otherwise, returns C<undef>.
 
 =head1 SEE ALSO
 
-L<Protobuf>, L<Protobuf::DescriptorPool>, L<Protobuf::Descriptor>, L<Protobuf::Descriptor::MessageDef>$/
+L<Protobuf>, L<Protobuf::DescriptorPool>, L<Protobuf::Descriptor>, L<Protobuf::Descriptor::MessageDef>
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>$/
+C.J. Collier <cjac@google.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.$/
+This software is copyright (c) 2026 by Google LLC.
 
-This is free software; you can redistribute it and/or modify it under$/
-the same terms as the Perl 5 programming language system itself.$/
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 
@@ -99,7 +99,7 @@ use strict;
 require Protobuf;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 sub name {

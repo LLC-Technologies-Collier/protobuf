@@ -4,7 +4,7 @@ use parent 'Protobuf::Descriptor::Base::PurePerl';
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub name {
     my ($self) = @_;
@@ -60,12 +60,14 @@ sub is_packed {
 
 sub is_repeated {
     my ($self) = @_;
-    return $self->{_data}{is_repeated} || 0;
+    return 1 if ($self->label_number || 0) == 3;
+    return 0;
 }
 
 sub is_required {
     my ($self) = @_;
-    return $self->{_data}{is_required} || 0;
+    return 1 if ($self->label_number || 0) == 2;
+    return 0;
 }
 
 sub is_map {
@@ -75,7 +77,8 @@ sub is_map {
 
 sub is_submessage {
     my ($self) = @_;
-    return $self->{_data}{is_submessage} || 0;
+    return 1 if ($self->type_number || 0) == 11;
+    return 0;
 }
 
 sub message_type {

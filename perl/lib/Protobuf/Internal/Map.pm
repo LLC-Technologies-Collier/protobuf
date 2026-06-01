@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::Internal::Map - Internal XS implementation for map fields$/
+Protobuf::Internal::Map - Internal XS implementation for map fields
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -15,7 +15,7 @@ version 0.01$/
 
 =head1 DESCRIPTION
 
-This module provides the internal XS implementation for Protobuf map fields. It uses L<Tie::Hash> to provide a hash-like interface to the underlying C<upb_Map> data structure.$/
+This module provides the internal XS implementation for Protobuf map fields. It uses L<Tie::Hash> to provide a hash-like interface to the underlying C<upb_Map> data structure.
 
 =cut
 
@@ -25,7 +25,7 @@ use strict;
 require Protobuf;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 use Protobuf::Internal::MapIterator;

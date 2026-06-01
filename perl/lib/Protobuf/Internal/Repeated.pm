@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::Internal::Repeated - Internal XS implementation for repeated fields$/
+Protobuf::Internal::Repeated - Internal XS implementation for repeated fields
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -15,21 +15,21 @@ version 0.01$/
 
 =head1 DESCRIPTION
 
-This module provides the internal XS implementation for Protobuf repeated fields. It uses L<Tie::Array> to provide an array-like interface to the underlying C<upb_Array> data structure.$/
+This module provides the internal XS implementation for Protobuf repeated fields. It uses L<Tie::Array> to provide an array-like interface to the underlying C<upb_Array> data structure.
 
 =head1 METHODS
 
 =head2 audit_integrity()
 
-Internal method for debugging memory and object cache integrity.$/
+Internal method for debugging memory and object cache integrity.
 
 =head2 slice()
 
-Returns a slice of the repeated field.$/
+Returns a slice of the repeated field.
 
 =head2 sort()
 
-Sorts the repeated field in place.$/
+Sorts the repeated field in place.
 
 =cut
 
@@ -42,7 +42,7 @@ use Tie::Array;
 use Protobuf::Internal::Proxy;
 our @ISA = qw(Tie::Array Protobuf::Internal::Proxy);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 sub TIEARRAY {

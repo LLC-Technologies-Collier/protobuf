@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::Internal::MapIterator - Internal XS implementation for map iterators$/
+Protobuf::Internal::MapIterator - Internal XS implementation for map iterators
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -15,17 +15,17 @@ version 0.01$/
 
 =head1 DESCRIPTION
 
-This module provides the internal XS implementation for iterating over Protobuf map fields, interfacing with the C<upb_MapIterator> structure.$/
+This module provides the internal XS implementation for iterating over Protobuf map fields, interfacing with the C<upb_MapIterator> structure.
 
 =head1 METHODS
 
 =head2 next_key()
 
-Returns the next key in the map iteration.$/
+Returns the next key in the map iteration.
 
 =head2 next_value()
 
-Returns the next value in the map iteration.$/
+Returns the next value in the map iteration.
 
 =cut
 
@@ -35,7 +35,7 @@ use strict;
 require Protobuf;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 sub next_key {

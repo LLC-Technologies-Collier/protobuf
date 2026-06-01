@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::WKT::Duration - Mixin for google.protobuf.Duration$/
+Protobuf::WKT::Duration - Mixin for google.protobuf.Duration
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -30,40 +30,40 @@ version 0.01$/
 
 =head1 DESCRIPTION
 
-This module provides helper methods for the generated class corresponding to the C<google.protobuf.Duration> Well-Known Type. These methods are injected into the C<Protobuf::WKT::Duration> class, which should be automatically used when C<google/protobuf/duration.proto> is processed.$/
+This module provides helper methods for the generated class corresponding to the C<google.protobuf.Duration> Well-Known Type. These methods are injected into the C<Protobuf::WKT::Duration> class, which should be automatically used when C<google/protobuf/duration.proto> is processed.
 
-The C<Duration> type represents a signed, fixed-length span of time.$/
+The C<Duration> type represents a signed, fixed-length span of time.
 
 =head1 METHODS
 
 =head2 to_seconds()
 
-Returns the total duration in seconds as a floating-point number (seconds + nanos / 1e9).$/
+Returns the total duration in seconds as a floating-point number (seconds + nanos / 1e9).
 
 =head2 from_seconds($seconds)
 
-Sets the C<seconds> and C<nanos> fields from a total number of seconds (can be fractional).$/
+Sets the C<seconds> and C<nanos> fields from a total number of seconds (can be fractional).
 
-Returns C<$self> for chaining.$/
+Returns C<$self> for chaining.
 
 =head2 get_injected_methods()
 
-Internal method used by L<Protobuf::ClassGenerator> to list methods to inject into the class.$/
+Internal method used by L<Protobuf::ClassGenerator> to list methods to inject into the class.
 
 =head1 SEE ALSO
 
-L<Protobuf>, L<Protobuf::Message>$/
+L<Protobuf>, L<Protobuf::Message>
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>$/
+C.J. Collier <cjac@google.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.$/
+This software is copyright (c) 2026 by Google LLC.
 
-This is free software; you can redistribute it and/or modify it under$/
-the same terms as the Perl 5 programming language system itself.$/
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 

@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf - High-performance Google Protocol Buffers implementation$/
+Protobuf - High-performance Google Protocol Buffers implementation
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -26,22 +26,22 @@ version 0.01$/
 
 =head1 DESCRIPTION
 
-This module provides a Perl interface to Google Protocol Buffers, leveraging the high-performance C library L<upb|https://github.com/protocolbuffers/upb>. The implementation aims for speed, efficiency, and close alignment with the features and behaviors of the official Python UPB-based extension.$/
+This module provides a Perl interface to Google Protocol Buffers, leveraging the high-performance C library L<upb|https://github.com/protocolbuffers/upb>. The implementation aims for speed, efficiency, and close alignment with the features and behaviors of the official Python UPB-based extension.
 
 =head1 SEE ALSO
 
-L<Protobuf::Message>, L<Protobuf::DescriptorPool>, L<Protobuf::Arena>$/
+L<Protobuf::Message>, L<Protobuf::DescriptorPool>, L<Protobuf::Arena>
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>$/
+C.J. Collier <cjac@google.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.$/
+This software is copyright (c) 2026 by Google LLC.
 
-This is free software; you can redistribute it and/or modify it under$/
-the same terms as the Perl 5 programming language system itself.$/
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 
@@ -52,7 +52,7 @@ use warnings;
 use Log::Any qw($log);
 
 our $VERSION;
-BEGIN { $VERSION = '0.01'; }
+BEGIN { $VERSION = '0.02'; }
 
 require XSLoader;
 our $HAS_XS;

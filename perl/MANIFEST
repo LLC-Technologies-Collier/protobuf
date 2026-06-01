@@ -205,7 +205,6 @@ lib/Protobuf/WKT/Duration.pm
 lib/Protobuf/WKT/FieldMask.pm
 lib/Protobuf/WKT/Struct.pm
 lib/Protobuf/WKT/Timestamp.pm
-lib/Sideload/Build/FileLists.pm
 libcoro/coro.c
 libcoro/coro.h
 libprotobufperl.map
@@ -783,6 +782,7 @@ vendor/upb_generator/reflection/names.h
 vendor/upb_generator/reflection/source.h
 vendor/upb_generator/stage0/google/protobuf/compiler/plugin.upb.c
 vendor/upb_generator/stage0/google/protobuf/compiler/plugin.upb.h
+xlib/Sideload/Build/FileLists.pm
 xs/all_descriptors.h
 xs/convert.c
 xs/convert.h

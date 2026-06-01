@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::WKT::FieldMask - Mixin for google.protobuf.FieldMask$/
+Protobuf::WKT::FieldMask - Mixin for google.protobuf.FieldMask
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -31,40 +31,40 @@ version 0.01$/
 
 =head1 DESCRIPTION
 
-This module provides helper methods for the generated class corresponding to the C<google.protobuf.FieldMask> Well-Known Type. These methods are injected into the C<Protobuf::WKT::FieldMask> class, which should be automatically used when C<google/protobuf/field_mask.proto> is processed.$/
+This module provides helper methods for the generated class corresponding to the C<google.protobuf.FieldMask> Well-Known Type. These methods are injected into the C<Protobuf::WKT::FieldMask> class, which should be automatically used when C<google/protobuf/field_mask.proto> is processed.
 
-The C<FieldMask> type is used to specify a subset of fields that should be returned by a get operation or modified by an update operation.$/
+The C<FieldMask> type is used to specify a subset of fields that should be returned by a get operation or modified by an update operation.
 
 =head1 METHODS
 
 =head2 to_string()
 
-Returns the field mask paths as a single comma-separated string.$/
+Returns the field mask paths as a single comma-separated string.
 
 =head2 from_string($str)
 
-Parses a comma-separated string and populates the C<paths> repeated field.$/
+Parses a comma-separated string and populates the C<paths> repeated field.
 
-Returns C<$self> for chaining.$/
+Returns C<$self> for chaining.
 
 =head2 get_injected_methods()
 
-Internal method used by L<Protobuf::ClassGenerator> to list methods to inject into the class.$/
+Internal method used by L<Protobuf::ClassGenerator> to list methods to inject into the class.
 
 =head1 SEE ALSO
 
-L<Protobuf>, L<Protobuf::Message>$/
+L<Protobuf>, L<Protobuf::Message>
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>$/
+C.J. Collier <cjac@google.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.$/
+This software is copyright (c) 2026 by Google LLC.
 
-This is free software; you can redistribute it and/or modify it under$/
-the same terms as the Perl 5 programming language system itself.$/
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 

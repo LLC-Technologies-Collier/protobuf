@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-Protobuf::WKT::Timestamp - Mixin for google.protobuf.Timestamp$/
+Protobuf::WKT::Timestamp - Mixin for google.protobuf.Timestamp
 
 =head1 VERSION
 
-version 0.01$/
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -37,44 +37,44 @@ version 0.01$/
 
 =head1 DESCRIPTION
 
-This module provides helper methods for the generated class corresponding to the C<google.protobuf.Timestamp> Well-Known Type. These methods are injected into the C<Protobuf::WKT::Timestamp> class, which should be automatically used when C<google/protobuf/timestamp.proto> is processed.$/
+This module provides helper methods for the generated class corresponding to the C<google.protobuf.Timestamp> Well-Known Type. These methods are injected into the C<Protobuf::WKT::Timestamp> class, which should be automatically used when C<google/protobuf/timestamp.proto> is processed.
 
-The C<Timestamp> type represents a point in time independent of any time zone or calendar, encoded as seconds and nanoseconds since the Unix epoch.$/
+The C<Timestamp> type represents a point in time independent of any time zone or calendar, encoded as seconds and nanoseconds since the Unix epoch.
 
 =head1 METHODS
 
 =head2 to_time_piece()
 
-Converts the timestamp to a L<Time::Piece> object. Note that C<nanos> are not fully supported by L<Time::Piece>, so precision may be lost.$/
+Converts the timestamp to a L<Time::Piece> object. Note that C<nanos> are not fully supported by L<Time::Piece>, so precision may be lost.
 
 =head2 from_time_piece($tp)
 
-Sets the C<seconds> and C<nanos> fields from a L<Time::Piece> object C<$tp>. C<nanos> will be set to 0.$/
+Sets the C<seconds> and C<nanos> fields from a L<Time::Piece> object C<$tp>. C<nanos> will be set to 0.
 
-Returns C<$self> for chaining.$/
+Returns C<$self> for chaining.
 
 =head2 to_iso8601()
 
-Returns an ISO 8601 string representation of the timestamp in UTC (e.g., "2026-04-01T12:00:00Z"). This uses L<Time::Piece> internally, so nanosecond precision is lost.$/
+Returns an ISO 8601 string representation of the timestamp in UTC (e.g., "2026-04-01T12:00:00Z"). This uses L<Time::Piece> internally, so nanosecond precision is lost.
 
 =head2 get_injected_methods()
 
-Internal method used by L<Protobuf::ClassGenerator> to list methods to inject into the class.$/
+Internal method used by L<Protobuf::ClassGenerator> to list methods to inject into the class.
 
 =head1 SEE ALSO
 
-L<Protobuf>, L<Protobuf::Message>, L<Time::Piece>$/
+L<Protobuf>, L<Protobuf::Message>, L<Time::Piece>
 
 =head1 AUTHOR
 
-C.J. Collier <cjac@google.com>$/
+C.J. Collier <cjac@google.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2026 by Google LLC.$/
+This software is copyright (c) 2026 by Google LLC.
 
-This is free software; you can redistribute it and/or modify it under$/
-the same terms as the Perl 5 programming language system itself.$/
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 
