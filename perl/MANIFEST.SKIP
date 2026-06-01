@@ -17,11 +17,11 @@
 \.log$
 ^t/data/.*\.bin$
 ^Protobuf-[\d\.]+/
+\.tar\.gz$
 ^lib/.*\.c$
 ^maint/.*\.pl~
 ^Bench/
 ^tmp_check_use
 ^stderr\.txt$
-^Protobuf\.xs$
 ^Protobuf\.c$
 ^Protobuf\.c\.test$

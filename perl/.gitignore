@@ -24,7 +24,7 @@ src_google_protobuf_descriptor.pb.cc
 /Protobuf.c
 /Protobuf.c.test
 /protoc-gen-perl-pb
-/generate_xs.pl.bak
+/maint/generate_xs.pl.bak
 /stderr.txt
 /debug
 /tmp_debug/

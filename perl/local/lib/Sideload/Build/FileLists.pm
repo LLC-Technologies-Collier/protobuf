@@ -2,66 +2,78 @@ package Sideload::Build::FileLists;
 
 use strict;
 use warnings;
-use File::Spec;
+warn "Loading Sideload::Build::FileLists\n";
 use File::Find;
-use Exporter qw(import);
+use File::Spec;
+use Exporter 'import';
 
 our @EXPORT_OK = qw(
     get_upb_c_files
     get_utf8_c_files
     get_generated_c_files
     get_xs_helper_c_files
-    get_common_c_files
 );
 
 sub get_upb_c_files {
-    my ($upb_root) = @_;
-    $upb_root //= File::Spec->catfile("..", "upb");
+    my ($project_root) = @_;
     my @files;
-    find(
-        sub {
-            push @files, $File::Find::name
-              if /\.c$/
-              && $File::Find::name !~ m{/conformance/}
-              && $File::Find::name !~ m{/reflection/stage0/}
-              && $File::Find::name !~ m{/cmake/};
-        },
-        $upb_root
-    );
+    my $dir = File::Spec->catdir($project_root, 'upb');
+    return unless -d $dir;
+    find(sub {
+        if ($File::Find::name =~ m{/(lua|ruby|conformance|cmake|stage0)$}) {
+            $File::Find::prune = 1;
+            return;
+        }
+        if (/\.c$/ && $File::Find::name !~ /\/test_util\//) {
+            push @files, $File::Find::name;
+        }
+    }, $dir);
     return @files;
 }
-
 sub get_utf8_c_files {
-    my ($third_party_root) = @_;
-    $third_party_root //= File::Spec->catfile("..", "third_party");
-    return grep { !m{/(lemire|range|main)} }
-      glob(File::Spec->catfile($third_party_root, "utf8_range", "*.c"));
+    my ($project_root) = @_;
+    my @files;
+    my $dir = File::Spec->catdir($project_root, 'third_party', 'utf8_range');
+    return unless -d $dir;
+    # Only include utf8_range.c. Other files are either tests, 
+    # stand-alone benchmarks, or included via .inc files.
+    push @files, File::Spec->catfile($dir, 'utf8_range.c');
+    return @files;
 }
 
 sub get_generated_c_files {
     my ($project_root) = @_;
-    $project_root //= "..";
-    my $descriptor_base = File::Spec->catfile($project_root, "upb", "reflection", "stage0", "google", "protobuf");
-    return (
-        File::Spec->catfile($descriptor_base, "descriptor.upb.c"),
-        # descriptor.upb_minitable.c is not present in stage0, and might be redundant
-        # If it is needed, we might need to generate it or find it elsewhere.
-        # stage0 only has descriptor.upb.c and descriptor.upb.h
-    );
+    my @files;
+    my $dir = File::Spec->catdir($project_root, 'upb', 'reflection', 'stage0');
+    return unless -d $dir;
+    find(sub {
+        if (/\.c$/) {
+            push @files, $File::Find::name;
+        }
+    }, $dir);
+    return @files;
 }
 
 sub get_xs_helper_c_files {
-    return glob("xs/*.c xs/*/*.c");
-}
-
-sub get_common_c_files {
-    my %args = @_;
-    return (
-        get_upb_c_files($args{upb_root}),
-        get_utf8_c_files($args{third_party_root}),
-        get_generated_c_files($args{bazel_bin_root}),
-        get_xs_helper_c_files()
-    );
+    my ($project_root) = @_;
+    my @files;
+    my $dir;
+    if (-d 'xs') {
+        $dir = 'xs';
+    } elsif (defined $project_root) {
+        if (-d File::Spec->catdir($project_root, 'perl', 'xs')) {
+            $dir = File::Spec->catdir($project_root, 'perl', 'xs');
+        } elsif (-d File::Spec->catdir($project_root, 'xs')) {
+            $dir = File::Spec->catdir($project_root, 'xs');
+        }
+    }
+    return unless defined $dir && -d $dir;
+    find(sub {
+        if (/\.c$/) {
+            push @files, $File::Find::name;
+        }
+    }, $dir);
+    return @files;
 }
 
 1;

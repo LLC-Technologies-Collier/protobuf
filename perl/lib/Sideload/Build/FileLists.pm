@@ -20,13 +20,16 @@ sub get_upb_c_files {
     my $dir = File::Spec->catdir($project_root, 'upb');
     return unless -d $dir;
     find(sub {
-        if (/\.c$/ && !/\/test_util\//) {
+        if ($File::Find::name =~ m{/(lua|ruby|conformance|cmake|stage0)$}) {
+            $File::Find::prune = 1;
+            return;
+        }
+        if (/\.c$/ && $File::Find::name !~ /\/test_util\//) {
             push @files, $File::Find::name;
         }
     }, $dir);
     return @files;
 }
-
 sub get_utf8_c_files {
     my ($project_root) = @_;
     my @files;
@@ -54,26 +57,22 @@ sub get_generated_c_files {
 sub get_xs_helper_c_files {
     my ($project_root) = @_;
     my @files;
-    my @dirs = (
-        File::Spec->catdir($project_root, 'perl', 'xs', 'helpers'),
-        File::Spec->catdir($project_root, 'perl', 'xs', 'protobuf'),
-    );
-    # If we are in the vendored dir, perl/xs might not exist at that level
-    if (!-d $dirs[0]) {
-        @dirs = (
-            File::Spec->catdir($project_root, 'xs', 'helpers'),
-            File::Spec->catdir($project_root, 'xs', 'protobuf'),
-        );
+    my $dir;
+    if (-d 'xs') {
+        $dir = 'xs';
+    } elsif (defined $project_root) {
+        if (-d File::Spec->catdir($project_root, 'perl', 'xs')) {
+            $dir = File::Spec->catdir($project_root, 'perl', 'xs');
+        } elsif (-d File::Spec->catdir($project_root, 'xs')) {
+            $dir = File::Spec->catdir($project_root, 'xs');
+        }
     }
-    
-    foreach my $dir (@dirs) {
-        next unless -d $dir;
-        find(sub {
-            if (/\.c$/) {
-                push @files, $File::Find::name;
-            }
-        }, $dir);
-    }
+    return unless defined $dir && -d $dir;
+    find(sub {
+        if (/\.c$/) {
+            push @files, $File::Find::name;
+        }
+    }, $dir);
     return @files;
 }
 

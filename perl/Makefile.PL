@@ -29,6 +29,30 @@ our $src_dir = File::Spec->catdir($project_root, 'src');
 our $third_party_dir = File::Spec->catdir($project_root, 'third_party');
 # --- End Path Macros ---
 
+# --- Dev Environment Automation ---
+my $is_dev = (-f 'maint/generate_xs.pl' && -d '../upb');
+if ($is_dev) {
+    print "Development environment detected.\n";
+    
+    # 1. Reassemble Protobuf.xs from fragments
+    print "Reassembling Protobuf.xs...\n";
+    system($^X, 'maint/generate_xs.pl') == 0 or die "Failed to run generate_xs.pl: $!";
+    
+    # 2. Update the local vendor directory with core components
+    if (-f 'maint/vendor_upb.pl') {
+        print "Updating vendor/ directory...\n";
+        system($^X, 'maint/vendor_upb.pl') == 0 or die "Failed to run vendor_upb.pl: $!";
+    }
+    
+    # 3. Clean and regenerate MANIFEST from scratch to remove dead references
+    require ExtUtils::Manifest;
+    print "Regenerating MANIFEST...\n";
+    unlink 'MANIFEST';
+    ExtUtils::Manifest::mkmanifest();
+}
+# --- End Dev Environment Automation ---
+
+
 
 # Template Toolkit helper function
 my $tt;
@@ -485,7 +509,9 @@ WriteMakefile(
     # Clean the generated object files and the static library
     clean             => { FILES => join(' ', sort @clean_files) },
 
-
+    dist              => {
+        PREOP => '$(PERL) maint/vendor_upb.pl && $(PERL) -MExtUtils::Manifest=mkmanifest -e "mkmanifest"',
+    },
 );
 
 package MY;

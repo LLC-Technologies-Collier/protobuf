@@ -18,3 +18,9 @@ t/data/wkt_descriptor.bin:
 		google/protobuf/field_mask.proto \
 		google/protobuf/struct.proto \
 		google/protobuf/wrappers.proto
+
+t/data/types_descriptor.bin: t/protos/types.proto
+	@echo "Generating t/data/types_descriptor.bin from t/protos/types.proto"
+	@mkdir -p t/data
+	protoc --descriptor_set_out=t/data/types_descriptor.bin --include_imports --proto_path=t/protos --proto_path=[% project_root %] t/protos/types.proto
+
