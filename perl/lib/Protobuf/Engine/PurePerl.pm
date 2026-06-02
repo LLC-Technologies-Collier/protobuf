@@ -25,6 +25,26 @@ sub get {
 
 sub set {
     my ($self, $msg, $field_name, $value) = @_;
+    
+    my $mdef = $msg->{_mdef};
+    if ($mdef) {
+        my $fdef = $mdef->find_field_by_name($field_name);
+        if ($fdef && $fdef->type_number == 14) { # ENUM
+            require Scalar::Util;
+            if (defined $value && !Scalar::Util::looks_like_number($value)) {
+                my $edef = $fdef->enum_type;
+                if ($edef) {
+                    my $vdef = $edef->find_value_by_name($value);
+                    if ($vdef) {
+                        $value = $vdef->number;
+                    } else {
+                        croak('Invalid enum value \'' . $value . '\' for field \'' . $field_name . '\'');
+                    }
+                }
+            }
+        }
+    }
+    
     $msg->{_fields}{$field_name} = $value;
 }
 

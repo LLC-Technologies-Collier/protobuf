@@ -170,8 +170,10 @@ sub DEMOLISH {
 
 sub CLONE_SKIP { 1 }
 
+my $pp_generated_pool;
+
 sub generated_pool {
-    return $Protobuf::HAS_XS ? _xs_generated_pool() : __PACKAGE__->new();
+    return $Protobuf::HAS_XS ? _xs_generated_pool() : ($pp_generated_pool ||= __PACKAGE__->new());
 }
 
 sub add_serialized_file {
@@ -182,8 +184,7 @@ sub add_serialized_file {
     if ($Protobuf::HAS_XS) {
         $file = _xs_add_serialized_file($self, $serialized);
     } else {
-        my $files = $self->add_serialized_file_descriptor_set($serialized);
-        $file = $files->[0] if $files && @$files;
+        $file = $self->_pp_pool->add_serialized_file($serialized);
     }
 
     if ($file) {

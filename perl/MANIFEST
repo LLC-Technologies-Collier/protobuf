@@ -3,6 +3,7 @@
 .perltidyrc
 bench/message_merge.pl
 bin/protoc-gen-perl-pb
+BUILD.bazel
 Changes
 cpanfile
 create-protobuf-perl-Changes.sh

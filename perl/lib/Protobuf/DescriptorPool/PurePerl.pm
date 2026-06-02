@@ -20,6 +20,14 @@ sub new {
     }, $class;
 }
 
+sub add_serialized_file {
+    my ($self, $data) = @_;
+    my $f_data = Protobuf::Engine::PurePerl::DescriptorParser->parse_file_descriptor($data);
+    my $file_obj = $self->_add_file_data($f_data);
+    $self->_resolve_all();
+    return $file_obj;
+}
+
 sub add_serialized_file_descriptor_set {
     my ($self, $data) = @_;
     my $files_data = Protobuf::Engine::PurePerl::DescriptorParser->parse_file_descriptor_set($data);

@@ -8,7 +8,7 @@ if [ "$#" -eq 0 ]; then
 fi
 
 echo "--- Building protoc-gen-perl-pb ---"
-make bazel_build_protoc_plugin || exit 1
+make protoc-gen-perl-pb || exit 1
 echo "--- Build finished ---"
 
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8

@@ -377,6 +377,9 @@ EOC
         my $coercion_code = '';
         if ($fdef->type_number == 11 && !$fdef->is_repeated && !$fdef->is_map) {
             my $m_type = $fdef->message_type;
+            if (!defined $m_type) {
+                croak('Message type not resolved for field \'' . $fdef->name . '\' of type \'' . ($fdef->{_data}{_type_name} || 'unknown') . '\'');
+            }
             my $m_class = _get_perl_class_for_mdef($m_type);
             $coercion_code = "->plus_coercions(HashRef, sub { my \$m = '$m_class'->new; \$m->from_perl(\$_); \$m })";
         } elsif ($fdef->type_number == 3 || $fdef->type_number == 4 || $fdef->type_number == 16 || $fdef->type_number == 18) {
@@ -536,6 +539,9 @@ sub _get_type_tiny_code {
         $base_type = "(Int | Str)";
     } elsif ($type == 11) { # MESSAGE
         my $subm = $fdef->message_type;
+        if (!defined $subm) {
+            croak('Message type not resolved in _get_type_tiny_code for field \'' . $fdef->name . '\' of type \'' . ($fdef->{_data}{_type_name} || 'unknown') . '\'');
+        }
         $base_type = "InstanceOf['" . _get_perl_class_for_mdef($subm) . "']";
     } else {
         return "Any";
