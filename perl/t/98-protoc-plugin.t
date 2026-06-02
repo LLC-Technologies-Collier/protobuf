@@ -5,23 +5,35 @@ use warnings;
 use Test::More;
 use Protobuf;
 
-ok(1, "This test file runs");
+# Mock Google::Auth and Google::gRPC::Client to make test hermetic and run on clean public checkouts
+BEGIN {
+    package Google::Auth;
+    $INC{'Google/Auth.pm'} = 1;
+    sub default { bless {}, shift }
+    sub get_token { 'mock_token' }
+
+    package Google::gRPC::Client;
+    $INC{'Google/gRPC/Client.pm'} = 1;
+    sub new { my $class = shift; bless {@_}, $class }
+}
 
 use File::Path qw(make_path remove_tree);
 use File::Temp qw(tempdir);
 use Capture::Tiny qw(capture);
 use Cwd qw(cwd);
 
-my $protoc = 'protoc'; # Assumes protoc is in PATH
-my $plugin = './protoc-gen-perl-pb';
 my $cwd = cwd();
 
+my $protoc = 'protoc'; # Assumes protoc is in PATH
+my $plugin = -x './protoc-gen-perl-pb' ? './protoc-gen-perl-pb' 
+           : -x 'bin/protoc-gen-perl-pb' ? 'bin/protoc-gen-perl-pb'
+           : './protoc-gen-perl-pb';
+
 unless (-x $plugin) {
-    diag "Plugin $plugin not found or not executable";
-    fail("Plugin exists");
-    done_testing();
-    exit;
+    plan skip_all => 'Plugin protoc-gen-perl-pb not found (please run: make build_protoc_plugin)';
 }
+
+ok(1, "This test file runs");
 
 my $tmpdir = tempdir(CLEANUP => 1);
 my $proto_dir = "$tmpdir/protos";
@@ -142,12 +154,12 @@ subtest 'Test Generated Code' => sub {
     isa_ok($dep, 'Mypackage::Dep::Dep::DepMessage', 'dep_msg is correct type');
     is($dep->dep_field(), 456, 'dep_field ok');
 
-    # Check for service stubs in content
-    open my $pm_fh, '<', $expected_pm or die "Could not open $expected_pm: $!";
-    my $content = do { local $/; <$pm_fh> };
-    close $pm_fh;
-    like($content, qr/# Service: MyService/, 'Service comment found');
-    like($content, qr/#   Method: DoStuff/, 'Method comment found');
+    # Check for service stubs
+    my $client_class = 'Mypackage::Test::MyServiceClient';
+    ok($client_class->can('new'), 'MyServiceClient class generated');
+    my $client = $client_class->new(target => 'localhost:443');
+    isa_ok($client, 'Mypackage::Test::MyServiceClient');
+    ok($client->can('do_stuff'), 'Client has do_stuff method');
 };
 
 subtest 'Descriptor Pool Check' => sub {

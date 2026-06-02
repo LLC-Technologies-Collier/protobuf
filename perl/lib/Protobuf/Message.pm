@@ -296,9 +296,10 @@ sub new {
 
 sub DESTROY {
     my ($self) = @_;
+    return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
     # Only call XS free if it's an XS-backed object
-    if (exists $self->{_engine} && $self->{_engine}->isa('Protobuf::Engine::XS')) {
-        _xs_free($self) unless ${^GLOBAL_PHASE} eq 'DESTRUCT';
+    if (exists $self->{_engine} && defined $self->{_engine} && $self->{_engine}->isa('Protobuf::Engine::XS')) {
+        _xs_free($self);
     }
     return;
 }
