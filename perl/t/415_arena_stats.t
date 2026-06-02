@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for Arena Stats tests' unless $Protobuf::HAS_XS;
 use Protobuf::Arena;
 
 # 1. Standard Arena Stats

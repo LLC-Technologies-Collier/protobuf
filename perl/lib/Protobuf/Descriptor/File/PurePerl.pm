@@ -1,6 +1,6 @@
 package Protobuf::Descriptor::File::PurePerl;
 
-use parent 'Protobuf::Descriptor::Base::PurePerl';
+use parent 'Protobuf::Descriptor::Base::PurePerl', 'Protobuf::Descriptor::File';
 use strict;
 use warnings;
 

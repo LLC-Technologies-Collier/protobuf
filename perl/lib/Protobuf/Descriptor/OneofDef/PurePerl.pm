@@ -21,4 +21,9 @@ sub get_field {
     return $self->{_data}{fields}[$index];
 }
 
+sub fields {
+    my ($self) = @_;
+    return @{$self->{_data}{fields} || []};
+}
+
 1;

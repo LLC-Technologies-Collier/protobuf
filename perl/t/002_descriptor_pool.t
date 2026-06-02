@@ -7,7 +7,11 @@ subtest 'basic creation' => sub {
     my $pool = Protobuf::DescriptorPool->new;
     ok($pool, 'Created pool');
     isa_ok($pool, 'Protobuf::DescriptorPool');
-    ok($pool->{_pool_ptr}, 'Has internal pool pointer');
+    if ($Protobuf::HAS_XS) {
+        ok($pool->{_pool_ptr}, 'Has internal pool pointer');
+    } else {
+        ok($pool->_pp_pool, 'Has PurePerl pool');
+    }
 };
 
 subtest 'generated pool' => sub {
@@ -16,7 +20,11 @@ subtest 'generated pool' => sub {
     isa_ok($pool, 'Protobuf::DescriptorPool');
     
     my $pool2 = Protobuf::DescriptorPool->generated_pool();
-    is($pool->{_pool_ptr}, $pool2->{_pool_ptr}, 'Generated pool is a singleton');
+    if ($Protobuf::HAS_XS) {
+        is($pool->{_pool_ptr}, $pool2->{_pool_ptr}, 'Generated pool is a singleton');
+    } else {
+        is($pool, $pool2, 'Generated pool is a singleton');
+    }
 };
 
 subtest 'find missing' => sub {

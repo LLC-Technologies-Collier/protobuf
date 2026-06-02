@@ -2,6 +2,8 @@ package main;
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for tmpfs IPC integration tests' unless $Protobuf::HAS_XS;
 use lib "t/lib";
 use TestHelpers;
 use POSIX qw( mkfifo );

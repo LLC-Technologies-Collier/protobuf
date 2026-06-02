@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for concurrency stress fuzzer tests' unless $Protobuf::HAS_XS;
 use Coro;
 use Coro::AnyEvent;
 use Protobuf::Internal;

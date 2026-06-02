@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for Arena tests' unless $Protobuf::HAS_XS;
 use Protobuf::Arena;
 
 subtest 'basic creation' => sub {

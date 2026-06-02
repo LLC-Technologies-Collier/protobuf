@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 use Protobuf;
+plan skip_all => 'XS required for handle serialization tests' unless $Protobuf::HAS_XS;
 use lib "t/lib";
 use TestHelpers;
 use File::Temp qw(tempfile);

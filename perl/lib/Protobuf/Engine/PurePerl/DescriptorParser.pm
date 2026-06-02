@@ -60,6 +60,8 @@ sub parse_descriptor {
         field => [],
         nested_type => [],
         enum_type => [],
+        oneof_decl => [],
+        options => {},
     };
     while ($pos < length($data)) {
         my ($tag, $wire) = _read_tag(\$data, \$pos);
@@ -76,15 +78,35 @@ sub parse_descriptor {
             my $e_data = _read_bytes(\$data, \$pos);
             push @{$m->{enum_type}}, $class->parse_enum_descriptor($e_data);
         }
+        elsif ($tag == 7) { # options
+            my $o_data = _read_bytes(\$data, \$pos);
+            $m->{options} = $class->parse_message_options($o_data);
+        }
+        elsif ($tag == 8) { # oneof_decl
+            my $o_data = _read_bytes(\$data, \$pos);
+            push @{$m->{oneof_decl}}, $class->parse_oneof_descriptor($o_data);
+        }
         else { _skip_field(\$data, \$pos, $wire); }
     }
     return $m;
 }
 
+sub parse_oneof_descriptor {
+    my ($class, $data) = @_;
+    my $pos = 0;
+    my $o = { name => '' };
+    while ($pos < length($data)) {
+        my ($tag, $wire) = _read_tag(\$data, \$pos);
+        if ($tag == 1) { $o->{name} = _read_bytes(\$data, \$pos); }
+        else { _skip_field(\$data, \$pos, $wire); }
+    }
+    return $o;
+}
+
 sub parse_field_descriptor {
     my ($class, $data) = @_;
     my $pos = 0;
-    my $f = { name => '', number => 0, label => 0, type => 0, type_name => '' };
+    my $f = { name => '', number => 0, label => 0, type => 0, type_name => '', oneof_index => undef };
     while ($pos < length($data)) {
         my ($tag, $wire) = _read_tag(\$data, \$pos);
         if ($tag == 1) { $f->{name} = _read_bytes(\$data, \$pos); }
@@ -92,6 +114,7 @@ sub parse_field_descriptor {
         elsif ($tag == 4) { $f->{label} = _read_varint(\$data, \$pos); }
         elsif ($tag == 5) { $f->{type} = _read_varint(\$data, \$pos); }
         elsif ($tag == 6) { $f->{type_name} = _read_bytes(\$data, \$pos); }
+        elsif ($tag == 9) { $f->{oneof_index} = _read_varint(\$data, \$pos); }
         else { _skip_field(\$data, \$pos, $wire); }
     }
     return $f;
@@ -126,7 +149,20 @@ sub parse_enum_value_descriptor {
     return $v;
 }
 
-# --- Helper functions ---
+sub parse_message_options {
+    my ($class, $data) = @_;
+    my $pos = 0;
+    my $opts = { map_entry => 0 };
+    while ($pos < length($data)) {
+        my ($tag, $wire) = _read_tag(\$data, \$pos);
+        if ($tag == 7) { # map_entry
+            $opts->{map_entry} = _read_varint(\$data, \$pos) ? 1 : 0;
+        } else {
+            _skip_field(\$data, \$pos, $wire);
+        }
+    }
+    return $opts;
+}
 
 sub _read_tag {
     my ($data_ref, $pos_ref) = @_;

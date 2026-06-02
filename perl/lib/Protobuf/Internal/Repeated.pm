@@ -123,26 +123,45 @@ use overload '@{}' => sub { $_[0] }, fallback => 1;
 sub audit_integrity {
     my ($self) = @_;
     my $tied = tied @$self;
-    return $tied->audit_integrity();
+    return $tied ? $tied->audit_integrity() : 1;
 }
 
 sub sort {
     my ($self) = @_;
     my $tied = tied @$self;
-    return $tied->sort();
+    if ($tied && $tied->isa('Protobuf::Internal::Repeated')) {
+        return $tied->sort();
+    } else {
+        @$self = sort @$self;
+        return $self;
+    }
 }
 
 sub slice {
     my ($self, $offset, $length) = @_;
     my $tied = tied @$self;
-    return $tied->slice($offset, $length);
+    if ($tied && $tied->isa('Protobuf::Internal::Repeated')) {
+        return $tied->slice($offset, $length);
+    } else {
+        $length //= scalar(@$self) - $offset;
+        if ($length <= 0 || $offset >= scalar(@$self)) {
+            return [];
+        }
+        my $end = $offset + $length - 1;
+        $end = scalar(@$self) - 1 if $end >= scalar(@$self);
+        return [ @{$self}[$offset .. $end] ];
+    }
 }
 
 sub push {
     my ($self, @values) = @_;
     my $tied = tied @$self;
-    foreach my $val (@values) {
-        $tied->_xs_append($val);
+    if ($tied && $tied->isa('Protobuf::Internal::Repeated')) {
+        foreach my $val (@values) {
+            $tied->_xs_append($val);
+        }
+    } else {
+        push @$self, @values;
     }
     return;
 }
@@ -150,7 +169,137 @@ sub push {
 sub pop {
     my ($self) = @_;
     my $tied = tied @$self;
-    return $tied->POP();
+    if ($tied && $tied->isa('Protobuf::Internal::Repeated')) {
+        return $tied->POP();
+    } else {
+        return pop @$self;
+    }
 }
+
+package Protobuf::Internal::Repeated::PurePerl;
+use strict;
+use warnings;
+use Tie::Array;
+our @ISA = qw(Tie::Array);
+use Carp qw(croak);
+use Type::Utils qw(dwim_type);
+use Types::Standard qw(HashRef);
+
+sub TIEARRAY {
+    my ($class, $fdef) = @_;
+    
+    require Protobuf::ClassGenerator;
+    my $type_code = Protobuf::ClassGenerator::_get_type_tiny_code($fdef);
+    if ($type_code =~ /^ArrayRef\[(.*)\]$/) {
+        $type_code = $1;
+    }
+    
+    my $type = dwim_type($type_code);
+    if ($fdef->type_number == 11) {
+        my $m_type = $fdef->message_type;
+        my $m_class = Protobuf::ClassGenerator::_get_perl_class_for_mdef($m_type);
+        $type = $type->plus_coercions(HashRef, sub { my $m = $m_class->new; $m->from_perl($_); $m });
+    }
+    my $type_num = $fdef->type_number;
+    if ($type_num == 5 || $type_num == 15 || $type_num == 17) {
+        $type = $type->where(sub { defined($_) && $_ >= -2147483648 && $_ <= 2147483647 }, message => sub { "out of range" });
+    } elsif ($type_num == 13 || $type_num == 7) {
+        $type = $type->where(sub { defined($_) && $_ >= 0 && $_ <= 4294967295 }, message => sub { "out of range" });
+    }
+    
+    return bless {
+        arr => [],
+        check => $type->compiled_check,
+        coercion => $type->coercion,
+        type => $type,
+        fdef => $fdef,
+    }, $class;
+}
+
+sub FETCH {
+    my ($self, $index) = @_;
+    return $self->{arr}[$index];
+}
+
+sub STORE {
+    my ($self, $index, $val) = @_;
+    if ($self->{coercion}) {
+        $val = $self->{coercion}->coerce($val);
+    }
+    $self->{check}->($val) or croak("Invalid value for repeated field '" . $self->{fdef}->name . "': " . $self->{type}->get_message($val));
+    $self->{arr}[$index] = $val;
+}
+
+sub FETCHSIZE {
+    my ($self) = @_;
+    return scalar(@{$self->{arr}});
+}
+
+sub STORESIZE {
+    my ($self, $count) = @_;
+    $#{$self->{arr}} = $count - 1;
+}
+
+sub EXISTS {
+    my ($self, $index) = @_;
+    return exists $self->{arr}[$index];
+}
+
+sub DELETE {
+    my ($self, $index) = @_;
+    return delete $self->{arr}[$index];
+}
+
+sub CLEAR {
+    my ($self) = @_;
+    @{$self->{arr}} = ();
+}
+
+sub PUSH {
+    my ($self, @values) = @_;
+    foreach my $val (@values) {
+        if ($self->{coercion}) {
+            $val = $self->{coercion}->coerce($val);
+        }
+        $self->{check}->($val) or croak("Invalid value for repeated field '" . $self->{fdef}->name . "': " . $self->{type}->get_message($val));
+        push @{$self->{arr}}, $val;
+    }
+    return scalar(@{$self->{arr}});
+}
+
+sub POP {
+    my ($self) = @_;
+    return pop @{$self->{arr}};
+}
+
+sub SHIFT {
+    my ($self) = @_;
+    return shift @{$self->{arr}};
+}
+
+sub UNSHIFT {
+    my ($self, @values) = @_;
+    foreach my $val (reverse @values) {
+        if ($self->{coercion}) {
+            $val = $self->{coercion}->coerce($val);
+        }
+        $self->{check}->($val) or croak("Invalid value for repeated field '" . $self->{fdef}->name . "': " . $self->{type}->get_message($val));
+        unshift @{$self->{arr}}, $val;
+    }
+    return scalar(@{$self->{arr}});
+}
+
+sub SPLICE {
+    my ($self, $offset, $length, @list) = @_;
+    foreach my $val (@list) {
+        if ($self->{coercion}) {
+            $val = $self->{coercion}->coerce($val);
+        }
+        $self->{check}->($val) or croak("Invalid value for repeated field '" . $self->{fdef}->name . "': " . $self->{type}->get_message($val));
+    }
+    return splice(@{$self->{arr}}, $offset, $length, @list);
+}
+
+sub audit_integrity { 1 }
 
 1;

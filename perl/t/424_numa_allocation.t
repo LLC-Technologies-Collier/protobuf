@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for NUMA allocation tests' unless $Protobuf::HAS_XS;
 use lib "t/lib";
 use TestHelpers;
 use Protobuf::Arena;

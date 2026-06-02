@@ -9,6 +9,7 @@ use Protobuf::Descriptor::FieldDef::PurePerl;
 use Protobuf::Descriptor::EnumDef::PurePerl;
 use Protobuf::Descriptor::EnumValueDef::PurePerl;
 use Protobuf::Descriptor::OneofDef::PurePerl;
+use Carp qw(croak);
 
 sub new {
     my $class = shift;
@@ -102,9 +103,28 @@ sub _add_message_data {
         oneofs => [],
         nested_types => [],
         enum_types => [],
+        options => $m_data->{options} || {},
     });
 
+    if (exists $self->{messages}{$full_name}) {
+        croak("Symbol already defined in this DescriptorPool: $full_name");
+    }
     $self->{messages}{$full_name} = $m_obj;
+
+    # Build oneofs first
+    my @oneof_objs;
+    my $oneof_decl = $m_data->{oneof_decl} || [];
+    for my $i (0 .. $#$oneof_decl) {
+        my $o_data = $oneof_decl->[$i];
+        my $o_obj = Protobuf::Descriptor::OneofDef::PurePerl->new({
+            name => $o_data->{name},
+            index => $i,
+            containing_type => $m_obj,
+            fields => [],
+        });
+        push @oneof_objs, $o_obj;
+    }
+    $m_obj->{_data}{oneofs} = \@oneof_objs;
 
     foreach my $f_data (@{$m_data->{field} || []}) {
         my $f_obj = Protobuf::Descriptor::FieldDef::PurePerl->new({
@@ -113,9 +133,18 @@ sub _add_message_data {
             type => $f_data->{type},
             label => $f_data->{label},
             full_name => "$full_name." . $f_data->{name},
-            # message_type and enum_type will be resolved later or on demand
             _type_name => $f_data->{type_name},
+            containing_oneof => undef,
         });
+        
+        my $oi = $f_data->{oneof_index};
+        if (defined $oi) {
+            my $o_obj = $oneof_objs[$oi];
+            if ($o_obj) {
+                $f_obj->{_data}{containing_oneof} = $o_obj;
+                push @{$o_obj->{_data}{fields}}, $f_obj;
+            }
+        }
         push @{$m_obj->{_data}{fields}}, $f_obj;
     }
 
@@ -144,6 +173,9 @@ sub _add_enum_data {
         values => [],
     });
 
+    if (exists $self->{enums}{$full_name}) {
+        croak("Symbol already defined in this DescriptorPool: $full_name");
+    }
     $self->{enums}{$full_name} = $e_obj;
 
     foreach my $v_data (@{$e_data->{value} || []}) {

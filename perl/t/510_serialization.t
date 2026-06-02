@@ -37,6 +37,7 @@ subtest 'to_perl conversion' => sub {
 
 # 3. Test to_json / from_json
 subtest 'JSON serialization' => sub {
+    plan skip_all => 'JSON is not supported in PurePerl mode' unless $Protobuf::HAS_XS;
     my $msg = Test::Test::TestMessage->new();
     $msg->value(100);
     $msg->test_string("json test");
@@ -52,6 +53,7 @@ subtest 'JSON serialization' => sub {
 
 # 4. Test to_text
 subtest 'Text format serialization' => sub {
+    plan skip_all => 'Text format is only stub in PurePerl mode' unless $Protobuf::HAS_XS;
     my $msg = Test::Test::TestMessage->new();
     $msg->value(7);
     

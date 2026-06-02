@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for Arena Canary tests' unless $Protobuf::HAS_XS;
 use Protobuf::Arena;
 
 # 1. Successful Arena Cleanup (No corruption)

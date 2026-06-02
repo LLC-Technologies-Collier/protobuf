@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'JSON is not supported in PurePerl mode' unless $Protobuf::HAS_XS;
 use lib "t/lib";
 use TestHelpers;
 

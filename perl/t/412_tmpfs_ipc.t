@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for tmpfs IPC tests' unless $Protobuf::HAS_XS;
 use Protobuf::Arena;
 use File::Temp qw(tempdir);
 use File::Spec;

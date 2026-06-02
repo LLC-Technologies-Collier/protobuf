@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
 use lib "t/lib";
 use TestHelpers;
 
@@ -41,16 +42,22 @@ subtest 'Final Integration: Everything together' => sub {
     is($parsed->map_int32_int32->{200}, 2000, 'Wire format parsed map matches');
 
     # 6. JSON format
-    my $json = $msg->to_json();
-    like($json, qr/"Ultimate Answer"/, 'JSON format includes name');
-    
-    my $parsed_json = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->from_json($json);
-    is($parsed_json->optional_int32, 42, 'JSON format parsed value matches');
-    is_deeply($parsed_json->repeated_int32, [10, 20, 30], 'JSON format parsed array matches');
+    subtest 'JSON format (XS only)' => sub {
+        plan skip_all => 'JSON is not supported in PurePerl mode' unless $Protobuf::HAS_XS;
+        my $json = $msg->to_json();
+        like($json, qr/"Ultimate Answer"/, 'JSON format includes name');
+        
+        my $parsed_json = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->from_json($json);
+        is($parsed_json->optional_int32, 42, 'JSON format parsed value matches');
+        is_deeply($parsed_json->repeated_int32, [10, 20, 30], 'JSON format parsed array matches');
+    };
     
     # 7. Text Format
-    my $text = $msg->to_text();
-    like($text, qr/Ultimate Answer/, 'Text format includes name');
+    subtest 'Text format (XS only stub in PP)' => sub {
+        plan skip_all => 'Text format is only stub in PurePerl mode' unless $Protobuf::HAS_XS;
+        my $text = $msg->to_text();
+        like($text, qr/Ultimate Answer/, 'Text format includes name');
+    };
 };
 
 TODO: {

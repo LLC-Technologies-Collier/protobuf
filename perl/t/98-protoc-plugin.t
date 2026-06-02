@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
 
 ok(1, "This test file runs");
 
@@ -157,7 +158,10 @@ subtest 'Descriptor Pool Check' => sub {
         ok($pool->find_message_by_name('mypackage.MyMessage.NestedMessage'), 'Found NestedMessage in pool');
         ok($pool->find_message_by_name('mypackage.dep.DepMessage'), 'Found DepMessage in pool');
         ok($pool->find_enum_by_name('mypackage.MyEnum'), 'Found MyEnum in pool');
-        ok($pool->find_service_by_name('mypackage.MyService'), 'Found MyService in pool');
+        SKIP: {
+            skip "Services are not supported in PurePerl mode", 1 unless $Protobuf::HAS_XS;
+            ok($pool->find_service_by_name('mypackage.MyService'), 'Found MyService in pool');
+        }
     };
     ok(!$@, "Descriptor pool tests executed") or diag $@;
 };

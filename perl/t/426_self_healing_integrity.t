@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for memory integrity tests' unless $Protobuf::HAS_XS;
 use Protobuf::DescriptorPool;
 use lib "t/lib";
 use TestHelpers;

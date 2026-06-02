@@ -79,14 +79,28 @@ package Protobuf::Internal::Map::Public;
 sub as_hash {
     my ($self) = @_;
     my $tied = tied %$self;
-    return $tied->as_hash();
+    if ($tied) {
+        return $tied->as_hash();
+    } else {
+        return { %$self };
+    }
 }
 
 sub copy_from {
     my ($self, $other) = @_;
     my $tied = tied %$self;
-    my $other_tied = (ref($other) eq 'HASH') ? $other : (tied %$other);
-    return $tied->copy_from($other_tied);
+    if ($tied) {
+        my $other_tied = (ref($other) eq 'HASH') ? $other : (tied %$other);
+        return $tied->copy_from($other_tied);
+    } else {
+        %$self = ();
+        my $h = (ref($other) eq 'HASH') ? $other : $other->as_hash();
+        my $cloner = \&Protobuf::Engine::PurePerl::_deep_clone;
+        foreach my $k (keys %$h) {
+            $self->{$k} = $cloner ? $cloner->($h->{$k}) : $h->{$k};
+        }
+        return;
+    }
 }
 
 1;

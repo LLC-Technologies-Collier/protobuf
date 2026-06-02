@@ -72,7 +72,11 @@ sub is_required {
 
 sub is_map {
     my ($self) = @_;
-    return $self->{_data}{is_map} || 0;
+    return 0 unless ($self->label_number || 0) == 3; # REPEATED
+    return 0 unless ($self->type_number || 0) == 11; # MESSAGE
+    my $subm = $self->message_type;
+    return 0 unless $subm;
+    return $subm->is_map_entry;
 }
 
 sub is_submessage {
@@ -89,6 +93,11 @@ sub message_type {
 sub enum_type {
     my ($self) = @_;
     return $self->{_data}{enum_type};
+}
+
+sub containing_oneof {
+    my ($self) = @_;
+    return $self->{_data}{containing_oneof};
 }
 
 1;

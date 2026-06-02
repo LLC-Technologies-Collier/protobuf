@@ -375,22 +375,42 @@ EOC
         
         my $type_code = _get_type_tiny_code($fdef);
         my $coercion_code = '';
-        if ($fdef->type_number == 11 && !$fdef->is_repeated && !$fdef->is_map) {
+        my $extra_where = '';
+        my $type_num = $fdef->type_number;
+        if ($type_num == 11) {
             my $m_type = $fdef->message_type;
             if (!defined $m_type) {
                 croak('Message type not resolved for field \'' . $fdef->name . '\' of type \'' . ($fdef->{_data}{_type_name} || 'unknown') . '\'');
             }
             my $m_class = _get_perl_class_for_mdef($m_type);
-            $coercion_code = "->plus_coercions(HashRef, sub { my \$m = '$m_class'->new; \$m->from_perl(\$_); \$m })";
-        } elsif ($fdef->type_number == 3 || $fdef->type_number == 4 || $fdef->type_number == 16 || $fdef->type_number == 18) {
+            if ($fdef->is_repeated) {
+                $coercion_code = "->plus_coercions(ArrayRef, sub { my \$arr = \$_; [ map { ref(\$_) eq 'HASH' ? do { my \$m = '$m_class'->new; \$m->from_perl(\$_); \$m } : \$_ } \@\$arr ] })";
+            } elsif (!$fdef->is_map) {
+                $coercion_code = "->plus_coercions(HashRef, sub { my \$m = '$m_class'->new; \$m->from_perl(\$_); \$m })";
+            }
+        } elsif ($type_num == 3 || $type_num == 4 || $type_num == 16 || $type_num == 18) {
             # INT64, UINT64, SFIXED64, SINT64
             $coercion_code = "->plus_coercions(Str, sub { Math::BigInt->new(\$_) })";
+        }
+
+        if ($type_num == 5 || $type_num == 15 || $type_num == 17) { # INT32, SFIXED32, SINT32
+            if ($fdef->is_repeated) {
+                $extra_where = '->where(sub { my $arr = $_; !grep { !defined($_) || $_ < -2147483648 || $_ > 2147483647 } @$arr }, message => sub { \'out of range\' })';
+            } else {
+                $extra_where = '->where(sub { defined($_) && $_ >= -2147483648 && $_ <= 2147483647 }, message => sub { Int()->check($_) ? \'out of range\' : \'did not pass type constraint "Int"\' })';
+            }
+        } elsif ($type_num == 13 || $type_num == 7) { # UINT32, FIXED32
+            if ($fdef->is_repeated) {
+                $extra_where = '->where(sub { my $arr = $_; !grep { !defined($_) || $_ < 0 || $_ > 4294967295 } @$arr }, message => sub { \'out of range\' })';
+            } else {
+                $extra_where = '->where(sub { defined($_) && $_ >= 0 && $_ <= 4294967295 }, message => sub { Int()->check($_) ? \'out of range\' : \'did not pass type constraint "Int"\' })';
+            }
         }
 
         # Perl-level accessors that delegate to the engine
         $code .= <<"EOC";
 {
-    my \$type = dwim_type("$type_code")$coercion_code;
+    my \$type = dwim_type("$type_code")$coercion_code$extra_where;
     my \$check = \$type->compiled_check;
     my \$coercion = \$type->coercion;
 

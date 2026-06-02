@@ -20,11 +20,14 @@ subtest 'G::PB Compatibility Aliases' => sub {
     is($msg2->name, "alias test", "decode() works as alias for parse()");
     
     # 2. toJSON / fromJSON
-    my $json = $msg->toJSON();
-    like($json, qr/"name":\s*"alias test"/, "toJSON() works as alias for to_json()");
-    
-    my $msg3 = $class->fromJSON($json);
-    is($msg3->name, "alias test", "fromJSON() works as alias for from_json()");
+    SKIP: {
+        skip "JSON is not supported in PurePerl mode", 2 unless $Protobuf::HAS_XS;
+        my $json = $msg->toJSON();
+        like($json, qr/"name":\s*"alias test"/, "toJSON() works as alias for to_json()");
+        
+        my $msg3 = $class->fromJSON($json);
+        is($msg3->name, "alias test", "fromJSON() works as alias for from_json()");
+    }
 };
 
 done_testing();

@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 use Protobuf;
+plan skip_all => 'XS required for object cache audit tests' unless $Protobuf::HAS_XS;
 use Protobuf::DescriptorPool;
 use lib "t/lib";
 use TestHelpers;

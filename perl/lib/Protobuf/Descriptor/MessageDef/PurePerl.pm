@@ -101,4 +101,9 @@ sub get_enum_type {
 
 sub get_nested_enum { shift->get_enum_type(@_) }
 
+sub is_map_entry {
+    my ($self) = @_;
+    return $self->{_data}{options}{map_entry} || 0;
+}
+
 1;

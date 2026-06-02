@@ -25,3 +25,4 @@
 ^stderr\.txt$
 ^Protobuf\.c$
 ^Protobuf\.c\.test$
+^t/c/+(?:[^/]+/)*[^/.]+$

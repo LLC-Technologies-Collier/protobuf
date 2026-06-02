@@ -5,6 +5,20 @@ use warnings;
 use parent 'Protobuf::Engine';
 use Carp qw(croak);
 
+our ($IV_MIN, $IV_MAX);
+sub _init_iv_limits {
+    return if defined $IV_MIN;
+    require Config;
+    require Math::BigInt;
+    if ($Config::Config{ivsize} == 8) {
+        $IV_MIN = Math::BigInt->new('-9223372036854775808');
+        $IV_MAX = Math::BigInt->new('9223372036854775807');
+    } else {
+        $IV_MIN = Math::BigInt->new('-2147483648');
+        $IV_MAX = Math::BigInt->new('2147483647');
+    }
+}
+
 sub create_message {
     my ($self, $class, $mdef, $arena, $flags) = @_;
     
@@ -20,7 +34,52 @@ sub create_message {
 
 sub get {
     my ($self, $msg, $field_name) = @_;
+    
+    unless (exists $msg->{_fields}{$field_name}) {
+        my $mdef = $msg->{_mdef};
+        if ($mdef) {
+            my $fdef = $mdef->find_field_by_name($field_name);
+            if ($fdef) {
+                if ($fdef->is_map) {
+                    require Protobuf::Internal::Map;
+                    $msg->{_fields}{$field_name} = bless {}, 'Protobuf::Internal::Map::Public';
+                } elsif ($fdef->is_repeated) {
+                    require Protobuf::Internal::Repeated;
+                    my $arr = [];
+                    tie @$arr, 'Protobuf::Internal::Repeated::PurePerl', $fdef;
+                    $msg->{_fields}{$field_name} = bless $arr, 'Protobuf::Internal::Repeated::Public';
+                } else {
+                    return $self->_default_value($fdef);
+                }
+            }
+        }
+    }
+    
     return $msg->{_fields}{$field_name};
+}
+
+sub _default_value {
+    my ($self, $fdef) = @_;
+    my $type = $fdef->type_number;
+    
+    if ($type == 1 || $type == 2) { # DOUBLE, FLOAT
+        return 0.0;
+    } elsif ($type == 3 || $type == 4 || $type == 16 || $type == 18) {
+        # INT64, UINT64, SFIXED64, SINT64
+        return 0;
+    } elsif ($type == 5 || $type == 7 || $type == 13 || $type == 15 || $type == 17) {
+        # INT32, FIXED32, UINT32, SFIXED32, SINT32
+        return 0;
+    } elsif ($type == 8) { # BOOL
+        return 0;
+    } elsif ($type == 9 || $type == 12) { # STRING, BYTES
+        return '';
+    } elsif ($type == 14) { # ENUM
+        return 0;
+    } elsif ($type == 11) { # MESSAGE
+        return undef;
+    }
+    return undef;
 }
 
 sub set {
@@ -29,16 +88,48 @@ sub set {
     my $mdef = $msg->{_mdef};
     if ($mdef) {
         my $fdef = $mdef->find_field_by_name($field_name);
-        if ($fdef && $fdef->type_number == 14) { # ENUM
-            require Scalar::Util;
-            if (defined $value && !Scalar::Util::looks_like_number($value)) {
-                my $edef = $fdef->enum_type;
-                if ($edef) {
-                    my $vdef = $edef->find_value_by_name($value);
-                    if ($vdef) {
-                        $value = $vdef->number;
-                    } else {
-                        croak('Invalid enum value \'' . $value . '\' for field \'' . $field_name . '\'');
+        if ($fdef) {
+            if ($fdef->type_number == 14) { # ENUM
+                require Scalar::Util;
+                if (defined $value && !Scalar::Util::looks_like_number($value)) {
+                    my $edef = $fdef->enum_type;
+                    if ($edef) {
+                        my $vdef = $edef->find_value_by_name($value);
+                        if ($vdef) {
+                            $value = $vdef->number;
+                        } else {
+                            croak('Invalid enum value \'' . $value . '\' for field \'' . $field_name . '\'');
+                        }
+                    }
+                }
+            }
+            
+            # Clone repeated/map/message values to ensure independence
+            if ($fdef->is_map) {
+                $value = _deep_clone($value);
+                if (ref($value) eq 'HASH') {
+                    require Protobuf::Internal::Map;
+                    bless $value, 'Protobuf::Internal::Map::Public';
+                }
+            } elsif ($fdef->is_repeated) {
+                $value = _deep_clone($value);
+                if (ref($value) eq 'ARRAY') {
+                    require Protobuf::Internal::Repeated;
+                    my $arr = [];
+                    tie @$arr, 'Protobuf::Internal::Repeated::PurePerl', $fdef;
+                    push @$arr, @$value;
+                    $value = bless $arr, 'Protobuf::Internal::Repeated::Public';
+                }
+            } elsif ($fdef->type_number == 11) {
+                $value = _deep_clone($value);
+            }
+            
+            my $type_num = $fdef->type_number;
+            if ($type_num == 3 || $type_num == 4 || $type_num == 16 || $type_num == 18) {
+                if (defined $value && ref($value) && eval { $value->isa('Math::BigInt') }) {
+                    _init_iv_limits();
+                    if ($value >= $IV_MIN && $value <= $IV_MAX) {
+                        $value = 0 + $value->bstr();
                     }
                 }
             }
@@ -81,13 +172,19 @@ sub _decode_varint {
     my ($data_ref, $pos_ref) = @_;
     my $val = Math::BigInt->new(0);
     my $shift = 0;
+    my $len = length($$data_ref);
     while (1) {
+        if ($$pos_ref >= $len) {
+            croak "Failed to parse message: Protobuf wire format is malformed or corrupt";
+        }
         my $byte = ord(substr($$data_ref, $$pos_ref++, 1));
         my $part = Math::BigInt->new($byte & 0x7f)->blsft($shift);
         $val->bior($part);
         last unless $byte & 0x80;
         $shift += 7;
-        if ($shift >= 70) { croak "Varint too long"; }
+        if ($shift >= 70) {
+            croak "Failed to parse message: Protobuf wire format is malformed or corrupt";
+        }
     }
     return $val;
 }
@@ -166,10 +263,12 @@ sub serialize {
                 number => $f->number,
                 type => $f->type_number,
                 label => $f->label_number,
+                is_map => $f->is_map,
+                fdef => $f,
             };
         }
     } elsif (ref($mdef) eq 'HASH') {
-        @field_defs = @{$mdef->{field} || []};
+        @field_defs = map { { %$_, fdef => $_ } } @{$mdef->{field} || []};
     } else {
         my $count = $mdef->field_count;
         for (0..$count-1) {
@@ -178,9 +277,24 @@ sub serialize {
                 name => $f->name,
                 number => $f->number,
                 type => $f->type_number,
-                label => $f->label_number, # 1: optional, 2: required, 3: repeated
+                label => $f->label_number,
+                is_map => $f->is_map,
+                fdef => $f,
             };
         }
+    }
+
+    # Check required fields
+    my @missing;
+    foreach my $f (@field_defs) {
+        if (($f->{label} || 0) == 2) { # REQUIRED
+            unless (exists $fields->{$f->{name}} && defined $fields->{$f->{name}}) {
+                push @missing, $f->{name};
+            }
+        }
+    }
+    if (@missing) {
+        croak("Failed to serialize: Missing required fields: " . join(", ", @missing));
     }
 
     foreach my $f (@field_defs) {
@@ -191,7 +305,29 @@ sub serialize {
         my $type = $f->{type};
         my $wire = $TYPE_TO_WIRE{$type};
         
-        if ($f->{label} == 3) { # Repeated
+        if ($f->{is_map}) {
+            my $entry_mdef = $f->{fdef}->message_type;
+            my $key_fdef = $entry_mdef->find_field_by_number(1);
+            my $val_fdef = $entry_mdef->find_field_by_number(2);
+            
+            my $key_type = $key_fdef->type_number;
+            my $val_type = $val_fdef->type_number;
+            
+            my $key_wire = $TYPE_TO_WIRE{$key_type};
+            my $val_wire = $TYPE_TO_WIRE{$val_type};
+            
+            foreach my $k (keys %$val) {
+                my $v = $val->{$k};
+                
+                my $entry_data = '';
+                $entry_data .= $self->_encode_field(1, $key_type, $key_wire, $k);
+                $entry_data .= $self->_encode_field(2, $val_type, $val_wire, $v);
+                
+                $res .= _encode_varint(($tag << 3) | 2);
+                $res .= _encode_varint(length($entry_data));
+                $res .= $entry_data;
+            }
+        } elsif ($f->{label} == 3) { # Repeated
             # TODO: handle packed repeated
             foreach my $item (@$val) {
                 $res .= $self->_encode_field($tag, $type, $wire, $item);
@@ -199,6 +335,10 @@ sub serialize {
         } else {
             $res .= $self->_encode_field($tag, $type, $wire, $val);
         }
+    }
+    
+    if (exists $msg->{_unknown_fields} && defined $msg->{_unknown_fields}) {
+        $res .= $msg->{_unknown_fields};
     }
     
     return $res;
@@ -250,6 +390,13 @@ sub parse {
     my ($self, $class, $data, $options) = @_;
     my $mdef = $class->descriptor;
     my $msg = $self->create_message($class, $mdef);
+    $self->parse_into($msg, $data);
+    return $msg;
+}
+
+sub parse_into {
+    my ($self, $msg, $data) = @_;
+    my $mdef = $msg->{_mdef};
     my $fields = $msg->{_fields};
     
     my $pos = 0;
@@ -265,11 +412,13 @@ sub parse {
                 name => $f->name,
                 type => $f->type_number,
                 label => $f->label_number,
+                is_map => $f->is_map,
+                fdef => $f,
                 message_type => ($f->type_number == 11) ? $f->message_type : undef,
             };
         }
     } elsif (ref($mdef) eq 'HASH') {
-        %fields_by_num = map { $_->{number} => $_ } @{$mdef->{field} || []};
+        %fields_by_num = map { $_->{number} => { %$_, fdef => $_ } } @{$mdef->{field} || []};
     } else {
         my $count = $mdef->field_count;
         for (0..$count-1) {
@@ -278,12 +427,15 @@ sub parse {
                 name => $f->name,
                 type => $f->type_number,
                 label => $f->label_number,
+                is_map => $f->is_map,
+                fdef => $f,
                 message_type => ($f->type_number == 11) ? $f->message_type : undef,
             };
         }
     }
 
     while ($pos < $len) {
+        my $field_start = $pos;
         my $tag_wire = _decode_varint(\$data, \$pos);
         $tag_wire = $tag_wire->as_number();
         my $tag = $tag_wire >> 3;
@@ -291,20 +443,28 @@ sub parse {
         
         my $f = $fields_by_num{$tag};
         if (!$f) {
-            # Skip unknown field
             _skip_field(\$data, \$pos, $wire);
+            my $field_end = $pos;
+            my $raw_field = substr($data, $field_start, $field_end - $field_start);
+            $msg->{_unknown_fields} ||= '';
+            $msg->{_unknown_fields} .= $raw_field;
             next;
         }
         
         my $val = $self->_decode_field(\$data, \$pos, $wire, $f);
-        if ($f->{label} == 3) {
-            push @{$fields->{$f->{name}} ||= []}, $val;
+        if ($f->{is_map}) {
+            my $key = $val->get('key');
+            my $v = $val->get('value');
+            $fields->{$f->{name}} ||= bless {}, 'Protobuf::Internal::Map::Public';
+            $fields->{$f->{name}}{$key} = $v;
+        } elsif ($f->{label} == 3) {
+            $fields->{$f->{name}} ||= bless [], 'Protobuf::Internal::Repeated::Public';
+            push @{$fields->{$f->{name}}}, $val;
         } else {
             $fields->{$f->{name}} = $val;
         }
     }
-    
-    return $msg;
+    return;
 }
 
 sub _decode_field {
@@ -341,6 +501,9 @@ sub _decode_field {
         return $val;
 
     } elsif ($wire == 1) { # 64-bit
+        if ($$pos_ref + 8 > length($$data_ref)) {
+            croak "Failed to parse message: Protobuf wire format is malformed or corrupt";
+        }
         my $bytes = substr($$data_ref, $$pos_ref, 8);
         $$pos_ref += 8;
         if ($type == 1) { return unpack('d', $bytes); }
@@ -356,15 +519,21 @@ sub _decode_field {
     } elsif ($wire == 2) { # Length-delimited
         my $len = _decode_varint($data_ref, $pos_ref);
         $len = $len->as_number();
+        if ($$pos_ref + $len > length($$data_ref)) {
+            croak "Failed to parse message: Protobuf wire format is malformed or corrupt";
+        }
         my $bytes = substr($$data_ref, $$pos_ref, $len);
         $$pos_ref += $len;
         if ($type == 11) { # Message
             my $sub_class = $self->_get_perl_class_for_mdef($f->{message_type});
-            return $sub_class->parse($bytes);
+            return $sub_class->parse($bytes, { profile => 'pure_perl' });
         }
         return $bytes;
 
     } elsif ($wire == 5) { # 32-bit
+        if ($$pos_ref + 4 > length($$data_ref)) {
+            croak "Failed to parse message: Protobuf wire format is malformed or corrupt";
+        }
         my $bytes = substr($$data_ref, $$pos_ref, 4);
         $$pos_ref += 4;
         if ($type == 2) { return unpack('f', $bytes); }
@@ -394,26 +563,66 @@ sub _get_perl_class_for_mdef {
 # Helper from DescriptorParser (we should probably move these to a common Utility module)
 sub _skip_field {
     my ($data_ref, $pos_ref, $wire) = @_;
+    my $len = length($$data_ref);
     if ($wire == 0) { _decode_varint($data_ref, $pos_ref); }
-    elsif ($wire == 1) { $$pos_ref += 8; }
-    elsif ($wire == 2) {
-        my $len = _decode_varint($data_ref, $pos_ref);
-        $$pos_ref += $len;
+    elsif ($wire == 1) {
+        if ($$pos_ref + 8 > $len) { croak "Failed to parse message: Protobuf wire format is malformed or corrupt"; }
+        $$pos_ref += 8;
     }
-    elsif ($wire == 5) { $$pos_ref += 4; }
-    else { croak "Unsupported wire type $wire"; }
+    elsif ($wire == 2) {
+        my $l = _decode_varint($data_ref, $pos_ref);
+        $l = $l->as_number();
+        if ($$pos_ref + $l > $len) { croak "Failed to parse message: Protobuf wire format is malformed or corrupt"; }
+        $$pos_ref += $l;
+    }
+    elsif ($wire == 5) {
+        if ($$pos_ref + 4 > $len) { croak "Failed to parse message: Protobuf wire format is malformed or corrupt"; }
+        $$pos_ref += 4;
+    }
+    else { croak "Failed to parse message: Protobuf wire format is malformed or corrupt"; }
 }
 
 sub merge {
     my ($self, $dst, $src) = @_;
-    # TODO
-    croak "PurePerl merge not yet implemented";
+    my $mdef = $dst->{_mdef};
+    
+    foreach my $name (keys %{$src->{_fields}}) {
+        my $val = $src->{_fields}{$name};
+        next unless defined $val;
+        
+        my $fdef = $mdef->find_field_by_name($name);
+        next unless $fdef;
+        
+        if ($fdef->is_map) {
+            $dst->{_fields}{$name} ||= bless {}, 'Protobuf::Internal::Map::Public';
+            foreach my $k (keys %$val) {
+                $dst->{_fields}{$name}{$k} = _deep_clone($val->{$k});
+            }
+        } elsif ($fdef->is_repeated) {
+            $dst->{_fields}{$name} ||= bless [], 'Protobuf::Internal::Repeated::Public';
+            foreach my $item (@$val) {
+                push @{$dst->{_fields}{$name}}, _deep_clone($item);
+            }
+        } elsif ($fdef->type_number == 11) {
+            if (exists $dst->{_fields}{$name}) {
+                $self->merge($dst->{_fields}{$name}, $val);
+            } else {
+                $dst->{_fields}{$name} = _deep_clone($val);
+            }
+        } else {
+            $dst->{_fields}{$name} = _deep_clone($val);
+        }
+    }
+    return;
 }
 
 sub copy {
     my ($self, $dst, $src) = @_;
-    # TODO
-    croak "PurePerl copy not yet implemented";
+    $dst->{_fields} = {};
+    foreach my $k (keys %{$src->{_fields}}) {
+        $dst->{_fields}{$k} = _deep_clone($src->{_fields}{$k});
+    }
+    return;
 }
 
 sub to_json {
@@ -458,8 +667,125 @@ sub to_perl {
 }
 
 sub to_text {
-    my ($self, $msg) = @_;
-    return "PurePerl text format stub";
+    my ($self, $msg, $indent) = @_;
+    $indent //= 0;
+    my $indent_str = '  ' x $indent;
+    my $res = '';
+    
+    my $mdef = $msg->{_mdef};
+    return '' unless $mdef;
+    
+    my $field_count = $mdef->field_count;
+    for my $i (0 .. $field_count - 1) {
+        my $fdef = $mdef->get_field($i);
+        my $name = $fdef->name;
+        
+        next unless $self->has($msg, $name);
+        
+        my $val = $self->get($msg, $name);
+        next unless defined $val;
+        
+        if ($fdef->is_map) {
+            my $subm = $fdef->message_type;
+            foreach my $key (sort keys %$val) {
+                $res .= "${indent_str}${name} {\n";
+                $res .= "${indent_str}  key: " . _format_scalar_value($subm->find_field_by_name('key'), $key) . "\n";
+                $res .= "${indent_str}  value: " . _format_value_for_text($self, $subm->find_field_by_name('value'), $val->{$key}, $indent + 2) . "\n";
+                $res .= "${indent_str}}\n";
+            }
+        } elsif ($fdef->is_repeated) {
+            foreach my $item (@$val) {
+                $res .= _format_field_for_text($self, $fdef, $item, $indent_str, $indent);
+            }
+        } else {
+            $res .= _format_field_for_text($self, $fdef, $val, $indent_str, $indent);
+        }
+    }
+    
+    return $res;
+}
+
+sub _format_field_for_text {
+    my ($self, $fdef, $val, $indent_str, $indent) = @_;
+    my $name = $fdef->name;
+    my $type = $fdef->type_number;
+    
+    if ($type == 11) { # MESSAGE
+        my $sub_text = $self->to_text($val, $indent + 1);
+        return "${indent_str}${name} {\n${sub_text}${indent_str}}\n";
+    } else {
+        my $fmt = _format_scalar_value($fdef, $val);
+        return "${indent_str}${name}: ${fmt}\n";
+    }
+}
+
+sub _format_value_for_text {
+    my ($self, $fdef, $val, $indent) = @_;
+    my $type = $fdef->type_number;
+    if ($type == 11) {
+        my $sub_text = $self->to_text($val, $indent + 1);
+        my $indent_str = '  ' x $indent;
+        return "{\n${sub_text}${indent_str}}";
+    } else {
+        return _format_scalar_value($fdef, $val);
+    }
+}
+
+sub _format_scalar_value {
+    my ($fdef, $val) = @_;
+    my $type = $fdef->type_number;
+    if ($type == 9 || $type == 12) { # STRING, BYTES
+        $val =~ s/\\/\\\\/g;
+        $val =~ s/"/\\"/g;
+        return "\"$val\"";
+    } elsif ($type == 8) { # BOOL
+        return $val ? "true" : "false";
+    } elsif ($type == 14) { # ENUM
+        my $edef = $fdef->enum_type;
+        if ($edef) {
+            my $ev = $edef->find_value_by_number($val);
+            return $ev->name if $ev;
+        }
+        return $val;
+    }
+    return $val;
+}
+
+sub _deep_clone {
+    my ($val) = @_;
+    return $val unless defined $val;
+    my $ref = ref($val);
+    return $val unless $ref;
+    
+    if ($ref eq 'ARRAY') {
+        return [ map { _deep_clone($_) } @$val ];
+    } elsif ($ref eq 'HASH') {
+        return { map { $_ => _deep_clone($val->{$_}) } keys %$val };
+    } elsif (eval { $val->isa('Protobuf::Internal::Map::Public') }) {
+        my $new_map = bless {}, $ref;
+        foreach my $k (keys %$val) {
+            $new_map->{$k} = _deep_clone($val->{$k});
+        }
+        return $new_map;
+    } elsif (eval { $val->isa('Protobuf::Internal::Repeated::Public') }) {
+        my $new_arr = bless [], $ref;
+        foreach my $item (@$val) {
+            push @$new_arr, _deep_clone($item);
+        }
+        return $new_arr;
+    } elsif (eval { $val->isa('Math::BigInt') }) {
+        return $val->copy;
+    } elsif (eval { $val->isa('Protobuf::Message') }) {
+        my $new_msg = $ref->new(profile => 'pure_perl');
+        foreach my $k (keys %{$val->{_fields}}) {
+            $new_msg->{_fields}{$k} = _deep_clone($val->{_fields}{$k});
+        }
+        if (exists $val->{_unknown_fields}) {
+            $new_msg->{_unknown_fields} = $val->{_unknown_fields};
+        }
+        return $new_msg;
+    }
+    return $val;
 }
 
 1;

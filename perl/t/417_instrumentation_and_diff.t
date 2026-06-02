@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for instrumentation and diff tests' unless $Protobuf::HAS_XS;
 use Protobuf::Internal;
 use Capture::Tiny qw(capture);
 

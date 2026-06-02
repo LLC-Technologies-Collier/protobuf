@@ -330,9 +330,24 @@ sub set_oneof {
     my $oneof = $mdef->find_oneof_by_name($oneof_name);
     croak("Oneof '$oneof_name' not found") unless $oneof;
 
-    foreach my $f ($oneof->fields) {
+    my %type_priority = (
+        11 => 1, # MESSAGE
+        1  => 2, 2 => 2, 3 => 2, 4 => 2, 5 => 2, 6 => 2, 7 => 2, 13 => 2, 15 => 2, 16 => 2, 17 => 2, 18 => 2, # Numeric
+        14 => 3, # ENUM
+        8  => 4, # BOOL
+        9  => 5, 12 => 5, # STRING, BYTES
+    );
+
+    my @sorted_fields = sort {
+        my $p_a = $type_priority{$a->type_number} || 6;
+        my $p_b = $type_priority{$b->type_number} || 6;
+        $p_a <=> $p_b;
+    } $oneof->fields;
+
+    foreach my $f (@sorted_fields) {
+        my $method = $f->name;
         eval {
-            $self->set($f->name, $value);
+            $self->$method($value);
             return 1;
         };
         if (!$@) {
@@ -345,17 +360,38 @@ sub set_oneof {
 
 sub has_field {
     my ($self, $field_name) = @_;
-    return _xs_has($self, $field_name);
+    if ($self->_engine->isa('Protobuf::Engine::XS')) {
+        return _xs_has($self, $field_name);
+    } else {
+        return $self->has($field_name);
+    }
 }
 
 sub clear_field {
     my ($self, $field_name) = @_;
-    return _xs_clear($self, $field_name);
+    if ($self->_engine->isa('Protobuf::Engine::XS')) {
+        return _xs_clear($self, $field_name);
+    } else {
+        return $self->clear($field_name);
+    }
 }
 
 sub which_oneof {
     my ($self, $oneof_name) = @_;
-    return _xs_which_oneof($self, $oneof_name);
+    if ($self->_engine->isa('Protobuf::Engine::XS')) {
+        return _xs_which_oneof($self, $oneof_name);
+    } else {
+        my $mdef = $self->descriptor;
+        my $oneof = $mdef->find_oneof_by_name($oneof_name);
+        croak("Oneof '$oneof_name' not found") unless $oneof;
+        
+        foreach my $f ($oneof->fields) {
+            if ($self->has($f->name)) {
+                return $f->name;
+            }
+        }
+        return undef;
+    }
 }
 
 sub serialize {
@@ -468,7 +504,12 @@ sub fromJSON { shift->from_json(@_) }
 
 sub unknown_fields {
     my ($self) = @_;
-    return _xs_unknown_fields($self);
+    if ($self->_engine->isa('Protobuf::Engine::XS')) {
+        return _xs_unknown_fields($self);
+    } else {
+        require Protobuf::UnknownFieldSet;
+        return bless { _msg => $self }, 'Protobuf::UnknownFieldSet';
+    }
 }
 
 sub dependency_graph {
@@ -499,9 +540,12 @@ sub decode { shift->parse(@_) }
 
 sub parse_from {
     my ($self, $data) = @_;
-    _xs_clear_memoization_cache($self) if $self->_engine->isa('Protobuf::Engine::XS');
-    # TODO: PurePerl parse_from
-    return _xs_parse_from($self, $data);
+    if ($self->_engine->isa('Protobuf::Engine::XS')) {
+        _xs_clear_memoization_cache($self);
+        return _xs_parse_from($self, $data);
+    } else {
+        return $self->_engine->parse_into($self, $data);
+    }
 }
 
 sub merge_from {
@@ -522,8 +566,19 @@ sub copy_from {
 
 sub fields {
     my ($self) = @_;
-    my $fields_rv = _xs_fields($self);
-    return wantarray ? @$fields_rv : $fields_rv;
+    if ($self->_engine->isa('Protobuf::Engine::XS')) {
+        my $fields_rv = _xs_fields($self);
+        return wantarray ? @$fields_rv : $fields_rv;
+    } else {
+        my $mdef = $self->{_mdef};
+        my $fields = $self->{_fields};
+        my @res;
+        foreach my $name (keys %$fields) {
+            my $fdef = $mdef->find_field_by_name($name);
+            push @res, $fdef if $fdef;
+        }
+        return wantarray ? @res : \@res;
+    }
 }
 
 sub freeze_to_shared {

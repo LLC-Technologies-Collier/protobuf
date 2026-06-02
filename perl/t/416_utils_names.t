@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
+use Protobuf;
+plan skip_all => 'XS required for internal utility tests' unless $Protobuf::HAS_XS;
 use Protobuf::Internal;
 
 # 1. ClassNameToFullName (with SIMD path)
