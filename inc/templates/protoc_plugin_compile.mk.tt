@@ -1,0 +1,3 @@
+
+[% obj %]: [% src %]
+	$(CXX) $(CXXFLAGS) [% inc %] [% cflags %] -c [% src %] -o [% obj %]

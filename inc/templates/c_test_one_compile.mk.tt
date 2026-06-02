@@ -1,0 +1,3 @@
+[% o %]: [% s %][% space %][% deps %][% space %]t/c/upb-perl-test.h
+	@$(PERL) -MExtUtils::Command -e mkpath -- $(@D)
+	[% compiler %] $(CCFLAGS) [% embed_cflags %] [% test_inc %] [% extra_ccflags %] -c [% s %] -o [% o %]

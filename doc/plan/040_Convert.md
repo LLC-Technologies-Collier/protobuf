@@ -1,0 +1,98 @@
+# Milestone 4: C Layer - convert
+
+[TOC]
+
+*   [x] REFRESH: Review all documents in @perl/doc/guidelines/**
+
+## C Test File Structure
+
+*   C tests for type conversions are located in `perl/t/c/convert/`.
+*   Helper functions and common test setup are in `perl/t/c/convert/test_util.c`.
+*   Tests for individual protobuf types are in separate files within `perl/t/c/convert/types/`, e.g., `perl/t/c/convert/types/int32.c`.
+*   Main test runners `perl/t/c/convert/upb_to_sv.c` and `perl/t/c/convert/sv_to_upb.c` will include and execute tests from the `types/` directory.
+*   `perl/t/c/c_test_config.json` is updated to build these runners.
+
+## Tasks
+
+1.  **Implement `perl/xs/convert/upb_to_sv.c`:**
+    *   [x] Implement functions to convert from UPB to Perl for all types.
+
+2.  **Implement `perl/xs/convert/sv_to_upb.c`:**
+    *   [x] Implement functions to convert from Perl to UPB for all types.
+
+3.  **Implement and Test Each Type:**
+
+    For each type below, create/update the `<type>.c` file in `perl/t/c/convert/types/`, add test cases to the main runners, and ensure tests pass *for that type* before moving to the next.
+
+    *   [x] **Int32**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **UInt32**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **Int64**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **UInt64**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **Float**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **Double**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **Bool**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **String**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **Bytes**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **Enum**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **Fixed32**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **Fixed64**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **SFixed32**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **SFixed64**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **SInt32**
+        *   [x] Implement & Test UPB -> SV
+        *   [x] Implement & Test SV -> UPB
+    *   [x] **SInt64**
+        *   [x] Implement & Test UPB -> SV (Handles BigInt)
+        *   [x] Implement & Test SV -> UPB
+
+4.  **Reach for More (World-Class Goals):**
+    *   [x] Implement transparent Math::BigInt support for 64-bit integer overflows.
+    *   [ ] Add mmap support for String/Bytes scalar wrappers. (Difficulty: 3/10).
+    *   [ ] Implement direct buffer mapping for large UPB fields. (Difficulty: 3/10).
+    *   [ ] Add SSE4.1 kernel for UTF-8 sequence validation. (Difficulty: 3/10).
+    *   [ ] Verify UTF-8 validation performance for multi-megabyte strings. (Difficulty: 3/10).
+    *   [ ] Implement direct upb_Map to Perl HV projection. (Difficulty: 3/10).
+    *   [ ] Add metadata for zero-copy map identity tracking. (Difficulty: 3/10).
+    *   [x] Add range-checks to specific narrow-integer conversions.
+    *   [x] Implement `verify_limits()` utility for numeric SvToUpb.
+    *   [x] Add test cases for CodeRef and Glob conversion failures.
+    *   [x] Verify croak safety during incompatible SV conversion.
+
+    *   [ ] TODO: Implement **Boundary-Fuzzing:** Verify that integer conversions correctly handle boundary conditions (MIN/MAX) and overflow/underflow situations with consistent error reporting. (Difficulty: 4/10).
+    *   [ ] **Arena Hints:** Allow type-specific size hints for sv_to_upb. (Difficulty: 6/10)
+    *   [ ] **Batch Conversion:** Implement SIMD-accelerated array conversions. (Difficulty: 8/10)
+    *   [ ] **Benchmarks:** Detailed benchmarks for all type conversions. (Difficulty: 4/10)
+
+5.  **Final Review:**
+    *   [x] Ensure all C tests in `perl/t/c/convert/` pass.
+
+6.  **Documentation:**
+    *   [ ] Review and update perl/doc/architecture/** documents based on this milestone's implementation.

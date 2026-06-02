@@ -1,0 +1,46 @@
+---
+abstract: 'High-performance Protocol Buffers implementation using upb'
+author:
+  - 'C.J. Collier <cjac@colliertech.org>'
+build_requires:
+  Coro: '0'
+  ExtUtils::MakeMaker: '0'
+  File::Spec: '0'
+  Path::Tiny: '0'
+  Test::MockModule: '0'
+  Test::More: '0'
+  Test::Valgrind: '0'
+configure_requires:
+  Config: '0'
+  Cwd: '0'
+  Devel::PPPort: '0'
+  ExtUtils::Embed: '0'
+  ExtUtils::MakeMaker: '0'
+  File::Find: '0'
+  File::Spec: '0'
+  JSON::MaybeXS: '0'
+  Path::Tiny: '0'
+  Template: '0'
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 7.70, CPAN::Meta::Converter version 2.150010'
+license: apache
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: '1.4'
+name: Protobuf
+no_index:
+  directory:
+    - t
+    - inc
+requires:
+  Const::Fast: '0'
+  JSON::MaybeXS: '0'
+  MIME::Base64: '0'
+  Math::BigInt: '0'
+  Moo: '0'
+  Type::Tiny: '0'
+  Types::Standard: '0'
+resources:
+  repository: https://github.com/LLC-Technologies-Collier/protobuf.git
+version: '0.02'
+x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

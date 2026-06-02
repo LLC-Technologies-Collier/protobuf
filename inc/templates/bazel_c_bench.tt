@@ -1,0 +1,13 @@
+cc_binary(
+    name = "[% bench.target_name %]",
+    srcs = ["[% bench.src %]"],
+    copts = [
+        "-I.",
+        "-Iexternal/upb",
+        "-I[% bench.core_path %]",
+    ],
+    linkopts = [
+        [% FOREACH f IN bench.perl_linkopts %]"[% f %]",[% END %]
+    ],
+    deps = [":libprotobufperl", ":upb_perl_test_lib", "@google_benchmark//:benchmark"],
+)

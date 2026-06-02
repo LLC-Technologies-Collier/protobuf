@@ -1,0 +1,6 @@
+
+[% exe %]: [% obj %] [% common_o %]
+	$(CXX) $(LDFLAGS) -o [% exe %] [% obj %] [% common_o %] -lstdc++ [% sanitizer_flags %]
+
+.PHONY: build_protoc_plugin
+build_protoc_plugin: [% exe %]

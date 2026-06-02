@@ -1,0 +1,5 @@
+[% o %]: [% c %]
+	@$(PERL) -MExtUtils::Command -e mkpath -- $(@D)
+	[% compiler %] $(CCFLAGS) $(INC) [% cflags %] [% base_flags %] -c [% c %] -o [% o %]
+
+

@@ -1,0 +1,15 @@
+[% IF c_test_targets.size > 0 %]
+test_c: build_c_tests $(COMMON_LIB)
+[% FOREACH target IN c_test_targets.sort %]
+	@echo "Running test: [% target %]"
+	LD_LIBRARY_PATH="[% archlibexp %]:$$LD_LIBRARY_PATH" ASAN_OPTIONS=detect_leaks=0:abort_on_error=1:detect_odr_violation=0 [% target %]
+[% END %]
+[% END %]
+
+[% IF c_bench_targets.size > 0 %]
+bench: build_bench $(COMMON_LIB)
+[% FOREACH target IN c_bench_targets.sort %]
+	@echo "Running benchmark: [% target %]"
+	LD_LIBRARY_PATH="[% archlibexp %]:$$LD_LIBRARY_PATH" [% target %]
+[% END %]
+[% END %]

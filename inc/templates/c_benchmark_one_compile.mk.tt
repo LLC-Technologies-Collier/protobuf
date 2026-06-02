@@ -1,0 +1,4 @@
+[% object %]: [% source %] t/c/upb-perl-test.h
+	@$(PERL) -MExtUtils::Command -e mkpath -- $(@D)
+	$(CC) $(CCFLAGS) $(INC) -c [% source %] -o [% object %]
+

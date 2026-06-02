@@ -1,0 +1,74 @@
+{
+   "abstract" : "High-performance Protocol Buffers implementation using upb",
+   "author" : [
+      "C.J. Collier <cjac@colliertech.org>"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "ExtUtils::MakeMaker version 7.70, CPAN::Meta::Converter version 2.150010",
+   "license" : [
+      "apache_2_0"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "Protobuf",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "inc"
+      ]
+   },
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "Config" : "0",
+            "Cwd" : "0",
+            "Devel::PPPort" : "0",
+            "ExtUtils::Embed" : "0",
+            "ExtUtils::MakeMaker" : "0",
+            "File::Find" : "0",
+            "File::Spec" : "0",
+            "JSON::MaybeXS" : "0",
+            "Path::Tiny" : "0",
+            "Template" : "0"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Const::Fast" : "0",
+            "JSON::MaybeXS" : "0",
+            "MIME::Base64" : "0",
+            "Math::BigInt" : "0",
+            "Moo" : "0",
+            "Type::Tiny" : "0",
+            "Types::Standard" : "0"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Coro" : "0",
+            "File::Spec" : "0",
+            "Path::Tiny" : "0",
+            "Test::MockModule" : "0",
+            "Test::More" : "0",
+            "Test::Valgrind" : "0"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/LLC-Technologies-Collier/protobuf.git",
+         "web" : "https://github.com/LLC-Technologies-Collier/protobuf"
+      }
+   },
+   "version" : "0.02",
+   "x_serialization_backend" : "JSON::PP version 4.16"
+}
