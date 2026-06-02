@@ -57,16 +57,19 @@ BEGIN { $VERSION = '0.02'; }
 require XSLoader;
 our $HAS_XS;
 BEGIN {
-    eval {
-        require XSLoader;
-        XSLoader::load('Protobuf', $VERSION);
-        $HAS_XS = 1;
-        
-    };
-    if ($@) {
+    my $no_xs = $ENV{'PROTOBUF_NO_XS'} || ($ENV{'PROTOBUF_ENGINE'} && $ENV{'PROTOBUF_ENGINE'} eq 'pure_perl');
+    if ($no_xs) {
         $HAS_XS = 0;
-        
-        $log->debugf('Protobuf XS not loaded: %s', $@) if $ENV{PROTOBUF_DEBUG};
+    } else {
+        eval {
+            require XSLoader;
+            XSLoader::load('Protobuf', $VERSION);
+            $HAS_XS = 1;
+        };
+        if ($@) {
+            $HAS_XS = 0;
+            $log->debugf('Protobuf XS not loaded: %s', $@) if $ENV{'PROTOBUF_DEBUG'};
+        }
     }
 }
 

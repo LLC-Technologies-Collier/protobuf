@@ -1,3 +1,7 @@
 test :: all build_c_tests test_c t/data/test_descriptor.bin t/data/wkt_descriptor.bin t/data/compat_descriptor.bin t/data/types_descriptor.bin build_protoc_plugin
 	$(NOECHO) $(ECHO) "Running Perl tests"
 	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" LD_PRELOAD=$$(find /usr/lib -name "libasan.so.8" | head -n 1) ASAN_OPTIONS=detect_leaks=0:abort_on_error=1 prove -b -j$$(nproc) t/*.t t/integration/*.t
+
+test_pureperl :: all t/data/test_descriptor.bin t/data/wkt_descriptor.bin t/data/compat_descriptor.bin t/data/types_descriptor.bin build_protoc_plugin
+	$(NOECHO) $(ECHO) "Running Perl tests in PurePerl mode"
+	PROTOBUF_NO_XS=1 prove -b -j$$(nproc) t/*.t t/integration/*.t
