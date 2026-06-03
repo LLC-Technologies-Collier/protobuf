@@ -176,6 +176,11 @@ sub pop {
     }
 }
 
+sub to_perl {
+    my ($self) = @_;
+    return [ map { (eval { $_->can('to_perl') }) ? $_->to_perl : $_ } @$self ];
+}
+
 package Protobuf::Internal::Repeated::PurePerl;
 use strict;
 use warnings;

@@ -62,4 +62,24 @@ TODO: {
     ok(0, 'Tied arrays maintain consistent state when migrated across interpreters');
 }
 
+subtest 'to_perl' => sub {
+    my $msg = Test::Test::TestMessage->new();
+    push @{$msg->repeated_int}, 1, 2, 3;
+    
+    my $wrapper = $msg->repeated_int;
+    my $perl_data = $wrapper->to_perl();
+    
+    is_deeply($perl_data, [1, 2, 3], 'to_perl on repeated primitives returns raw array ref');
+    
+    my $msg_m = Test::Test::TestMessage->new();
+    my $sub = Test::Test::NestedMessage->new();
+    $sub->set_nested_string('test');
+    push @{$msg_m->repeated_message}, $sub;
+    
+    my $wrapper_m = $msg_m->repeated_message;
+    my $perl_data_m = $wrapper_m->to_perl();
+    
+    is_deeply($perl_data_m, [{ nested_string => 'test' }], 'to_perl on repeated messages calls to_perl on elements');
+};
+
 done_testing();
