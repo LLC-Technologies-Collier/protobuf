@@ -637,6 +637,25 @@ sub from_json {
     croak "PurePerl JSON decoder not yet implemented";
 }
 
+sub _clean_value {
+    my ($val) = @_;
+    return unless defined $val;
+    if (ref($val)) {
+        if (eval { $val->isa('Math::BigInt') }) {
+            return $val->numify();
+        } elsif (ref($val) eq 'ARRAY') {
+            return [ map { _clean_value($_) } @$val ];
+        } elsif (ref($val) eq 'HASH') {
+            my $res = {};
+            while (my ($k, $v) = each %$val) {
+                $res->{$k} = _clean_value($v);
+            }
+            return $res;
+        }
+    }
+    return $val;
+}
+
 sub to_perl {
     my ($self, $msg) = @_;
     my $fields = $msg->{_fields};
@@ -646,6 +665,8 @@ sub to_perl {
         my $val = $fields->{$name};
         if (ref($val)) {
             if ($val->isa('Protobuf::Message')) {
+                $res->{$name} = $val->to_perl();
+            } elsif ($val->isa('Protobuf::Internal::Repeated::Public')) {
                 $res->{$name} = $val->to_perl();
             } elsif (ref($val) eq 'ARRAY') {
                 $res->{$name} = [ map { ref($_) && $_->isa('Protobuf::Message') ? $_->to_perl() : $_ } @$val ];
@@ -663,7 +684,7 @@ sub to_perl {
             $res->{$name} = $val;
         }
     }
-    return $res;
+    return _clean_value($res);
 }
 
 sub to_text {

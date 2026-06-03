@@ -27,20 +27,22 @@
 
 // -- Proto Utils --
 
-// Converts a string to CamelCase
+// Converts a string to CamelCase, with custom mappings for known words
 std::string to_camel_case(const std::string& s) {
+    static const std::map<std::string, std::string> custom_mappings = {
+        {"bigquery", "BigQuery"},
+        {"pubsub", "PubSub"}
+    };
     std::string res;
-    bool next_upper = true;
-    for (char c : s) {
-        if (c == '_') {
-            next_upper = true;
-        } else {
-            if (next_upper) {
-                res += (char)toupper(c);
-                next_upper = false;
-            } else {
-                res += c;
-            }
+    std::stringstream ss(s);
+    std::string segment;
+    while (std::getline(ss, segment, '_')) {
+        auto it = custom_mappings.find(segment);
+        if (it != custom_mappings.end()) {
+            res += it->second;
+        } else if (!segment.empty()) {
+            segment[0] = (char)toupper(segment[0]);
+            res += segment;
         }
     }
     return res;
@@ -81,8 +83,12 @@ std::string get_default_host(const std::string& proto_pkg) {
     return "localhost:443";
 }
 
-// Capitalizes each segment of a package name (e.g. foo.bar -> Foo.Bar)
+// Capitalizes each segment of a package name (e.g. foo.bar -> Foo.Bar), with custom mappings
 std::string capitalize_package(const std::string& s) {
+    static const std::map<std::string, std::string> custom_mappings = {
+        {"bigquery", "BigQuery"},
+        {"pubsub", "PubSub"}
+    };
     std::string res;
     std::stringstream ss(s);
     std::string segment;
@@ -90,7 +96,12 @@ std::string capitalize_package(const std::string& s) {
     while (std::getline(ss, segment, '.')) {
         if (!first) res += "::";
         if (!segment.empty()) {
-            segment[0] = (char)toupper(segment[0]);
+            auto it = custom_mappings.find(segment);
+            if (it != custom_mappings.end()) {
+                segment = it->second;
+            } else {
+                segment[0] = (char)toupper(segment[0]);
+            }
         }
         res += segment;
         first = false;

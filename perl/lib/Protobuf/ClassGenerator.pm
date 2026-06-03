@@ -104,6 +104,16 @@ our %FIELD_REGISTRY;
 our %EXTENSION_RANGES;
 our %GENERATED;
 
+my %CUSTOM_CAPITALIZATION = (
+    'bigquery' => 'BigQuery',
+    'pubsub'   => 'PubSub',
+);
+
+sub _capitalize_segment {
+    my ($segment) = @_;
+    return $CUSTOM_CAPITALIZATION{lc($segment)} // ucfirst($segment);
+}
+
 sub register_extension_range {
     my ($class, $full_msg_name, $start, $end) = @_;
     push @{$EXTENSION_RANGES{$full_msg_name}}, { start => $start, end => $end };
@@ -117,10 +127,10 @@ sub generate_for_file {
     my $proto_file = $file->name;
     $proto_file =~ s/.*\///; # Basename
     $proto_file =~ s/\..*//; # Remove extension
-    my $file_module = join('', map { ucfirst($_) } split(/_/, $proto_file));
+    my $file_module = join('', map { _capitalize_segment($_) } split(/_/, $proto_file));
 
     my $pkg = $file->get_package;
-    my $base_module = join('::', map { ucfirst($_) } split(/\./, $pkg));
+    my $base_module = join('::', map { _capitalize_segment($_) } split(/\./, $pkg));
     $base_module .= "::$file_module" if $base_module;
     $base_module ||= $file_module;
 
@@ -187,10 +197,10 @@ sub generate_type_library {
     my $proto_file = $file->name;
     $proto_file =~ s/.*\///;
     $proto_file =~ s/\..*//;
-    my $file_module = join('', map { ucfirst($_) } split(/_/, $proto_file));
+    my $file_module = join('', map { _capitalize_segment($_) } split(/_/, $proto_file));
 
     my $pkg = $file->get_package;
-    my $base_module = join('::', map { ucfirst($_) } split(/\./, $pkg));
+    my $base_module = join('::', map { _capitalize_segment($_) } split(/\./, $pkg));
     $base_module .= "::$file_module" if $base_module;
     $base_module ||= $file_module;
 
@@ -222,7 +232,7 @@ sub _generate_types_recursively {
     my $full_name = $mdef->full_name;
     my $normalized = $full_name;
     $normalized =~ s/^\.//;
-    my $perl_class = join('::', map { ucfirst($_) } split(/\./, $normalized));
+    my $perl_class = join('::', map { _capitalize_segment($_) } split(/\./, $normalized));
     
     my $type_name = $mdef->name;
     
@@ -280,7 +290,7 @@ sub generate_for_message {
     my $full_name = $mdef->full_name;
     my $normalized = $full_name;
     $normalized =~ s/^\.//;
-    my $perl_class = join('::', map { ucfirst($_) } split(/\./, $normalized));
+    my $perl_class = join('::', map { _capitalize_segment($_) } split(/\./, $normalized));
     return _generate_for_message($mdef, $perl_class);
 }
 
@@ -514,10 +524,10 @@ sub _get_perl_class_for_mdef {
         my $proto_file = $f->name;
         $proto_file =~ s/.*\///;
         $proto_file =~ s/\..*//;
-        my $file_module = join('', map { ucfirst($_) } split(/_/, $proto_file));
+        my $file_module = join('', map { _capitalize_segment($_) } split(/_/, $proto_file));
         
         my $pkg = $f->get_package;
-        my $base_module = join('::', map { ucfirst($_) } split(/\./, $pkg));
+        my $base_module = join('::', map { _capitalize_segment($_) } split(/\./, $pkg));
         $base_module .= "::$file_module" if $base_module;
         $base_module ||= $file_module;
         
@@ -527,12 +537,12 @@ sub _get_perl_class_for_mdef {
         if ($pkg) {
             $full_name =~ s/^\Q$pkg\E\.//;
         }
-        my $msg_path = join('::', map { ucfirst($_) } split(/\./, $full_name));
+        my $msg_path = join('::', map { _capitalize_segment($_) } split(/\./, $full_name));
         $perl_class = "${base_module}::${msg_path}";
     } else {
         my $full_name = $mdef->full_name;
         $full_name =~ s/^\.//;
-        $perl_class = join('::', map { ucfirst($_) } split(/\./, $full_name));
+        $perl_class = join('::', map { _capitalize_segment($_) } split(/\./, $full_name));
     }
     return $perl_class;
 }
