@@ -4,7 +4,16 @@
 #include "upb/message/message.h"
 #include "upb/wire/encode.h"
 #include "upb/reflection/def.h"
+#ifdef GOOGLE3
+#include "net/proto2/proto/descriptor.upb.h"
+#define google_protobuf_FileDescriptorSet proto2_FileDescriptorSet
+#define google_protobuf_FileDescriptorSet_parse proto2_FileDescriptorSet_parse
+#define google_protobuf_FileDescriptorProto proto2_FileDescriptorProto
+#define google_protobuf_FileDescriptorSet_file proto2_FileDescriptorSet_file
+#define google_protobuf_FileDescriptorProto_name proto2_FileDescriptorProto_name
+#else
 #include "google/protobuf/descriptor.upb.h"
+#endif
 #include "../upb-perl-test.h"
 
 #define ITERATIONS 1000000
@@ -14,6 +23,10 @@ upb_DefPool *test_pool = NULL;
 
 bool load_benchmark_descriptors(upb_Arena *arena) {
     FILE *f = fopen("t/data/test_descriptor.bin", "rb");
+    if (!f) {
+        // Try Google3/Bazel sandbox path
+        f = fopen("third_party/protobuf/perl/t/data/test_descriptor.bin", "rb");
+    }
     if (!f) {
         perror("Failed to open t/data/test_descriptor.bin");
         return false;

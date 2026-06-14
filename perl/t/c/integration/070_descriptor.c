@@ -44,8 +44,8 @@ int main(int argc, char** argv) {
     ok(1, "Descriptors loaded");
 
     // 1. Get MessageDef
-    const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
-    ok(msg_def != NULL, "Found test.TestMessage");
+    const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
+    ok(msg_def != NULL, "Found protobuf_perl_test.TestMessage");
 
     if (msg_def) {
         // 2. Get FieldDef via wrapper
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
             const upb_EnumDef *enum_def = upb_FieldDef_EnumSubDef(field);
             ok(enum_def != NULL, "PerlUpb_FieldDef_EnumSubDef returns non-NULL");
             if (enum_def) {
-                is_string(upb_EnumDef_FullName(enum_def), "test.TestEnum", "Enum full name matches");
+                is_string(upb_EnumDef_FullName(enum_def), "protobuf_perl_test.TestEnum", "Enum full name matches");
             } else {
                 fprintf(stderr, "# EnumDef is NULL\n");
             }
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
             const upb_MessageDef *sub_msg_def = upb_FieldDef_MessageSubDef(msg_field);
             ok(sub_msg_def != NULL, "PerlUpb_FieldDef_MessageSubDef returns non-NULL");
             if (sub_msg_def) {
-                is_string(upb_MessageDef_FullName(sub_msg_def), "test.NestedMessage", "Sub-message full name matches");
+                is_string(upb_MessageDef_FullName(sub_msg_def), "protobuf_perl_test.NestedMessage", "Sub-message full name matches");
             } else {
                 fprintf(stderr, "# Sub-message MessageDef is NULL\n");
             }

@@ -7,4 +7,4 @@
 extern const upb_to_sv_test_case message_upb_to_sv_test_cases[];
 extern const sv_to_upb_test_case message_sv_to_upb_test_cases[];
 
-#endif // PERL_PROTOBUF_CONVERT_TYPES_MESSAGE_H_
+#endif  // PERL_PROTOBUF_CONVERT_TYPES_MESSAGE_H_

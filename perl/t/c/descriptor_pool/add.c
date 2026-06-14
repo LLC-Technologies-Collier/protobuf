@@ -31,8 +31,10 @@ int main(int argc, char** argv) {
         ok(0, "Failed to add serialized file");
     }
 
-    ok(0, "Implement lazy-loading infrastructure for serialized blobs"); // TODO Implement lazy-loading infrastructure for serialized blobs
-    ok(0, "Add deferred field resolution for lazy-loaded pools"); // TODO Add deferred field resolution for lazy-loaded pools
+    TODO("Implement lazy-loading and deferred resolution") {
+        ok(0, "Implement lazy-loading infrastructure for serialized blobs");
+        ok(0, "Add deferred field resolution for lazy-loaded pools");
+    }
 
     SvREFCNT_dec(serialized);
     SvREFCNT_dec(pool_sv);

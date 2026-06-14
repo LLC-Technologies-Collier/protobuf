@@ -2,7 +2,7 @@
 #define PERL_PROTOBUF_OBJ_CACHE_H_
 
 #include "EXTERN.h"
-#include "perl.h"
+#include "perl.h"  // NOLINT(build/include)
 
 // Initialize the global object cache
 void PerlUpb_ObjCache_Init(pTHX);
@@ -31,16 +31,16 @@ void PerlUpb_ObjCache_SetCapacity(pTHX_ size_t capacity);
 size_t PerlUpb_ObjCache_GetCapacity(pTHX);
 
 // Audit log event types
-#define OBJ_CACHE_EVENT_ADD    1
-#define OBJ_CACHE_EVENT_HIT    2
-#define OBJ_CACHE_EVENT_MISS   3
+#define OBJ_CACHE_EVENT_ADD 1
+#define OBJ_CACHE_EVENT_HIT 2
+#define OBJ_CACHE_EVENT_MISS 3
 #define OBJ_CACHE_EVENT_DELETE 4
-#define OBJ_CACHE_EVENT_EVICT  5
+#define OBJ_CACHE_EVENT_EVICT 5
 
 // Allocation event types
-#define ALLOC_EVENT_MALLOC     10
-#define ALLOC_EVENT_FREE       11
-#define ALLOC_EVENT_REALLOC    12
+#define ALLOC_EVENT_MALLOC 10
+#define ALLOC_EVENT_FREE 11
+#define ALLOC_EVENT_REALLOC 12
 
 void PerlUpb_ObjCache_LogEvent(int type, const void* ptr);
 
@@ -50,5 +50,4 @@ SV* PerlUpb_ObjCache_GetAuditLog(pTHX);
 // Returns lock contention statistics as a Perl hash reference.
 SV* PerlUpb_ObjCache_GetContentionStats(pTHX);
 
-#endif // PERL_PROTOBUF_OBJ_CACHE_H_
-
+#endif  // PERL_PROTOBUF_OBJ_CACHE_H_

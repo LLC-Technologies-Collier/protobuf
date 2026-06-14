@@ -26,3 +26,6 @@
 ^Protobuf\.c$
 ^Protobuf\.c\.test$
 ^t/c/+(?:[^/]+/)*[^/.]+$
+^Makefile\.old$
+^local/
+^notes$

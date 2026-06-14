@@ -23,7 +23,7 @@ use TestHelpers;
 my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
-my $msg = Test::Test::TestMessage->new();
+my $msg = Protobuf_perl_test::Test::TestMessage->new();
 $msg->set_value(123);
 
 # This should NOT crash the process now that we use CLONE_SKIP

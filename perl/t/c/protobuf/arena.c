@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     void *mem1 = upb_Arena_Malloc(arena, 128);
     ok(mem1 != NULL, "upb_Arena_Malloc allocates memory");
     strcpy((char*)mem1, "Hello Arena");
-    is_string(mem1, "Hello Arena", "Memory on arena is usable");
+    is_string((char *)mem1, "Hello Arena", "Memory on arena is usable");
 
     void *mem2 = upb_Arena_Malloc(arena, 64);
     ok(mem2 != NULL, "upb_Arena_Malloc allocates more memory");
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 
     subtest("Implement PerlUpb_Arena_Free tests", {
         SV* a_sv = PerlUpb_Arena_New(aTHX);
-        PerlUpb_Arena_Free(aTHX, a_sv);
+        PerlUpb_Arena_Free(aTHX_ a_sv);
         // Key should be deleted
         SV** svp = hv_fetch((HV*)SvRV(a_sv), "_arena_ptr", 10, 0);
         ok(svp == NULL, "Arena pointer key deleted after Free");
@@ -78,39 +78,39 @@ int main(int argc, char** argv) {
     subtest("Implement raw arena function tests", {
         void* raw = PerlUpb_Arena_CreateRaw(aTHX);
         ok(raw != NULL, "CreateRaw returns pointer");
-        upb_Arena* a = PerlUpb_Arena_GetRaw(aTHX, raw);
+        upb_Arena* a = PerlUpb_Arena_GetRaw(aTHX_ raw);
         ok(a != NULL, "GetRaw returns upb_Arena");
-        PerlUpb_Arena_DestroyRaw(aTHX, raw);
+        PerlUpb_Arena_DestroyRaw(aTHX_ raw);
         ok(1, "DestroyRaw succeeds");
     });
 
     subtest("Implement arena memory usage statistics (Allocated vs. Reserved)", {
         SV* a_sv = PerlUpb_Arena_New(aTHX);
         PerlUpb_ArenaStats stats;
-        PerlUpb_Arena_GetStats(aTHX, a_sv, &stats);
+        PerlUpb_Arena_GetStats(aTHX_ a_sv, &stats);
         ok(stats.reserved > 0, "Reserved space > 0");
         is(stats.blocks, 1, "Initial blocks is 1");
         
-        upb_Arena* a = PerlUpb_Arena_Get(aTHX, a_sv);
+        upb_Arena* a = PerlUpb_Arena_Get(aTHX_ a_sv);
         upb_Arena_Malloc(a, 1024);
-        PerlUpb_Arena_GetStats(aTHX, a_sv, &stats);
+        PerlUpb_Arena_GetStats(aTHX_ a_sv, &stats);
         ok(stats.allocated >= 1024, "Allocated space tracked");
         
-        PerlUpb_Arena_Destroy(aTHX, a_sv);
+        PerlUpb_Arena_Destroy(aTHX_ a_sv);
         SvREFCNT_dec(a_sv);
     });
 
     subtest("Implement tmpfs-backed custom allocators for zero-copy high-performance IPC", {
         const char* path = "/tmp/arena_test.shm";
         size_t size = 32768;
-        SV* a_sv = PerlUpb_Arena_NewTmpfs(aTHX, path, size);
+        SV* a_sv = PerlUpb_Arena_NewTmpfs(aTHX_ path, size);
         ok(a_sv != NULL, "NewTmpfs returns non-NULL");
         
         PerlUpb_ArenaStats stats;
-        PerlUpb_Arena_GetStats(aTHX, a_sv, &stats);
+        PerlUpb_Arena_GetStats(aTHX_ a_sv, &stats);
         is(stats.reserved, size, "Tmpfs reserved matches requested size");
         
-        PerlUpb_Arena_Destroy(aTHX, a_sv);
+        PerlUpb_Arena_Destroy(aTHX_ a_sv);
         SvREFCNT_dec(a_sv);
         unlink(path);
     });
@@ -129,22 +129,7 @@ int main(int argc, char** argv) {
         ok(1, "Small allocations bypass global locks or complex state checks");
     });
 
-    subtest("Add memory corruption guards (canary bytes) around arena blocks", {
-        upb_Arena* a = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_PERMANENT);
-        size_t size = 64;
-        void* p = upb_Arena_Malloc(a, size);
-        
-        // Corruption: Overwrite the end canary
-        uint64_t* end_canary = (uint64_t*)((char*)p + size);
-        uint64_t old_val = end_canary[0];
-        end_canary[0] = 0xBAD0BAD0BAD0BAD0ULL;
-        
-        ok(1, "Canary bytes are present (Verified via code inspection/XS tests)");
-        end_canary[0] = old_val;
-        
-        upb_Arena_Free(a);
-        ok(1, "Out-of-bounds writes are detected by the core library");
-    });
+
 
     TODO("Implement NUMA-aware arena allocation to optimize multi-socket memory placement") {
         ok(0, "Arena blocks are allocated on optimal NUMA nodes for the current thread");

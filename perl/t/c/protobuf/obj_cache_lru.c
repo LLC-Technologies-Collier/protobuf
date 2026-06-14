@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
         ok(1, "Cache initialized");
 
         // Set capacity to 3
-        PerlUpb_ObjCache_SetCapacity(aTHX, 3);
+        PerlUpb_ObjCache_SetCapacity(aTHX_ 3);
         is(PerlUpb_ObjCache_GetCapacity(aTHX), 3, "Capacity set to 3");
 
         int objs[5];
@@ -23,28 +23,28 @@ int main(int argc, char** argv) {
         }
 
         // Add 3 items
-        PerlUpb_ObjCache_Add(aTHX, &objs[0], rvs[0]);
-        PerlUpb_ObjCache_Add(aTHX, &objs[1], rvs[1]);
-        PerlUpb_ObjCache_Add(aTHX, &objs[2], rvs[2]);
+        PerlUpb_ObjCache_Add(aTHX_ &objs[0], rvs[0]);
+        PerlUpb_ObjCache_Add(aTHX_ &objs[1], rvs[1]);
+        PerlUpb_ObjCache_Add(aTHX_ &objs[2], rvs[2]);
 
-        SV* got = PerlUpb_ObjCache_Get(aTHX, &objs[0]);
+        SV* got = PerlUpb_ObjCache_Get(aTHX_ &objs[0]);
         ok(got != NULL, "Item 0 still in cache");
         if (got) SvREFCNT_dec(got);
 
         // Add 4th item -> should evict item 0
-        PerlUpb_ObjCache_Add(aTHX, &objs[3], rvs[3]);
+        PerlUpb_ObjCache_Add(aTHX_ &objs[3], rvs[3]);
 
-        got = PerlUpb_ObjCache_Get(aTHX, &objs[0]);
+        got = PerlUpb_ObjCache_Get(aTHX_ &objs[0]);
         ok(got == NULL, "Item 0 evicted from cache");
 
-        got = PerlUpb_ObjCache_Get(aTHX, &objs[1]);
+        got = PerlUpb_ObjCache_Get(aTHX_ &objs[1]);
         ok(got != NULL, "Item 1 still in cache");
         if (got) SvREFCNT_dec(got);
 
         // Add 5th item -> should evict item 1
-        PerlUpb_ObjCache_Add(aTHX, &objs[4], rvs[4]);
+        PerlUpb_ObjCache_Add(aTHX_ &objs[4], rvs[4]);
 
-        got = PerlUpb_ObjCache_Get(aTHX, &objs[1]);
+        got = PerlUpb_ObjCache_Get(aTHX_ &objs[1]);
         ok(got == NULL, "Item 1 evicted from cache");
 
         for (int i = 0; i < 5; i++) {

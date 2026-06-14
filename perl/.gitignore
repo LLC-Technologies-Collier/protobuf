@@ -54,6 +54,7 @@ Protobuf-*
 MYMETA.*
 Makefile
 Makefile.old
+MANIFEST
 MANIFEST.bak
 ppport.h
 

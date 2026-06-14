@@ -4,7 +4,6 @@
 #include "xs/protobuf/utils.h"
 #include "xs/repeated/repeated.h"
 #include "xs/map/map.h"
-#include "t/c/upb-perl-test.h" // Added for cdiag
 #include "upb/base/descriptor_constants.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"

@@ -20,29 +20,27 @@ use Sideload::Build::FileLists qw(
 use Cwd qw(abs_path getcwd);
 my $cwd = getcwd();
 
-# Determine the project root, favoring 'vendor' if it exists (for distributions)
-my $raw_root = -d 'vendor' ? 'vendor' : '..';
-our $project_root = File::Spec->abs2rel(abs_path($raw_root), $cwd);
+# --- Dev Environment Detection & Sourcing ---
+# We detect dev mode relative to the current 'perl/' directory
+my $is_google3_dev = (-f 'maint/generate_xs.pl' && -d '../../upb');
+my $is_dev = (-f 'maint/generate_xs.pl' && (-d '../upb' || $is_google3_dev));
 
-our $upb_dir = File::Spec->catdir($project_root, 'upb');
-our $upb_generator_dir = File::Spec->catdir($project_root, 'upb_generator');
-our $src_dir = File::Spec->catdir($project_root, 'src');
-our $third_party_dir = File::Spec->catdir($project_root, 'third_party');
-# --- End Path Macros ---
+my $perl = $ENV{PERL} || $^X;
 
-# --- Dev Environment Automation ---
-my $is_dev = (-f 'maint/generate_xs.pl' && -d '../upb');
 if ($is_dev) {
     print "Development environment detected.\n";
+    if ($is_google3_dev) {
+        print "Google3 dev environment detected. Sourcing from sibling directories.\n";
+    }
     
     # 1. Reassemble Protobuf.xs from fragments
     print "Reassembling Protobuf.xs...\n";
-    system($^X, 'maint/generate_xs.pl') == 0 or die "Failed to run generate_xs.pl: $!";
+    system($perl, 'maint/generate_xs.pl') == 0 or die "Failed to run generate_xs.pl: $!";
     
     # 2. Update the local vendor directory with core components
     if (-f 'maint/vendor_upb.pl') {
         print "Updating vendor/ directory...\n";
-        system($^X, 'maint/vendor_upb.pl') == 0 or die "Failed to run vendor_upb.pl: $!";
+        system($perl, 'maint/vendor_upb.pl') == 0 or die "Failed to run vendor_upb.pl: $!";
     }
     
     # 3. Clean and regenerate MANIFEST from scratch to remove dead references
@@ -53,23 +51,47 @@ if ($is_dev) {
 }
 # --- End Dev Environment Automation ---
 
+# Now that vendor/ is guaranteed to exist on disk (either because it was already there,
+# or because we just generated it above), we ALWAYS define the project root as 'vendor'
+# for the build phase. This ensures we compile entirely against clean, stripped headers
+# and avoid any header shadowing (e.g., endian.h) or Google3 include prefix issues.
+my $raw_root = -d 'vendor' ? 'vendor' : '..';
+our $project_root = File::Spec->abs2rel(abs_path($raw_root), $cwd);
+
+our $upb_dir = File::Spec->catdir($project_root, 'upb');
+our $upb_generator_dir = File::Spec->catdir($project_root, 'upb_generator');
+our $src_dir = File::Spec->catdir($project_root, 'src');
+our $third_party_dir = File::Spec->catdir($project_root, 'third_party');
+our $libcoro_dir = File::Spec->catdir($project_root, 'libcoro');
+
+our $bazel_gen_include = $is_google3_dev
+    ? File::Spec->catdir($upb_dir, "upb", "reflection", "stage0")
+    : File::Spec->catdir($upb_dir, "reflection", "stage0");
+our $cmake_gen_include = $is_google3_dev
+    ? File::Spec->catdir($upb_dir, "upb", "reflection", "cmake")
+    : File::Spec->catdir($upb_dir, "reflection", "cmake");
+# --- End Path Macros ---
+# --- End Dev Environment Automation ---
+
 
 
 # Template Toolkit helper function
 my $tt;
 sub _render_tt {
-    my ($template_file, $vars) = @_;
+    my ($block_name, $vars) = @_;
     if (!$tt) {
         $tt = Template->new({
             INCLUDE_PATH => [ 'inc/templates' ],
+            PRE_PROCESS  => 'makefile.tt',
             PRE_CHOMP    => 0,
             POST_CHOMP   => 0,
             TRIM         => 0,
         });
     }
     my $output = '';
-    if (!$tt->process($template_file, $vars, \$output)) {
-        die "Template processing failed for $template_file: " . $tt->error();
+    my $template_string = "[% PROCESS $block_name %]";
+    if (!$tt->process(\$template_string, $vars, \$output)) {
+        die "Template processing failed for block $block_name: " . $tt->error();
     }
     return $output;
 }
@@ -92,13 +114,13 @@ if (!$@) {
         warn "Failed to generate ppport.h: $!";
     }
 } else {
-    warn main::_render_tt('devel_ppport_warning.mk.tt', {});
+    warn main::_render_tt('devel_ppport_warning', {});
 }
 
 # Define your common C source files relative to perl/
-my @UPB_C_FILES = get_upb_c_files($project_root);
+my @UPB_C_FILES = get_upb_c_files($project_root, $is_google3_dev);
 my @UTF8_C_FILES = get_utf8_c_files($project_root);
-my @GENERATED_C_FILES = get_generated_c_files($project_root);
+my @GENERATED_C_FILES = get_generated_c_files($project_root, $is_google3_dev);
 my @XS_HELPER_C_FILES = get_xs_helper_c_files($project_root);
 
 my @COMMON_C_FILES = (@UPB_C_FILES, @UTF8_C_FILES, @GENERATED_C_FILES, @XS_HELPER_C_FILES);
@@ -161,12 +183,26 @@ sub MY::postamble {
     use Path::Tiny;
 
     # Common library build rules
+    print "MY::postamble: is_google3_dev = ", ($is_google3_dev ? "TRUE" : "FALSE"), "\n";
+    print "MY::postamble: bazel_gen_include = $bazel_gen_include\n";
+    print "MY::postamble: cmake_gen_include = $cmake_gen_include\n";
     my $common_o_string = $COMMON_O_STRING;
     my $common_lib = $COMMON_LIB;
     my $file_pairs = \@COMMON_FILES_PAIRS;
 
-    my $make_frag = main::_render_tt('common_lib_def.mk.tt', { COMMON_LIB => $common_lib });
+    my $make_frag = main::_render_tt('common_lib_def', { COMMON_LIB => $common_lib });
     $make_frag .= $/;
+
+    if ($is_google3_dev) {
+        $make_frag .= <<'EOF';
+vendor/timestamp: maint/vendor_upb.pl
+	$(PERL) maint/vendor_upb.pl
+	$(PERL) -e 'open my $$fh, q{>}, q{vendor/timestamp}'
+
+Protobuf.o: vendor/timestamp
+EOF
+        $make_frag .= $/;
+    }
 
     my %done_o;
     my @obj_rules;
@@ -176,9 +212,9 @@ sub MY::postamble {
         my $o_file = $pair->{o};
         next if $done_o{$o_file}++;
         my $compiler = '$(CC)';
-        my $bazel_gen_include = File::Spec->catdir($upb_dir, "reflection", "stage0");
-        my $cmake_gen_include = File::Spec->catdir($upb_dir, "reflection", "cmake");
-        my $base_flags = "-I. -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I$bazel_gen_include -I$cmake_gen_include -DUPB_BOOTSTRAP_STAGE=0";
+        # Using global $bazel_gen_include and $cmake_gen_include
+        my $bootstrap_define = "-DUPB_BOOTSTRAP_STAGE=0";
+        my $base_flags = "-I. -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I$bazel_gen_include -I$cmake_gen_include $bootstrap_define";
 
         my $cflags = "";
         if ($c_file =~ /\.cc$/) {
@@ -187,27 +223,30 @@ sub MY::postamble {
         } else {
             $cflags = "-D_GNU_SOURCE -Werror=incompatible-pointer-types -Wno-error=attributes -std=c99 -Wall -Wstrict-prototypes";
         }
-        push @obj_rules, main::_render_tt('common_obj_rule.mk.tt', {
+        push @obj_rules, main::_render_tt('common_obj_rule', {
             c => $c_file,
             o => $o_file,
             compiler => $compiler,
             cflags => $cflags,
             base_flags => $base_flags,
+            deps => ($is_google3_dev ? 'vendor/timestamp' : ''),
         });
     }
     $make_frag .= join("", @obj_rules) . $/;
 
-    $make_frag .= main::_render_tt('all_common_lib_dep.mk.tt', { COMMON_LIB => $common_lib });
+    $make_frag .= main::_render_tt('all_common_lib_dep', { COMMON_LIB => $common_lib });
     $make_frag .= $/;
 
-    $make_frag .= main::_render_tt('common_lib_link_rule.mk.tt', {
+    $make_frag .= main::_render_tt('common_lib_link_rule', {
         COMMON_LIB => $common_lib,
         COMMON_O_STRING => $common_o_string,
     });
     $make_frag .= $/;
 
     # Rule for upb-perl-test.o
-    $make_frag .= main::_render_tt('upb_perl_test_o.mk.tt', {});
+    $make_frag .= main::_render_tt('upb_perl_test_o', {
+        deps => ($is_google3_dev ? 'vendor/timestamp' : ''),
+    });
     $make_frag .= $/;
 
     # Custom C test rules
@@ -218,13 +257,16 @@ sub MY::postamble {
     my $json_text = Path::Tiny::path($config_file)->slurp_utf8;
 
     # Replace hardcoded monorepo paths with dynamic path macros
-    $json_text =~ s{\.\./upb/}{\$upb_dir/}g;
+    # In Google3, the dependencies have an extra 'upb/' level
+    my $upb_dep_dir = $is_google3_dev ? "vendor/upb/upb" : "vendor/upb";
+    
+    $json_text =~ s{\.\./upb/}{\$upb_dep_dir/}g;
     $json_text =~ s{\.\./src/}{\$src_dir/}g;
     $json_text =~ s{\.\./third_party/}{\$third_party_dir/}g;
 
     # Actually, it's better to just replace them with the actual paths 
     # because we are about to decode the JSON.
-    $json_text =~ s{\$upb_dir}{$upb_dir}g;
+    $json_text =~ s{\$upb_dep_dir}{$upb_dep_dir}g;
     $json_text =~ s{\$src_dir}{$src_dir}g;
     $json_text =~ s{\$third_party_dir}{$third_party_dir}g;
 
@@ -237,9 +279,15 @@ sub MY::postamble {
 
     foreach my $test_key ( sort keys %$c_test_config ){
         next if $test_key =~ /eval_croak_test/;
-        if ($test_key =~ /coro/ && $Config{archname} !~ /x86_64|i[3456]86/) {
-            warn "Skipping coroutine test $test_key on non-x86 architecture ($Config{archname})$/";
-            next;
+        if ($test_key =~ /coro/) {
+            if ($Config{archname} !~ /x86_64|i[3456]86/) {
+                warn "Skipping coroutine test $test_key on non-x86 architecture ($Config{archname})$/";
+                next;
+            }
+            if (!-f 'vendor/libcoro/coro.h') {
+                warn "Skipping coroutine test $test_key because vendor/libcoro/coro.h is missing (JIT fetch failed or skipped)$/";
+                next;
+            }
         }
 
         my $target = "t/c/$test_key";
@@ -288,10 +336,11 @@ sub MY::postamble {
             $o =~ s/\.cc?$/.o/;
             next if $done_o{$o}++;
             my $compiler = ($s =~ /\.cc$/) ? '$(CXX)' : '$(CC)';
-            $c_test_rules .= main::_render_tt('c_test_one_compile.mk.tt', {
+            $c_test_rules .= main::_render_tt('c_test_one_compile', {
                 s => $s,
                 o => $o,
                 deps => $deps,
+                dev_deps => ($is_google3_dev ? 'vendor/timestamp' : ''),
                 compiler => $compiler,
                 embed_cflags => $embed_cflags,
                 test_inc => $test_inc,
@@ -312,7 +361,7 @@ sub MY::postamble {
             $embed_cflags, $embed_ldflags, $ldflags, "-lpcre2-8 $sanitizer_flags"
         );
 
-        $c_test_rules .= main::_render_tt('c_test_one_link.mk.tt', {
+        $c_test_rules .= main::_render_tt('c_test_one_link', {
             target => $target,
             test_deps => $test_deps,
             link_line => $link_line,
@@ -331,7 +380,7 @@ sub MY::postamble {
         { source => $_, target => $target, object => "$target.o" }
     } @bench_sources;
 
-    $make_frag .= main::_render_tt('c_benchmark_rules.mk.tt', {
+    $make_frag .= main::_render_tt('c_benchmark_rules', {
         benchmarks => \@benchmark_params,
         embed_cflags => $embed_cflags,
         embed_ldflags => $embed_ldflags,
@@ -339,25 +388,25 @@ sub MY::postamble {
     });
 
     # Add all C test and benchmark targets to .PHONY
-    $make_frag .= main::_render_tt('phony.mk.tt', {
+    $make_frag .= main::_render_tt('phony', {
         c_test_targets => \@c_test_targets,
         c_bench_targets => \@c_bench_targets,
     });
 
     # Rule to generate test_descriptor.bin
-    $make_frag .= main::_render_tt('test_descriptor_bin.mk.tt', {
+    $make_frag .= main::_render_tt('test_descriptor_bin', {
         project_root => $project_root,
     });
 
     # Target to build all C tests & benchmarks
-    $make_frag .= main::_render_tt('build_aggregator_targets.mk.tt', {
+    $make_frag .= main::_render_tt('build_aggregator_targets', {
         c_test_targets  => \@c_test_targets,
         c_bench_targets => \@c_bench_targets,
     });
     $make_frag .= $/;
 
     # Rules to run all C tests and benchmarks
-    $make_frag .= main::_render_tt('run_targets.mk.tt', {
+    $make_frag .= main::_render_tt('run_targets', {
         c_test_targets  => \@c_test_targets,
         c_bench_targets => \@c_bench_targets,
         archlibexp      => $Config{archlibexp},
@@ -366,35 +415,43 @@ sub MY::postamble {
     $make_frag .= $/;
 
     # Rule for TSAN test
-    $make_frag .= main::_render_tt('tsan_test.mk.tt', {});
+    $make_frag .= main::_render_tt('tsan_test', {});
     $make_frag .= $/;
 
     # Rule for protoc-gen-perl-pb executable
-    my $protoc_plugin_src = "protoc/protoc-gen-perl-pb.cc";
-    my $protoc_plugin_obj = "protoc/protoc-gen-perl-pb.o";
+    my @plugin_srcs = (
+        "protoc/plugin_main.cc",
+        "protoc/generator.cc",
+        "protoc/helpers.cc",
+    );
+    my @plugin_objs = map { my $obj = $_; $obj =~ s/\.cc$/\.o/; $obj } @plugin_srcs;
     my $protoc_plugin_exe = "protoc-gen-perl-pb";
     my $plugin_upb_c = File::Spec->catfile($upb_generator_dir, "stage0", "google", "protobuf", "compiler", "plugin.upb.c");
     my $plugin_upb_o = "protoc/plugin.upb.o";
     my $descriptor_upb_c = File::Spec->catfile($upb_dir, "reflection", "stage0", "google", "protobuf", "descriptor.upb.c");
     my $descriptor_upb_o = "protoc/descriptor.upb.o";
     
-    my $protoc_cflags = "-g -D_GNU_SOURCE -std=c++17 -Wall -DUPB_BOOTSTRAP_STAGE=0";
-    my $protoc_inc = "-I. -I./protoc -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'stage0') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'cmake') . " -I" . File::Spec->catdir($upb_generator_dir, 'stage0') . " -I$Config{archlibexp}/CORE";
+    my $bootstrap_define = $is_google3_dev ? "" : "-DUPB_BOOTSTRAP_STAGE=0";
+    my $protoc_cflags = "-g -D_GNU_SOURCE -std=c++20 -Wall $bootstrap_define";
+    my $g3_inc = $is_google3_dev ? "-I../../.." : "";
+    my $protoc_inc = "-I. -I./protoc -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I" . $bazel_gen_include . " -I" . $cmake_gen_include . " -I" . File::Spec->catdir($upb_generator_dir, 'stage0') . " -I$Config{archlibexp}/CORE $g3_inc";
 
-    $make_frag .= main::_render_tt('protoc_plugin_compile.mk.tt', {
-        src => $protoc_plugin_src,
-        obj => $protoc_plugin_obj,
-        cflags => $protoc_cflags,
-        inc => $protoc_inc,
-    });
-    $make_frag .= $/;
+    foreach my $i (0 .. $#plugin_srcs) {
+        $make_frag .= main::_render_tt('protoc_plugin_compile', {
+            src => $plugin_srcs[$i],
+            obj => $plugin_objs[$i],
+            cflags => $protoc_cflags,
+            inc => $protoc_inc,
+        });
+        $make_frag .= $/;
+    }
 
     # Rules for upb plugin objects
-    $make_frag .= "$plugin_upb_o: $plugin_upb_c\n\t\$(CC) -I. -I$project_root -I$upb_dir -I" . File::Spec->catdir($upb_generator_dir, 'stage0') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'stage0') . " -O2 -c $plugin_upb_c -o $plugin_upb_o\n\n";
+    $make_frag .= "$plugin_upb_o: $plugin_upb_c\n\t\$(CC) -I. -I$project_root -I$upb_dir -I" . File::Spec->catdir($upb_generator_dir, 'stage0') . " -I" . $bazel_gen_include . " -O2 -c $plugin_upb_c -o $plugin_upb_o\n\n";
 
-    $make_frag .= main::_render_tt('protoc_plugin_link.mk.tt', {
+    $make_frag .= main::_render_tt('protoc_plugin_link', {
         exe => $protoc_plugin_exe,
-        obj => "$protoc_plugin_obj $plugin_upb_o",
+        obj => join(" ", @plugin_objs) . " $plugin_upb_o",
         common_lib => $COMMON_LIB,
         common_o => $PURE_UPB_O_STRING,
         sanitizer_flags => $sanitizer_flags,
@@ -402,7 +459,7 @@ sub MY::postamble {
     $make_frag .= $/;
 
     # Rules to build the protoc plugin using Bazel
-    $make_frag .= main::_render_tt('bazel_protoc_plugin.mk.tt', {});
+    $make_frag .= main::_render_tt('bazel_protoc_plugin', {});
     $make_frag .= $/;
 
     return $make_frag;
@@ -417,12 +474,16 @@ sub MY::postamble {
 # --- Clean list generation ---
 my %clean_files_map = map { $_ => 1 } (
     'blib',
-    'ppport.h',
     'libprotobufperl.$(DLEXT)',
-    'protoc/protoc-gen-perl-pb.o',
+    'ppport.h',
+    'protoc/plugin_main.o',
+    'protoc/generator.o',
+    'protoc/helpers.o',
     'protoc-gen-perl-pb',
     @COMMON_O_FILES,
     't/c/upb-perl-test.o',
+    'vendor',
+    'vendor/timestamp',
 );
 
 # Add C test binaries and their objects
@@ -455,7 +516,7 @@ my @clean_files = sort keys %clean_files_map;
 
 WriteMakefile(
     NAME              => 'Protobuf',
-    VERSION           => '0.02',
+    VERSION           => '0.03',
     ABSTRACT          => 'High-performance Protocol Buffers implementation using upb',
     PREREQ_PM         => {
       'Moo'             => 0,
@@ -498,8 +559,8 @@ WriteMakefile(
     },
     AUTHOR            => 'C.J. Collier <cjac@colliertech.org>',
     LICENSE           => 'apache_2_0',
-    DEFINE            => '-DUPB_BOOTSTRAP_STAGE=0',
-    INC               => "-I. -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'stage0') . " -I" . File::Spec->catdir($upb_dir, 'reflection', 'cmake') . " -I\$(PERL_INC)",
+    DEFINE            => '-DUPB_BOOTSTRAP_STAGE=0' . ($is_google3_dev ? ' -DGOOGLE3' : ''),
+    INC               => "-I. -I$project_root -I$upb_dir -I$src_dir -I$third_party_dir -I$libcoro_dir -I" . File::Spec->catdir($third_party_dir, 'utf8_range') . " -I$bazel_gen_include -I$cmake_gen_include -I\$(PERL_INC)",
     MYEXTLIB          => 'libprotobufperl.$(DLEXT)',
     CCFLAGS           => "-g $Config{ccflags} -fPIC $sanitizer_flags",
     LIBS              => ['-L$(CURDIR) -lprotobufperl'],
@@ -508,6 +569,7 @@ WriteMakefile(
     
     # Clean the generated object files and the static library
     clean             => { FILES => join(' ', sort @clean_files) },
+    realclean         => { FILES => 'vendor/upb vendor/upb_generator vendor/third_party vendor/src vendor/libcoro vendor/timestamp lua ruby perl local MANIFEST MANIFEST.bak make.log test_c.log Protobuf.xs BUILD.bazel' },
 
     dist              => {
         PREOP => '$(PERL) maint/vendor_upb.pl && $(PERL) -MExtUtils::Manifest=mkmanifest -e "mkmanifest"',
@@ -519,7 +581,7 @@ package MY;
 # Modify the MY::test subroutine
 sub test {
     my $self = shift;
-    return main::_render_tt('my_test.mk.tt', {});
+    return main::_render_tt('my_test', {});
 }
 
 package main;

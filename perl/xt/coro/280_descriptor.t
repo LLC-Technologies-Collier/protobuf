@@ -27,14 +27,14 @@ for my $i (1..$NUM_COROS) {
                 # Force context switching
                 cede();
 
-                my $message_def = $pool->find_message_by_name('test.TestMessage');
-                die "test.TestMessage not found" unless $message_def;
+                my $message_def = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
+                die "protobuf_perl_test.TestMessage not found" unless $message_def;
 
                 my $field = $message_def->find_field_by_name('value');
                 die "Field 'value' not found" unless $field;
 
-                my $enum_def = $pool->find_enum_by_name('test.TestEnum');
-                die "Enum 'test.TestEnum' not found" unless $enum_def;
+                my $enum_def = $pool->find_enum_by_name('protobuf_perl_test.TestEnum');
+                die "Enum 'protobuf_perl_test.TestEnum' not found" unless $enum_def;
             }
         };
         if ($@) {

@@ -1,7 +1,0 @@
-# c benchmark rules
-[% FOREACH bench IN benchmarks %]
-[% INCLUDE c_benchmark_one_compile.mk.tt source = bench.source object = bench.object %]
-[% INCLUDE c_benchmark_one_link.mk.tt target = bench.target object = bench.object embed_cflags = embed_cflags embed_ldflags = embed_ldflags sanitizer_flags = sanitizer_flags %]
-[% END %]
-# end c benchmark rules
-

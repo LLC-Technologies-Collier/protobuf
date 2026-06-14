@@ -1,3 +1,0 @@
-[% target %]: [% object %] $(COMMON_LIB) t/c/upb-perl-test.o
-	$(CC) $(CCFLAGS) -o [% target %] [% object %] t/c/upb-perl-test.o -L$(CURDIR) -lprotobufperl [% embed_cflags %] [% embed_ldflags %] [% sanitizer_flags %]
-

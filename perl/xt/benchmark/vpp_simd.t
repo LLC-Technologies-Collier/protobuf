@@ -10,14 +10,14 @@ use TestHelpers;
 # 1. Setup large message with repeated fields
 my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
-my $mdef = $pool->find_message_by_name('test.TestMessage');
+my $mdef = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
 
 my $count = 10000;
 my @data = (1..$count);
 
 # 2. Benchmark to_perl (UpbToSv) with VPP fast-path
 subtest 'VPP SIMD Benchmark: UpbToSv' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->repeated_int(\@data);
     
     my $t0 = [gettimeofday];
@@ -32,7 +32,7 @@ subtest 'VPP SIMD Benchmark: UpbToSv' => sub {
 
 # 3. Benchmark from_perl (SvToUpb) with VPP fast-path
 subtest 'VPP SIMD Benchmark: SvToUpb' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     
     my $t0 = [gettimeofday];
     for (1..100) {

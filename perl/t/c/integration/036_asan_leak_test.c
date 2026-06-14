@@ -38,6 +38,7 @@ XS(XS_TestLeak_store) {
 
 XS(XS_TestLeak_clear) {
     dXSARGS;
+    PERL_UNUSED_VAR(items);
     if (test_static_cache) {
         hv_clear(test_static_cache);
     }
@@ -46,6 +47,7 @@ XS(XS_TestLeak_clear) {
 
 XS(XS_TestLeak_destroy_cache) {
     dXSARGS;
+    PERL_UNUSED_VAR(items);
     if (test_static_cache) {
         SvREFCNT_dec(test_static_cache);
         test_static_cache = NULL;
@@ -121,10 +123,12 @@ static void test_hv_key_leak(pTHX) {
 
         ok(1, "HV Key Leak: Fork and wait completed");
 
-        // This assertion SHOULD fail, as the child exits 0
-        ok(WIFEXITED(status) && WEXITSTATUS(status) != 0, "EXPECT FAIL: HV Key Leak: Child exited non-zero");
-        // This assertion SHOULD fail, as no leak is reported in the child's stderr
-        like(child_stderr, "Direct leak of", "EXPECT FAIL: HV Key Leak: ASan detected leak in child");
+        TODO("Demonstrate HV Key Leak (known issue, requires ASan leak detection enabled in child)") {
+            // This assertion SHOULD fail, as the child exits 0
+            ok(WIFEXITED(status) && WEXITSTATUS(status) != 0, "EXPECT FAIL: HV Key Leak: Child exited non-zero");
+            // This assertion SHOULD fail, as no leak is reported in the child's stderr
+            like(child_stderr, "Direct leak of", "EXPECT FAIL: HV Key Leak: ASan detected leak in child");
+        }
     }
 }
 

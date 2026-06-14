@@ -8,11 +8,11 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'text format encoding' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(12345);
     $msg->set_name("hello world");
     
-    my $sub = Test::Test::NestedMessage->new();
+    my $sub = Protobuf_perl_test::Test::NestedMessage->new();
     $sub->set_nested_string("inner");
     $msg->set_nested_message($sub);
     
@@ -24,7 +24,7 @@ subtest 'text format encoding' => sub {
     like($text, qr/nested_message \{.*nested_string: "inner".*\}/s, 'Contains nested message');
 
     subtest 'text format with unknowns' => sub {
-        my $msg2 = Test::Test::TestMessage->new();
+        my $msg2 = Protobuf_perl_test::Test::TestMessage->new();
         my $text2 = $msg2->to_text_with_unknowns();
         ok(defined($text2), 'Got text with unknowns');
     };

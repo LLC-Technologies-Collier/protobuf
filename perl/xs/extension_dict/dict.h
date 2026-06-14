@@ -2,7 +2,7 @@
 #define PERL_PROTOBUF_EXTENSION_DICT_DICT_H_
 
 #include "EXTERN.h"
-#include "perl.h"
+#include "perl.h"  // NOLINT(build/include)
 #include "xs/protobuf.h"
 
 // ExtensionDict wraps the extension fields of a message.
@@ -22,4 +22,4 @@ SV* PerlUpb_ExtensionDict_GetMessageSV(pTHX_ SV* self);
 // Audit identity connection between dict and parent message
 void PerlUpb_ExtensionDict_AuditIdentity(pTHX_ SV* self);
 
-#endif // PERL_PROTOBUF_EXTENSION_DICT_DICT_H_
+#endif  // PERL_PROTOBUF_EXTENSION_DICT_DICT_H_

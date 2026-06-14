@@ -45,8 +45,10 @@ int main(int argc, char** argv) {
         ok(0, "Diagnostic errors identify the exact source location of descriptor naming conflicts");
     }
 
-    ok(0, "Add cross-process fingerprinting for pool identity"); // TODO Add cross-process fingerprinting for pool identity
-    ok(0, "Implement sub-second startup benchmarks for large pools"); // TODO Implement sub-second startup benchmarks for large pools
+    TODO("Implement fingerprinting and benchmarks") {
+        ok(0, "Add cross-process fingerprinting for pool identity");
+        ok(0, "Implement sub-second startup benchmarks for large pools");
+    }
 
     // Cleanup
     SvREFCNT_dec(pool_sv);

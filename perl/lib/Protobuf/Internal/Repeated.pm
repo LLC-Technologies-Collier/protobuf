@@ -6,7 +6,7 @@ Protobuf::Internal::Repeated - Internal XS implementation for repeated fields
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =head1 SYNOPSIS
 
@@ -42,7 +42,7 @@ use Tie::Array;
 use Protobuf::Internal::Proxy;
 our @ISA = qw(Tie::Array Protobuf::Internal::Proxy);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 
 sub TIEARRAY {

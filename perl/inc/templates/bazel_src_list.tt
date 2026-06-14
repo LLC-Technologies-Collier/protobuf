@@ -1,3 +1,0 @@
-[% FOREACH f IN files -%]
-    "[% f %]",
-[% END -%]

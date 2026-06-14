@@ -157,8 +157,6 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
 
     { // Add scope for mortal cleanup
 
-        dSP;
-
         ENTER;
 
         SAVETMPS;

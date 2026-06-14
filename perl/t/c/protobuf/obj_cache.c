@@ -100,8 +100,8 @@ static void test_cache(PerlInterpreter *original_perl) {
 
         PerlInterpreter *perl2 = test_perl_init(0, NULL);
         {
-            dTHX;
             PERL_SET_CONTEXT(perl2);
+            dTHX;
             PerlUpb_ObjCache_Init(aTHX);
             
             SV *val = newSVpv("isolated", 0);

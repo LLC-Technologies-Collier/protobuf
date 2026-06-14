@@ -141,7 +141,7 @@ subtest 'type library generation' => sub {
     vdiag("Generated Type Library:\n$lib_code");
     
     ok($lib_code, 'Got type library code');
-    like($lib_code, qr/package Test::Test::Types;/, 'Correct package name');
+    like($lib_code, qr/package Protobuf_perl_test::Test::Types;/, 'Correct package name');
     like($lib_code, qr/use Type::Library/, 'Code contains Type::Library usage');
     like($lib_code, qr/declare 'TestMessage'/, 'Defines TestMessage type');
     like($lib_code, qr/where \{ \$_->validate \}/, 'Includes native validation check');

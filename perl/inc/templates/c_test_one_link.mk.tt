@@ -1,2 +1,0 @@
-[% target %]: [% test_deps %]
-	[% link_line %]

@@ -45,7 +45,7 @@ ok(scalar @misses > 0, 'Log contains MISS event for pool') or dump_log("After ge
 # 4. DELETE event
 subtest 'DELETE event' => sub {
     Protobuf::Internal::clear_cache();
-    my $m = $pool->find_message_by_name('test.TestMessage');
+    my $m = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
     ok($m, "Loaded descriptor");
     
     my $log_before = Protobuf::Internal::get_cache_audit_log();
@@ -90,8 +90,8 @@ subtest 'EVICT event' => sub {
     Protobuf::Internal::set_cache_capacity(1);
     
     # Access multiple distinct descriptors to force eviction
-    my $m1 = $pool->find_message_by_name('test.TestMessage');
-    my $m2 = $pool->find_message_by_name('test.NestedMessage');
+    my $m1 = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
+    my $m2 = $pool->find_message_by_name('protobuf_perl_test.NestedMessage');
     
     my $log = Protobuf::Internal::get_cache_audit_log();
     my @evicts = grep { $_->{type} == 5 } @$log;

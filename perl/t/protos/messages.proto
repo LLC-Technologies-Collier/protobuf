@@ -1,4 +1,9 @@
+// LINT: LEGACY_NAMES
+syntax = "proto2";
+
 package Local.Messages;
+
+option optimize_for = SPEED;
 
 message One {
   required int32 id1 = 1;
@@ -11,5 +16,3 @@ message Two {
 message Three {
   required int32 id3 = 1;
 }
-
-option optimize_for = SPEED;

@@ -18,8 +18,8 @@ subtest 'descriptor pool and arena interaction' => sub {
     my $last_file = TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
     ok($last_file, 'Added serialized file descriptor set');
 
-    my $message_def = $pool->find_message_by_name('test.TestMessage');
-    ok($message_def, 'Found test.TestMessage in pool');
+    my $message_def = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
+    ok($message_def, 'Found protobuf_perl_test.TestMessage in pool');
     isa_ok($message_def, 'Protobuf::Descriptor::MessageDef');
 
     # The MessageDef should stay alive even if we undef the pool because
@@ -30,7 +30,7 @@ subtest 'descriptor pool and arena interaction' => sub {
     # we don't crash when passing these things around.
 
     is($message_def->name, 'TestMessage', 'Message name is correct');
-    is($message_def->full_name, 'test.TestMessage', 'Message full_name is correct');
+    is($message_def->full_name, 'protobuf_perl_test.TestMessage', 'Message full_name is correct');
 
     # Verify we can find fields
     my $field = $message_def->find_field_by_name('value');
@@ -39,8 +39,8 @@ subtest 'descriptor pool and arena interaction' => sub {
     is($field->name, 'value', 'Field name is correct');
 
     # Verify Enum types
-    my $enum_def = $pool->find_enum_by_name('test.TestEnum');
-    ok($enum_def, 'Found enum test.TestEnum');
+    my $enum_def = $pool->find_enum_by_name('protobuf_perl_test.TestEnum');
+    ok($enum_def, 'Found enum protobuf_perl_test.TestEnum');
     isa_ok($enum_def, 'Protobuf::Descriptor::Enum');
     is($enum_def->name, 'TestEnum', 'Enum name is correct');
 };

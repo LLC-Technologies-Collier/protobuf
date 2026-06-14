@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
     if (!load_test_descriptors(aTHX_ arena)) { return 1; }
     ok(1, "Descriptors loaded");
 
-    const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
+    const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
     if (!msg_def) { return 1; }
 
     SV* parent_sv = newSViv(1);

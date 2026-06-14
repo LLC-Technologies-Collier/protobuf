@@ -2,7 +2,7 @@
 #define PERL_PROTOBUF_UNKNOWN_FIELDS_SET_H_
 
 #include "EXTERN.h"
-#include "perl.h"
+#include "perl.h"  // NOLINT(build/include)
 #include "xs/protobuf.h"
 
 // Wraps the unknown fields of a message.
@@ -23,4 +23,4 @@ void PerlUpb_UnknownFieldSet_DeleteTag(pTHX_ SV* self, uint32_t tag);
 // Frees the wrapper.
 void PerlUpb_UnknownFieldSet_Free(pTHX_ SV* sv);
 
-#endif // PERL_PROTOBUF_UNKNOWN_FIELDS_SET_H_
+#endif  // PERL_PROTOBUF_UNKNOWN_FIELDS_SET_H_

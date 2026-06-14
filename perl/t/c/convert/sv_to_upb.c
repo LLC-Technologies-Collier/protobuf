@@ -74,7 +74,7 @@ static void run_type_test_cases(pTHX_ upb_Arena *arena, const sv_to_upb_test_cas
 
 static void test_sv_to_upb_edge_cases(pTHX_ upb_Arena *arena) {
     cdiag("test_sv_to_upb_edge_cases");
-    dJMPENV;
+    // dJMPENV;
     const upb_FieldDef *f_int32 = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_int32");
     const upb_FieldDef *f_string = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_string");
     ok(f_int32 && f_string, "Edge: Got FieldDefs");
@@ -83,8 +83,8 @@ static void test_sv_to_upb_edge_cases(pTHX_ upb_Arena *arena) {
         return;
     }
 
-    upb_MessageValue val;
-    SV *sv;
+    // upb_MessageValue val;
+    // SV *sv;
     // int ret;
 
     cdiag("  Edge Test 1: Undef to int32");

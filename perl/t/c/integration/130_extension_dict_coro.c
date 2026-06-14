@@ -81,8 +81,8 @@ int main(int argc, char** argv) {
     if (!load_test_descriptors(aTHX_ arena)) return 1;
     ok(1, "Descriptors loaded");
 
-    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
-    const upb_FieldDef *ext_field = upb_DefPool_FindExtensionByName(test_pool, "test.extension_string");
+    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
+    const upb_FieldDef *ext_field = upb_DefPool_FindExtensionByName(test_pool, "protobuf_perl_test.extension_string");
     
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
     SV* message_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);

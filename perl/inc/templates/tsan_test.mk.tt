@@ -1,7 +1,0 @@
-test_tsan :
-	make clean
-	USE_TSAN=1 perl Makefile.PL
-	USE_TSAN=1 make
-	USE_TSAN=1 make build_c_tests
-	$(NOECHO) $(ECHO) "Running ThreadSanitizer tests"
-	LD_LIBRARY_PATH="$(CURDIR):$$LD_LIBRARY_PATH" TSAN_OPTIONS="second_deadlock_stack=1" prove -b t/*.t t/integration/*.t

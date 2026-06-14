@@ -10,16 +10,16 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'basic serialization and parsing' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(12345);
     $msg->set_test_string("hello integration");
     
     my $data = $msg->serialize();
     ok(length($data) > 0, 'Serialized data is not empty');
     
-    my $msg2 = Test::Test::TestMessage->parse($data);
+    my $msg2 = Protobuf_perl_test::Test::TestMessage->parse($data);
     ok($msg2, 'Parsed message');
-    isa_ok($msg2, 'Test::Test::TestMessage');
+    isa_ok($msg2, 'Protobuf_perl_test::Test::TestMessage');
     is($msg2->value, 12345, 'Parsed value matches');
     is($msg2->test_string, "hello integration", 'Parsed string matches');
 };
@@ -53,13 +53,13 @@ subtest 'unknown fields preservation' => sub {
     # Value 123 = 0x7B
     my $unknown_raw = pack("C*", 0xB8, 0x3E, 0x7B);
     
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(10);
     my $base_data = $msg->serialize();
     
     my $combined_data = $base_data . $unknown_raw;
     
-    my $msg2 = Test::Test::TestMessage->parse($combined_data);
+    my $msg2 = Protobuf_perl_test::Test::TestMessage->parse($combined_data);
     is($msg2->value, 10, 'Parsed base field');
     
     # Reserialize and check if unknown field is still there

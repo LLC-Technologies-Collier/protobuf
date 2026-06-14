@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
     {
-        dSP; ENTER; SAVETMPS;
+        ENTER; SAVETMPS;
         dJMPENV;
         int ret;
         JMPENV_PUSH(ret);

@@ -2,6 +2,7 @@
 #include "xs/protobuf.h"
 #include "xs/protobuf/obj_cache.h"
 #include <string.h>
+#ifdef MULTIPLICITY
 #include <pthread.h>
 
 #define NUM_THREADS 10
@@ -54,8 +55,14 @@ void* thread_stress_func(void *arg) {
     test_perl_destroy(my_perl);
     return NULL;
 }
+#endif
 
 int main(int argc, char** argv) {
+#ifndef MULTIPLICITY
+    plan(1);
+    SKIP("MULTIPLICITY not supported in this Perl configuration", 1);
+    return 0;
+#else
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
     {
         dTHX;
@@ -84,4 +91,5 @@ int main(int argc, char** argv) {
     }
     test_perl_destroy(my_perl);
     return 0;
+#endif
 }

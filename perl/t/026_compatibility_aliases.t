@@ -9,7 +9,7 @@ my $pool = TestHelpers->get_empty_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'G::PB Compatibility Aliases' => sub {
-    my $class = "Test::Test::TestMessage";
+    my $class = "Protobuf_perl_test::Test::TestMessage";
     my $msg = $class->new(value => 123, name => "alias test");
     
     # 1. encode / decode

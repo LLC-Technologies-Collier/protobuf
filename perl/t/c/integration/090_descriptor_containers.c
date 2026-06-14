@@ -81,8 +81,8 @@ int main(int argc, char** argv) {
     }
     ok(1, "Descriptors loaded");
 
-    const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
-    ok(msg_def != NULL, "Found test.TestMessage");
+    const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
+    ok(msg_def != NULL, "Found protobuf_perl_test.TestMessage");
 
     if (msg_def) {
         SV* parent_sv = newSViv(1); // Fake parent

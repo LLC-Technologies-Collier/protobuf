@@ -9,7 +9,7 @@ my $pool = TestHelpers->get_empty_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'Enhanced Parse Error Reporting' => sub {
-    my $class = 'Test::Test::TestMessage';
+    my $class = 'Protobuf_perl_test::Test::TestMessage';
     
     # 1. Malformed Varint
     eval {

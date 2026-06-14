@@ -58,9 +58,9 @@ char* PerlUpb_ClassNameToFullName(pTHX_ const char* class_name) {
     char* full_name = (char*)safemalloc(len + 1);
     char* d = full_name;
     const char* s = class_name;
-    STRLEN remaining = len;
 
 #ifdef HAS_X86_INTRINSICS
+    STRLEN remaining = len;
     // AVX2 Optimization for 32-byte chunks
     while (remaining >= 32) {
         uint32_t mask = find_special_chars_avx2(s);
@@ -115,9 +115,9 @@ char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name) {
     char* class_name = (char*)safemalloc(len + dots + 1);
     char* d = class_name;
     const char* s = full_name;
-    STRLEN remaining = len;
 
 #ifdef HAS_X86_INTRINSICS
+    STRLEN remaining = len;
     // AVX2 Optimization for 32-byte chunks (no dots)
     while (remaining >= 32) {
         uint32_t mask = find_special_chars_avx2(s);

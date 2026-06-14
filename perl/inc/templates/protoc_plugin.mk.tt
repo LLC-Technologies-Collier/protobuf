@@ -1,7 +1,0 @@
-PROTOC_PLUGIN_SRC = protoc/protoc-gen-perl-pb.cc
-PROTOC_PLUGIN_EXE = protoc/protoc-gen-perl-pb
-
-build_plugin: $(MYEXTLIB)
-	$(CXX) $(CCFLAGS) $(INC) -o $(PROTOC_PLUGIN_EXE) $(PROTOC_PLUGIN_SRC) $(LDFLAGS) -L. -lprotobufperl -lprotobuf -lupb
-
-.PHONY: build_plugin

@@ -20,7 +20,11 @@ static SV* convert_singular_upb_to_sv(pTHX_ const upb_MessageValue *val, const u
         case kUpb_FieldType_SFixed32:
         case kUpb_FieldType_Enum:
             return newSViv(val->int32_val);
-        case kUpb_FieldType_String:
+        case kUpb_FieldType_String: {
+            SV* sv = newSVpvn(val->str_val.data, val->str_val.size);
+            SvUTF8_on(sv);
+            return sv;
+        }
         case kUpb_FieldType_Bytes: {
             return newSVpvn(val->str_val.data, val->str_val.size);
         }

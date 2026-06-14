@@ -2,13 +2,14 @@
 #define PERL_PROTOBUF_REPEATED_REPEATED_H_
 
 #include "EXTERN.h"
-#include "perl.h"
-#include "xs/protobuf.h"
+#include "perl.h"  // NOLINT(build/include)
 #include "upb/message/array.h"
 #include "upb/reflection/def.h"
+#include "xs/protobuf.h"
 
 // PerlUpb_Repeated wraps a upb_Array.
-SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_sv, uint16_t flags);
+SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f,
+                         SV* arena_sv, uint16_t flags);
 
 // Returns the value at a given index.
 SV* PerlUpb_Repeated_GetItem(pTHX_ SV* self, int index);
@@ -49,4 +50,4 @@ bool PerlUpb_Repeated_AuditIntegrity(pTHX_ SV* self);
 // Frees the wrapper.
 void PerlUpb_Repeated_Free(pTHX_ SV* sv);
 
-#endif // PERL_PROTOBUF_REPEATED_REPEATED_H_
+#endif  // PERL_PROTOBUF_REPEATED_REPEATED_H_

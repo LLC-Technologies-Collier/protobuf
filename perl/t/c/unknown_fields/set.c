@@ -13,7 +13,7 @@ static void test_set_creation(pTHX) {
         return;
     }
     
-    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
+    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
     
     SV* arena_wrapper = PerlUpb_Arena_New(aTHX);

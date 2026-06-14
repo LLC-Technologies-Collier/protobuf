@@ -2,7 +2,7 @@
 #define PERL_PROTOBUF_PORT_H_
 
 #include "EXTERN.h"
-#include "perl.h"
+#include "perl.h"  // NOLINT(build/include)
 
 /* Mutex abstractions using Perl's native macros if available */
 #ifdef USE_ITHREADS
@@ -21,4 +21,4 @@
 #define PERL_PROTOBUF_MUTEX_TRYLOCK(m) (1)
 #endif
 
-#endif // PERL_PROTOBUF_PORT_H_
+#endif  // PERL_PROTOBUF_PORT_H_

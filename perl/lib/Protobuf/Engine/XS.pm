@@ -76,8 +76,8 @@ sub to_json {
 }
 
 sub from_json {
-    my ($self, $class, $json) = @_;
-    return Protobuf::Message::_xs_from_json($class, $json);
+    my ($self, $class, $json, $options) = @_;
+    return Protobuf::Message::_xs_from_json($class, $json, $options);
 }
 
 sub to_perl {

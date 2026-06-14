@@ -6,7 +6,7 @@ Protobuf::Descriptor::MessageDef - Descriptor for a Protocol Buffer message
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =head1 SYNOPSIS
 
@@ -88,7 +88,7 @@ C.J. Collier <cjac@google.com>
 This software is copyright (c) 2026 by Google LLC.
 
 This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+the terms of the BSD 3-Clause License.
 
 =cut
 
@@ -99,7 +99,7 @@ use strict;
 require Protobuf;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 
 sub full_name {

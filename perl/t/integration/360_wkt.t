@@ -10,7 +10,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin', 't/data/wkt_descriptor.bin');
 
 subtest 'any packed with other message' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(999);
     
     my $any = Google::Protobuf::Any::Any->new();

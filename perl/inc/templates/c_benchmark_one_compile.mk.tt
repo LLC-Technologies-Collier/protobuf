@@ -1,4 +1,0 @@
-[% object %]: [% source %] t/c/upb-perl-test.h
-	@mkdir -p $(@D)
-	$(CC) $(CCFLAGS) $(INC) -c [% source %] -o [% object %]
-

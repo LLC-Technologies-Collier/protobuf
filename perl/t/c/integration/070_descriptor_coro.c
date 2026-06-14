@@ -26,15 +26,15 @@ typedef struct {
 } coro_arg_t;
 
 void test_descriptor_access(pTHX_ coro_arg_t *carg) {
-    const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
+    const upb_MessageDef *msg_def = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
     if (!msg_def) {
-        fprintf(stderr, "Coro %d: Failed to find test.TestMessage\n", carg->id);
+        fprintf(stderr, "Coro %d: Failed to find protobuf_perl_test.TestMessage\n", carg->id);
         carg->errors++;
         return;
     }
 
     const char* full_name = upb_MessageDef_FullName(msg_def);
-    if (strcmp(full_name, "test.TestMessage") != 0) {
+    if (strcmp(full_name, "protobuf_perl_test.TestMessage") != 0) {
         fprintf(stderr, "Coro %d: MessageFullName mismatch\n", carg->id);
         carg->errors++;
     }

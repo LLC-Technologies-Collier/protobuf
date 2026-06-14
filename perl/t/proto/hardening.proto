@@ -1,4 +1,6 @@
+// LINT: LEGACY_NAMES
 syntax = "proto3";
+
 package Test.Hardening;
 
 message Simple {

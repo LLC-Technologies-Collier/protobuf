@@ -233,9 +233,10 @@ _xs_from_handle(class_name, fh_sv, length_prefixed = false)
 
 
 SV*
-_xs_from_json(class_name, json_data)
+_xs_from_json(class_name, json_data, options_sv = &PL_sv_undef)
     SV* class_name
     SV* json_data
+    SV* options_sv
     CODE:
         // Use the descriptor() method on the class to get the mdef
         dSP;
@@ -255,7 +256,7 @@ _xs_from_json(class_name, json_data)
         SV* mdef_sv = sv_2mortal(newSVsv(descriptor_sv));
         PUTBACK;
         
-        RETVAL = PerlUpb_Message_FromJson(aTHX_ mdef_sv, json_data);
+        RETVAL = PerlUpb_Message_FromJson(aTHX_ mdef_sv, json_data, options_sv);
 
         FREETMPS;
         LEAVE;

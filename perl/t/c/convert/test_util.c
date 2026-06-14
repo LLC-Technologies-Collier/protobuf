@@ -1,5 +1,10 @@
 #include "test_util.h"
+#ifdef GOOGLE3
+#include "net/proto2/proto/descriptor.upb.h"
+#else
 #include "google/protobuf/descriptor.upb.h"
+#endif
+
 #include "upb/base/string_view.h"
 #include <stdio.h>
 
@@ -9,8 +14,11 @@ bool load_test_descriptors(pTHX_ upb_Arena *arena) {
 
     FILE *f = fopen("t/data/test_descriptor.bin", "rb");
     if (!f) {
+        // Try Google3/Bazel sandbox path
+        f = fopen("third_party/protobuf/perl/t/data/test_descriptor.bin", "rb");
+    }
+    if (!f) {
         fprintf(stderr, "DEBUG: load_test_descriptors fopen FAILED\n"); fflush(stderr);
-
         perror("Failed to open t/data/test_descriptor.bin");
         return false;
     }
@@ -42,18 +50,18 @@ bool load_test_descriptors(pTHX_ upb_Arena *arena) {
     const google_protobuf_FileDescriptorProto *const * files = google_protobuf_FileDescriptorSet_file(set, &n);
     for (size_t i = 0; i < n; i++) {
         upb_Status_Clear(&status);
-        upb_StringView file_name = google_protobuf_FileDescriptorProto_name(files[i]);
+        // upb_StringView file_name = google_protobuf_FileDescriptorProto_name(files[i]);
         if (!upb_DefPool_AddFile(test_pool, files[i], &status)) {
             cdiag("Failed to add file to DefPool: %s", upb_Status_ErrorMessage(&status));
             return false;
         }
     }
 
-    const upb_MessageDef *mdef1 = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
-    cdiag("test.TestMessage found: %s", mdef1 ? "YES" : "NO");
+    const upb_MessageDef *mdef1 = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
+    cdiag("protobuf_perl_test.TestMessage found: %s", mdef1 ? "YES" : "NO");
 
-    const upb_MessageDef *mdef2 = upb_DefPool_FindMessageByName(test_pool, "test.NestedMessage");
-    cdiag("test.NestedMessage found: %s", mdef2 ? "YES" : "NO");
+    const upb_MessageDef *mdef2 = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.NestedMessage");
+    cdiag("protobuf_perl_test.NestedMessage found: %s", mdef2 ? "YES" : "NO");
 
     const upb_MessageDef *mdef3 = upb_DefPool_FindMessageByName(test_pool, "protobuf_test_messages.proto2.TestAllTypesProto2");
     cdiag("protobuf_test_messages.proto2.TestAllTypesProto2 found: %s", mdef3 ? "YES" : "NO");

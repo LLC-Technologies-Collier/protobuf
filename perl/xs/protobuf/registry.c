@@ -62,7 +62,7 @@ void PerlUpb_Registry_Init(pTHX) {
 }
 
 PerlUpb_Registry* PerlUpb_Registry_Get(pTHX) {
-    if (!aTHX || PL_dirty) return NULL;
+    if (PL_dirty) return NULL;
 
     SV** svp = hv_fetch(PL_modglobal, REGISTRY_KEY, strlen(REGISTRY_KEY), 0);
     if (svp && SvIOK(*svp)) {

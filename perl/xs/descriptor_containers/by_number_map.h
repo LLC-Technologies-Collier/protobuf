@@ -2,7 +2,7 @@
 #define PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_BY_NUMBER_MAP_H_
 
 #include "EXTERN.h"
-#include "perl.h"
+#include "perl.h"  // NOLINT(build/include)
 #include "xs/protobuf.h"
 
 typedef struct {
@@ -19,7 +19,8 @@ typedef struct {
   const PerlUpb_ByNumberMap_VTable* vtable;
 } PerlUpb_ByNumberMap;
 
-SV* PerlUpb_ByNumberMap_New(pTHX_ SV* parent_sv, const void* parent, const PerlUpb_ByNumberMap_VTable* vtable);
+SV* PerlUpb_ByNumberMap_New(pTHX_ SV* parent_sv, const void* parent,
+                            const PerlUpb_ByNumberMap_VTable* vtable);
 PerlUpb_ByNumberMap* PerlUpb_ByNumberMap_Get(pTHX_ SV* sv);
 
 // Perl-facing functions (to be used in XS)
@@ -28,4 +29,4 @@ SV* PerlUpb_ByNumberMap_Lookup(pTHX_ SV* self, uint32_t num);
 SV* PerlUpb_ByNumberMap_Key(pTHX_ SV* self, int index);
 SV* PerlUpb_ByNumberMap_Value(pTHX_ SV* self, int index);
 
-#endif // PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_BY_NUMBER_MAP_H_
+#endif  // PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_BY_NUMBER_MAP_H_

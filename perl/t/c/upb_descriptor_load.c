@@ -18,6 +18,10 @@ int main(int argc, char** argv) {
     if (!arena) return 1;
 
     FILE *f = fopen("t/data/test_descriptor.bin", "rb");
+    if (!f) {
+        // Try Google3/Bazel sandbox path
+        f = fopen("third_party/protobuf/perl/t/data/test_descriptor.bin", "rb");
+    }
     ok(f != NULL, "Opened descriptor file t/data/test_descriptor.bin");
     if (!f) {
         upb_Arena_Free(arena);

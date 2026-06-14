@@ -1,2 +1,0 @@
-# Make sure the static lib is built before the default 'all' target
-all :: [% COMMON_LIB %]

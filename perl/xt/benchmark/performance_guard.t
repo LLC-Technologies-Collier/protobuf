@@ -12,13 +12,13 @@ use constant BASELINE_SVTOUPB => 0.05;
 
 my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
-my $mdef = $pool->find_message_by_name('test.TestMessage');
+my $mdef = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
 
 my $count = 10000;
 my @data = (1..$count);
 
 subtest 'performance guard: UpbToSv' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->repeated_int(\@data);
     
     my $t0 = [gettimeofday];
@@ -32,7 +32,7 @@ subtest 'performance guard: UpbToSv' => sub {
 };
 
 subtest 'performance guard: SvToUpb' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     
     my $t0 = [gettimeofday];
     for (1..100) {

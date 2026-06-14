@@ -6,7 +6,7 @@ Protobuf::Internal - Internal XS functions and utilities
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =head1 SYNOPSIS
 
@@ -162,7 +162,7 @@ C.J. Collier <cjac@google.com>
 This software is copyright (c) 2026 by Google LLC.
 
 This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+the terms of the BSD 3-Clause License.
 
 =cut
 
@@ -173,7 +173,7 @@ require Protobuf;
 use warnings;
 use Exporter qw(import);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 our @EXPORT_OK = qw(
     class_name_to_full_name

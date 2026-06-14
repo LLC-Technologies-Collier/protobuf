@@ -2,7 +2,7 @@
 #define PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_ITERATORS_H_
 
 #include "EXTERN.h"
-#include "perl.h"
+#include "perl.h"  // NOLINT(build/include)
 #include "xs/protobuf.h"
 
 typedef struct {
@@ -18,4 +18,4 @@ PerlUpb_DescriptorMapIterator* PerlUpb_DescriptorMapIterator_Get(pTHX_ SV* sv);
 SV* PerlUpb_DescriptorMapIterator_NextKey(pTHX_ SV* self);
 SV* PerlUpb_DescriptorMapIterator_NextValue(pTHX_ SV* self);
 
-#endif // PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_ITERATORS_H_
+#endif  // PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_ITERATORS_H_

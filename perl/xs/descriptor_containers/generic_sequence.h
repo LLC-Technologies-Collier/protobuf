@@ -2,7 +2,7 @@
 #define PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_GENERIC_SEQUENCE_H_
 
 #include "EXTERN.h"
-#include "perl.h"
+#include "perl.h"  // NOLINT(build/include)
 #include "xs/protobuf.h"
 
 typedef struct {
@@ -17,11 +17,12 @@ typedef struct {
   const PerlUpb_GenericSequence_VTable* vtable;
 } PerlUpb_GenericSequence;
 
-SV* PerlUpb_GenericSequence_New(pTHX_ SV* parent_sv, const void* parent, const PerlUpb_GenericSequence_VTable* vtable);
+SV* PerlUpb_GenericSequence_New(pTHX_ SV* parent_sv, const void* parent,
+                                const PerlUpb_GenericSequence_VTable* vtable);
 PerlUpb_GenericSequence* PerlUpb_GenericSequence_Get(pTHX_ SV* sv);
 
 // Perl-facing functions (to be used in XS)
 int PerlUpb_GenericSequence_Count(pTHX_ SV* self);
 SV* PerlUpb_GenericSequence_GetItem(pTHX_ SV* self, int index);
 
-#endif // PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_GENERIC_SEQUENCE_H_
+#endif  // PERL_PROTOBUF_DESCRIPTOR_CONTAINERS_GENERIC_SEQUENCE_H_

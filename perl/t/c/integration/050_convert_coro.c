@@ -48,6 +48,7 @@ static void convert_coro_task(void *arg) {
 }
 
 static void test_convert_coro(void) {
+    dTHX;
     plan(NUM_COROS);
     
     coro_context main_ctx;
@@ -66,9 +67,9 @@ static void test_convert_coro(void) {
     
     SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
     const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX, pool_sv);
-    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(pool, "test.TestMessage");
+    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(pool, "protobuf_perl_test.TestMessage");
     if (!mdef) {
-        cdiag("Could not find message test.TestMessage");
+        cdiag("Could not find message protobuf_perl_test.TestMessage");
         upb_Arena_Free(arena);
         return;
     }

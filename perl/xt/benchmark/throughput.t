@@ -12,7 +12,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'Throughput Benchmarking' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
 
     diag("Benchmarking Protobuf-Perl-UPB throughput...");
 
@@ -32,10 +32,10 @@ subtest 'Throughput Benchmarking' => sub {
             },
             'parse' => sub {
                 state $data = do {
-                    my $m = Test::Test::TestMessage->new(value => 123, name => "hello");
+                    my $m = Protobuf_perl_test::Test::TestMessage->new(value => 123, name => "hello");
                     $m->serialize();
                 };
-                my $msg2 = Test::Test::TestMessage->parse($data);
+                my $msg2 = Protobuf_perl_test::Test::TestMessage->parse($data);
             },
             'to_perl' => sub {
                 my $h = $msg->to_perl();

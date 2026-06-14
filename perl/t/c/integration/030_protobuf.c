@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
     PerlInterpreter *my_perl = test_perl_init(argc, argv);
 
     { // Scope for test logic
-        dSP;
+        // dSP;
         ENTER;
         SAVETMPS;
 

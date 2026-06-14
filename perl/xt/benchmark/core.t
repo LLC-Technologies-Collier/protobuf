@@ -10,7 +10,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'basic benchmarks' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(12345);
     $msg->set_name("benchmark test");
     
@@ -28,7 +28,7 @@ subtest 'basic benchmarks' => sub {
     my $wire = $msg->serialize();
     my $t1 = [gettimeofday];
     for (1..$iterations) {
-        my $parsed = Test::Test::TestMessage->parse($wire);
+        my $parsed = Protobuf_perl_test::Test::TestMessage->parse($wire);
     }
     my $elapsed2 = tv_interval($t1);
     diag(sprintf("Deserialization (%d iterations): %.4fs (%.2f ops/sec)", $iterations, $elapsed2, $iterations/$elapsed2));

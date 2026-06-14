@@ -142,6 +142,7 @@ SV* PerlUpb_Message_ToText(pTHX_ SV* message_sv) {
     size_t encoded = upb_TextEncode(msg, mdef, NULL, 0, buf, size + 1);
     
     SV* result = newSVpvn(buf, encoded);
+    SvUTF8_on(result);
     free(buf);
     return result;
 }
@@ -170,6 +171,7 @@ SV* PerlUpb_Message_ToJson(pTHX_ SV* message_sv) {
     }
     
     SV* result = newSVpvn(buf, encoded);
+    SvUTF8_on(result);
     free(buf);
     return result;
 }
@@ -206,10 +208,20 @@ void PerlUpb_Message_JsonToHandle(pTHX_ SV* message_sv, SV* fh_sv) {
     free(buf);
 }
 
-SV* PerlUpb_Message_FromJson(pTHX_ SV* descriptor_sv, SV* json_sv) {
+SV* PerlUpb_Message_FromJson(pTHX_ SV* descriptor_sv, SV* json_sv, SV* options_sv) {
     const upb_MessageDef* mdef = PerlUpb_MessageDef_GetMessage(aTHX_ descriptor_sv);
     if (!mdef) {
         croak("descriptor_sv must be a Protobuf::MessageDescriptor");
+    }
+
+    // Parse options
+    int options = 0;
+    if (options_sv && SvOK(options_sv) && SvROK(options_sv) && SvTYPE(SvRV(options_sv)) == SVt_PVHV) {
+        HV* hv = (HV*)SvRV(options_sv);
+        SV** ignore_unknown_sv = hv_fetch(hv, "ignore_unknown", 14, 0);
+        if (ignore_unknown_sv && SvTRUE(*ignore_unknown_sv)) {
+            options |= upb_JsonDecode_IgnoreUnknown;
+        }
     }
 
     STRLEN len;
@@ -234,7 +246,7 @@ SV* PerlUpb_Message_FromJson(pTHX_ SV* descriptor_sv, SV* json_sv) {
     upb_Status status;
     upb_Status_Clear(&status);
 
-    bool ok = upb_JsonDecode(json_str, len, msg, mdef, ext_pool, 0, arena, &status);
+    bool ok = upb_JsonDecode(json_str, len, msg, mdef, ext_pool, options, arena, &status);
     if (!ok) {
         SvREFCNT_dec(arena_sv);
         croak("Failed to parse JSON: %s", upb_Status_ErrorMessage(&status));

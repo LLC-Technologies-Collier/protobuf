@@ -15,7 +15,7 @@ ok(scalar(@$files) > 0, 'Found at least one file descriptor');
 
 my $test_proto = (grep { $_->{name} =~ /test\.proto/ } @$files)[0];
 ok($test_proto, 'Found test.proto');
-is($test_proto->{package}, 'test', 'Correct package name');
+is($test_proto->{package}, 'protobuf_perl_test', 'Correct package name');
 
 my $msg = (grep { $_->{name} eq 'TestMessage' } @{$test_proto->{message_type}})[0];
 ok($msg, 'Found TestMessage');

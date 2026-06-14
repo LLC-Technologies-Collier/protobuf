@@ -11,11 +11,11 @@ subtest 'load and explore descriptors' => sub {
     ok($files, 'Added descriptor set');
     my $last_file = $files->[-1];
     isa_ok($last_file, 'Protobuf::Descriptor::File');
-    is($last_file->get_package, 'test', 'Correct package');
+    is($last_file->get_package, 'protobuf_perl_test', 'Correct package');
     
     subtest 'message descriptors' => sub {
-        my $mdef = $pool->find_message_by_name('test.TestMessage');
-        ok($mdef, 'Found test.TestMessage');
+        my $mdef = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
+        ok($mdef, 'Found protobuf_perl_test.TestMessage');
         is($mdef->name, 'TestMessage', 'Correct name');
         
         my $f = $mdef->find_field_by_name('value');
@@ -25,8 +25,8 @@ subtest 'load and explore descriptors' => sub {
     };
     
     subtest 'enum descriptors' => sub {
-        my $edef = $pool->find_enum_by_name('test.TestEnum');
-        ok($edef, 'Found test.TestEnum');
+        my $edef = $pool->find_enum_by_name('protobuf_perl_test.TestEnum');
+        ok($edef, 'Found protobuf_perl_test.TestEnum');
         is($edef->name, 'TestEnum', 'Correct name');
         is($edef->value_count, 3, 'Correct value count');
     };

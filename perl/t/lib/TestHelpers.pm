@@ -76,9 +76,9 @@ sub generate_classes {
         Protobuf::ClassGenerator->generate_for_file($file);
     } else {
         # Try to find a message and get its file
-        my $mdef = $pool->find_message_by_name('test.TestMessage');
+        my $mdef = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
         if ($mdef) {
-            foreach my $name ('test.TestMessage', 'test.NestedMessage') {
+            foreach my $name ('protobuf_perl_test.TestMessage', 'protobuf_perl_test.NestedMessage') {
                 my $m = $pool->find_message_by_name($name);
                 Protobuf::ClassGenerator->generate_for_message($m) if $m;
             }

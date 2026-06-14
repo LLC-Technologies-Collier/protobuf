@@ -31,10 +31,10 @@ subtest 'Concurrent descriptor caching and access with Mojo::IOLoop' => sub {
         Mojo::IOLoop->timer(rand(0.05) => sub {
             eval {
                 # Test object cache consistency across the event loop
-                my $mdef = $pool->find_message_by_name("test.TestMessage");
+                my $mdef = $pool->find_message_by_name("protobuf_perl_test.TestMessage");
                 die "mdef missing" unless $mdef;
                 
-                my $mdef_again = $pool->find_message_by_name("test.TestMessage");
+                my $mdef_again = $pool->find_message_by_name("protobuf_perl_test.TestMessage");
                 die "mdef identity mismatch in object cache" unless $mdef eq $mdef_again;
                 
                 my $fdef = $mdef->find_field_by_name("value");

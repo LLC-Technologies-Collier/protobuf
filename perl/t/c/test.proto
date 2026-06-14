@@ -1,8 +1,8 @@
 syntax = "proto2";
 
-package test;
+package protobuf_perl_test;
 
-import "src/google/protobuf/test_messages_proto2.proto";
+import "third_party/protobuf/test_messages_proto2.proto";
 
 enum TestEnum {
   TEST_ENUM_UNSPECIFIED = 0;
@@ -79,5 +79,5 @@ extend TestMessage {
 
 service TestService {
   // Test RPC method
-  rpc TestRpc(TestMessage) returns (AnotherMessage) {};
+  rpc TestRpc(TestMessage) returns (AnotherMessage) {}
 }

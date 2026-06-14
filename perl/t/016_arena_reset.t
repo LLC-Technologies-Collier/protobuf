@@ -15,7 +15,7 @@ BEGIN {
 
 my $pool = TestHelpers->get_empty_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
-my $class = 'Test::Test::TestMessage';
+my $class = 'Protobuf_perl_test::Test::TestMessage';
 
 subtest 'Arena Cleanup on Parse Failure' => sub {
     no_leaks_ok {

@@ -44,7 +44,7 @@ $msg->nested_string('TestValue');
 is($msg->nested_string, 'TestValue', "Roundtrip for 'nested_string' works");
 
 # 5. Test another class from the same file
-my $class2 = 'Test::Test::TestMessage';
+my $class2 = 'Protobuf_perl_test::Test::TestMessage';
 ok($class2->can('new'), "Class $class2 was generated");
 ok($class2->can('repeated_int'), "Accessor 'repeated_int' exists (repeated)");
 

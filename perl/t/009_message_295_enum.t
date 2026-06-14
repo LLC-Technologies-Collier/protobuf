@@ -10,9 +10,9 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'enum field accessors' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     
-    # Test Enum: test.TestEnum { FOO = 0, BAR = 1, BAZ = 2 }
+    # Test Enum: protobuf_perl_test.TestEnum { FOO = 0, BAR = 1, BAZ = 2 }
     ok($msg->can('enum_field'), 'Generated getter for enum_field');
     is($msg->enum_field, 0, 'Default value for enum is 0 (FOO)');
     

@@ -10,7 +10,7 @@ my $pool = TestHelpers->get_generated_pool();
 TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest 'repeated scalar field accessors' => sub {
-    my $msg = Test::Test::TestMessage->new();
+    my $msg = Protobuf_perl_test::Test::TestMessage->new();
     
     ok($msg->can('repeated_int'), 'Generated getter for repeated_int');
     my $arr = $msg->repeated_int;

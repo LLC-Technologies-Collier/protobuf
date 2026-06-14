@@ -7,9 +7,12 @@
 #include "xs/descriptor/file.h"
 #include "upb/reflection/def.h"
 
-// Note: Using the cmake-generated header as it's the most likely one to be consistent 
-// with the objects we've already compiled.
-#include "upb/reflection/cmake/google/protobuf/descriptor.upb.h"
+#ifdef GOOGLE3
+#include "net/proto2/proto/descriptor.upb.h"
+#else
+#include "google/protobuf/descriptor.upb.h"
+#endif
+
 
 SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
     if (PerlUpb_DescriptorPool_IsFrozen(aTHX_ self)) {
@@ -30,7 +33,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
 
     upb_Status status;
     upb_Status_Clear(&status);
-    const upb_FileDef* file = upb_DefPool_AddFile((upb_DefPool*)pool, proto, &status);
+    const upb_FileDef* file = upb_DefPool_AddFile((upb_DefPool*)pool, (const void*)proto, &status);
     
     // The pool keeps its own internal state, so the proto is no longer needed.
     PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
@@ -99,7 +102,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* se
 
     for (size_t i = 0; i < n; i++) {
         upb_Status_Clear(&status);
-        const upb_FileDef* file = upb_DefPool_AddFile((upb_DefPool*)pool, files[i], &status);
+        const upb_FileDef* file = upb_DefPool_AddFile((upb_DefPool*)pool, (const void*)files[i], &status);
         if (!file) {
             const char* msg = upb_Status_ErrorMessage(&status);
             PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
@@ -142,3 +145,5 @@ SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* se
     PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
     return newRV_noinc((SV*)av);
 }
+// Trivial newline to force rebuild
+

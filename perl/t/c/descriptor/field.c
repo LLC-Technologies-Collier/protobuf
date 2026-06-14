@@ -11,7 +11,7 @@ static void test_field_def(pTHX) {
         return;
     }
     
-    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "test.TestMessage");
+    const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
     ok(mdef != NULL, "Got TestMessage Def");
     
     const upb_FieldDef *f = upb_MessageDef_FindFieldByName(mdef, "optional_bool");
