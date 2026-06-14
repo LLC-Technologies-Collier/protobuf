@@ -32,17 +32,17 @@ if ($is_dev) {
     if ($is_google3_dev) {
         print "Google3 dev environment detected. Sourcing from sibling directories.\n";
     }
-    
+
     # 1. Reassemble Protobuf.xs from fragments
     print "Reassembling Protobuf.xs...\n";
     system($perl, 'maint/generate_xs.pl') == 0 or die "Failed to run generate_xs.pl: $!";
-    
+
     # 2. Update the local vendor directory with core components
     if (-f 'maint/vendor_upb.pl') {
         print "Updating vendor/ directory...\n";
         system($perl, 'maint/vendor_upb.pl') == 0 or die "Failed to run vendor_upb.pl: $!";
     }
-    
+
     # 3. Clean and regenerate MANIFEST from scratch to remove dead references
     require ExtUtils::Manifest;
     print "Regenerating MANIFEST...\n";
@@ -63,6 +63,33 @@ our $upb_generator_dir = File::Spec->catdir($project_root, 'upb_generator');
 our $src_dir = File::Spec->catdir($project_root, 'src');
 our $third_party_dir = File::Spec->catdir($project_root, 'third_party');
 our $libcoro_dir = File::Spec->catdir($project_root, 'libcoro');
+
+# --- Create Google3-style import mapping for public builds ---
+# test.proto imports "third_party/protobuf/test_messages_proto2.proto".
+# In the public build, this file is located at 'vendor/src/google/protobuf/test_messages_proto2.proto'.
+# We dynamically create 'vendor/third_party/protobuf/' and symlink/copy the file there
+# so that protoc (running with --proto_path=vendor) can resolve the import.
+my $vendor_dir = 'vendor';
+if (-d $vendor_dir) {
+    my $target_dir = File::Spec->catdir($vendor_dir, 'third_party', 'protobuf');
+    my $source_file = File::Spec->catfile($vendor_dir, 'src', 'google', 'protobuf', 'test_messages_proto2.proto');
+
+    if (-f $source_file) {
+        print "Creating Google3-style import mapping for test messages...\n";
+        require File::Path;
+        File::Path::make_path($target_dir) unless -d $target_dir;
+
+        my $target_file = File::Spec->catfile($target_dir, 'test_messages_proto2.proto');
+        if (!-f $target_file) {
+            # Try symlink first, fall back to copy (for Windows compatibility)
+            eval { symlink("../../src/google/protobuf/test_messages_proto2.proto", $target_file) }
+                or do {
+                    require File::Copy;
+                    File::Copy::copy($source_file, $target_file) or warn "Failed to copy proto file: $!";
+                };
+        }
+    }
+}
 
 our $bazel_gen_include = $is_google3_dev
     ? File::Spec->catdir($upb_dir, "upb", "reflection", "stage0")
@@ -179,7 +206,7 @@ sub MY::postamble {
     my $self = shift;
     use Config;
     use File::Spec;
-    use JSON::MaybeXS; 
+    use JSON::MaybeXS;
     use Path::Tiny;
 
     # Common library build rules
@@ -259,12 +286,12 @@ EOF
     # Replace hardcoded monorepo paths with dynamic path macros
     # In Google3, the dependencies have an extra 'upb/' level
     my $upb_dep_dir = $is_google3_dev ? "vendor/upb/upb" : "vendor/upb";
-    
+
     $json_text =~ s{\.\./upb/}{\$upb_dep_dir/}g;
     $json_text =~ s{\.\./src/}{\$src_dir/}g;
     $json_text =~ s{\.\./third_party/}{\$third_party_dir/}g;
 
-    # Actually, it's better to just replace them with the actual paths 
+    # Actually, it's better to just replace them with the actual paths
     # because we are about to decode the JSON.
     $json_text =~ s{\$upb_dep_dir}{$upb_dep_dir}g;
     $json_text =~ s{\$src_dir}{$src_dir}g;
@@ -430,7 +457,7 @@ EOF
     my $plugin_upb_o = "protoc/plugin.upb.o";
     my $descriptor_upb_c = File::Spec->catfile($upb_dir, "reflection", "stage0", "google", "protobuf", "descriptor.upb.c");
     my $descriptor_upb_o = "protoc/descriptor.upb.o";
-    
+
     my $bootstrap_define = $is_google3_dev ? "" : "-DUPB_BOOTSTRAP_STAGE=0";
     my $protoc_cflags = "-g -D_GNU_SOURCE -std=c++20 -Wall $bootstrap_define";
     my $g3_inc = $is_google3_dev ? "-I../../.." : "";
@@ -482,7 +509,6 @@ my %clean_files_map = map { $_ => 1 } (
     'protoc-gen-perl-pb',
     @COMMON_O_FILES,
     't/c/upb-perl-test.o',
-    'vendor',
     'vendor/timestamp',
 );
 
@@ -566,7 +592,7 @@ WriteMakefile(
     LIBS              => ['-L$(CURDIR) -lprotobufperl'],
     LDDLFLAGS         => "$Config{lddlflags} $sanitizer_flags",
     LDFLAGS           => "$Config{ldflags} $sanitizer_flags",
-    
+
     # Clean the generated object files and the static library
     clean             => { FILES => join(' ', sort @clean_files) },
     realclean         => { FILES => 'vendor/upb vendor/upb_generator vendor/third_party vendor/src vendor/libcoro vendor/timestamp lua ruby perl local MANIFEST MANIFEST.bak make.log test_c.log Protobuf.xs BUILD.bazel' },

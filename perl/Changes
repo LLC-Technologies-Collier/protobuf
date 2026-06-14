@@ -17,6 +17,7 @@ Revision history for Protobuf
         - Defined the perl_proto_c_test macro in build_defs.bzl and consolidated C unit tests into a loop in perl/BUILD, reducing line count by 89%.
         - Fixed Makefile.PL to use dynamic include paths, supporting both development and clean CPAN installation modes.
         - Untracked MANIFEST from Git and added it to perl/.gitignore to ensure it is only generated dynamically.
+        - Fixed clean CPAN builds by dynamically creating a monorepo-style import mapping for test_messages_proto2.proto in perl/Makefile.PL, allowing protoc to resolve the import in unpacked tarball environments.
 
         [Tests & Quality Assurance]
         - Updated PurePerl tests (t/028_pureperl_*.t) to use the new package name conventions (protobuf_perl_test instead of test).
