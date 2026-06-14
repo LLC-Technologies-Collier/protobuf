@@ -33,7 +33,7 @@ typedef struct {
 void test_map_access(pTHX_ coro_arg_t *carg) {
     SV* key_sv = newSViv(carg->id);
     SV* val_sv = newSViv(carg->id * 100);
-    
+
     PerlUpb_Map_SetItem(aTHX_ carg->map_sv, key_sv, val_sv);
     coro_yield(carg->id);
 

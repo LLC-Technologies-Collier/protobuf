@@ -20,7 +20,7 @@
 #include "XSUB.h"
 
 static void test_int32_roundtrip(pTHX_ upb_Arena *arena, SV *arena_sv) {
-    const upb_FieldDef *f = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_int32"); 
+    const upb_FieldDef *f = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_int32");
     ok(f, "Roundtrip/int32: Got FieldDef");
     if (!f) return;
 

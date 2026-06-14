@@ -46,9 +46,9 @@ static void test_as_hash(pTHX_ SV* map_sv) {
     SV* hash_rv = PerlUpb_ByNameMap_AsHash(aTHX_ map_sv);
     ok(SvROK(hash_rv) && SvTYPE(SvRV(hash_rv)) == SVt_PVHV, "AsHash returns a hash reference");
     HV* hv = (HV*)SvRV(hash_rv);
-    
+
     is(hv_iterinit(hv), 3, "Projected hash has 3 keys");
-    
+
     SV** foo_ptr = hv_fetch(hv, "foo", 3, 0);
     ok(foo_ptr != NULL, "Found 'foo' in hash");
     if (foo_ptr) {

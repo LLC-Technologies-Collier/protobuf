@@ -45,7 +45,7 @@ subtest 'Throughput Benchmarking' => sub {
             }
         });
     });
-    
+
     diag($results);
     ok(1, "Throughput benchmarks completed");
 };

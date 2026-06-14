@@ -73,16 +73,16 @@ int main(int argc, char** argv) {
         SV* stats_rv = PerlUpb_ObjCache_GetContentionStats(aTHX);
         ok(stats_rv && SvROK(stats_rv), "Got contention stats");
         HV* stats_hv = (HV*)SvRV(stats_rv);
-        
+
         SV** stripes_svp = hv_fetch(stats_hv, "stripes", 7, 0);
         ok(stripes_svp && SvROK(*stripes_svp), "Got stripes stats");
-        
+
         SV** lru_svp = hv_fetch(stats_hv, "lru", 3, 0);
         ok(lru_svp && SvROK(*lru_svp), "Got lru stats");
-        
+
         SV** audit_svp = hv_fetch(stats_hv, "audit", 5, 0);
         ok(audit_svp && SvROK(*audit_svp), "Got audit stats");
-        
+
         // At least some acquisitions should have happened
         AV* stripes_av = (AV*)SvRV(*stripes_svp);
         uint64_t total_acq = 0;
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
             total_acq += SvUV(*acq_svp);
         }
         ok(total_acq > 0, "Non-zero acquisitions recorded");
-        
+
         SvREFCNT_dec(stats_rv);
     });
 

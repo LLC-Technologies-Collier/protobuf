@@ -12,7 +12,7 @@ XS(XS_Protobuf_Internal_get_cache_audit_log) {
     if (items != 0) {
         croak_xs_usage(cv, "()");
     }
-    
+
     SV* result = PerlUpb_ObjCache_GetAuditLog(aTHX);
     ST(0) = result;
     XSRETURN(1);

@@ -27,8 +27,8 @@ my $msg = Protobuf_perl_test::Test::TestMessage->new();
 $msg->set_value(123);
 
 # This should NOT crash the process now that we use CLONE_SKIP
-my $t = threads->create(sub { 
-    return 1; 
+my $t = threads->create(sub {
+    return 1;
 });
 $t->join() if $t;
 print "SUCCESS\n";
@@ -41,9 +41,9 @@ EOF
     my $cmd = "$^X -Iblib/lib -Iblib/arch -Ilib $filename 2>&1";
     my $output = `$cmd`;
     my $exit_code = $? >> 8;
-    
+
     unlink $filename;
-    
+
     is($exit_code, 0, "Process exited with zero code ($exit_code) - CLONE_SKIP worked");
     like($output, qr/SUCCESS/, 'Output contains SUCCESS message');
 };

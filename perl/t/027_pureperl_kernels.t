@@ -25,7 +25,7 @@ subtest 'Varint encoding/decoding' => sub {
         my $encoded = Protobuf::Engine::PurePerl::_encode_varint($val);
         my $pos = 0;
         my $decoded = Protobuf::Engine::PurePerl::_decode_varint(\$encoded, \$pos);
-        
+
         # For negative numbers, we need to handle the bit representation
         if ($val < 0) {
             # In Perl, bitwise results are based on native IV.
@@ -56,7 +56,7 @@ subtest 'ZigZag encoding/decoding' => sub {
         my $decoded = Protobuf::Engine::PurePerl::_decode_zigzag32($encoded);
         is($decoded, $val, "ZigZag32 roundtrip for $val");
     }
-    
+
     # 64-bit ZigZag
     my $v64 = "-1234567890123456789";
     my $enc64 = Protobuf::Engine::PurePerl::_encode_zigzag64($v64);

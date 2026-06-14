@@ -63,7 +63,7 @@ void PerlUpb_Message_ParseFrom(pTHX_ SV* message_sv, SV* data_sv) {
     upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
 
     const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
-    
+
     // upb_Decode merges into the existing message
     upb_DecodeStatus status = upb_Decode(data, len, msg, mt, NULL, 0, arena);
     if (status != kUpb_DecodeStatus_Ok) {
@@ -135,12 +135,12 @@ SV* PerlUpb_Message_ToText(pTHX_ SV* message_sv) {
     }
 
     size_t size = upb_TextEncode(msg, mdef, NULL, 0, NULL, 0);
-    
+
     char* buf = (char*)malloc(size + 1);
     if (!buf) croak("Out of memory encoding text format");
-    
+
     size_t encoded = upb_TextEncode(msg, mdef, NULL, 0, buf, size + 1);
-    
+
     SV* result = newSVpvn(buf, encoded);
     SvUTF8_on(result);
     free(buf);
@@ -160,16 +160,16 @@ SV* PerlUpb_Message_ToJson(pTHX_ SV* message_sv) {
     if (!upb_Status_IsOk(&status)) {
         croak("JSON Encode error: %s", upb_Status_ErrorMessage(&status));
     }
-    
+
     char* buf = (char*)malloc(size + 1);
     if (!buf) croak("Out of memory encoding JSON");
-    
+
     size_t encoded = upb_JsonEncode(msg, mdef, ext_pool, 0, buf, size + 1, &status);
     if (!upb_Status_IsOk(&status)) {
         free(buf);
         croak("JSON Encode error: %s", upb_Status_ErrorMessage(&status));
     }
-    
+
     SV* result = newSVpvn(buf, encoded);
     SvUTF8_on(result);
     free(buf);
@@ -194,16 +194,16 @@ void PerlUpb_Message_JsonToHandle(pTHX_ SV* message_sv, SV* fh_sv) {
     if (!upb_Status_IsOk(&status)) {
         croak("JSON Encode error: %s", upb_Status_ErrorMessage(&status));
     }
-    
+
     char* buf = (char*)malloc(size + 1);
     if (!buf) croak("Out of memory encoding JSON");
-    
+
     size_t encoded = upb_JsonEncode(msg, mdef, ext_pool, 0, buf, size + 1, &status);
     if (!upb_Status_IsOk(&status)) {
         free(buf);
         croak("JSON Encode error: %s", upb_Status_ErrorMessage(&status));
     }
-    
+
     PerlIO_write(fp, buf, encoded);
     free(buf);
 }
@@ -376,7 +376,7 @@ SV* PerlUpb_Message_FromHandle(pTHX_ SV* descriptor_sv, SV* fh_sv, bool length_p
 
     const upb_MiniTable* mt = upb_MessageDef_MiniTable(mdef);
     upb_Message* msg = upb_Message_New(mt, arena);
-    
+
     upb_DecodeStatus status = upb_Decode(buf, total_to_read, msg, mt, NULL, 0, arena);
     if (status != kUpb_DecodeStatus_Ok) {
         SvREFCNT_dec(arena_sv);

@@ -25,7 +25,7 @@ for my $i (1..$NUM_TIMERS) {
             for my $j (1..50) {
                 my $msg = test::TestMessage->new();
                 $msg->set_value($i * $j);
-                
+
                 # Defer the text encoding to another event loop tick to stress memory management
                 Mojo::IOLoop->timer(rand(0.05) => sub {
                     eval {
@@ -35,7 +35,7 @@ for my $i (1..$NUM_TIMERS) {
                     if ($@) {
                         push @errors, "Timer $i-$j delayed failed: $@";
                     }
-                    
+
                     $completed++;
                     if ($completed == ($NUM_TIMERS * 50)) {
                         Mojo::IOLoop->stop;

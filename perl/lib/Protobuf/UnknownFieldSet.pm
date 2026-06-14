@@ -108,28 +108,28 @@ sub delete_tag {
         my $msg = $self->{_msg};
         my $data = $msg->{_unknown_fields};
         return unless defined $data && length($data) > 0;
-        
+
         my $new_data = '';
         my $pos = 0;
         my $len = length($data);
-        
+
         require Protobuf::Engine::PurePerl;
-        
+
         while ($pos < $len) {
             my $field_start = $pos;
             my $tag_wire = Protobuf::Engine::PurePerl::_decode_varint(\$data, \$pos);
             $tag_wire = $tag_wire->as_number();
             my $field_tag = $tag_wire >> 3;
             my $wire = $tag_wire & 0x07;
-            
+
             Protobuf::Engine::PurePerl::_skip_field(\$data, \$pos, $wire);
             my $field_end = $pos;
-            
+
             if ($field_tag != $tag) {
                 $new_data .= substr($data, $field_start, $field_end - $field_start);
             }
         }
-        
+
         $msg->{_unknown_fields} = $new_data;
         return;
     } else {

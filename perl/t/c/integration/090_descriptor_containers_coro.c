@@ -63,7 +63,7 @@ void test_container_access(pTHX_ coro_arg_t *carg) {
         fprintf(stderr, "Coro %d: Field count <= 0\n", carg->id);
         carg->errors++;
     }
-    
+
     // Explicitly free the map and sequence internal state for the test (normally DESTROY handles this)
     extern void PerlUpb_ByNameMap_Free(pTHX_ SV* sv);
     PerlUpb_ByNameMap_Free(aTHX_ map_sv);

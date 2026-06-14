@@ -61,7 +61,7 @@ bool load_benchmark_descriptors(upb_Arena *arena) {
 
 int main() {
     upb_Arena *arena = upb_Arena_New();
-    
+
     if (!load_benchmark_descriptors(arena)) {
         fprintf(stderr, "Failed to load descriptors\n");
         return 1;

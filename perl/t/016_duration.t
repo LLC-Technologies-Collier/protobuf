@@ -10,10 +10,10 @@ TestHelpers->load_test_protos($pool, 't/data/wkt_descriptor.bin');
 subtest 'duration operations' => sub {
     my $dur = Google::Protobuf::Duration::Duration->new();
     $dur->from_seconds(123.456);
-    
+
     is($dur->seconds, 123, 'Seconds part correct');
     is($dur->nanos, 456_000_000, 'Nanos part correct');
-    
+
     is($dur->to_seconds, 123.456, 'Conversion back to seconds matches');
 };
 

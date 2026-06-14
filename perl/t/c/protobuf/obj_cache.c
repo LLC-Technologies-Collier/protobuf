@@ -18,7 +18,7 @@ static void test_cache(PerlInterpreter *original_perl) {
 
     SV *sv1 = newSVpv("value1", 0);
     SV *rv1 = newRV_noinc(sv1);
-    
+
     SV *sv2 = newSVpv("value2", 0);
     SV *rv2 = newRV_noinc(sv2);
 
@@ -81,15 +81,15 @@ static void test_cache(PerlInterpreter *original_perl) {
         SV *v2 = newRV_noinc(newSVpv("v2", 0));
         PerlUpb_ObjCache_Add(aTHX_ &d1, v1);
         PerlUpb_ObjCache_Add(aTHX_ &d2, v2);
-        
+
         ok(PerlUpb_ObjCache_Get(aTHX_ &d1) != NULL, "d1 cached");
         ok(PerlUpb_ObjCache_Get(aTHX_ &d2) != NULL, "d2 cached");
-        
+
         PerlUpb_ObjCache_Clear(aTHX);
-        
+
         ok(PerlUpb_ObjCache_Get(aTHX_ &d1) == NULL, "d1 cleared");
         ok(PerlUpb_ObjCache_Get(aTHX_ &d2) == NULL, "d2 cleared");
-        
+
         SvREFCNT_dec(v1);
         SvREFCNT_dec(v2);
     });
@@ -103,11 +103,11 @@ static void test_cache(PerlInterpreter *original_perl) {
             PERL_SET_CONTEXT(perl2);
             dTHX;
             PerlUpb_ObjCache_Init(aTHX);
-            
+
             SV *val = newSVpv("isolated", 0);
             SV *rv = newRV_noinc(val);
             PerlUpb_ObjCache_Add(aTHX_ &dummy, rv);
-            
+
             SV *got = PerlUpb_ObjCache_Get(aTHX_ &dummy);
             ok(got != NULL, "Got value from perl2 cache");
             is_string(SvPV_nolen(SvRV(got)), "isolated", "Value matches in perl2");

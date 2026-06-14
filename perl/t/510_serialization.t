@@ -20,7 +20,7 @@ subtest 'to_perl conversion' => sub {
     $msg->value(42);
     $msg->test_string("hello");
     push @{$msg->repeated_int}, 1, 2, 3;
-    
+
     my $nested = Protobuf_perl_test::Test::NestedMessage->new();
     $nested->nested_string("deep");
     $msg->nested_message($nested);
@@ -30,7 +30,7 @@ subtest 'to_perl conversion' => sub {
     is($perl->{test_string}, "hello", "String correct in hash");
     is_deeply($perl->{repeated_int}, [1, 2, 3], "Repeated field correct in hash");
     is($perl->{nested_message}->{nested_string}, "deep", "Nested message correct in hash");
-    
+
     # Verify it's a regular hash, not tied
     ok(!tied(%$perl), "Result hash is NOT tied");
 };
@@ -41,7 +41,7 @@ subtest 'JSON serialization' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->value(100);
     $msg->test_string("json test");
-    
+
     my $json = $msg->to_json();
     like($json, qr/"value":\s*100/, "JSON contains value");
     like($json, qr/"testString":\s*"json test"/, "JSON contains string (camelCase check)");
@@ -56,7 +56,7 @@ subtest 'Text format serialization' => sub {
     plan skip_all => 'Text format is only stub in PurePerl mode' unless $Protobuf::HAS_XS;
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->value(7);
-    
+
     my $text = $msg->to_text();
     like($text, qr/value:\s*7/, "Text format contains value");
 };

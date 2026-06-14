@@ -19,13 +19,13 @@ my @data = (1..$count);
 subtest 'VPP SIMD Benchmark: UpbToSv' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->repeated_int(\@data);
-    
+
     my $t0 = [gettimeofday];
     for (1..100) {
         my $perl = $msg->to_perl();
     }
     my $elapsed = tv_interval($t0);
-    
+
     diag("VPP Fast-path UpbToSv: ${elapsed}s for 100 iterations of $count elements");
     ok($elapsed < 1.0, "Meets performance baseline for SIMD batch conversion");
 };
@@ -33,13 +33,13 @@ subtest 'VPP SIMD Benchmark: UpbToSv' => sub {
 # 3. Benchmark from_perl (SvToUpb) with VPP fast-path
 subtest 'VPP SIMD Benchmark: SvToUpb' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
-    
+
     my $t0 = [gettimeofday];
     for (1..100) {
         $msg->repeated_int(\@data);
     }
     my $elapsed = tv_interval($t0);
-    
+
     diag("VPP Fast-path SvToUpb: ${elapsed}s for 100 iterations of $count elements");
     ok($elapsed < 1.0, "Meets performance baseline for SIMD batch population");
 };

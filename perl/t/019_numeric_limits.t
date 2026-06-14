@@ -11,12 +11,12 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
 
 subtest '64-bit integer limits and BigInt support' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
-    
+
     # Test int64
     my $val_i64 = "9223372036854775807"; # MAX_INT64
     $msg->set('optional_int64', Math::BigInt->new($val_i64));
     my $got_i64 = $msg->get('optional_int64');
-    
+
     if (ref($got_i64)) {
         isa_ok($got_i64, 'Math::BigInt');
         is($got_i64->bstr(), $val_i64, 'Max int64 preserved via BigInt');
@@ -45,10 +45,10 @@ subtest '64-bit integer limits and BigInt support' => sub {
 
 subtest '64-bit string input' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
-    
+
     $msg->set('optional_int64', "1234567890123456789");
     is($msg->get('optional_int64') . "", "1234567890123456789", 'Int64 from string');
-    
+
     $msg->set('optional_uint64', "12345678901234567890");
     is($msg->get('optional_uint64') . "", "12345678901234567890", 'Uint64 from string');
 };

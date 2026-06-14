@@ -20,25 +20,25 @@ bool PerlUpb_Message_AuditIntegrity(pTHX_ SV* message_sv) {
     const upb_MessageDef* mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);
     if (!msg || !mdef) return false;
 
-    // Shallow audit: check if reified objects in this message's Perl hash 
+    // Shallow audit: check if reified objects in this message's Perl hash
     // still point to the correct underlying upb objects.
     HV* hv = (HV*)SvRV(message_sv);
-    
+
     int n = upb_MessageDef_FieldCount(mdef);
     for (int i = 0; i < n; i++) {
         const upb_FieldDef* f = upb_MessageDef_Field(mdef, i);
         const char* name = upb_FieldDef_Name(f);
-        
+
         SV** svp = hv_fetch(hv, name, strlen(name), 0);
         if (svp && SvROK(*svp)) {
             SV* inner = SvRV(*svp);
             upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
-            
+
             if (upb_FieldDef_IsSubMessage(f)) {
                 if (val.msg_val == NULL) {
-                    // Perl has an object but upb says field is empty? 
+                    // Perl has an object but upb says field is empty?
                     // This could be a "phantom" reification or corruption.
-                    return false; 
+                    return false;
                 }
                 // Verify identity if reified
                 SV* cached = PerlUpb_ObjCache_Get(aTHX_ val.msg_val);
@@ -53,6 +53,6 @@ bool PerlUpb_Message_AuditIntegrity(pTHX_ SV* message_sv) {
             // ... similar checks for repeated and maps could go here ...
         }
     }
-    
+
     return true;
 }

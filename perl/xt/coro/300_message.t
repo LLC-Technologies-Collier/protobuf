@@ -29,18 +29,18 @@ for my $i (1..$NUM_COROS) {
 
                 my $msg = test::TestMessage->new();
                 $msg->set_value($i);
-                
+
                 cede();
-                
+
                 my $sub = test::NestedMessage->new();
                 $sub->set_nested_string("coro-$i");
                 $msg->set_nested_message($sub);
-                
+
                 cede();
-                
+
                 my $serialized = $msg->serialize();
                 my $msg2 = test::TestMessage->parse($serialized);
-                
+
                 die "Value mismatch" unless $msg2->value == $i;
                 die "Nested string mismatch" unless $msg2->nested_message->nested_string eq "coro-$i";
             }

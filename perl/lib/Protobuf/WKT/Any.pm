@@ -46,7 +46,7 @@ Returns C<$self> for chaining.
 
 =head2 unpack($expected_class)
 
-Deserializes the message stored in the C<value> field. It uses the C<type_url> to determine the message type. 
+Deserializes the message stored in the C<value> field. It uses the C<type_url> to determine the message type.
 
 If C<$expected_class> is provided, it is used as the Perl class to deserialize into. Otherwise, the class is derived from the C<type_url> and looked up in the C<generated_pool>.
 
@@ -82,25 +82,25 @@ use warnings;
 
 sub pack { ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my ($self, $msg) = @_;
-    
+
     my $mdef = $msg->descriptor();
     my $full_name = $mdef->full_name();
-    
+
     # Standard type_url prefix
     my $type_url = "type.googleapis.com/$full_name";
-    
+
     $self->set('type_url', $type_url);
     $self->set('value', $msg->serialize());
-    
+
     return $self;
 }
 
 sub unpack { ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my ($self, $expected_class) = @_;
-    
+
     my $type_url = $self->get('type_url');
     my ($full_name) = $type_url =~ m{([^/]+)$};
-    
+
     # If expected_class is provided, use it. Otherwise, look up in pool.
     my $class = $expected_class;
     if (!$class) {
@@ -112,7 +112,7 @@ sub unpack { ## no critic (Subroutines::ProhibitBuiltinHomonyms)
         }
         $class = $mdef->perl_class_name();
     }
-    
+
     return $class->parse($self->get('value'));
 }
 

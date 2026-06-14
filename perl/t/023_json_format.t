@@ -13,11 +13,11 @@ subtest 'json format encoding' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(12345);
     $msg->set_name("hello json");
-    
+
     my $sub = Protobuf_perl_test::Test::NestedMessage->new();
     $sub->set_nested_string("inner_json");
     $msg->set_nested_message($sub);
-    
+
     my $json = $msg->to_json();
     ok(defined $json, 'JSON format is generated');
     like($json, qr/"value":12345/, 'Contains integer field');
@@ -28,7 +28,7 @@ subtest 'json format encoding' => sub {
 subtest 'json format decoding' => sub {
     my $json = '{"value":999,"name":"parsed","nestedMessage":{"nestedString":"nested_parsed"}}';
     my $msg = Protobuf_perl_test::Test::TestMessage->from_json($json);
-    
+
     ok(defined $msg, 'Parsed from JSON');
     is($msg->value, 999, 'Parsed value correctly');
     is($msg->name, 'parsed', 'Parsed name correctly');

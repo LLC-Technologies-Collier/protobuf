@@ -30,10 +30,10 @@ int main(int argc, char** argv) {
 
     const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
     const upb_FieldDef *ext_field = upb_DefPool_FindExtensionByName(test_pool, "protobuf_perl_test.extension_string");
-    
+
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
     SV* message_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
-    
+
     SV* dict_sv = PerlUpb_ExtensionDict_New(aTHX_ message_sv);
     ok(dict_sv != NULL, "Created ExtensionDict");
 
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
     ok(upb_FieldDef_IsExtension(ext_field), "Verify IsExtension true");
     const upb_FieldDef* normal_field = upb_MessageDef_FindFieldByNumber(mdef, 1);
     ok(!upb_FieldDef_IsExtension(normal_field), "Verify IsExtension false for normal field");
-    
+
     ok(1, "Croak test for normal field (skipped in C)");
 
     TODO("Implement Cross-Arena Extension Copy Stress tests") {
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
     extern void PerlUpb_ExtensionDict_Free(pTHX_ SV* sv);
     PerlUpb_ExtensionDict_Free(aTHX_ dict_sv);
     SvREFCNT_dec(dict_sv);
-    
+
     SvREFCNT_dec(message_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
 

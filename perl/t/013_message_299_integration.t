@@ -13,10 +13,10 @@ subtest 'basic serialization and parsing' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(12345);
     $msg->set_test_string("hello integration");
-    
+
     my $data = $msg->serialize();
     ok(length($data) > 0, 'Serialized data is not empty');
-    
+
     my $msg2 = Protobuf_perl_test::Test::TestMessage->parse($data);
     ok($msg2, 'Parsed message');
     isa_ok($msg2, 'Protobuf_perl_test::Test::TestMessage');
@@ -27,17 +27,17 @@ subtest 'basic serialization and parsing' => sub {
 subtest 'complex message roundtrip' => sub {
     my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg->set_optional_int32(42);
-    
+
     my $sub = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2::NestedMessage->new();
     $sub->set_a(123);
     $msg->set_optional_nested_message($sub);
-    
+
     push @{$msg->repeated_int32}, 100, 200;
     $msg->map_string_string->{key1} = "val1";
-    
+
     my $data = $msg->serialize();
     my $msg2 = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->parse($data);
-    
+
     is($msg2->optional_int32, 42, 'Top level value');
     is($msg2->optional_nested_message->a, 123, 'Nested message value');
     is_deeply($msg2->repeated_int32, [100, 200], 'Repeated field value');
@@ -52,16 +52,16 @@ subtest 'unknown fields preservation' => sub {
     # Varint 7992 = 0xB8 0x3E
     # Value 123 = 0x7B
     my $unknown_raw = pack("C*", 0xB8, 0x3E, 0x7B);
-    
+
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(10);
     my $base_data = $msg->serialize();
-    
+
     my $combined_data = $base_data . $unknown_raw;
-    
+
     my $msg2 = Protobuf_perl_test::Test::TestMessage->parse($combined_data);
     is($msg2->value, 10, 'Parsed base field');
-    
+
     # Reserialize and check if unknown field is still there
     my $reserialized = $msg2->serialize();
     ok($reserialized =~ /\Q$unknown_raw\E/, 'Unknown field preserved in reserialization');

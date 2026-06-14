@@ -25,7 +25,7 @@ use Cwd qw(cwd);
 my $cwd = cwd();
 
 my $protoc = 'protoc'; # Assumes protoc is in PATH
-my $plugin = -x './protoc-gen-perl-pb' ? './protoc-gen-perl-pb' 
+my $plugin = -x './protoc-gen-perl-pb' ? './protoc-gen-perl-pb'
            : -x 'bin/protoc-gen-perl-pb' ? 'bin/protoc-gen-perl-pb'
            : './protoc-gen-perl-pb';
 

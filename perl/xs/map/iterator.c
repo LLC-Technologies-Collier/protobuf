@@ -43,7 +43,7 @@ SV* PerlUpb_Map_Iterator_NextKey(pTHX_ SV* self) {
         const upb_FieldDef* f = PerlUpb_Map_GetFieldDef(aTHX_ iter->map_sv);
         const upb_MessageDef* entry_def = upb_FieldDef_MessageSubDef(f);
         const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_def, 1);
-        
+
         // Pass NULL for arena as keys are returned as new SVs
         return PerlUpb_UpbToSv_Element(aTHX_ &iter->key, key_f, NULL);
     }

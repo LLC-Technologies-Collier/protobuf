@@ -17,7 +17,7 @@ my $vendor_dir = File::Spec->catdir($perl_dir, 'vendor');
 # Check if we are in a Google3 dev environment (where upb is a sibling to protobuf)
 my $is_google3 = -d abs_path(File::Spec->catdir($perl_dir, '..', '..', 'upb'));
 
-my $upb_src_dir = $is_google3 
+my $upb_src_dir = $is_google3
     ? abs_path(File::Spec->catdir($perl_dir, '..', '..', 'upb'))
     : File::Spec->catdir($project_root, 'upb');
 
@@ -41,33 +41,33 @@ if ($is_google3) {
 # Function to recursively copy files matching a pattern and post-process them
 sub recursive_copy {
     my ($src_root, $dst_root, $pattern, $post_process, $ignore_pattern) = @_;
-    
+
     if (!-d $src_root) {
         die "Source directory does not exist: $src_root";
     }
-    
+
     find({
         wanted => sub {
             return if $ignore_pattern && $File::Find::name =~ $ignore_pattern;
             return unless /$pattern$/;
             return if -d $_;
-            
+
             my $rel_path = File::Spec->abs2rel($_, $src_root);
             # Map 3rd_party to third_party for CPAN compatibility
             $rel_path =~ s/\b3rd_party\b/third_party/g;
             my $dst_path = File::Spec->catfile($dst_root, $rel_path);
-            
+
             my ($vol, $dir, $file) = File::Spec->splitpath($dst_path);
             make_path(File::Spec->catpath($vol, $dir, ''));
-            
+
             if ($post_process) {
                 # Read, process, and write to dest
                 open(my $fh_in, '<', $_) or die "Cannot open for reading: $_: $!";
                 my $content = do { local $/; <$fh_in> };
                 close($fh_in);
-                
+
                 $content = $post_process->($content, $rel_path);
-                
+
                 open(my $fh_out, '>', $dst_path) or die "Cannot open for writing: $dst_path: $!";
                 print $fh_out $content;
                 close($fh_out);
@@ -81,7 +81,7 @@ sub recursive_copy {
 
 my $upb_post_process = sub {
     my ($content, $rel_path) = @_;
-    
+
     if ($rel_path && $rel_path =~ /descriptor_bootstrap\.h$/) {
         return <<'EOF';
 #ifndef THIRD_PARTY_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H_
@@ -96,31 +96,31 @@ my $upb_post_process = sub {
 #endif  // THIRD_PARTY_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H_
 EOF
     }
-    
+
     # Surgical Copybara stripping! Remove all blocks wrapped in copybara:strip_begin/end.
     # Must run BEFORE other replacements to avoid prefix-mapping modified code.
     $content =~ s/\/\/\s*copybara:strip_begin.*?copybara:strip_end[^\n]*\n?//gs;
-    
+
     # Strip "third_party/upb/" and "third_party/utf8_range/" from includes
     $content =~ s/#include\s+["']third_party\/upb\/(.*?)["']/#include "$1"/g;
     $content =~ s/#include\s+["']third_party\/utf8_range\/(.*?)["']/#include "$1"/g;
-    
+
     # Simulate Copybara stripping for Google3-specific markers (like UPB_IS_GOOGLE3)
     $content =~ s/#define\s+UPB_IS_GOOGLE3.*?\n//g;
-    
+
     # Map Google3 native descriptor includes back to open-source stage0 includes for CPAN compatibility
     if (!$is_google3) {
         $content =~ s/#include\s+["'](?:upb\/reflection\/stage\d\/)?net\/proto2\/proto\/descriptor\.upb\.h["']/#include "google\/protobuf\/descriptor.upb.h"/g;
     } else {
         $content =~ s/#include\s+["'](?:upb\/reflection\/stage\d\/)?net\/proto2\/proto\/descriptor\.upb\.h["']/#include "net\/proto2\/proto\/descriptor.upb.h"/g;
     }
-    
+
     # Map Google3-specific proto2 prefixes back to open-source google_protobuf prefixes
     # Handle double underscores first (e.g. proto2__ -> google__protobuf__)
     $content =~ s/\bproto2__/google__protobuf__/g;
     # Handle single underscores (e.g. proto2_ -> google_protobuf_)
     $content =~ s/\bproto2_/google_protobuf_/g;
-    
+
     return $content;
 };
 
@@ -154,7 +154,7 @@ if ($is_google3) {
     my $dest_gen_hdr = File::Spec->catfile(
         $vendor_dir, 'upb', 'upb', 'reflection', 'internal', 'upb_edition_defaults.h'
     );
-    
+
     if (-f $blaze_gen_hdr) {
         print "Copying generated upb_edition_defaults.h from blaze-bin...\n";
         make_path(File::Spec->catpath((File::Spec->splitpath($dest_gen_hdr))[0,1], ''));
@@ -173,7 +173,7 @@ if ($is_google3) {
     my $dest_stage0_dir = File::Spec->catdir(
         $vendor_dir, 'upb', 'upb', 'reflection', 'stage0', 'google', 'protobuf'
     );
-    
+
     if (-d $github_stage0_dir) {
         print "Copying open-source stage0 headers from github/stage0...\n";
         recursive_copy($github_stage0_dir, $dest_stage0_dir, qr/\.(c|h)$/, $upb_post_process);
@@ -193,32 +193,32 @@ if ($is_google3) {
     my $dest_proto_dir_os = File::Spec->catdir(
         $vendor_dir, 'upb', 'google', 'protobuf'
     );
-    
+
     my @files = (
         'descriptor.upb.h',
         'descriptor.upb.c',
     );
-    
+
     make_path($dest_proto_dir);
     make_path($dest_proto_dir_os);
-    
+
     foreach my $file (@files) {
         my $src = File::Spec->catfile($upb_stage0_proto_dir, $file);
-        
+
         if (-f $src) {
             print "Copying Google3 stage0 descriptor file $file...\n";
             open(my $fh_in, '<', $src) or die "Cannot open for reading: $src: $!";
             my $content = do { local $/; <$fh_in> };
             close($fh_in);
-            
+
             my $content_processed = $upb_post_process->($content);
-            
+
             # Write to Google3 path
             my $dst = File::Spec->catfile($dest_proto_dir, $file);
             open(my $fh_out, '>', $dst) or die "Cannot open for writing: $dst: $!";
             print $fh_out $content_processed;
             close($fh_out);
-            
+
             # Write to Open Source path (only the header!)
             if ($file =~ /\.h$/) {
                 my $dst_os = File::Spec->catfile($dest_proto_dir_os, $file);
@@ -242,7 +242,7 @@ if ($is_google3) {
         $vendor_dir, 'third_party', 'pcre2'
     );
     my $dest_pcre2_file = File::Spec->catfile($dest_pcre2_dir, 'pcre2.h');
-    
+
     if (-f $pcre2_src) {
         print "Copying Google3 pcre2.h to vendor layout...\n";
         make_path($dest_pcre2_dir);
@@ -262,7 +262,7 @@ if ($is_google3) {
     my $dest_gen_hdr = File::Spec->catfile(
         $vendor_dir, 'third_party', 'absl', 'base', 'google', 'toolchain.h'
     );
-    
+
     if (-f $blaze_gen_hdr) {
         print "Copying generated toolchain.h from blaze-genfiles...\n";
         make_path(File::Spec->catpath((File::Spec->splitpath($dest_gen_hdr))[0,1], ''));
@@ -284,7 +284,7 @@ if ($is_google3) {
         $vendor_dir, 'crubit', 'support'
     );
     my $dest_crubit_file = File::Spec->catfile($dest_crubit_dir, 'annotations.h');
-    
+
     if (-f $crubit_src) {
         print "Copying Google3 Crubit annotations.h to vendor layout...\n";
         make_path($dest_crubit_dir);
@@ -305,18 +305,18 @@ if ($is_google3) {
     my $dest_gen_hdr = File::Spec->catfile(
         $vendor_dir, 'google', 'protobuf', 'compiler', 'plugin.upb.h'
     );
-    
+
     if (-f $stage0_hdr) {
         print "Copying stage0 plugin.upb.h to vendor layout (with post-processing)...\n";
         make_path(File::Spec->catpath((File::Spec->splitpath($dest_gen_hdr))[0,1], ''));
-        
+
         open(my $fh_in, '<', $stage0_hdr) or die "Cannot open for reading: $stage0_hdr: $!";
         my $content = do { local $/; <$fh_in> };
         close($fh_in);
-        
+
         # Run post-process to rename proto2 -> google_protobuf
         $content = $upb_post_process->($content, 'google/protobuf/compiler/plugin.upb.h');
-        
+
         open(my $fh_out, '>', $dest_gen_hdr) or die "Cannot open for writing: $dest_gen_hdr: $!";
         print $fh_out $content;
         close($fh_out);
@@ -354,7 +354,7 @@ if ($is_google3) {
     # We also copy them to third_party/protobuf/ to match Google3 import paths in test.proto.
     my $dst_dir_src = File::Spec->catdir($vendor_dir, 'src', 'google', 'protobuf');
     my $dst_dir_g3 = File::Spec->catdir($vendor_dir, 'third_party', 'protobuf');
-    
+
     foreach my $file ('test_messages_proto2.proto', 'test_messages_proto3.proto') {
         my $src = File::Spec->catfile($project_root, $file);
         if (-f $src) {
@@ -362,17 +362,17 @@ if ($is_google3) {
             open(my $fh_in, '<', $src) or die "Cannot open for reading: $src: $!";
             my $content = do { local $/; <$fh_in> };
             close($fh_in);
-            
+
             # Strip Google-internal options that open-source protoc doesn't understand
             $content =~ s/option\s+java_mutable_api\s*=\s*\w+;//g;
-            
+
             # Write to open-source layout
             make_path($dst_dir_src);
             my $dst_src = File::Spec->catfile($dst_dir_src, $file);
             open(my $fh_out_src, '>', $dst_src) or die "Cannot open for writing: $dst_src: $!";
             print $fh_out_src $content;
             close($fh_out_src);
-            
+
             # Write to Google3 layout in vendor
             make_path($dst_dir_g3);
             my $dst_g3 = File::Spec->catfile($dst_dir_g3, $file);
@@ -398,10 +398,10 @@ my $coro_base_url = 'https://raw.githubusercontent.com/semistrict/libcoro/master
 foreach my $file (@coro_files) {
     my $url = $coro_base_url . $file;
     my $dest_path = File::Spec->catfile($libcoro_vendor_dir, $file);
-    
+
     print "  Downloading $url -> $dest_path...\n";
     my $response = $http->get($url);
-    
+
     if ($response->{success}) {
         open(my $fh, '>', $dest_path) or die "Cannot open for writing: $dest_path: $!";
         print $fh $response->{content};

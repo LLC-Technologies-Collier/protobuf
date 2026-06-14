@@ -6,7 +6,7 @@ static void test_generated_pool(pTHX) {
     SV* g1 = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
     ok(g1 != NULL, "GeneratedPool returns non-NULL");
     ok(sv_derived_from(g1, "Protobuf::DescriptorPool"), "GeneratedPool has correct class");
-    
+
     SV* g2 = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
     // Use underlying SV comparison for identity
     ok(SvRV(g1) == SvRV(g2), "GeneratedPool returns same underlying SV (singleton)");

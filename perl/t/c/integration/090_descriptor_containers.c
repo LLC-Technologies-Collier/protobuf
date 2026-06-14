@@ -49,21 +49,21 @@ static void test_map_iterator(pTHX_ SV* map_sv) {
     while (1) {
         SV* key = PerlUpb_DescriptorMapIterator_NextKey(aTHX_ iter_sv);
         if (key == &PL_sv_undef) break;
-        
+
         SV* val = PerlUpb_DescriptorMapIterator_NextValue(aTHX_ iter_sv);
         // Only check first few to avoid flooding TAP output
         if (count < 2) {
             ok(SvPOK(key), "Iterator key is a string");
             ok(sv_derived_from(val, "Protobuf::Descriptor::Field"), "Iterator value is a FieldDescriptor");
         }
-        
+
         SvREFCNT_dec(key);
         SvREFCNT_dec(val);
         count++;
     }
 
     is(count, total, "Iterated correct number of items");
-    
+
     extern void PerlUpb_DescriptorMapIterator_Free(pTHX_ SV* sv);
     PerlUpb_DescriptorMapIterator_Free(aTHX_ iter_sv);
     SvREFCNT_dec(iter_sv);
@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
         ok(seq_sv != NULL, "Created fields sequence");
         int count = PerlUpb_GenericSequence_Count(aTHX_ seq_sv);
         ok(count > 0, "Field count > 0");
-        
+
         SV* f0 = PerlUpb_GenericSequence_GetItem(aTHX_ seq_sv, 0);
         ok(sv_derived_from(f0, "Protobuf::Descriptor::Field"), "Item 0 is a FieldDescriptor");
         SvREFCNT_dec(f0);
@@ -101,13 +101,13 @@ int main(int argc, char** argv) {
         SV* map_sv = PerlUpb_ByNameMap_New(aTHX_ parent_sv, msg_def, &msg_fields_map_vtable);
         ok(map_sv != NULL, "Created fields_by_name map");
         is(PerlUpb_ByNameMap_Count(aTHX_ map_sv), count, "Map count matches sequence count");
-        
+
         SV* val_sv = PerlUpb_ByNameMap_Lookup(aTHX_ map_sv, "value");
         ok(sv_derived_from(val_sv, "Protobuf::Descriptor::Field"), "Lookup 'value' returned a FieldDescriptor");
-        
+
         const upb_FieldDef* f_raw = (const upb_FieldDef*)SvIV(SvRV(val_sv));
         is_string(upb_FieldDef_Name(f_raw), "value", "Raw field name is 'value'");
-        
+
         SvREFCNT_dec(val_sv);
 
         SV* key0 = PerlUpb_ByNameMap_Key(aTHX_ map_sv, 0);

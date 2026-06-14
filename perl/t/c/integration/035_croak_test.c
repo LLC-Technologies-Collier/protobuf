@@ -14,7 +14,7 @@ static void test_croak_recovery(void) {
     dTHX;
 
     bool caught = false;
-    
+
     // Simulate a longjmp/croak scenario
     jmp_buf buf;
     if (setjmp(buf) == 0) {

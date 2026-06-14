@@ -12,16 +12,16 @@ static void test_message_wrapping(pTHX) {
         upb_Arena_Free(arena);
         return;
     }
-    
+
     const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
-    
+
     SV* arena_wrapper = PerlUpb_Arena_New(aTHX);
     SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_wrapper, 0);
-    
+
     ok(msg_sv != NULL, "PerlUpb_WrapMessage returns non-NULL");
     ok(sv_derived_from(msg_sv, "Protobuf_perl_test::Test::TestMessage"), "Blessed into Protobuf_perl_test::Test::TestMessage");
-    
+
     is(PerlUpb_Message_GetDef(aTHX_ msg_sv), mdef, "GetDef matches original");
     is(PerlUpb_Message_GetMsg(aTHX_ msg_sv), msg, "GetMsg matches original");
 

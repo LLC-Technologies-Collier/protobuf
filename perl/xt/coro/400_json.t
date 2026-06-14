@@ -28,13 +28,13 @@ for my $i (1..$NUM_COROS) {
                 my $msg = test::TestMessage->new();
                 $msg->set_value($i * $j);
                 $msg->set_name("coro test $i $j");
-                
+
                 cede();
-                
+
                 my $json = $msg->to_json();
-                
+
                 cede();
-                
+
                 my $msg2 = test::TestMessage->from_json($json);
                 die "JSON roundtrip mismatch for value" unless $msg2->value == ($i * $j);
                 die "JSON roundtrip mismatch for name" unless $msg2->name eq "coro test $i $j";

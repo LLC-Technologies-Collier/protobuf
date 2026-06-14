@@ -16,11 +16,11 @@ subtest 'basic string and bytes packing' => sub {
         my $msg = String::StringBytes::Bytes->new({ v_string => $v });
         my $p = $msg->serialize();
         my $l = length($p);
-        
+
         my $q_msg = String::StringBytes::Bytes->parse($p);
         my $q = $q_msg->v_string;
         my $m = length($q);
-        
+
         is($q, $v, "v_string length $_: $l bytes");
     }
 };
@@ -31,10 +31,10 @@ subtest 'bytes member packing' => sub {
         my $msg = String::StringBytes::Bytes->new({ v_bytes => $v });
         my $p = $msg->serialize();
         my $l = length($p);
-        
+
         my $q_msg = String::StringBytes::Bytes->parse($p);
         my $q = $q_msg->v_bytes;
-        
+
         is($q, $v, "v_bytes length $_: $l bytes");
     }
 };
@@ -43,7 +43,7 @@ subtest 'embedded NULLs' => sub {
     my $v = "x\0\0\0\0\0\0\0\0y";
     my $msg = String::StringBytes::Bytes->new({ v_string => $v, v_bytes => $v });
     my $p = $msg->serialize();
-    
+
     my $u = String::StringBytes::Bytes->parse($p);
 
     is($u->v_bytes, $v, 'v_bytes with NULLs ok');
@@ -74,7 +74,7 @@ subtest 'large members' => sub {
     $elapsed = tv_interval($start);
     my $bl = length($b);
     ok($bl > 0, "Serialized 32 MB bytes message in $elapsed seconds ($bl bytes)");
-    
+
     # Verify roundtrip for large message
     $start = [gettimeofday];
     my $m2 = String::StringBytes::Bytes->parse($a);

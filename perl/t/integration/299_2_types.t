@@ -33,12 +33,12 @@ subtest 'types roundtrip' => sub {
 
     my $p = $msg1->serialize();
     ok(length($p) > 0, 'Serialized types message');
-    
+
     my $msg2 = Protobuf::Types::Types->parse($p);
     ok($msg2, 'Parsed types message');
-    
+
     my $h = $msg2->to_hashref;
-    
+
     is($h->{req_double}, 1.01, 'req_double');
     is(sprintf("%.2f", $h->{req_float}), "2.06", 'req_float');
     is($h->{req_int32}, 16777216, 'req_int32');

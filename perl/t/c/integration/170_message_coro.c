@@ -47,7 +47,7 @@ void test_message_ops(pTHX_ coro_arg_t *carg) {
     sprintf(buf, "val %d", carg->id);
     SV* val_sv = newSViv(carg->id * 1000);
     PerlUpb_Message_SetField(aTHX_ msg_sv, f_int32, val_sv);
-    
+
     coro_yield(carg->id);
 
     SV* ret_val = PerlUpb_Message_GetField(aTHX_ msg_sv, f_int32);
@@ -68,7 +68,7 @@ void test_message_ops(pTHX_ coro_arg_t *carg) {
     // Cleanup
     SvREFCNT_dec(val_sv);
     SvREFCNT_dec(serialized);
-    
+
     if (msg_sv) {
         PerlUpb_Arena_Destroy(aTHX_ PerlUpb_Message_GetArena(aTHX_ msg_sv));
         PerlUpb_Message_Free(aTHX_ msg_sv);

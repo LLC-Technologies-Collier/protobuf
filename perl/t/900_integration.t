@@ -36,7 +36,7 @@ subtest 'Final Integration: Everything together' => sub {
     # 5. Serialize and Deserialize (Wire)
     my $wire = $msg->serialize();
     my $parsed = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->parse($wire);
-    
+
     is($parsed->optional_int32, 42, 'Wire format parsed value matches');
     is_deeply($parsed->repeated_int32, [10, 20, 30], 'Wire format parsed array matches');
     is($parsed->map_int32_int32->{200}, 2000, 'Wire format parsed map matches');
@@ -46,12 +46,12 @@ subtest 'Final Integration: Everything together' => sub {
         plan skip_all => 'JSON is not supported in PurePerl mode' unless $Protobuf::HAS_XS;
         my $json = $msg->to_json();
         like($json, qr/"Ultimate Answer"/, 'JSON format includes name');
-        
+
         my $parsed_json = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->from_json($json);
         is($parsed_json->optional_int32, 42, 'JSON format parsed value matches');
         is_deeply($parsed_json->repeated_int32, [10, 20, 30], 'JSON format parsed array matches');
     };
-    
+
     # 7. Text Format
     subtest 'Text format (XS only stub in PP)' => sub {
         plan skip_all => 'Text format is only stub in PurePerl mode' unless $Protobuf::HAS_XS;

@@ -51,9 +51,9 @@ subtest 'AnyEvent Throughput Benchmark' => sub {
     my $msg = $class->new(id => 1, name => "ae test", tags => [1..10]);
     my $cv = AnyEvent->condvar;
     my $count = 0;
-    
+
     my $t0 = [gettimeofday];
-    
+
     my $w; $w = AnyEvent->idle(cb => sub {
         for (1..1000) {
             my $id = $msg->id();
@@ -67,9 +67,9 @@ subtest 'AnyEvent Throughput Benchmark' => sub {
         }
     });
     $cv->recv;
-    
+
     my $elapsed = tv_interval($t0);
-    diag(sprintf("AnyEvent (%d items, idle loop): %.4fs (%.2f ops/sec)", 
+    diag(sprintf("AnyEvent (%d items, idle loop): %.4fs (%.2f ops/sec)",
         $iterations, $elapsed, $iterations/$elapsed));
     ok(1, "AnyEvent benchmark finished");
 };

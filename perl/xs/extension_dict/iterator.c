@@ -47,7 +47,7 @@ SV* PerlUpb_ExtensionDict_Iterator_Next(pTHX_ SV* self) {
 
     const upb_FieldDef* f;
     upb_MessageValue val;
-    
+
     while (upb_Message_Next(msg, mdef, pool, &f, &val, &iter->iter)) {
         if (upb_FieldDef_IsExtension(f)) {
             return PerlUpb_FieldDef_GetWrapper(aTHX_ f);

@@ -18,7 +18,7 @@ subtest 'generated pool' => sub {
     my $pool = Protobuf::DescriptorPool->generated_pool();
     ok($pool, 'Got generated pool');
     isa_ok($pool, 'Protobuf::DescriptorPool');
-    
+
     my $pool2 = Protobuf::DescriptorPool->generated_pool();
     if ($Protobuf::HAS_XS) {
         is($pool->{_pool_ptr}, $pool2->{_pool_ptr}, 'Generated pool is a singleton');

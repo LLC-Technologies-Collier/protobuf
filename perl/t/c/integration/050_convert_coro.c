@@ -28,7 +28,7 @@ static void convert_coro_task(void *arg) {
     for (int i = 0; i < OPS_PER_CORO; i++) {
         SV* sv = newSViv(i);
         upb_MessageValue val;
-        
+
         if (PerlUpb_SvToUpb(aTHX, sv, carg->f, &val, carg->arena)) {
             SV* back = PerlUpb_UpbToSv(aTHX, &val, carg->f, NULL);
             if (SvIV(back) != i) {
@@ -37,12 +37,12 @@ static void convert_coro_task(void *arg) {
             SvREFCNT_dec(back);
         }
         SvREFCNT_dec(sv);
-        
+
         if (i % 5 == 0) {
             coro_transfer(carg->my_ctx, carg->main_ctx);
         }
     }
-    
+
     *carg->finished = true;
     coro_transfer(carg->my_ctx, carg->main_ctx);
 }
@@ -50,13 +50,13 @@ static void convert_coro_task(void *arg) {
 static void test_convert_coro(void) {
     dTHX;
     plan(NUM_COROS);
-    
+
     coro_context main_ctx;
     coro_context ctxs[NUM_COROS];
     bool finished[NUM_COROS];
     char stacks[NUM_COROS][65536];
     coro_arg_t args[NUM_COROS];
-    
+
     coro_create(&main_ctx, NULL, NULL, NULL, 0);
 
     upb_Arena *arena = upb_Arena_New();
@@ -64,7 +64,7 @@ static void test_convert_coro(void) {
         fprintf(stderr, "Failed to load test descriptors\n");
         return;
     }
-    
+
     SV* pool_sv = PerlUpb_DescriptorPool_GeneratedPool(aTHX);
     const upb_DefPool* pool = PerlUpb_DescriptorPool_GetPool(aTHX, pool_sv);
     const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(pool, "protobuf_perl_test.TestMessage");
@@ -84,10 +84,10 @@ static void test_convert_coro(void) {
         args[i].finished = &finished[i];
         args[i].arena = arena;
         args[i].f = f;
-        
+
         coro_create(&ctxs[i], convert_coro_task, &args[i], stacks[i], sizeof(stacks[i]));
     }
-    
+
     int finished_count = 0;
     while (finished_count < NUM_COROS) {
         finished_count = 0;
@@ -99,9 +99,9 @@ static void test_convert_coro(void) {
             }
         }
     }
-    
+
     upb_Arena_Free(arena);
-    
+
     for (int i = 0; i < NUM_COROS; i++) {
         ok(1, "Coroutine completed");
     }
@@ -109,7 +109,7 @@ static void test_convert_coro(void) {
 
 int main(int argc, char **argv, char **env) {
     PERL_SYS_INIT3(&argc, &argv, &env);
-    
+
     PerlInterpreter *test_perl = perl_alloc();
     perl_construct(test_perl);
     char *my_argv[] = { "", "-e", "0", NULL };
@@ -124,7 +124,7 @@ int main(int argc, char **argv, char **env) {
     }
     perl_destruct(test_perl);
     perl_free(test_perl);
-    
+
     PERL_SYS_TERM();
     return 0;
 }

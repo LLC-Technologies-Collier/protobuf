@@ -21,20 +21,20 @@ sub _init_iv_limits {
 
 sub create_message {
     my ($self, $class, $mdef, $arena, $flags) = @_;
-    
+
     # Internal representation for PurePerl: a HashRef
     my $data = {
         _fields => {},
         _mdef   => $mdef,
         _engine => $self,
     };
-    
+
     return bless $data, $class;
 }
 
 sub get {
     my ($self, $msg, $field_name) = @_;
-    
+
     unless (exists $msg->{_fields}{$field_name}) {
         my $mdef = $msg->{_mdef};
         if ($mdef) {
@@ -54,14 +54,14 @@ sub get {
             }
         }
     }
-    
+
     return $msg->{_fields}{$field_name};
 }
 
 sub _default_value {
     my ($self, $fdef) = @_;
     my $type = $fdef->type_number;
-    
+
     if ($type == 1 || $type == 2) { # DOUBLE, FLOAT
         return 0.0;
     } elsif ($type == 3 || $type == 4 || $type == 16 || $type == 18) {
@@ -84,7 +84,7 @@ sub _default_value {
 
 sub set {
     my ($self, $msg, $field_name, $value) = @_;
-    
+
     my $mdef = $msg->{_mdef};
     if ($mdef) {
         my $fdef = $mdef->find_field_by_name($field_name);
@@ -103,7 +103,7 @@ sub set {
                     }
                 }
             }
-            
+
             # Clone repeated/map/message values to ensure independence
             if ($fdef->is_map) {
                 $value = _deep_clone($value);
@@ -123,7 +123,7 @@ sub set {
             } elsif ($fdef->type_number == 11) {
                 $value = _deep_clone($value);
             }
-            
+
             my $type_num = $fdef->type_number;
             if ($type_num == 3 || $type_num == 4 || $type_num == 16 || $type_num == 18) {
                 if (defined $value && ref($value) && eval { $value->isa('Math::BigInt') }) {
@@ -135,7 +135,7 @@ sub set {
             }
         }
     }
-    
+
     $msg->{_fields}{$field_name} = $value;
 }
 
@@ -158,7 +158,7 @@ sub _encode_varint {
         # Protobuf negative varints are always 10 bytes (unsigned 64-bit representation)
         $v = Math::BigInt->new("18446744073709551616")->badd($v);
     }
-    
+
     my $res = '';
     while ($v->bcmp(128) >= 0) {
         $res .= chr(($v->copy()->band(0x7f)->as_number) | 0x80);
@@ -251,7 +251,7 @@ sub serialize {
     my $mdef = $msg->{_mdef};
     my $fields = $msg->{_fields};
     my $res = '';
-    
+
     # Get fields from mdef (handle both XS and PurePerl mdef)
     my @field_defs;
     if ($mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl')) {
@@ -300,29 +300,29 @@ sub serialize {
     foreach my $f (@field_defs) {
         my $val = $fields->{$f->{name}};
         next unless defined $val;
-        
+
         my $tag = $f->{number};
         my $type = $f->{type};
         my $wire = $TYPE_TO_WIRE{$type};
-        
+
         if ($f->{is_map}) {
             my $entry_mdef = $f->{fdef}->message_type;
             my $key_fdef = $entry_mdef->find_field_by_number(1);
             my $val_fdef = $entry_mdef->find_field_by_number(2);
-            
+
             my $key_type = $key_fdef->type_number;
             my $val_type = $val_fdef->type_number;
-            
+
             my $key_wire = $TYPE_TO_WIRE{$key_type};
             my $val_wire = $TYPE_TO_WIRE{$val_type};
-            
+
             foreach my $k (keys %$val) {
                 my $v = $val->{$k};
-                
+
                 my $entry_data = '';
                 $entry_data .= $self->_encode_field(1, $key_type, $key_wire, $k);
                 $entry_data .= $self->_encode_field(2, $val_type, $val_wire, $v);
-                
+
                 $res .= _encode_varint(($tag << 3) | 2);
                 $res .= _encode_varint(length($entry_data));
                 $res .= $entry_data;
@@ -336,18 +336,18 @@ sub serialize {
             $res .= $self->_encode_field($tag, $type, $wire, $val);
         }
     }
-    
+
     if (exists $msg->{_unknown_fields} && defined $msg->{_unknown_fields}) {
         $res .= $msg->{_unknown_fields};
     }
-    
+
     return $res;
 }
 
 sub _encode_field {
     my ($self, $tag, $type, $wire, $val) = @_;
     my $res = _encode_varint(($tag << 3) | $wire);
-    
+
     if ($wire == 0) { # Varint
         if ($type == 17) { $val = _encode_zigzag32($val); }
         elsif ($type == 18) { $val = _encode_zigzag64($val); }
@@ -398,10 +398,10 @@ sub parse_into {
     my ($self, $msg, $data) = @_;
     my $mdef = $msg->{_mdef};
     my $fields = $msg->{_fields};
-    
+
     my $pos = 0;
     my $len = length($data);
-    
+
     # Pre-index fields by number for fast lookup
     my %fields_by_num;
     if ($mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl')) {
@@ -440,7 +440,7 @@ sub parse_into {
         $tag_wire = $tag_wire->as_number();
         my $tag = $tag_wire >> 3;
         my $wire = $tag_wire & 0x07;
-        
+
         my $f = $fields_by_num{$tag};
         if (!$f) {
             _skip_field(\$data, \$pos, $wire);
@@ -450,7 +450,7 @@ sub parse_into {
             $msg->{_unknown_fields} .= $raw_field;
             next;
         }
-        
+
         my $val = $self->_decode_field(\$data, \$pos, $wire, $f);
         if ($f->{is_map}) {
             my $key = $val->get('key');
@@ -470,7 +470,7 @@ sub parse_into {
 sub _decode_field {
     my ($self, $data_ref, $pos_ref, $wire, $f) = @_;
     my $type = $f->{type};
-    
+
     if ($wire == 0) { # Varint
         my $val = _decode_varint($data_ref, $pos_ref);
         if ($type == 17) { $val = _decode_zigzag32($val); }
@@ -507,7 +507,7 @@ sub _decode_field {
         my $bytes = substr($$data_ref, $$pos_ref, 8);
         $$pos_ref += 8;
         if ($type == 1) { return unpack('d', $bytes); }
-        
+
         my $val = Math::BigInt->from_hex('0x' . unpack('H*', reverse($bytes)));
         if ($type == 16) { # sfixed64
             if ($val->bcmp("9223372036854775807") > 0) {
@@ -515,7 +515,7 @@ sub _decode_field {
             }
         }
         return ($val->bcmp("9007199254740992") > 0 || $val->bcmp("-9007199254740992") < 0) ? $val : $val->as_number();
-        
+
     } elsif ($wire == 2) { # Length-delimited
         my $len = _decode_varint($data_ref, $pos_ref);
         $len = $len->as_number();
@@ -540,22 +540,22 @@ sub _decode_field {
         if ($type == 15) { return unpack('l', $bytes); } # sfixed32
         return unpack('V', $bytes);
     }
-    
+
     return undef;
 }
 
 sub _get_perl_class_for_mdef {
     my ($self, $mdef) = @_;
     return undef unless $mdef;
-    
+
     # XS mdef
     return $mdef->perl_class_name() if $mdef->can('perl_class_name');
-    
+
     # PurePerl mdef (Class)
     if ($mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl')) {
         return $mdef->perl_class_name();
     }
-    
+
     # Fallback for PurePerl mdef (HashRef)
     return $mdef->{perl_class};
 }
@@ -585,14 +585,14 @@ sub _skip_field {
 sub merge {
     my ($self, $dst, $src) = @_;
     my $mdef = $dst->{_mdef};
-    
+
     foreach my $name (keys %{$src->{_fields}}) {
         my $val = $src->{_fields}{$name};
         next unless defined $val;
-        
+
         my $fdef = $mdef->find_field_by_name($name);
         next unless $fdef;
-        
+
         if ($fdef->is_map) {
             $dst->{_fields}{$name} ||= bless {}, 'Protobuf::Internal::Map::Public';
             foreach my $k (keys %$val) {
@@ -660,7 +660,7 @@ sub to_perl {
     my ($self, $msg) = @_;
     my $fields = $msg->{_fields};
     my $res = {};
-    
+
     foreach my $name (keys %$fields) {
         my $val = $fields->{$name};
         if (ref($val)) {
@@ -692,20 +692,20 @@ sub to_text {
     $indent //= 0;
     my $indent_str = '  ' x $indent;
     my $res = '';
-    
+
     my $mdef = $msg->{_mdef};
     return '' unless $mdef;
-    
+
     my $field_count = $mdef->field_count;
     for my $i (0 .. $field_count - 1) {
         my $fdef = $mdef->get_field($i);
         my $name = $fdef->name;
-        
+
         next unless $self->has($msg, $name);
-        
+
         my $val = $self->get($msg, $name);
         next unless defined $val;
-        
+
         if ($fdef->is_map) {
             my $subm = $fdef->message_type;
             foreach my $key (sort keys %$val) {
@@ -722,7 +722,7 @@ sub to_text {
             $res .= _format_field_for_text($self, $fdef, $val, $indent_str, $indent);
         }
     }
-    
+
     return $res;
 }
 
@@ -730,7 +730,7 @@ sub _format_field_for_text {
     my ($self, $fdef, $val, $indent_str, $indent) = @_;
     my $name = $fdef->name;
     my $type = $fdef->type_number;
-    
+
     if ($type == 11) { # MESSAGE
         my $sub_text = $self->to_text($val, $indent + 1);
         return "${indent_str}${name} {\n${sub_text}${indent_str}}\n";
@@ -777,7 +777,7 @@ sub _deep_clone {
     return $val unless defined $val;
     my $ref = ref($val);
     return $val unless $ref;
-    
+
     if ($ref eq 'ARRAY') {
         return [ map { _deep_clone($_) } @$val ];
     } elsif ($ref eq 'HASH') {

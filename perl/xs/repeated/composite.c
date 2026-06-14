@@ -15,7 +15,7 @@ SV* PerlUpb_Repeated_Add(pTHX_ SV* self) {
     upb_Array* arr = PerlUpb_Repeated_GetArray(aTHX_ self);
     const upb_FieldDef* f = PerlUpb_Repeated_GetFieldDef(aTHX_ self);
     SV* arena_sv = PerlUpb_GetArenaFromObject(aTHX_ self);
-    
+
     if (!arr || !f || !arena_sv) return &PL_sv_undef;
 
     if (!upb_FieldDef_IsSubMessage(f)) {

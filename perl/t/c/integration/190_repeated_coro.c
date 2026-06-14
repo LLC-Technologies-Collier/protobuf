@@ -43,7 +43,7 @@ void test_repeated_ops(pTHX_ coro_arg_t *carg) {
         }
         SV* av_ref = newRV_noinc((SV*)av);
         PerlUpb_Message_SetField(aTHX_ msg_sv, f_rep_int32, av_ref);
-        
+
         coro_yield(carg->id);
 
         SV* ret_av_ref = PerlUpb_Message_GetField(aTHX_ msg_sv, f_rep_int32);

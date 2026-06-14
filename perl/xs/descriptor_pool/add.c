@@ -34,7 +34,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
     upb_Status status;
     upb_Status_Clear(&status);
     const upb_FileDef* file = upb_DefPool_AddFile((upb_DefPool*)pool, (const void*)proto, &status);
-    
+
     // The pool keeps its own internal state, so the proto is no longer needed.
     PerlUpb_Arena_Release(aTHX_ arena, PERL_UPB_LIFECYCLE_TRANSIENT);
 
@@ -65,7 +65,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
                         }
                     }
                 }
-                croak("Failed to add file to pool: %s (duplicate %s '%s' already defined in %s)", 
+                croak("Failed to add file to pool: %s (duplicate %s '%s' already defined in %s)",
                       msg, type_str, symbol, existing_file_name);
             }
         } else if (strstr(msg, "duplicate file name")) {
@@ -73,7 +73,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFile(pTHX_ SV* self, SV* serialized) {
         }
         croak("Failed to add file to pool: %s", msg);
     }
-    
+
     return PerlUpb_FileDef_GetWrapper(aTHX_ file);
 }
 
@@ -96,7 +96,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* se
 
     size_t n;
     const google_protobuf_FileDescriptorProto* const* files = google_protobuf_FileDescriptorSet_file(set, &n);
-    
+
     upb_Status status;
     AV* av = newAV();
 
@@ -131,7 +131,7 @@ SV* PerlUpb_DescriptorPool_AddSerializedFileDescriptorSet(pTHX_ SV* self, SV* se
                             }
                         }
                     }
-                    croak("Failed to add file %zu to pool: %s (duplicate %s '%s' already defined in %s)", 
+                    croak("Failed to add file %zu to pool: %s (duplicate %s '%s' already defined in %s)",
                           i, msg, type_str, symbol, existing_file_name);
                 }
             } else if (strstr(msg, "duplicate file name")) {

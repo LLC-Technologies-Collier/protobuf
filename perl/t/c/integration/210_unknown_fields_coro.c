@@ -39,7 +39,7 @@ void test_unknown_fields_ops(pTHX_ coro_arg_t *carg) {
         SV* data_sv = newSVpv(buf, 0);
         PerlUpb_UnknownFieldSet_Add(aTHX_ set_sv, data_sv);
         SvREFCNT_dec(data_sv);
-        
+
         coro_yield(carg->id);
 
         SV* ret_data = PerlUpb_UnknownFieldSet_GetData(aTHX_ set_sv);

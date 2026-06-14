@@ -60,7 +60,7 @@ SV* PerlUpb_DescriptorPool_New(pTHX) {
     PerlUpb_DescriptorPool* raw = (PerlUpb_DescriptorPool*)PerlUpb_DescriptorPool_CreateRaw(aTHX);
     HV* hv = newHV();
     hv_store(hv, "_pool_ptr", 9, newSViv(PTR2IV(raw)), 0);
-    
+
     SV* obj = newRV_noinc((SV*)hv);
     sv_bless(obj, gv_stashpv("Protobuf::DescriptorPool", GV_ADD));
 
@@ -95,7 +95,7 @@ const upb_DefPool* PerlUpb_DescriptorPool_GetPool(pTHX_ SV* sv) {
     if (!sv || !SvROK(sv) || !sv_isa(sv, "Protobuf::DescriptorPool")) {
         croak("Argument is not a Protobuf::DescriptorPool object");
     }
-    
+
     SV* rv = SvRV(sv);
     if (SvTYPE(rv) != SVt_PVHV) return NULL;
 
@@ -110,7 +110,7 @@ void PerlUpb_DescriptorPool_Free(pTHX_ SV* sv) {
     if (!sv || !SvROK(sv) || !sv_isa(sv, "Protobuf::DescriptorPool")) {
         return;
     }
-    
+
     SV* rv = SvRV(sv);
     if (SvTYPE(rv) != SVt_PVHV) return;
 
@@ -133,7 +133,7 @@ int PerlUpb_DescriptorPool_FileCount(pTHX_ SV* sv) {
     // upb doesn't easily expose the number of files in a pool without iterating.
     // For now, return 0 or implement a basic tracking if needed.
     // Actually, in our TestHelpers, we only load one set.
-    return 0; 
+    return 0;
 }
 
 SV* PerlUpb_DescriptorPool_GetFile(pTHX_ SV* sv, int index) {

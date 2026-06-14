@@ -123,7 +123,7 @@ sub register_extension_range {
 sub generate_for_file {
     my ($class, $file) = @_;
     return unless $file;
-    
+
     my $proto_file = $file->name;
     $proto_file =~ s/.*\///; # Basename
     $proto_file =~ s/\..*//; # Remove extension
@@ -135,23 +135,23 @@ sub generate_for_file {
     $base_module ||= $file_module;
 
     $log->debugf("Generating classes for file: %s (Base: %s)", $file->name, $base_module);
-    
+
     my $count = $file->top_level_message_count;
     for my $i (0 .. $count - 1) {
         my $mdef = $file->get_top_level_message($i);
         _generate_recursively($mdef, $base_module);
     }
-    
+
     my $enum_count = $file->top_level_enum_count;
     for my $i (0 .. $enum_count - 1) {
         my $edef = $file->get_top_level_enum($i);
         my $full_name = $edef->full_name;
         my $normalized = $full_name;
         $normalized =~ s/^\.//;
-        
+
         my $perl_class = "${base_module}::" . $edef->name;
         $log->debugf("Generating top-level enum: %s", $perl_class);
-        
+
         my $vcount = $edef->value_count;
         if ($vcount > 0) {
             my $first_val = $edef->get_value(0)->name;
@@ -183,7 +183,7 @@ sub _generate_recursively {
     my ($mdef, $current_ns) = @_;
     return unless $mdef->isa('Protobuf::Descriptor::MessageDef') || $mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl');
     _generate_for_message($mdef, $current_ns);
-    
+
     my $nested_count = $mdef->nested_message_count;
     for my $i (0 .. $nested_count - 1) {
         my $subm = $mdef->get_nested_message($i);
@@ -193,7 +193,7 @@ sub _generate_recursively {
 
 sub generate_type_library {
     my ($class, $file) = @_;
-    
+
     my $proto_file = $file->name;
     $proto_file =~ s/.*\///;
     $proto_file =~ s/\..*//;
@@ -233,13 +233,13 @@ sub _generate_types_recursively {
     my $normalized = $full_name;
     $normalized =~ s/^\.//;
     my $perl_class = join('::', map { _capitalize_segment($_) } split(/\./, $normalized));
-    
+
     my $type_name = $mdef->name;
-    
+
     my $code = "declare '$type_name',\n";
     $code .= "    as InstanceOf['$perl_class'],\n";
     $code .= "    where { \$_->validate };\n\n";
-    
+
     $code .= "coerce '$type_name',\n";
     $code .= "    from HashRef, via { '$perl_class'->from_perl(\$_) };\n\n";
 
@@ -264,14 +264,14 @@ sub generate_validator_xs {
     $normalized =~ s/^\.//;
     my $c_func = "validate_" . $normalized;
     $c_func =~ s/[:\.]/_/g;
-    
+
     my $code = "/* AOT Validator for $full_name */\n";
     $code .= "bool $c_func(pTHX_ SV* sv) {\n";
     $code .= "    if (!sv || !SvROK(sv)) return false;\n";
     $code .= "    if (!sv_derived_from(sv, \"$perl_class\")) return false;\n";
-    
+
     $code .= "    HV* hv = (HV*)SvRV(sv);\n";
-    
+
     my $field_count = $mdef->field_count;
     for my $i (0 .. $field_count - 1) {
         my $f = $mdef->get_field($i);
@@ -280,7 +280,7 @@ sub generate_validator_xs {
             $code .= "    if (!hv_exists(hv, \"$name\", " . length($name) . ")) return false;\n";
         }
     }
-    
+
     $code .= "    return true;\n}\n";
     return $code;
 }
@@ -297,11 +297,11 @@ sub generate_for_message {
 sub _generate_for_message {
     my ($mdef, $current_ns) = @_;
     return unless $mdef->isa('Protobuf::Descriptor::MessageDef') || $mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl');
-    
+
     my $full_name = $mdef->full_name;
     my $normalized = $full_name;
     $normalized =~ s/^\.//;
-    
+
     my $perl_class = "${current_ns}::" . $mdef->name;
     # If current_ns already ends with message name, don't append it again
     if ($current_ns =~ /::$mdef->name$/) {
@@ -319,7 +319,7 @@ sub _generate_for_message {
     return if $GENERATED{$perl_class}++;
 
     # Special handling for Well-Known Types
-    
+
     $DESCRIPTOR_REGISTRY{$perl_class} = $mdef;
     if ($mdef->isa('Protobuf::Descriptor::MessageDef::PurePerl')) {
         $mdef->{_data}{perl_class} = $perl_class;
@@ -355,7 +355,7 @@ EOC
         my $edef = $mdef->get_nested_enum($i);
         my $enum_name = $edef->name;
         my $enum_pkg = "${perl_class}::$enum_name";
-        
+
         my $val_count = $edef->value_count;
         if ($val_count > 0) {
             my $first_val = $edef->get_value(0)->name;
@@ -376,13 +376,13 @@ EOC
         }
     }
     $code .= "package $perl_class;\n";
-    
+
     my $field_count = $mdef->field_count;
     for my $i (0 .. $field_count - 1) {
         my $fdef = $mdef->get_field($i);
         my $name = $fdef->name;
         $FIELD_REGISTRY{$perl_class}{$name} = $fdef;
-        
+
         my $type_code = _get_type_tiny_code($fdef);
         my $coercion_code = '';
         my $extra_where = '';
@@ -457,7 +457,7 @@ sub clear_$name {
     return \$self->clear('$name');
 }
 EOC
-        
+
         if ($fdef->is_repeated) {
             $code .= <<"EOC";
 sub add_$name {
@@ -500,7 +500,7 @@ EOC
     if ($ext_class) {
         _inject_wkt($perl_class, $ext_class);
     }
-    
+
     return;
 }
 
@@ -525,12 +525,12 @@ sub _get_perl_class_for_mdef {
         $proto_file =~ s/.*\///;
         $proto_file =~ s/\..*//;
         my $file_module = join('', map { _capitalize_segment($_) } split(/_/, $proto_file));
-        
+
         my $pkg = $f->get_package;
         my $base_module = join('::', map { _capitalize_segment($_) } split(/\./, $pkg));
         $base_module .= "::$file_module" if $base_module;
         $base_module ||= $file_module;
-        
+
         # Now we need the path from the package to the message
         my $full_name = $mdef->full_name;
         $full_name =~ s/^\.//;

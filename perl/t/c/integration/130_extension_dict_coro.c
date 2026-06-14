@@ -34,26 +34,26 @@ void test_extension_access(pTHX_ coro_arg_t *carg) {
     char val_str[32];
     sprintf(val_str, "coro %d op", carg->id);
     SV* val_sv = newSVpv(val_str, 0);
-    
+
     // Set value
     PerlUpb_ExtensionDict_SetItem(aTHX_ carg->dict_sv, carg->field_sv, val_sv);
-    
+
     // Yield immediately after set to let others overwrite
     coro_yield(carg->id);
 
-    // Get value. Note: in this specific test, multiple coros are fighting 
-    // for the SAME field, so we might not get our own value back 
+    // Get value. Note: in this specific test, multiple coros are fighting
+    // for the SAME field, so we might not get our own value back
     // if another coro ran in between.
     // However, since we yield to main and then main transfers to the NEXT coro,
     // we CAN predict the behavior.
-    
+
     SV* ret_val = PerlUpb_ExtensionDict_GetItem(aTHX_ carg->dict_sv, carg->field_sv);
-    // (We don't assert the exact value here because of the contention, 
+    // (We don't assert the exact value here because of the contention,
     // just that it's a valid string)
     if (!SvPOK(ret_val)) {
         carg->errors++;
     }
-    
+
     SvREFCNT_dec(ret_val);
     SvREFCNT_dec(val_sv);
 }
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
     const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
     const upb_FieldDef *ext_field = upb_DefPool_FindExtensionByName(test_pool, "protobuf_perl_test.extension_string");
-    
+
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
     SV* message_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_sv, 0);
     SV* dict_sv = PerlUpb_ExtensionDict_New(aTHX_ message_sv);

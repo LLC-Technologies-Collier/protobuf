@@ -14,11 +14,11 @@ subtest 'json integration' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(123);
     $msg->set_name("integration");
-    
+
     my $json = $msg->to_json();
-    
+
     my $msg2 = Protobuf_perl_test::Test::TestMessage->from_json($json);
-    
+
     is($msg2->value, 123, 'Value matches after json roundtrip');
     is($msg2->name, 'integration', 'Name matches after json roundtrip');
 };

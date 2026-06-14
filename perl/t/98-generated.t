@@ -47,11 +47,11 @@ subtest 'generate String::StringBytes::Bytes' => sub {
     # Load the generated module
     unshift @INC, $out_dir;
     require String::StringBytes;
-    
+
     ok(String::StringBytes::Bytes->can('new'), 'String::StringBytes::Bytes class generated');
     my $msg = String::StringBytes::Bytes->new(v_string => 'hello');
     is($msg->v_string, 'hello', 'Message works as expected');
-    
+
     my $bin = $msg->serialize;
     my $msg2 = String::StringBytes::Bytes->parse($bin);
     is($msg2->v_string, 'hello', 'Roundtrip works');
@@ -69,11 +69,11 @@ subtest 'generate ProtobufTest::Types' => sub {
     # Load the generated module
     unshift @INC, $out_dir;
     require Protobuf::Types;
-    
+
     ok(Protobuf::Types::Types->can('new'), 'Protobuf::Types::Types class generated');
     my $msg = Protobuf::Types::Types->new(opt_int32 => 123);
     is($msg->opt_int32, 123, 'Scalar field works');
-    
+
     ok(Protobuf::Types::Types::Enum->can('value1'), 'Nested enum generated');
     is(Protobuf::Types::Types::Enum->value1(), 1, 'Enum value matches');
 };

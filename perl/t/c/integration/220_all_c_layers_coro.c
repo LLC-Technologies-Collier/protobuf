@@ -42,13 +42,13 @@ void test_all_ops(pTHX_ coro_arg_t *carg) {
     for (int i = 0; i < NUM_OPS; i++) {
         // 1. Scalar Set
         PerlUpb_Message_SetField(aTHX_ msg_sv, f_int32, newSViv(carg->id * 100 + i));
-        
+
         coro_yield(carg->id); // Yield
 
         // 2. Serialization/Parse
         SV* serialized = PerlUpb_Message_Serialize(aTHX_ msg_sv);
         SV* parsed = PerlUpb_Message_Parse(aTHX_ carg->mdef_sv, serialized);
-        
+
         if (!PerlUpb_Message_IsEqual(aTHX_ msg_sv, parsed)) {
             carg->errors++;
         }
@@ -57,7 +57,7 @@ void test_all_ops(pTHX_ coro_arg_t *carg) {
         SV* unk_set = PerlUpb_UnknownFieldSet_New(aTHX_ msg_sv);
         const char unk_data[] = { 0xB8, 0x3E, 0x7B }; // tag 999, val 123
         PerlUpb_UnknownFieldSet_Add(aTHX_ unk_set, newSVpvn(unk_data, sizeof(unk_data)));
-        
+
         coro_yield(carg->id); // Yield
 
         // Cleanup iteration

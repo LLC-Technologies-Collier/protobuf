@@ -12,8 +12,8 @@ SV* PerlUpb_Message_GetField(pTHX_ SV* message_sv, const upb_FieldDef* f) {
     const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
     if (!msg) croak("Invalid message object");
 
-    bool needs_arena = upb_FieldDef_IsSubMessage(f) || 
-                      upb_FieldDef_IsRepeated(f) || 
+    bool needs_arena = upb_FieldDef_IsSubMessage(f) ||
+                      upb_FieldDef_IsRepeated(f) ||
                       upb_FieldDef_IsMap(f);
 
     if (needs_arena) {
@@ -59,7 +59,7 @@ void PerlUpb_Message_SetField(pTHX_ SV* message_sv, const upb_FieldDef* f, SV* v
 bool PerlUpb_Message_HasField(pTHX_ SV* message_sv, const upb_FieldDef* f) {
     const upb_Message* msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
     if (!msg) croak("Invalid message object");
-    
+
     if (!upb_FieldDef_HasPresence(f)) {
         croak("Field does not have presence");
     }

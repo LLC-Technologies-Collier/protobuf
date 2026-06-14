@@ -160,9 +160,9 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
 
     if (upb_FieldDef_IsMap(f)) {
         upb_Map *map = (upb_Map*)val->map_val;
-        if (!map) return newSV(0); 
+        if (!map) return newSV(0);
         SV* internal = PerlUpb_Map_New(aTHX_ map, f, parent_arena_sv, 0);
-        
+
         if (reg && reg->stash_map_public) {
             return wrap_container_native(aTHX_ internal, reg->stash_map_public, "Protobuf::Internal::wrap_map");
         }
@@ -171,7 +171,7 @@ SV *PerlUpb_UpbToSv(pTHX_ const upb_MessageValue *val, const upb_FieldDef *f, SV
 
     if (upb_FieldDef_IsRepeated(f)) {
         upb_Array *arr = (upb_Array*)val->array_val;
-        if (!arr) return newSV(0); 
+        if (!arr) return newSV(0);
         SV* internal = PerlUpb_Repeated_New(aTHX_ arr, f, parent_arena_sv, 0);
 
         if (reg && reg->stash_repeated_public) {
@@ -193,7 +193,7 @@ SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mde
     for (int i = 0; i < n; i++) {
         const upb_FieldDef *f = upb_MessageDef_Field(mdef, i);
         const char *name = upb_FieldDef_Name(f);
-        
+
         bool has = false;
         if (upb_FieldDef_IsRepeated(f)) {
             upb_MessageValue v = upb_Message_GetFieldByDef(msg, f);
@@ -208,13 +208,13 @@ SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mde
         if (has) {
             upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
             SV *val_sv;
-            
+
             if (upb_FieldDef_IsMap(f)) {
                 // ... (Map logic unchanged)
                 const upb_MessageDef *entry_mdef = upb_FieldDef_MessageSubDef(f);
                 const upb_FieldDef *key_f = upb_MessageDef_FindFieldByNumber(entry_mdef, 1);
                 const upb_FieldDef *val_f = upb_MessageDef_FindFieldByNumber(entry_mdef, 2);
-                
+
                 HV *map_hv = newHV();
                 upb_Map *map = (upb_Map*)val.map_val;
                 size_t iter = kUpb_Map_Begin;
@@ -237,7 +237,7 @@ SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mde
                 size_t size = upb_Array_Size(arr);
                 AV *av = newAV();
                 av_extend(av, size);
-                
+
                 if (!upb_FieldDef_IsSubMessage(f) && upb_FieldDef_Type(f) != kUpb_FieldType_String && upb_FieldDef_Type(f) != kUpb_FieldType_Bytes) {
                     // FAST PATH: Batch conversion for scalar arrays
                     const void *data = upb_Array_DataPtr(arr);
@@ -267,11 +267,11 @@ SV *PerlUpb_Message_ToSv(pTHX_ const upb_Message *msg, const upb_MessageDef *mde
             else {
                 val_sv = convert_singular_upb_to_sv(aTHX_ &val, f, parent_arena_sv);
             }
-            
+
             hv_store(hv, name, strlen(name), val_sv, 0);
         }
     }
-    
+
     return newRV_noinc((SV*)hv);
 }
 
@@ -279,7 +279,7 @@ SV *PerlUpb_Message_ToPerl(pTHX_ SV *message_sv) {
     const upb_Message *msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
     const upb_MessageDef *mdef = PerlUpb_Message_GetDef(aTHX_ message_sv);
     SV *arena_sv = PerlUpb_Message_GetArena(aTHX_ message_sv);
-    
+
     if (!msg || !mdef) croak("Invalid message object for to_perl");
 
     return PerlUpb_Message_ToSv(aTHX_ msg, mdef, arena_sv);

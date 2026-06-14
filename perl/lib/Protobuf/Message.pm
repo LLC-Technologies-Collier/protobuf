@@ -288,9 +288,9 @@ sub new {
 
     my $self = $engine->create_message($class, $mdef, delete $args->{arena}, $flags);
     $self->{_engine} = $engine;
-    
+
     $self->from_perl($args) if keys %$args;
-    
+
     return $self;
 }
 
@@ -385,7 +385,7 @@ sub which_oneof {
         my $mdef = $self->descriptor;
         my $oneof = $mdef->find_oneof_by_name($oneof_name);
         croak("Oneof '$oneof_name' not found") unless $oneof;
-        
+
         foreach my $f ($oneof->fields) {
             if ($self->has($f->name)) {
                 return $f->name;

@@ -31,11 +31,11 @@ void test_pool_access(pTHX_ coro_arg_t *carg) {
         carg->errors++;
         return;
     }
-    
+
     if (!sv_derived_from(msg_sv, "Protobuf::Descriptor::MessageDef")) {
         carg->errors++;
     }
-    
+
     SV* msg_sv_again = PerlUpb_DescriptorPool_FindMessageByName(aTHX_ carg->pool_sv, "Test");
     if (SvRV(msg_sv_again) != SvRV(msg_sv)) {
         carg->errors++;

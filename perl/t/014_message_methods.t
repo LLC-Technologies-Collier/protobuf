@@ -19,9 +19,9 @@ subtest 'fields()' => sub {
 
     my @fields = $msg->fields;
     is(scalar(@fields), 1, 'One field is set');
-    
+
     is($fields[0]->name, 'v_string', 'Field name matches');
-    
+
     $msg->v_bytes('world');
     @fields = $msg->fields;
     is(scalar(@fields), 2, 'Two fields are set');

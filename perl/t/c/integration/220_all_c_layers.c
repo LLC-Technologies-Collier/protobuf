@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     // 1. Scalars
     const upb_FieldDef *f_int32 = upb_MessageDef_FindFieldByName(mdef, "optional_int32");
     PerlUpb_Message_SetField(aTHX_ msg_sv, f_int32, newSViv(123));
-    
+
     // 2. Enum
     const upb_FieldDef *f_enum = upb_MessageDef_FindFieldByName(mdef, "optional_nested_enum");
     PerlUpb_Message_SetField(aTHX_ msg_sv, f_enum, newSViv(1)); // FOO

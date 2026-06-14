@@ -22,7 +22,7 @@ SV* PerlUpb_Map_New(pTHX_ upb_Map* map, const upb_FieldDef* f, SV* arena_sv, uin
     SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ map, arena_sv, stash, flags);
     HV* hv = (HV*)SvRV(self);
     hv_store(hv, "_fdef", 5, newSViv(PTR2IV(f)), 0);
-    
+
     return self;
 }
 
@@ -152,7 +152,7 @@ SV* PerlUpb_Map_AsHash(pTHX_ SV* self) {
     while (upb_Map_Next(map, &k, &v, &iter)) {
         SV* k_sv = PerlUpb_UpbToSv_Element(aTHX_ &k, key_f, arena_sv);
         SV* v_sv = PerlUpb_UpbToSv_Element(aTHX_ &v, val_f, arena_sv);
-        
+
         STRLEN len;
         char* key_str;
         if (upb_FieldDef_Type(key_f) == kUpb_FieldType_String) {

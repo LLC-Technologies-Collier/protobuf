@@ -35,7 +35,7 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin', 't/data/wkt_d
 subtest 'Moo InstanceOf constraint' => sub {
     my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg->set_optional_int32(42);
-    
+
     my $app = My::App->new(message => $msg);
     ok($app, 'App created with Protobuf object');
     is($app->message->optional_int32, 42, 'Message object preserved');
@@ -57,7 +57,7 @@ subtest 'Nested HashRef support' => sub {
             a => 123
         }
     });
-    
+
     ok($app, 'App created with nested HashRef');
     is($app->message->optional_nested_message->a, 123, 'Nested data correctly populated');
 };
@@ -68,11 +68,11 @@ subtest 'to_perl deep conversion' => sub {
     $msg->set_optional_string("deep");
     push @{$msg->repeated_int32}, 1, 2, 3;
     $msg->map_int32_int32->{5} = 10;
-    
+
     my $sub = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2::NestedMessage->new();
     $sub->set_a(999);
     $msg->set_optional_nested_message($sub);
-    
+
     my $data = $msg->to_perl();
     is_deeply($data, {
         optional_int32 => 123,
@@ -89,17 +89,17 @@ subtest 'WKT integration with Type::Tiny' => sub {
     # 1. google.protobuf.Struct
     my $struct = Google::Protobuf::Struct::Struct->new();
     $struct->from_perl({ a => 1, b => { c => 3 } });
-    
+
     my $perl = $struct->to_perl();
     is_deeply($perl, { a => 1, b => { c => 3 } }, 'Struct deep conversion matches');
-    
+
     # 2. google.protobuf.Any
     my $msg = Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2->new();
     $msg->set_optional_int32(42);
-    
+
     my $any = Google::Protobuf::Any::Any->new();
     $any->pack($msg);
-    
+
     my $unpacked = $any->unpack();
     isa_ok($unpacked, 'Protobuf_test_messages::Proto2::TestMessagesProto2::TestAllTypesProto2');
     is($unpacked->optional_int32, 42, 'Any unpacked correctly');
@@ -139,7 +139,7 @@ subtest 'type library generation' => sub {
     my $file = $pool->find_file_by_name('perl/t/c/test.proto') || $pool->find_file_by_name('test.proto');
     my $lib_code = Protobuf::ClassGenerator->generate_type_library($file);
     vdiag("Generated Type Library:\n$lib_code");
-    
+
     ok($lib_code, 'Got type library code');
     like($lib_code, qr/package Protobuf_perl_test::Test::Types;/, 'Correct package name');
     like($lib_code, qr/use Type::Library/, 'Code contains Type::Library usage');

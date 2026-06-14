@@ -6,24 +6,24 @@ use TestHelpers;
 
 subtest 'load and explore descriptors' => sub {
     my $pool = TestHelpers->get_empty_pool();
-    
+
     my $files = TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
     ok($files, 'Added descriptor set');
     my $last_file = $files->[-1];
     isa_ok($last_file, 'Protobuf::Descriptor::File');
     is($last_file->get_package, 'protobuf_perl_test', 'Correct package');
-    
+
     subtest 'message descriptors' => sub {
         my $mdef = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
         ok($mdef, 'Found protobuf_perl_test.TestMessage');
         is($mdef->name, 'TestMessage', 'Correct name');
-        
+
         my $f = $mdef->find_field_by_name('value');
         ok($f, 'Found field by name');
         is($f->number, 1, 'Correct number');
         is($f->type, 'int32', 'Type is int32');
     };
-    
+
     subtest 'enum descriptors' => sub {
         my $edef = $pool->find_enum_by_name('protobuf_perl_test.TestEnum');
         ok($edef, 'Found protobuf_perl_test.TestEnum');

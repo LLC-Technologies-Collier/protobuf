@@ -52,9 +52,9 @@ subtest 'IO::Async Throughput Benchmark' => sub {
     my $loop = IO::Async::Loop->new;
     my $msg = $class->new(id => 1, name => "io_async test", tags => [1..10]);
     my $count = 0;
-    
+
     my $t0 = [gettimeofday];
-    
+
     my $timer = IO::Async::Timer::Countdown->new(
         delay => 0.000001,
         on_expire => sub {
@@ -75,9 +75,9 @@ subtest 'IO::Async Throughput Benchmark' => sub {
     $loop->add($timer);
     $timer->start;
     $loop->run;
-    
+
     my $elapsed = tv_interval($t0);
-    diag(sprintf("IO::Async (%d items, timer loop): %.4fs (%.2f ops/sec)", 
+    diag(sprintf("IO::Async (%d items, timer loop): %.4fs (%.2f ops/sec)",
         $iterations, $elapsed, $iterations/$elapsed));
     ok(1, "IO::Async benchmark finished");
 };

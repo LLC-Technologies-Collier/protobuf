@@ -19,9 +19,9 @@ static void test_map_as_hash(pTHX_ SV* map_sv) {
     SV* hash_rv = PerlUpb_Map_AsHash(aTHX_ map_sv);
     ok(SvROK(hash_rv) && SvTYPE(SvRV(hash_rv)) == SVt_PVHV, "AsHash returns hash ref");
     HV* hv = (HV*)SvRV(hash_rv);
-    
+
     is(hv_iterinit(hv), 1, "Projected map hash has 1 key");
-    
+
     SV** val_ptr = hv_fetch(hv, "10", 2, 0);
     ok(val_ptr != NULL, "Found key '10' in projected hash");
     if (val_ptr) {
@@ -50,14 +50,14 @@ int main(int argc, char** argv) {
     // 1. Test map<int32, int32>
     const upb_FieldDef *map_ii_field = upb_MessageDef_FindFieldByName(mdef, "map_int32_int32");
     ok(map_ii_field != NULL, "Found map_int32_int32");
-    
+
     upb_Map* map_ii = upb_Message_Mutable(msg, map_ii_field, arena).map;
     SV* map_ii_sv = PerlUpb_Map_New(aTHX_ map_ii, map_ii_field, arena_sv, 0);
 
     SV* key_ii = newSViv(10);
     SV* val_ii = newSViv(42);
     PerlUpb_Map_SetItem(aTHX_ map_ii_sv, key_ii, val_ii);
-    
+
     SV* ret_ii = PerlUpb_Map_GetItem(aTHX_ map_ii_sv, key_ii);
     is(SvIV(ret_ii), 42, "int32->int32 map roundtrip");
     SvREFCNT_dec(ret_ii);
@@ -72,10 +72,10 @@ int main(int argc, char** argv) {
     SV* val_ss = newSVpv("value2", 0);
 
     PerlUpb_Map_SetItem(aTHX_ map_ss_sv, key_ss, val_ss);
-    
+
     SV* ret_ss = PerlUpb_Map_GetItem(aTHX_ map_ss_sv, key_ss);
     is_string(SvPV_nolen(ret_ss), "value2", "string->string map roundtrip");
-    
+
     SvREFCNT_dec(ret_ss);
     SvREFCNT_dec(val_ss);
     SvREFCNT_dec(map_ss_sv);
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
     is(SvIV(k), 10, "Iterator key matches");
     SV* v = PerlUpb_Map_Iterator_Value(aTHX_ iter_sv);
     is(SvIV(v), 42, "Iterator value matches");
-    
+
     SvREFCNT_dec(k);
     SvREFCNT_dec(v);
     SvREFCNT_dec(iter_sv);
@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
     SvREFCNT_dec(key_ii);
     SvREFCNT_dec(val_ii);
     SvREFCNT_dec(key_ss);
-    
+
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
 
     test_perl_destroy(my_perl);

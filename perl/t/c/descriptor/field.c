@@ -10,24 +10,24 @@ static void test_field_def(pTHX) {
         upb_Arena_Free(arena);
         return;
     }
-    
+
     const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
     ok(mdef != NULL, "Got TestMessage Def");
-    
+
     const upb_FieldDef *f = upb_MessageDef_FindFieldByName(mdef, "optional_bool");
     ok(f != NULL, "Got optional_bool field");
-    
+
     SV *wrapper = PerlUpb_FieldDef_GetWrapper(aTHX_ f);
     ok(wrapper != NULL, "Got field wrapper SV");
     ok(sv_isobject(wrapper) && sv_derived_from(wrapper, "Protobuf::Descriptor::Field"), "Field wrapper is blessed correctly");
-    
+
     SV *name_sv = PerlUpb_FieldDef_Name(aTHX_ f);
     is_string(SvPV_nolen(name_sv), "optional_bool", "Field name matches");
     SvREFCNT_dec(name_sv);
-    
+
     is(PerlUpb_FieldDef_Type(aTHX_ f), kUpb_FieldType_Bool, "optional_bool type is Bool");
     is(PerlUpb_FieldDef_Label(aTHX_ f), (int)kUpb_Label_Optional, "optional_bool label is Optional");
-    
+
     const upb_FieldDef *f_rep = upb_MessageDef_FindFieldByName(mdef, "repeated_int");
     ok(f_rep != NULL, "Got repeated_int field");
     is(PerlUpb_FieldDef_Type(aTHX_ f_rep), kUpb_FieldType_Int32, "repeated_int type is Int32");

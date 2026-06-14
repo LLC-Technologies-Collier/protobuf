@@ -36,9 +36,9 @@ sub add_serialized_file_descriptor_set {
     foreach my $f_data (@$files_data) {
         push @$results, $self->_add_file_data($f_data);
     }
-    
+
     $self->_resolve_all();
-    
+
     return $results;
 }
 
@@ -48,7 +48,7 @@ sub _resolve_all {
         foreach my $fdef (@{$mdef->{_data}{fields}}) {
             my $type_name = $fdef->{_data}{_type_name};
             next unless $type_name;
-            
+
             # Try to resolve as message
             my $msg = $self->find_message_by_name($type_name);
             if ($msg) {
@@ -66,10 +66,10 @@ sub _resolve_all {
 
 sub _add_file_data {
     my ($self, $f_data) = @_;
-    
+
     my $pkg = $f_data->{package};
     my $prefix = $pkg ? "$pkg." : "";
-    
+
     my $file_obj = Protobuf::Descriptor::File::PurePerl->new({
         name => $f_data->{name},
         package => $pkg,
@@ -94,7 +94,7 @@ sub _add_file_data {
 sub _add_message_data {
     my ($self, $m_data, $prefix, $file_obj) = @_;
     my $full_name = $prefix . $m_data->{name};
-    
+
     my $m_obj = Protobuf::Descriptor::MessageDef::PurePerl->new({
         name => $m_data->{name},
         full_name => $full_name,
@@ -136,7 +136,7 @@ sub _add_message_data {
             _type_name => $f_data->{type_name},
             containing_oneof => undef,
         });
-        
+
         my $oi = $f_data->{oneof_index};
         if (defined $oi) {
             my $o_obj = $oneof_objs[$oi];
@@ -165,7 +165,7 @@ sub _add_message_data {
 sub _add_enum_data {
     my ($self, $e_data, $prefix, $file_obj) = @_;
     my $full_name = $prefix . $e_data->{name};
-    
+
     my $e_obj = Protobuf::Descriptor::EnumDef::PurePerl->new({
         name => $e_data->{name},
         full_name => $full_name,

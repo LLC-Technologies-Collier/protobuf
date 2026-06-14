@@ -192,13 +192,13 @@ use Types::Standard qw(HashRef);
 
 sub TIEARRAY {
     my ($class, $fdef) = @_;
-    
+
     require Protobuf::ClassGenerator;
     my $type_code = Protobuf::ClassGenerator::_get_type_tiny_code($fdef);
     if ($type_code =~ /^ArrayRef\[(.*)\]$/) {
         $type_code = $1;
     }
-    
+
     my $type = dwim_type($type_code);
     if ($fdef->type_number == 11) {
         my $m_type = $fdef->message_type;
@@ -211,7 +211,7 @@ sub TIEARRAY {
     } elsif ($type_num == 13 || $type_num == 7) {
         $type = $type->where(sub { defined($_) && $_ >= 0 && $_ <= 4294967295 }, message => sub { "out of range" });
     }
-    
+
     return bless {
         arr => [],
         check => $type->compiled_check,

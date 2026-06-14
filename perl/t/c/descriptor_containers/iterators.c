@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 
     SV* parent_sv = newSViv(1);
     SV* map_sv = PerlUpb_ByNameMap_New(aTHX_ parent_sv, NULL, &mock_vtable);
-    
+
     SV* iter_sv = PerlUpb_DescriptorMapIterator_New(aTHX_ map_sv);
     ok(iter_sv != NULL, "Created MapIterator");
     ok(sv_derived_from(iter_sv, "Protobuf::Internals::DescriptorMapIterator"), "Blessed correctly");

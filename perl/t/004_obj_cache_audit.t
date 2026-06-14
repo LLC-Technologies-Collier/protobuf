@@ -47,7 +47,7 @@ subtest 'DELETE event' => sub {
     Protobuf::Internal::clear_cache();
     my $m = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
     ok($m, "Loaded descriptor");
-    
+
     my $log_before = Protobuf::Internal::get_cache_audit_log();
     # Find the ADD event
     my ($add_event) = grep { $_->{type} == 1 } @$log_before;
@@ -55,24 +55,24 @@ subtest 'DELETE event' => sub {
         vdiag("No ADD event found in log before delete");
         return;
     }
-    
+
     my $ptr = $add_event->{ptr};
     vnote("Attempting to delete pointer from log: $ptr");
     Protobuf::Internal::delete_cache_ptr($ptr);
-    
+
     my $log_after = Protobuf::Internal::get_cache_audit_log();
     # Normalize pointer strings for comparison (remove leading 0x if necessary, etc)
     my $norm_ptr = lc($ptr);
     $norm_ptr =~ s/^0x//;
 
-    my @deletes = grep { 
+    my @deletes = grep {
         $_->{type} == 4 && do {
             my $p = lc($_->{ptr});
             $p =~ s/^0x//;
             $p eq $norm_ptr;
         }
     } @$log_after;
-    
+
     if (!scalar @deletes) {
         vdiag("DELETE event not found for $ptr");
         vdiag("Log after delete attempt:");
@@ -80,7 +80,7 @@ subtest 'DELETE event' => sub {
             vdiag("  Type: $e->{type} | Ptr: $e->{ptr}");
         }
     }
-    
+
     ok(scalar @deletes > 0, "Log contains DELETE event for $ptr");
 };
 
@@ -88,11 +88,11 @@ subtest 'DELETE event' => sub {
 subtest 'EVICT event' => sub {
     Protobuf::Internal::clear_cache();
     Protobuf::Internal::set_cache_capacity(1);
-    
+
     # Access multiple distinct descriptors to force eviction
     my $m1 = $pool->find_message_by_name('protobuf_perl_test.TestMessage');
     my $m2 = $pool->find_message_by_name('protobuf_perl_test.NestedMessage');
-    
+
     my $log = Protobuf::Internal::get_cache_audit_log();
     my @evicts = grep { $_->{type} == 5 } @$log;
     ok(scalar @evicts > 0, 'Log contains EVICT event');

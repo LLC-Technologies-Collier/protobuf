@@ -23,7 +23,7 @@ sub get_upb_c_files {
         my $prune_regex = $is_google3
             ? qr{/(lua|ruby|python|rust|conformance|cmake|stage0|util|js)$}
             : qr{/(lua|ruby|python|rust|conformance|cmake|stage0|util|net|js)$};
-            
+
         if ($File::Find::name =~ $prune_regex) {
             $File::Find::prune = 1;
             return;
@@ -39,7 +39,7 @@ sub get_utf8_c_files {
     my @files;
     my $dir = File::Spec->catdir($project_root, 'third_party', 'utf8_range');
     return unless -d $dir;
-    # Only include utf8_range.c. Other files are either tests, 
+    # Only include utf8_range.c. Other files are either tests,
     # stand-alone benchmarks, or included via .inc files.
     push @files, File::Spec->catfile($dir, 'utf8_range.c');
     return @files;
@@ -47,12 +47,12 @@ sub get_utf8_c_files {
 
 sub get_generated_c_files {
     my ($project_root, $is_google3) = @_;
-    
+
     # In Google3, we use the JIT-vendored net/proto2/proto/descriptor.upb.c
     # which is collected by get_upb_c_files. We must NOT compile the open-source
     # stage0 descriptor to avoid duplicate symbol linker conflicts.
     return if $is_google3;
-    
+
     my @files;
     my $dir = File::Spec->catdir($project_root, 'upb', 'upb', 'reflection', 'stage0');
     if (!-d $dir) {

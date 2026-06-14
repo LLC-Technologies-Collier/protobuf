@@ -42,7 +42,7 @@ if (!$class->can('new')) {
 subtest 'Performance Profiles' => sub {
     my $m_balanced = $class->new({ id => 123, name => "balanced", profile => 'balanced' });
     my $m_write    = $class->new({ id => 123, name => "write",    profile => 'write_heavy' });
-    
+
     note("--- Setter Performance (Knob Tuning) ---");
     cmpthese(-3, {
         '01_balanced_set' => sub {
@@ -56,7 +56,7 @@ subtest 'Performance Profiles' => sub {
     note("--- Getter Performance (Knob Tuning) ---");
     # Warm up balanced cache
     $m_balanced->id;
-    
+
     cmpthese(-3, {
         '01_balanced_get_cached' => sub {
             my $a = $m_balanced->id;
@@ -65,7 +65,7 @@ subtest 'Performance Profiles' => sub {
             my $a = $m_write->id;
         },
     });
-    
+
     ok(1, "Benchmarks completed");
 };
 

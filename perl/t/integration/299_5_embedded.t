@@ -28,7 +28,7 @@ subtest 'embedded messages and enums' => sub {
     for ( my $i = 0; $i < 3; $i++ ) {
         my ($pack, $file, $line) = caller($i);
         last unless $pack;
-        
+
         my $frame = Apache2::Protobuf::EmbeddedError::Error::StackFrame->new;
         $frame->set_file($file);
         $frame->set_line($line);
@@ -37,10 +37,10 @@ subtest 'embedded messages and enums' => sub {
 
     my $packed  = $error->serialize();
     ok(length($packed) > 0, 'Serialized embedded error');
-    
+
     my $u = Apache2::Protobuf::EmbeddedError::Error->parse($packed);
     ok($u, 'Parsed embedded error');
-    
+
     is($u->severity, $severity, 'Severity preserved');
     is($u->message, $message, 'Message preserved');
     is(scalar(@{$u->trace}), 3, 'Trace count preserved');
@@ -59,11 +59,11 @@ subtest 'constructor with nested structures' => sub {
             { file => 'bar.pl', line => 20 },
         ]
     });
-    
+
     ok($error, 'Created with nested HashRef');
     is(scalar(@{$error->trace}), 2, 'Nested trace count ok');
     is($error->trace->[1]->line, 20, 'Nested trace data ok');
-    
+
     my $p = $error->serialize();
     my $u = Apache2::Protobuf::EmbeddedError::Error->parse($p);
     is($u->trace->[0]->file, 'foo.pl', 'Roundtrip with nested structures ok');

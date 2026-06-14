@@ -40,9 +40,9 @@ subtest 'Zero Copy Parsing' => sub {
     my $large_payload = "A" x 1024; # 1KB string
     my $msg = $class->new({ large_string => $large_payload });
     my $data = $msg->serialize();
-    
+
     note(sprintf("--- Parsing Performance (Payload size: %d bytes) ---", length($data)));
-    
+
     cmpthese(-3, {
         '01_copying_parse' => sub {
             my $m = $class->parse($data, { profile => 'balanced' });
@@ -53,7 +53,7 @@ subtest 'Zero Copy Parsing' => sub {
             my $s = $m->large_string;
         },
     });
-    
+
     ok(1, "Benchmarks completed");
 };
 

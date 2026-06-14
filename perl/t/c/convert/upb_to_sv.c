@@ -89,11 +89,11 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
 
         }
 
-    
+
 
         }
 
-    
+
 
         // NOTE: ASan reports an 8-byte leak originating from the croak() call
 
@@ -103,7 +103,7 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
 
         static void test_upb_to_sv_edge_cases(pTHX_ SV *arena_sv) {
 
-    
+
 
 
     const upb_FieldDef *f_int32 = get_field_def("protobuf_test_messages.proto2.TestAllTypesProto2", "optional_int32");
@@ -130,7 +130,7 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
         upb_MessageValue upb_val;
         memset(&upb_val, 0, sizeof(upb_val));
         SV *sv_croak = PerlUpb_UpbToSv(aTHX_ &upb_val, NULL, NULL); // This call croaks
-        JMPENV_POP; 
+        JMPENV_POP;
         fail("Edge/NULLEnv: NULL FieldDef did not croak");
         if (sv_croak) SvREFCNT_dec(sv_croak);
     } else {
@@ -318,15 +318,15 @@ static int count_test_cases(const upb_to_sv_test_case cases[]) {
 
 
 
-    
-
-        
-
-    
 
 
-    
 
-        
 
-    
+
+
+
+
+
+
+
+

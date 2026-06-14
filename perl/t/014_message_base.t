@@ -9,7 +9,7 @@ subtest 'base message functionality' => sub {
     # Load descriptors into the generated pool
     my $pool = TestHelpers->get_generated_pool();
     TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin');
-    
+
     subtest 'creation' => sub {
         my $msg = Protobuf_perl_test::Test::TestMessage->new();
         ok($msg, 'Created Protobuf_perl_test::Test::TestMessage');
@@ -19,24 +19,24 @@ subtest 'base message functionality' => sub {
 
     subtest 'get and set' => sub {
         my $msg = Protobuf_perl_test::Test::TestMessage->new();
-        
+
         # Test scalar field
         $msg->set('value', 42);
         is($msg->get('value'), 42, 'Set and get value (int32)');
-        
+
         # Test another scalar field
         $msg->set('optional_uint32', 123);
         is($msg->get('optional_uint32'), 123, 'Set and get optional_uint32');
     };
-    
+
     subtest 'serialization and parsing' => sub {
         my $msg = Protobuf_perl_test::Test::TestMessage->new();
         $msg->set('value', 100);
         $msg->set('optional_uint32', 200);
-        
+
         my $data = $msg->serialize();
         ok($data, 'Serialized message');
-        
+
         my $msg2 = Protobuf_perl_test::Test::TestMessage->parse($data);
         ok($msg2, 'Parsed message');
         isa_ok($msg2, 'Protobuf_perl_test::Test::TestMessage');

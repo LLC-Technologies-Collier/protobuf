@@ -28,25 +28,25 @@ for my $i (1..$NUM_TIMERS) {
             for my $j (1..50) {
                 my $msg = test::TestMessage->new();
                 $msg->set_value($i * $j);
-                
+
                 my $any = google::protobuf::Any->new();
                 $any->pack($msg);
-                
+
                 # Defer the unpack to another event loop tick to stress memory management
                 Mojo::IOLoop->timer(rand(0.05) => sub {
                     eval {
                         my $unpacked = $any->unpack();
                         die "Unpack failed" unless $unpacked->value == ($i * $j);
-                        
+
                         my $struct = google::protobuf::Struct->new();
                         $struct->from_perl({ a => $i, b => $j });
-                        
+
                         die "Struct mismatch" unless $struct->fields->{a}->number_value == $i;
                     };
                     if ($@) {
                         push @errors, "Timer $i-$j delayed failed: $@";
                     }
-                    
+
                     $completed++;
                     if ($completed == ($NUM_TIMERS * 50)) {
                         Mojo::IOLoop->stop;

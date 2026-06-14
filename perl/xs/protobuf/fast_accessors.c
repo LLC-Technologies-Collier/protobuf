@@ -12,11 +12,11 @@
 // The fast accessor XSUB implementation
 static XS(PerlUpb_FastAccessor) {
     dXSARGS;
-    
+
     // The field def pointer is stored in the CV's ANY pointer
     // 'cv' is automatically provided as a parameter to the XS function
     const upb_FieldDef* f = (const upb_FieldDef*)CvXSUBANY(cv).any_ptr;
-    
+
     if (items < 1) croak("Usage: $msg->field([value])");
     SV* self = ST(0);
 
@@ -48,7 +48,7 @@ static XS(PerlUpb_FastAccessor) {
     if (items > 1) {
         // Setter mode
         PerlUpb_Message_SetField(aTHX_ self, f, ST(1));
-        
+
         // Mark cache as dirty for coarse invalidation
         MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
         if (mg) {
@@ -57,12 +57,12 @@ static XS(PerlUpb_FastAccessor) {
                 mg->mg_private |= PERL_UPB_MG_CACHE_DIRTY;
             }
         }
-        
+
         XSRETURN_EMPTY;
     } else {
         // Getter mode
         MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
-        
+
         // 0. Quick path for WRITE_HEAVY: bypass cache entirely
         if (mg && (mg->mg_private & PERL_UPB_MG_PROFILE_WRITE_HEAVY)) {
             ST(0) = PerlUpb_Message_GetField(aTHX_ self, f);
@@ -70,7 +70,7 @@ static XS(PerlUpb_FastAccessor) {
         }
 
         HV* hv = (HV*)SvRV(self);
-        
+
         // 1. Check for coarse invalidation
         if (mg && (mg->mg_private & PERL_UPB_MG_CACHE_DIRTY)) {
             hv_delete(hv, "_cache", 6, G_DISCARD);
@@ -79,7 +79,7 @@ static XS(PerlUpb_FastAccessor) {
 
         const char* name = upb_FieldDef_Name(f);
         STRLEN name_len = strlen(name);
-        
+
         // 1. Fetch or create the nested _cache hash
         HV* cache_hv = NULL;
         SV** cache_svp = hv_fetch(hv, "_cache", 6, 0);
@@ -104,7 +104,7 @@ static XS(PerlUpb_FastAccessor) {
         }
 
         SV* result = PerlUpb_Message_GetField(aTHX_ self, f);
-        
+
         // 3. Store in memoization cache
         SvREFCNT_inc(result);
         if (!hv_store(cache_hv, name, name_len, result, 0)) {
@@ -137,7 +137,7 @@ static XS(PerlUpb_FastSetter) {
     }
 
     PerlUpb_Message_SetField(aTHX_ self, f, ST(1));
-    
+
     // Mark cache as dirty for coarse invalidation
     MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
     if (mg) {
@@ -145,7 +145,7 @@ static XS(PerlUpb_FastSetter) {
             mg->mg_private |= PERL_UPB_MG_CACHE_DIRTY;
         }
     }
-    
+
     XSRETURN_EMPTY;
 }
 
@@ -195,7 +195,7 @@ static XS(PerlUpb_FastClear) {
     }
 
     PerlUpb_Message_ClearField(aTHX_ self, f);
-    
+
     // Mark cache as dirty for coarse invalidation
     MAGIC* mg = PerlUpb_GetMagic(aTHX_ self);
     if (mg) {
@@ -203,17 +203,17 @@ static XS(PerlUpb_FastClear) {
             mg->mg_private |= PERL_UPB_MG_CACHE_DIRTY;
         }
     }
-    
+
     XSRETURN_EMPTY;
 }
 
 void PerlUpb_InstallFastAccessors(pTHX_ const char* perl_class, const upb_MessageDef* mdef) {
     int field_count = upb_MessageDef_FieldCount(mdef);
-    
+
     for (int i = 0; i < field_count; i++) {
         const upb_FieldDef* f = upb_MessageDef_Field(mdef, i);
         const char* name = upb_FieldDef_Name(f);
-        
+
         // 1. Install primary accessor (getter/setter)
         {
             char full_name[512];

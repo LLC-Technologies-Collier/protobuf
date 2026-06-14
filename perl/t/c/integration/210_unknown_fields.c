@@ -19,11 +19,11 @@ static void test_manual_add_unknown(pTHX_ SV* set_sv) {
     const char manual_data[] = { 0x08, 0x96, 0x01 }; // tag 1, value 150
     SV* manual_sv = newSVpvn(manual_data, sizeof(manual_data));
     PerlUpb_UnknownFieldSet_Add(aTHX_ set_sv, manual_sv);
-    
+
     SV* ret = PerlUpb_UnknownFieldSet_GetData(aTHX_ set_sv);
     is(SvCUR(ret), sizeof(manual_data), "Manually added unknown data length matches");
     is_blob(SvPV_nolen(ret), manual_data, sizeof(manual_data), "Manually added unknown data content matches");
-    
+
     SvREFCNT_dec(ret);
     SvREFCNT_dec(manual_sv);
 }
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     // 1. Create a message with an unknown field by parsing
     const char wire_data[] = { 0xB8, 0x3E, 0x7B };
     SV* serialized_sv = newSVpvn(wire_data, sizeof(wire_data));
-    
+
     SV* msg_sv = PerlUpb_Message_Parse(aTHX_ mdef_sv, serialized_sv);
     ok(msg_sv != NULL, "Parsed message with unknown field");
 
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     // 3. Serialize and ensure unknown fields are preserved
     SV* reserialized = PerlUpb_Message_Serialize(aTHX_ msg_sv);
     ok(SvCUR(reserialized) >= sizeof(wire_data), "Reserialized length is at least unknown data length");
-    
+
     const char* res_ptr = SvPV_nolen(reserialized);
     bool found = false;
     for (size_t i = 0; i <= SvCUR(reserialized) - sizeof(wire_data); i++) {
@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
     SvREFCNT_dec(set_sv);
     SvREFCNT_dec(serialized_sv);
     SvREFCNT_dec(reserialized);
-    
+
     PerlUpb_Arena_Destroy(aTHX_ PerlUpb_Message_GetArena(aTHX_ msg_sv));
     PerlUpb_Message_Free(aTHX_ msg_sv);
     SvREFCNT_dec(msg_sv);

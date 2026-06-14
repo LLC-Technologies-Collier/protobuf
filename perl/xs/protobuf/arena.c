@@ -42,7 +42,7 @@ static void* stats_alloc_func(upb_alloc* alloc, void* ptr, size_t oldsize, size_
         } else {
             s->total_reserved -= (oldsize - size);
         }
-        
+
         if (actual_size) {
             *actual_size = size;
         }
@@ -127,7 +127,7 @@ static int arena_cleanup(pTHX_ SV* sv, MAGIC* mg) {
     if (ptr) {
         // Clear magic pointer immediately to prevent double-free
         mg->mg_ptr = NULL;
-        
+
         bool tmpfs = false;
         SV* rv = SvRV(sv);
         if (rv && SvTYPE(rv) == SVt_PVHV) {
@@ -155,7 +155,7 @@ static SV* wrap_arena_internal(pTHX_ void* raw, bool is_tmpfs) {
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
     HV* stash = (reg && reg->stash_arena) ? reg->stash_arena : gv_stashpv("Protobuf::Arena", GV_ADD);
     sv_bless(rv, stash);
-    
+
     sv_magicext((SV*)hv, NULL, PERL_MAGIC_ext, &arena_vtbl, (const char*)raw, 0);
 
     return rv;
@@ -175,7 +175,7 @@ upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv) {
     if (!sv || !SvROK(sv) || !sv_isa(sv, "Protobuf::Arena")) {
         croak("Argument is not a blessed Protobuf::Arena object");
     }
-    
+
     SV* rv = SvRV(sv);
     PerlUpb_Arena *arena_wrapper = NULL;
 
@@ -185,7 +185,7 @@ upb_Arena *PerlUpb_Arena_Get(pTHX_ SV *sv) {
             arena_wrapper = (PerlUpb_Arena*)INT2PTR(void*, SvIV(*svp));
         }
     }
-    
+
     return arena_wrapper ? arena_wrapper->arena : NULL;
 }
 
@@ -195,16 +195,16 @@ void PerlUpb_Arena_Destroy(pTHX_ SV *sv) {
     SV** svp = hv_fetch(hv, "_arena_ptr", 10, 0);
     if (!svp || !SvIOK(*svp)) return;
     void* ptr = INT2PTR(void*, SvIV(*svp));
-    
+
     // Null out magic pointer to prevent arena_cleanup from double-freeing
     MAGIC* mg = mg_findext((SV*)hv, PERL_MAGIC_ext, &arena_vtbl);
     if (mg) mg->mg_ptr = NULL;
 
     SV** is_tmpfs = hv_fetch(hv, "_is_tmpfs", 9, 0);
     bool tmpfs = is_tmpfs && SvTRUE(*is_tmpfs);
-    
+
     PerlUpb_Arena_DestroyRaw_Tmpfs(aTHX_ ptr, tmpfs);
-    
+
     (void)hv_delete(hv, "_arena_ptr", 10, G_DISCARD);
 }
 
@@ -233,7 +233,7 @@ void* PerlUpb_Arena_Detach(pTHX_ SV* sv) {
 
 SV* PerlUpb_Arena_Attach(pTHX_ void* raw) {
     if (!raw) return &PL_sv_undef;
-    // We assume it's a managed arena for now. 
+    // We assume it's a managed arena for now.
     // In a full implementation, we might need to know if it was tmpfs.
     return wrap_arena_internal(aTHX_ raw, false);
 }
@@ -241,11 +241,11 @@ SV* PerlUpb_Arena_Attach(pTHX_ void* raw) {
 void PerlUpb_Arena_GetStats(pTHX_ SV *sv, PerlUpb_ArenaStats *stats) {
     if (!sv || !SvROK(sv) || !stats) return;
     memset(stats, 0, sizeof(PerlUpb_ArenaStats));
-    
+
     HV* hv = (HV*)SvRV(sv);
     SV** svp = hv_fetch(hv, "_arena_ptr", 10, 0);
     if (!svp || !SvIOK(*svp)) return;
-    
+
     SV** is_tmpfs = hv_fetch(hv, "_is_tmpfs", 9, 0);
     if (is_tmpfs && SvTRUE(*is_tmpfs)) {
         PerlUpb_Arena_Custom* wrapper = (PerlUpb_Arena_Custom*)INT2PTR(void*, SvIV(*svp));

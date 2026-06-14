@@ -41,12 +41,12 @@ if (!$class->can('new')) {
 
 subtest 'Memoization Benchmark' => sub {
     my $msg = $class->new(id => 123, name => "memo test");
-    
+
     note("--- Getter Performance (Existing Object) ---");
-    
+
     # 1. Warmup / First call (Populate cache)
     my $name = $msg->name();
-    
+
     cmpthese(-3, {
         '01_getter_cached' => sub {
             my $a = $msg->name;
@@ -56,7 +56,7 @@ subtest 'Memoization Benchmark' => sub {
             my $a = $msg->name;
         },
     });
-    
+
     ok(1, "Benchmarks completed");
 };
 

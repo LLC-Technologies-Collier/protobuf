@@ -21,7 +21,7 @@ print "Benchmarking deep message merge...\n";
 
 timethese(100000, {
     'merge_simple' => sub {
-        # upb doesn't have a direct 'merge' in our XS yet, 
+        # upb doesn't have a direct 'merge' in our XS yet,
         # but we can simulate it via serialization if needed,
         # or wait for a real Merge XS implementation.
         # For now, let's just benchmark property sets which is part of merging.

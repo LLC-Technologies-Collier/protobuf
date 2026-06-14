@@ -14,10 +14,10 @@ SV* PerlUpb_ByNameMap_New(pTHX_ SV* parent_sv, const void* parent, const PerlUpb
     SV* sv = newSViv((IV)map);
     SV* obj = newRV_noinc(sv);
     sv_bless(obj, gv_stashpv("Protobuf::Internals::DescriptorByNameMap", GV_ADD));
-    
-    // We don't cache these as they are transient wrappers, 
+
+    // We don't cache these as they are transient wrappers,
     // though Python does cache them. For now, let's keep it simple.
-    
+
     return obj;
 }
 

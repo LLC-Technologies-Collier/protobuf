@@ -50,7 +50,7 @@ my $concurrency = 10;
 
 subtest 'Coro Throughput Benchmark' => sub {
     my $msg = $class->new(id => 1, name => "coro test", tags => [1..10]);
-    
+
     my $t0 = [gettimeofday];
     my @coros;
     for (1..$concurrency) {
@@ -60,7 +60,7 @@ subtest 'Coro Throughput Benchmark' => sub {
                 my $id = $msg->id();
                 $msg->set_id($id + 1);
                 my $data = $msg->serialize();
-                
+
                 if ($_ % 100 == 0) {
                     cede;
                 }
@@ -69,7 +69,7 @@ subtest 'Coro Throughput Benchmark' => sub {
     }
     $_->join for @coros;
     my $elapsed = tv_interval($t0);
-    diag(sprintf("Coro (%d items, %d concurrency): %.4fs (%.2f ops/sec)", 
+    diag(sprintf("Coro (%d items, %d concurrency): %.4fs (%.2f ops/sec)",
         $iterations, $concurrency, $elapsed, $iterations/$elapsed));
     ok(1, "Coro benchmark finished");
 };

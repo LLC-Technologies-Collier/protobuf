@@ -26,7 +26,7 @@ const upb_FieldDef* PerlUpb_MessageDef_FindFieldByNameWithSize(pTHX_ const upb_M
 uint64_t PerlUpb_MessageDef_GetFingerprint(pTHX_ const upb_MessageDef *m) {
     if (!m) return 0;
     const char* full_name = upb_MessageDef_FullName(m);
-    
+
     // Simple stable hash (FNV-1a 64-bit)
     uint64_t hash = 0xcbf29ce484222325ULL;
     const char* p = full_name;
@@ -41,19 +41,19 @@ void PerlUpb_MessageDef_RegisterFingerprint(pTHX_ const upb_MessageDef *m) {
     if (!m) return;
     uint64_t fingerprint = PerlUpb_MessageDef_GetFingerprint(aTHX_ m);
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
-    
+
     if (!reg->descriptor_fingerprints) {
         croak("descriptor_fingerprints HV is NULL in registry");
     }
 
     char key[32];
     snprintf(key, sizeof(key), "%" PRIu64, fingerprint);
-    
+
     SV* wrapper = PerlUpb_MessageDef_GetWrapper(aTHX_ m);
     if (!wrapper || !SvOK(wrapper)) {
         croak("Failed to get wrapper for MessageDef during fingerprint registration");
     }
-    
+
     // Increment refcount because hv_store takes ownership but we want to keep the wrapper alive in cache too
     SvREFCNT_inc(wrapper);
     if (!hv_store(reg->descriptor_fingerprints, key, strlen(key), wrapper, 0)) {
@@ -66,7 +66,7 @@ const upb_MessageDef* PerlUpb_MessageDef_FindByFingerprint(pTHX_ uint64_t finger
     PerlUpb_Registry* reg = PerlUpb_Registry_Get(aTHX);
     char key[21];
     snprintf(key, sizeof(key), "%" PRIu64, fingerprint);
-    
+
     SV** svp = hv_fetch(reg->descriptor_fingerprints, key, strlen(key), 0);
     if (svp && SvROK(*svp)) {
         return PerlUpb_MessageDef_GetMessage(aTHX_ *svp);

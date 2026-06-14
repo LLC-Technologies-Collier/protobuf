@@ -12,17 +12,17 @@ static void test_set_creation(pTHX) {
         upb_Arena_Free(arena);
         return;
     }
-    
+
     const upb_MessageDef *mdef = upb_DefPool_FindMessageByName(test_pool, "protobuf_perl_test.TestMessage");
     upb_Message *msg = upb_Message_New(upb_MessageDef_MiniTable(mdef), arena);
-    
+
     SV* arena_wrapper = PerlUpb_Arena_New(aTHX);
     SV* msg_sv = PerlUpb_WrapMessage(aTHX_ msg, mdef, arena_wrapper, 0);
-    
+
     SV* set_sv = PerlUpb_UnknownFieldSet_New(aTHX_ msg_sv);
     ok(set_sv != NULL, "PerlUpb_UnknownFieldSet_New returns non-NULL");
     ok(sv_derived_from(set_sv, "Protobuf::UnknownFieldSet"), "Blessed correctly");
-    
+
     SV* data = PerlUpb_UnknownFieldSet_GetData(aTHX_ set_sv);
     is_string(SvPV_nolen(data), "", "Initial unknown data is empty");
     SvREFCNT_dec(data);

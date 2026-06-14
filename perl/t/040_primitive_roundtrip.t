@@ -36,15 +36,15 @@ foreach my $t (@types) {
             my $msg = Protobuf::Types::Types->new();
             my $field = $t->{field};
             my $setter = "set_$field";
-            
+
             my $input = $v;
             if ($t->{name} =~ /64/) {
                 $input = Math::BigInt->new($v);
             }
-            
+
             eval { $msg->$setter($input) };
             ok(!$@, "Set $t->{name} = $v") or diag($@);
-            
+
             my $got = $msg->$field();
             if ($t->{name} =~ /64/) {
                 my $got_str = ref($got) ? $got->bstr() : "$got";
@@ -64,12 +64,12 @@ foreach my $t (@types) {
             } else {
                 is($got, $v, "Value matches original");
             }
-            
+
             # Wire roundtrip
             my $data = $msg->serialize();
             my $msg2 = Protobuf::Types::Types->parse($data);
             my $got2 = $msg2->$field();
-            
+
             if ($t->{name} =~ /64/) {
                 my $got2_str = ref($got2) ? $got2->bstr() : "$got2";
                 my $expected_str = Math::BigInt->new($v)->bstr();

@@ -11,11 +11,11 @@ subtest 'text format encoding' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(12345);
     $msg->set_name("hello world");
-    
+
     my $sub = Protobuf_perl_test::Test::NestedMessage->new();
     $sub->set_nested_string("inner");
     $msg->set_nested_message($sub);
-    
+
     # We expect some methods on Protobuf::Message
     my $text = $msg->to_text();
     ok(defined $text, 'Text format is generated');

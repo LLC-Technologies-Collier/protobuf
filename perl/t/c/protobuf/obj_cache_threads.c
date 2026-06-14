@@ -17,7 +17,7 @@ int thread_shared_objects[100];
 
 void* thread_stress_func(void *arg) {
     thread_arg_t *targ = (thread_arg_t *)arg;
-    
+
     // Each thread gets its OWN interpreter to simulate ithreads/concurrency
     char* dummy_argv[] = {"", "-e", "0", NULL};
     PerlInterpreter *my_perl = test_perl_init(3, dummy_argv);
@@ -31,23 +31,23 @@ void* thread_stress_func(void *arg) {
 
             int obj_idx = i % 100;
             void* ptr = &thread_shared_objects[obj_idx];
-            
+
             SV* val = newSVpvf("thread-%d-val-%d", targ->id, i);
             SV* rv = newRV_noinc(val);
-            
+
             PerlUpb_ObjCache_Add(aTHX_ ptr, rv);
-            
+
             SV* got = PerlUpb_ObjCache_Get(aTHX_ ptr);
             if (got) {
                 SvREFCNT_dec(got);
             }
-            
+
             if (i % 10 == 0) {
                 PerlUpb_ObjCache_Delete(aTHX_ ptr);
             }
 
             SvREFCNT_dec(rv);
-            
+
             FREETMPS;
             LEAVE;
         }
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
 
         thread_arg_t args[NUM_THREADS];
         pthread_t threads[NUM_THREADS];
-        
+
         for (int i = 0; i < NUM_THREADS; i++) {
             args[i].original_perl = my_perl;
             args[i].id = i;
@@ -83,9 +83,9 @@ int main(int argc, char** argv) {
         for (int i = 0; i < NUM_THREADS; i++) {
             pthread_join(threads[i], NULL);
         }
-        
+
         ok(1, "Threaded cache stress test completed");
-        
+
         PerlUpb_ObjCache_Clear(aTHX);
         ok(1, "Cache cleared after threading test");
     }

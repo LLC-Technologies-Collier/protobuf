@@ -44,7 +44,7 @@ SV* PerlUpb_MaybeGetMessage(pTHX_ const upb_Message *msg) {
 
 void PerlUpb_Message_Free(pTHX_ SV *message_sv) {
     if (PL_dirty) return; // Let Perl handle cleanup during global destruction
-    
+
     const upb_Message *msg = PerlUpb_Message_GetMsg(aTHX_ message_sv);
     if (msg) {
         PerlUpb_ObjCache_Delete(aTHX_ msg);

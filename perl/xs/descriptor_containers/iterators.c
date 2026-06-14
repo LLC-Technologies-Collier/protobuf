@@ -57,7 +57,7 @@ SV* PerlUpb_DescriptorMapIterator_NextKey(pTHX_ SV* self) {
 SV* PerlUpb_DescriptorMapIterator_NextValue(pTHX_ SV* self) {
     PerlUpb_DescriptorMapIterator* iter = PerlUpb_DescriptorMapIterator_Get(aTHX_ self);
     if (!iter || iter->index == 0) return &PL_sv_undef;
-    
+
     int current_index = iter->index - 1;
 
     PerlUpb_ByNameMap* name_map = PerlUpb_ByNameMap_Get(aTHX_ iter->container_sv);

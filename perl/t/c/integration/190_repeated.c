@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     av_push(av_int32, newSViv(2));
     av_push(av_int32, newSViv(3));
     SV* av_ref = newRV_noinc((SV*)av_int32);
-    
+
     PerlUpb_Message_SetField(aTHX_ msg_sv, f_rep_int32, av_ref);
     // Repeated fields don't have presence in upb_Message_HasFieldByDef
     // ok(PerlUpb_Message_HasField(aTHX_ msg_sv, f_rep_int32), "Has repeated int32 field");
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     // 2. Get repeated field as array wrapper
     SV* ret_av_ref = PerlUpb_Message_GetField(aTHX_ msg_sv, f_rep_int32);
     ok(SvROK(ret_av_ref) && sv_derived_from(ret_av_ref, "Protobuf::Internal::Repeated"), "Get returns repeated wrapper");
-    
+
     is(PerlUpb_Repeated_Size(aTHX_ ret_av_ref), 3, "Array size is 3");
     SV* v1 = PerlUpb_Repeated_GetItem(aTHX_ ret_av_ref, 1);
     is(SvIV(v1), 2, "Element 1 is 2");
@@ -63,12 +63,12 @@ int main(int argc, char** argv) {
     const upb_FieldDef *f_rep_msg = upb_MessageDef_FindFieldByName(mdef, "repeated_nested_message");
     upb_Array* arr = upb_Message_Mutable((upb_Message*)PerlUpb_Message_GetMsg(aTHX_ msg_sv), f_rep_msg, arena).array;
     SV* rep_wrapper = PerlUpb_Repeated_New(aTHX_ arr, f_rep_msg, PerlUpb_Message_GetArena(aTHX_ msg_sv), 0);
-    
+
     SV* sub1 = PerlUpb_Repeated_Add(aTHX_ rep_wrapper);
     const upb_MessageDef* sub_mdef = upb_FieldDef_MessageSubDef(f_rep_msg);
     const upb_FieldDef* f_a = upb_MessageDef_FindFieldByName(sub_mdef, "a");
     PerlUpb_Message_SetField(aTHX_ sub1, f_a, newSViv(42));
-    
+
     ok(PerlUpb_Repeated_Size(aTHX_ rep_wrapper) == 1, "Repeated message size is 1");
 
     // 4. Serialize and Parse
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     // 6. Verify parsed nested message
     SV* parsed_rep_msg_av_ref = PerlUpb_Message_GetField(aTHX_ parsed_msg_sv, f_rep_msg);
     is(PerlUpb_Repeated_Size(aTHX_ parsed_rep_msg_av_ref), 1, "Parsed repeated message size matches");
-    
+
     SV* psub1 = PerlUpb_Repeated_GetItem(aTHX_ parsed_rep_msg_av_ref, 0);
     SV* pval_a = PerlUpb_Message_GetField(aTHX_ psub1, f_a);
     is(SvIV(pval_a), 42, "Parsed nested field value matches");

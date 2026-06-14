@@ -9,12 +9,12 @@ TestHelpers->load_test_protos($pool, 't/data/wkt_descriptor.bin');
 
 subtest 'fieldmask operations' => sub {
     my $mask = Google::Protobuf::FieldMask::FieldMask->new();
-    
+
     # Adding paths
     push @{$mask->paths}, "foo.bar", "baz";
-    
+
     is_deeply($mask->paths, ["foo.bar", "baz"], 'Paths array matches');
-    
+
     # Optional helper methods, if we implemented them
     if ($mask->can('to_string')) {
         is($mask->to_string, 'foo.bar,baz', 'String representation matches');

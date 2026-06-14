@@ -6,14 +6,14 @@
 static void test_repeated_creation(pTHX) {
     SV* arena_sv = PerlUpb_Arena_New(aTHX);
     upb_Arena* arena = PerlUpb_Arena_Get(aTHX_ arena_sv);
-    
+
     upb_Array* arr = upb_Array_New(arena, kUpb_CType_Int32);
     SV* rep_sv = PerlUpb_Repeated_New(aTHX_ arr, NULL, arena_sv, 0);
-    
+
     ok(rep_sv != NULL, "PerlUpb_Repeated_New returns non-NULL");
     ok(SvOK(rep_sv) && sv_derived_from(rep_sv, "Protobuf::Internal::Repeated"), "Repeated SV has correct class");
     is(PerlUpb_Repeated_Size(aTHX_ rep_sv), 0, "Initial repeated size is 0");
-    
+
     SvREFCNT_dec(rep_sv);
     PerlUpb_Arena_Destroy(aTHX_ arena_sv);
 }

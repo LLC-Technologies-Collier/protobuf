@@ -29,16 +29,16 @@ void chaos_coro_func(void *arg) {
     for (int i = 0; i < NUM_OPS; i++) {
         int obj_idx = i % NUM_SHARED;
         void* ptr = &shared_objects[obj_idx];
-        
+
         int action = rand() % 3;
-        
+
         if (action == 0) { // Add
             SV* val = newSVpvf("val-%d-%d", obj_idx, i);
             SV* rv = newRV_noinc(val);
             PerlUpb_ObjCache_Add(aTHX_ ptr, rv);
-            
+
             if (rand() % 2) coro_yield(carg->id);
-            
+
             SV* got = PerlUpb_ObjCache_Get(aTHX_ ptr);
             if (got) {
                 // It might not be 'val' if another coro overwrote it, but it should be a valid RV
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
         RUN_CORO_TEST(chaos_coro_func, args);
 
         ok(1, "Chaos concurrency test completed");
-        
+
         TODO("Verify cache integrity during high-frequency context switching in Coro/Mojo") {
             ok(1, "Weak references remain stable during interleaved GC cycles (Verified via Chaos)");
         }

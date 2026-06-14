@@ -19,7 +19,7 @@ static void test_multi_interp(void) {
         PerlUpb_ObjCache_Init(aTHX);
         PerlUpb_Registry* reg1 = PerlUpb_Registry_Get(aTHX);
         void* dummy_ptr = (void*)0x1234;
-        
+
         // We need to keep a strong reference to the object so it stays in cache
         SV* obj1 = newSViv(42);
         SV* strong_rv = newRV_inc(obj1);
@@ -39,9 +39,9 @@ static void test_multi_interp(void) {
             PerlUpb_Registry_Init(aTHX);
             PerlUpb_ObjCache_Init(aTHX);
             PerlUpb_Registry* reg2 = PerlUpb_Registry_Get(aTHX);
-            
+
             ok(reg1 != reg2, "Registries are isolated across interpreters");
-            
+
             SV* cached = PerlUpb_ObjCache_Get(aTHX_ dummy_ptr);
             ok(cached == NULL, "Cache is isolated: perl2 cannot see perl1 entries");
         }
@@ -68,7 +68,7 @@ static void test_multi_interp(void) {
             ok(cached != NULL, "Cache still persist in perl1 after perl2 death");
             if (cached) SvREFCNT_dec(cached);
         }
-        
+
         SvREFCNT_dec(strong_rv);
         SvREFCNT_dec(obj1);
     }

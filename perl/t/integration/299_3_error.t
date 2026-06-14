@@ -24,7 +24,7 @@ subtest 'partial initialization error' => sub {
     my $msg = Protobuf_perl_error::Error::Error->new({ field1 => 123 });
     eval { $msg->serialize() };
     ok($@, "Missing field2 throws exception");
-    
+
     $msg->set_field2("present");
     my $p;
     eval { $p = $msg->serialize() };

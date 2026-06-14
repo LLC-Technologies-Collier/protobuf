@@ -20,7 +20,7 @@
 static void verify_limits(pTHX_ SV* sv, const upb_FieldDef* f, double min, double max) {
     double val = SvNV(sv);
     if (val < min || val > max) {
-        croak("Value %f out of range for field '%s' (type %d, limits %f to %f)", 
+        croak("Value %f out of range for field '%s' (type %d, limits %f to %f)",
               val, upb_FieldDef_Name(f), (int)upb_FieldDef_Type(f), min, max);
     }
 }
@@ -132,7 +132,7 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
                 const char *name = SvPVutf8(sv, len);
                 const upb_EnumDef *edef = upb_FieldDef_EnumSubDef(f);
                 if (!edef) croak("Missing EnumDef for field '%s'", upb_FieldDef_Name(f));
-                
+
                 const upb_EnumValueDef *ev = upb_EnumDef_FindValueByNameWithSize(edef, name, len);
                 if (!ev) {
                     croak("Invalid enum name '%s' for field '%s'", name, upb_FieldDef_Name(f));
@@ -151,7 +151,7 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
              if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVHV && !sv_isobject(sv)) {
                  // It's a plain HashRef, recursively create and populate message
                  upb_Message* dst_msg = upb_Message_New(mt, arena);
-                 
+
                  // We need to call back into Perl or use C logic to populate
                  // For now, let's use C logic:
                  HV* hv = (HV*)SvRV(sv);
@@ -161,12 +161,12 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
                      I32 klen;
                      const char *key = hv_iterkey(he, &klen);
                      SV *val_sv = hv_iterval(hv, he);
-                     
+
                      const upb_FieldDef *sub_f = upb_MessageDef_FindFieldByName(target_mdef, key);
                      if (!sub_f) {
                          croak("Field '%s' not found in message '%s'", key, upb_MessageDef_FullName(target_mdef));
                      }
-                     
+
                      upb_MessageValue sub_val;
                      if (PerlUpb_SvToUpb(aTHX_ val_sv, sub_f, &sub_val, arena)) {
                          upb_Message_SetFieldByDef(dst_msg, sub_f, sub_val, arena);
@@ -178,7 +178,7 @@ static bool convert_singular_sv_to_upb(pTHX_ SV *sv, const upb_FieldDef *f, upb_
 
              const upb_Message* src_msg = PerlUpb_Message_GetMsg(aTHX_ sv);
              if (!src_msg) CROAK_WRONG_TYPE(sv, "a Message object or HashRef", f);
-             
+
              const upb_MessageDef* src_mdef = PerlUpb_Message_GetDef(aTHX_ sv);
              if (src_mdef != target_mdef) {
                  croak("Message type mismatch for field '%s': expected %s, got %s",
@@ -356,7 +356,7 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
             if (tied_obj && sv_derived_from(tied_obj, "Protobuf::Internal::Repeated")) {
                 upb_Array* src_arr = PerlUpb_Repeated_GetArray(aTHX_ tied_obj);
                 const upb_FieldDef* src_f = PerlUpb_Repeated_GetFieldDef(aTHX_ tied_obj);
-                
+
                 if (src_arr) {
                     if (upb_FieldDef_Type(src_f) != upb_FieldDef_Type(f)) {
                         croak("Type mismatch when copying repeated field '%s': expected %d, got %d",
@@ -418,7 +418,7 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
             for (I32 i = 0; i < (I32)num_elements; ++i) {
                 SV **elem_sv_ptr = av_fetch(av, i, 0);
                 SV *elem_sv = (elem_sv_ptr) ? *elem_sv_ptr : NULL;
-                
+
                 if (mg && (!elem_sv || !SvOK(elem_sv))) {
                     dSP; ENTER; SAVETMPS; PUSHMARK(SP);
                     XPUSHs(tied_obj); XPUSHs(sv_2mortal(newSViv(i))); PUTBACK;
@@ -434,7 +434,7 @@ bool PerlUpb_SvToUpb(pTHX_ SV *sv, const upb_FieldDef *f, upb_MessageValue *val,
                 upb_MessageValue item_val;
                 if (!convert_singular_sv_to_upb(aTHX_ elem_sv, f, &item_val, arena)) return false;
                 upb_Array_Set(arr, i, item_val);
-                
+
                 if (mg) { FREETMPS; LEAVE; }
             }
         }

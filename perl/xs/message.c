@@ -11,5 +11,5 @@ bool PerlUpb_InitMessage(pTHX_ SV* module) {
 
 // SV *PerlUpb_Message_Get(pTHX_ const struct upb_Message *msg, const struct upb_MessageDef *m, SV *arena_sv) {
 //     // Implementation to be moved to message/message.c
-//     return newSV(0); 
+//     return newSV(0);
 // }

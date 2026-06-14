@@ -43,7 +43,7 @@ SV* PerlUpb_UnknownFieldSet_GetData(pTHX_ SV* self) {
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
     upb_StringView data;
-    
+
     // First pass to calculate total length
     size_t total_len = 0;
     while (upb_Message_NextUnknown(msg, &data, &iter)) {
@@ -147,29 +147,29 @@ void PerlUpb_UnknownFieldSet_DeleteTag(pTHX_ SV* self, uint32_t tag) {
     size_t total_size = 0;
     uintptr_t iter = kUpb_Message_UnknownBegin;
     upb_StringView chunk;
-    
+
     while (upb_Message_NextUnknown(msg, &chunk, &iter)) {
         total_size += chunk.size;
     }
-    
+
     char* new_data = (char*)upb_Arena_Malloc(tmp_arena, total_size);
     size_t new_size = 0;
     iter = kUpb_Message_UnknownBegin;
-    
+
     while (upb_Message_NextUnknown(msg, &chunk, &iter)) {
         const char* ptr = chunk.data;
         const char* end = ptr + chunk.size;
-        
+
         while (ptr < end) {
             const char* entry_start = ptr;
             uint64_t entry_tag;
-            
+
             const char* tag_end = decode_varint(ptr, end, &entry_tag);
             if (!tag_end) break;
-            
+
             const char* entry_end = skip_value(tag_end, end, entry_tag & 7);
             if (!entry_end) break;
-            
+
             if ((entry_tag >> 3) != tag) {
                 size_t entry_len = entry_end - entry_start;
                 memcpy(new_data + new_size, entry_start, entry_len);
@@ -178,12 +178,12 @@ void PerlUpb_UnknownFieldSet_DeleteTag(pTHX_ SV* self, uint32_t tag) {
             ptr = entry_end;
         }
     }
-    
+
     _upb_Message_DiscardUnknown_shallow(msg);
     if (new_size > 0) {
         UPB_PRIVATE(_upb_Message_AddUnknown)(msg, new_data, new_size, arena, kUpb_AddUnknown_Copy);
     }
-    
+
     upb_Arena_Free(tmp_arena);
 }
 

@@ -232,15 +232,15 @@ void PerlUpb_ObjCache_Delete(pTHX_ const void* ptr) {
 
     int stripe = get_stripe(ptr);
     LOCK_AND_PROFILE(&cache_mutexes[stripe], &contention_stats.stripes[stripe]);
-    
+
     char key[CACHE_KEY_LEN];
     memcpy(key, &ptr, CACHE_KEY_LEN);
-    
+
     if (hv_exists(reg->obj_cache, key, CACHE_KEY_LEN)) {
         hv_delete(reg->obj_cache, key, CACHE_KEY_LEN, G_DISCARD);
         PerlUpb_ObjCache_LogEvent(OBJ_CACHE_EVENT_DELETE, ptr);
     }
-    
+
     PERL_PROTOBUF_MUTEX_UNLOCK(&cache_mutexes[stripe]);
 }
 

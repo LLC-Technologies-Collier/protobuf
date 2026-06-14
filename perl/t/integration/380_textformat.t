@@ -12,16 +12,16 @@ subtest 'text format encoding integration' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(12345);
     $msg->set_name("integration test");
-    
+
     my $text = $msg->to_text();
     ok($text, 'Encoded text');
     like($text, qr/value: 12345/, 'Contains value');
-    
+
     # Test text formatting doesn't corrupt message or arena
     my $msg2 = Protobuf_perl_test::Test::TestMessage->new();
     $msg2->set_value(999);
     $msg2->to_text();
-    
+
     is($msg->value, 12345, 'Message data intact after text encoding');
 };
 

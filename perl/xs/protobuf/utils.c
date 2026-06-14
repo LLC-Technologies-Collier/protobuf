@@ -111,7 +111,7 @@ char* PerlUpb_FullNameToClassName(pTHX_ const char* full_name) {
     STRLEN len = strlen(full_name);
     int dots = 0;
     for (const char* p = full_name; *p; p++) if (*p == '.') dots++;
-    
+
     char* class_name = (char*)safemalloc(len + dots + 1);
     char* d = class_name;
     const char* s = full_name;
@@ -172,7 +172,7 @@ static char* get_file_module(pTHX_ const char* proto_file) {
     char* base = savepv(start);
     char* dot = strchr(base, '.');
     if (dot) *dot = '\0';
-    
+
     // CamelCase by splitting on _
     char* res = (char*)safemalloc(strlen(base) + 1);
     char* d = res;
@@ -209,10 +209,10 @@ HV* PerlUpb_GetMessageStash(pTHX_ const upb_MessageDef* mdef) {
     const upb_FileDef *file = upb_MessageDef_File(mdef);
     const char *proto_file = upb_FileDef_Name(file);
     const char *pkg = upb_FileDef_Package(file);
-    
+
     char* file_mod = get_file_module(aTHX_ proto_file);
     char* pkg_mod = capitalize_path(aTHX_ pkg);
-    
+
     const char* rel_name = full_name;
     if (rel_name[0] == '.') rel_name++;
     if (pkg && strlen(pkg) > 0) {
@@ -222,7 +222,7 @@ HV* PerlUpb_GetMessageStash(pTHX_ const upb_MessageDef* mdef) {
         }
     }
     char* msg_path = capitalize_path(aTHX_ rel_name);
-    
+
     if (!file_mod) file_mod = savepv("UnknownFile");
     if (!msg_path) msg_path = savepv("UnknownMessage");
 
@@ -236,7 +236,7 @@ HV* PerlUpb_GetMessageStash(pTHX_ const upb_MessageDef* mdef) {
     }
     safefree(file_mod);
     safefree(msg_path);
-    
+
     HV* stash = gv_stashpv(class_name, GV_ADD);
 
     // Set up inheritance: push "Protobuf::Message" to @ISA if not already present
@@ -329,7 +329,7 @@ SV* PerlUpb_WrapArenaBoundObject(pTHX_ const void* ptr, SV* arena_sv, HV* stash,
     if (cached) return cached;
 
     HV* hv = newHV();
-    
+
     SV* ptr_sv = newSViv(PTR2IV(ptr));
     hv_store(hv, "_upb_ptr", 8, ptr_sv, 0);
     if (arena_sv && SvOK(arena_sv)) {
@@ -437,9 +437,9 @@ SV* PerlUpb_I64ToSV(pTHX_ int64_t val) {
     sprintf(buf, "%" PRId64, val);
 
     dSP; ENTER; SAVETMPS;
-    PUSHMARK(SP); 
-    XPUSHs(sv_2mortal(newSVpv("Math::BigInt", 0))); 
-    XPUSHs(sv_2mortal(newSVpv(buf, 0))); 
+    PUSHMARK(SP);
+    XPUSHs(sv_2mortal(newSVpv("Math::BigInt", 0)));
+    XPUSHs(sv_2mortal(newSVpv(buf, 0)));
     PUTBACK;
     call_method("new", G_SCALAR);
     SPAGAIN; SV* bigint_sv = newSVsv(POPs);
@@ -522,7 +522,7 @@ void PerlUpb_VerifyBinaryDiff(pTHX_ const char* a, size_t a_len, const char* b, 
     fprintf(stderr, "\nB (len %zu): ", b_len);
     for (size_t i = 0; i < b_len; i++) fprintf(stderr, "%02x", (unsigned char)b[i]);
     fprintf(stderr, "\n");
-    
+
     croak("Binary diff verification failed: %s", name);
 }
 
@@ -577,9 +577,9 @@ SV* PerlUpb_U64ToSV(pTHX_ uint64_t val) {
     sprintf(buf, "%" PRIu64, val);
 
     dSP; ENTER; SAVETMPS;
-    PUSHMARK(SP); 
-    XPUSHs(sv_2mortal(newSVpv("Math::BigInt", 0))); 
-    XPUSHs(sv_2mortal(newSVpv(buf, 0))); 
+    PUSHMARK(SP);
+    XPUSHs(sv_2mortal(newSVpv("Math::BigInt", 0)));
+    XPUSHs(sv_2mortal(newSVpv(buf, 0)));
     PUTBACK;
     call_method("new", G_SCALAR);
     SPAGAIN; SV* bigint_sv = newSVsv(POPs);

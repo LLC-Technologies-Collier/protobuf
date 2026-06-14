@@ -12,10 +12,10 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin', 't/data/wkt_d
 subtest 'any packed with other message' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(999);
-    
+
     my $any = Google::Protobuf::Any::Any->new();
     $any->pack($msg);
-    
+
     my $unpacked = $any->unpack();
     is($unpacked->value, 999, 'Any packs/unpacks TestMessage correctly');
 };
@@ -27,13 +27,13 @@ subtest 'struct inside listvalue inside struct' => sub {
             { b => "two" }
         ]
     };
-    
+
     my $struct = Google::Protobuf::Struct::Struct->new();
     $struct->from_perl($data);
-    
+
     my $out = $struct->to_perl();
     is_deeply($out, $data, 'Complex nested struct roundtrip works');
-    
+
     my $serialized = $struct->serialize();
     my $parsed = Google::Protobuf::Struct::Struct->parse($serialized);
     is_deeply($parsed->to_perl, $data, 'Struct serialization roundtrip works');

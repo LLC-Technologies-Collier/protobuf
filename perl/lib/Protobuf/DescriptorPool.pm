@@ -179,7 +179,7 @@ sub generated_pool {
 sub add_serialized_file {
     my ($self, $serialized) = @_;
     croak('Serialized descriptor data is required') unless defined $serialized;
-    
+
     my $file;
     if ($Protobuf::HAS_XS) {
         $file = _xs_add_serialized_file($self, $serialized);

@@ -90,12 +90,12 @@ int main(int argc, char** argv) {
         PerlUpb_Arena_GetStats(aTHX_ a_sv, &stats);
         ok(stats.reserved > 0, "Reserved space > 0");
         is(stats.blocks, 1, "Initial blocks is 1");
-        
+
         upb_Arena* a = PerlUpb_Arena_Get(aTHX_ a_sv);
         upb_Arena_Malloc(a, 1024);
         PerlUpb_Arena_GetStats(aTHX_ a_sv, &stats);
         ok(stats.allocated >= 1024, "Allocated space tracked");
-        
+
         PerlUpb_Arena_Destroy(aTHX_ a_sv);
         SvREFCNT_dec(a_sv);
     });
@@ -105,11 +105,11 @@ int main(int argc, char** argv) {
         size_t size = 32768;
         SV* a_sv = PerlUpb_Arena_NewTmpfs(aTHX_ path, size);
         ok(a_sv != NULL, "NewTmpfs returns non-NULL");
-        
+
         PerlUpb_ArenaStats stats;
         PerlUpb_Arena_GetStats(aTHX_ a_sv, &stats);
         is(stats.reserved, size, "Tmpfs reserved matches requested size");
-        
+
         PerlUpb_Arena_Destroy(aTHX_ a_sv);
         SvREFCNT_dec(a_sv);
         unlink(path);
@@ -118,13 +118,13 @@ int main(int argc, char** argv) {
     subtest("Implement thread-local arena caching for ultra-high-frequency allocations", {
         upb_Arena* a1 = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
         upb_Arena* a2 = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_TRANSIENT);
-        // is(a1, a2, "Transient arenas are recycled (same pointer)"); 
+        // is(a1, a2, "Transient arenas are recycled (same pointer)");
         // Note: we changed implementation to free/new because Reset is missing
         ok(a1 != NULL && a2 != NULL, "Acquired arenas are valid");
-        
+
         upb_Arena* a3 = PerlUpb_Arena_Acquire(aTHX_ PERL_UPB_LIFECYCLE_PERMANENT);
         isnt(a1, a3, "Permanent arenas are fresh (different pointer)");
-        
+
         upb_Arena_Free(a3);
         ok(1, "Small allocations bypass global locks or complex state checks");
     });

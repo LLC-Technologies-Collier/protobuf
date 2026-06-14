@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
         } else {
             fprintf(stderr, "# Nested message field is NULL\n");
         }
-        
+
         // 6. Test list-based field access
         int field_count = upb_MessageDef_FieldCount(msg_def);
         ok(field_count > 0, "Field count > 0");

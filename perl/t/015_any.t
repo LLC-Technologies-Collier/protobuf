@@ -11,13 +11,13 @@ TestHelpers->load_test_protos($pool, 't/data/test_descriptor.bin', 't/data/wkt_d
 subtest 'any packing and unpacking' => sub {
     my $msg = Protobuf_perl_test::Test::TestMessage->new();
     $msg->set_value(12345);
-    
+
     my $any = Google::Protobuf::Any::Any->new();
     $any->pack($msg);
-    
+
     is($any->type_url, "type.googleapis.com/protobuf_perl_test.TestMessage", 'Any type_url correct');
     ok(length($any->value) > 0, 'Any value contains data');
-    
+
     # Unpack
     my $unpacked = $any->unpack();
     isa_ok($unpacked, 'Protobuf_perl_test::Test::TestMessage');

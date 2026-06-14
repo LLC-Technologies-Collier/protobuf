@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
     // In a real test, we'd load these from a pool.
     SV* msg_sv = newSViv(1);
     sv_bless(newRV_noinc(msg_sv), gv_stashpv("Protobuf::Descriptor::MessageDef", GV_ADD));
-    
+
     // 1. Creation
     SV* dict_sv = PerlUpb_ExtensionDict_New(aTHX_ msg_sv);
     ok(dict_sv != NULL, "PerlUpb_ExtensionDict_New returns non-NULL");

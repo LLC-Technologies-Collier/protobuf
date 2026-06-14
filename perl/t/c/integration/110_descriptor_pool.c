@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     SV* serialized = newSVpvn((const char*)test_proto_with_msg, sizeof(test_proto_with_msg));
     SV* file_sv = PerlUpb_DescriptorPool_AddSerializedFile(aTHX_ pool_sv, serialized);
     ok(sv_derived_from(file_sv, "Protobuf::Descriptor::File"), "Added serialized file");
-    
+
     // 3. Find Message
     SV* msg_sv = PerlUpb_DescriptorPool_FindMessageByName(aTHX_ pool_sv, "Test");
     ok(sv_derived_from(msg_sv, "Protobuf::Descriptor::MessageDef"), "Found message 'Test'");
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
     // Cleanup
     SvREFCNT_dec(file_sv);
     SvREFCNT_dec(serialized);
-    
+
     extern void PerlUpb_DescriptorPool_Free(pTHX_ SV* sv);
     PerlUpb_DescriptorPool_Free(aTHX_ pool_sv);
     SvREFCNT_dec(pool_sv);

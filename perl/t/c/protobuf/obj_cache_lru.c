@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 5; i++) {
             SvREFCNT_dec(rvs[i]);
         }
-        
+
         PerlUpb_ObjCache_Clear(aTHX);
     }
     test_perl_destroy(my_perl);

@@ -22,7 +22,7 @@ SV* PerlUpb_Repeated_New(pTHX_ upb_Array* arr, const upb_FieldDef* f, SV* arena_
     SV* self = PerlUpb_WrapArenaBoundObject(aTHX_ arr, arena_sv, stash, flags);
     HV* hv = (HV*)SvRV(self);
     hv_store(hv, "_fdef", 5, newSViv(PTR2IV(f)), 0);
-    
+
     return self;
 }
 
@@ -176,7 +176,7 @@ bool PerlUpb_Repeated_AuditIntegrity(pTHX_ SV* self) {
             }
         }
     }
-    
+
     return true;
 }
 

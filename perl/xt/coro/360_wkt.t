@@ -28,22 +28,22 @@ for my $i (1..$NUM_COROS) {
 
                 my $msg = test::TestMessage->new();
                 $msg->set_value($i * $j);
-                
+
                 cede();
-                
+
                 my $any = google::protobuf::Any->new();
                 $any->pack($msg);
-                
+
                 cede();
-                
+
                 my $unpacked = $any->unpack();
                 die "Unpack failed" unless $unpacked->value == ($i * $j);
-                
+
                 cede();
-                
+
                 my $struct = google::protobuf::Struct->new();
                 $struct->from_perl({ a => $i, b => $j });
-                
+
                 die "Struct mismatch" unless $struct->fields->{a}->number_value == $i;
             }
         };

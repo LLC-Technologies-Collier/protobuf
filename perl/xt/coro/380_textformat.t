@@ -27,13 +27,13 @@ for my $i (1..$NUM_COROS) {
 
                 my $msg = test::TestMessage->new();
                 $msg->set_value($i * $j);
-                
+
                 cede();
-                
+
                 my $text = $msg->to_text();
-                
+
                 cede();
-                
+
                 die "Text mismatch" unless $text =~ /value: ${\($i * $j)}/;
             }
         };

@@ -51,12 +51,12 @@ sub get_empty_pool {
 
 sub load_test_protos {
     my ($class, $pool, @files) = @_;
-    
+
     # Handle arrayref if passed as first arg after $pool
     if (@files == 1 && ref($files[0]) eq 'ARRAY') {
         @files = @{$files[0]};
     }
-    
+
     my $last_result;
     foreach my $file_path (@files) {
         open my $fh, '<:raw', $file_path or die "Could not open '$file_path': $!";
@@ -64,7 +64,7 @@ sub load_test_protos {
         close $fh;
         $last_result = $pool->add_serialized_file_descriptor_set($data);
     }
-    
+
     return $last_result;
 }
 
